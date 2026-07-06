@@ -1,0 +1,2043 @@
+<!DOCTYPE html>
+<html lang="ur-Latn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Mobile Ledger</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f1115">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mobile Ledger">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root{
+    --bg:#0f1115;
+    --surface:#171a21;
+    --surface-2:#1f232c;
+    --surface-3:#262b36;
+    --border:#2a2f3a;
+    --border-strong:#3a4150;
+    --text:#e8eaed;
+    --text-dim:#9aa0ab;
+    --text-faint:#666d7a;
+    --accent:#2dd4bf;
+    --accent-text:#052e2b;
+    --pta:#4ade80; --pta-bg:#132a1c;
+    --nonpta:#fbbf24; --nonpta-bg:#2a2213;
+    --cpid:#f87171; --cpid-bg:#2a1616;
+    --jv:#60a5fa; --jv-bg:#131f2e;
+    --bypass:#fb7185; --bypass-bg:#2a1420;
+    --danger:#f87171;
+    --sale:#c084fc;
+    --radius:12px;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);}
+  .app{max-width:480px;margin:0 auto;min-height:100vh;padding-bottom:100px;}
+  .num{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+
+  header{position:sticky;top:0;z-index:10;background:var(--bg);padding:16px 16px 12px;border-bottom:1px solid var(--border);}
+  header h1{font-size:19px;font-weight:600;margin:0 0 12px;letter-spacing:-0.2px;}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .stat{background:var(--surface);border-radius:var(--radius);padding:10px 8px;text-align:center;}
+  .stat .v{font-size:16px;font-weight:600;}
+  .stat .l{font-size:10.5px;color:var(--text-dim);margin-top:2px;}
+
+  .search-row{display:flex;gap:8px;padding:12px 16px 0;}
+  .search-row input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;}
+  .search-row select{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 8px;color:var(--text);font-size:13px;max-width:130px;}
+  .search-row input:focus,.search-row select:focus{outline:none;border-color:var(--accent);}
+
+  .chips-scroll{display:flex;gap:6px;padding:10px 16px 4px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;}
+  .chips-scroll::-webkit-scrollbar{display:none;}
+  .chip{flex-shrink:0;padding:6px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:12.5px;color:var(--text-dim);white-space:nowrap;}
+  .chip.active{background:var(--accent);border-color:var(--accent);color:var(--accent-text);font-weight:600;}
+
+  .list{padding:8px 16px 16px;display:flex;flex-direction:column;gap:10px;}
+  .empty{text-align:center;color:var(--text-faint);padding:60px 20px;font-size:14px;}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;}
+  .card.outofstock{opacity:0.55;}
+  .card-title{font-size:15px;font-weight:600;}
+  .card-sub{font-size:12px;color:var(--text-dim);margin-top:1px;}
+
+  .card.group-card{padding:12px 14px 6px;}
+  .piece-list{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+  .piece-row{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px 11px;}
+  .piece-row.outofstock{opacity:0.5;}
+  .piece-row-top{display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
+  .piece-row-top.spec-badges{margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);}
+  .piece-row .sale-meta{margin-top:6px;}
+  .piece-row .card-actions{margin-top:8px;}
+  .badges{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;}
+  .badges.spec-badges{margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);}
+  .badge{font-size:10.5px;padding:2px 8px;border-radius:999px;font-weight:600;}
+  .badge.pta{background:var(--pta-bg);color:var(--pta);}
+  .badge.nonpta{background:var(--nonpta-bg);color:var(--nonpta);}
+  .badge.cpid{background:var(--cpid-bg);color:var(--cpid);}
+  .badge.jv{background:var(--jv-bg);color:var(--jv);}
+  .badge.bypass{background:var(--bypass-bg);color:var(--bypass);}
+  .badge.sold-badge{background:var(--surface-3);color:var(--sale);}
+  .badge.spec{background:var(--surface-3);color:var(--text-dim);}
+  .badge.qty{background:var(--surface-3);color:var(--text);}
+
+  .price-row{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:13px;}
+  .price-col{text-align:center;flex:1;}
+  .price-col .l{font-size:10px;color:var(--text-faint);}
+  .price-col .v{font-weight:600;margin-top:2px;}
+  .price-col .v.profit-pos{color:var(--pta);}
+  .price-col .v.profit-neg{color:var(--danger);}
+  .price-col .v.dim{color:var(--text-faint);font-weight:400;}
+  .sale-meta{font-size:12px;color:var(--text-dim);margin-top:6px;}
+
+  .card-actions{display:flex;gap:8px;margin-top:10px;}
+  .card-actions button{flex:1;padding:7px;border-radius:8px;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);font-size:12.5px;}
+  .card-actions button.sell-btn{color:var(--sale);border-color:var(--sale);}
+  .card-actions button.del-btn{color:var(--danger);}
+
+  .fab{position:fixed;bottom:22px;right:50%;transform:translateX(230px);width:56px;height:56px;border-radius:50%;background:var(--accent);color:var(--accent-text);border:none;font-size:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,0.4);z-index:20;}
+  @media (max-width:520px){ .fab{transform:none;right:20px;} }
+
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:30;display:flex;align-items:flex-end;justify-content:center;}
+  .overlay.hidden{display:none;}
+  .sheet{background:var(--surface);width:100%;max-width:480px;border-radius:20px 20px 0 0;max-height:90vh;overflow-y:auto;padding:16px 16px 20px;}
+  .sheet-handle{width:36px;height:4px;background:var(--border-strong);border-radius:2px;margin:0 auto 12px;}
+  .sheet h2{font-size:16px;margin:0 0 12px;}
+  .sheet-item-name{font-size:14px;color:var(--text-dim);margin:-6px 0 14px;}
+  .sec-label{font-size:11px;color:var(--text-dim);margin:12px 0 6px;text-transform:uppercase;letter-spacing:0.3px;}
+  .chip-row{display:flex;gap:6px;flex-wrap:wrap;}
+  .chip-opt{padding:8px 13px;border-radius:9px;background:var(--surface-2);border:1px solid var(--border);font-size:13px;color:var(--text-dim);}
+  .chip-opt.on{background:var(--accent);border-color:var(--accent);color:var(--accent-text);font-weight:600;}
+  .chip-opt.status-opt{flex:1 1 30%;text-align:center;font-size:12.5px;padding:10px 4px;}
+  .field{margin-bottom:10px;}
+  .field label{display:block;font-size:11.5px;color:var(--text-dim);margin-bottom:4px;}
+  .field input,.field select{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:9px 10px;color:var(--text);font-size:14px;}
+  .qty-warning{display:none;font-size:11px;color:var(--nonpta);margin-top:6px;line-height:1.4;}
+  .qty-warning.show{display:block;}
+  .model-input-row{display:flex;gap:8px;}
+  .model-input-row input{flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:9px 10px;color:var(--text);font-size:14px;}
+  .model-input-row input:focus{outline:none;border-color:var(--accent);}
+  .model-dropdown-btn{flex-shrink:0;width:40px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--text-dim);font-size:14px;}
+  .model-dropdown-btn.on{border-color:var(--accent);color:var(--accent);}
+  .model-suggestions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+  .model-suggestions:empty{margin-top:0;}
+  .model-suggestion-chip{padding:6px 11px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);font-size:12.5px;color:var(--text-dim);}
+  .model-suggestion-chip.new-tag{color:var(--accent);border-color:var(--accent);}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--accent);}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .big-input input{font-size:18px;padding:12px 10px;font-weight:600;}
+  .profit-preview{background:var(--surface-2);border-radius:10px;padding:10px 12px;margin:12px 0;display:flex;justify-content:space-between;font-size:13px;}
+  .extra-buy-list{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
+  .extra-buy-row{display:flex;gap:8px;align-items:center;}
+  .extra-buy-row input{flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:9px 10px;color:var(--text);font-size:14px;}
+  .extra-buy-row input:focus{outline:none;border-color:var(--accent);}
+  .extra-buy-remove{flex-shrink:0;width:34px;height:34px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);color:var(--danger);font-size:16px;}
+  .add-extra-buy{text-align:center;padding:9px;margin-top:8px;color:var(--accent);font-size:12.5px;font-weight:600;border:1px dashed var(--border-strong);border-radius:9px;}
+  .add-piece-btn{display:block;width:100%;text-align:center;padding:9px;margin-top:8px;color:var(--accent);font-size:12px;font-weight:600;border:1px dashed var(--border-strong);border-radius:9px;background:transparent;}
+  .price-hint{font-size:11px;color:var(--accent);margin-top:3px;min-height:14px;}
+  .photo-strip{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .photo-thumb-wrap{position:relative;width:64px;height:64px;flex-shrink:0;}
+  .photo-thumb{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--border);display:block;}
+  .photo-remove{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--danger);color:#fff;border:none;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;}
+  .photo-add-btn{display:flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:8px;border:1px dashed var(--border-strong);color:var(--accent);font-size:12px;text-align:center;cursor:pointer;flex-shrink:0;}
+  .photo-add-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .crop-stage-wrap{display:flex;justify-content:center;margin-top:4px;}
+  .crop-stage{position:relative;width:100%;max-width:400px;touch-action:none;background:#000;border-radius:12px;overflow:hidden;}
+  .crop-stage img{display:block;width:100%;height:auto;user-select:none;-webkit-user-drag:none;}
+  .crop-box{position:absolute;border:2px solid var(--accent);box-shadow:0 0 0 9999px rgba(0,0,0,0.6);touch-action:none;}
+  .crop-handle{position:absolute;width:24px;height:24px;background:var(--accent);border:2px solid var(--bg);border-radius:50%;transform:translate(-50%,-50%);touch-action:none;}
+  .crop-handle.tl{top:0;left:0;}
+  .crop-handle.tr{top:0;left:100%;}
+  .crop-handle.bl{top:100%;left:0;}
+  .crop-handle.br{top:100%;left:100%;}
+  .crop-hint{text-align:center;font-size:11px;color:var(--text-dim);margin-top:8px;line-height:1.4;}
+  .card-photo-strip{display:flex;align-items:center;gap:6px;margin-top:8px;}
+  .card-photo-thumb{width:52px;height:52px;object-fit:cover;border-radius:8px;border:1px solid var(--border);}
+  .card-photo-count{font-size:11px;color:var(--text-dim);}
+  .card-actions button.share-btn{color:var(--accent);border-color:var(--accent);}
+  .extra-piece-block{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px 10px 4px;margin-bottom:10px;}
+  .extra-piece-head{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--text-dim);font-weight:600;margin-bottom:8px;}
+  .extra-piece-block .field select{width:100%;background:var(--surface-3);border:1px solid var(--border);border-radius:8px;padding:9px 10px;color:var(--text);font-size:13.5px;}
+  .profit-preview .v{font-weight:600;}
+  .more-toggle{text-align:center;padding:10px;color:var(--accent);font-size:13px;font-weight:600;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:10px 0;}
+  .more-section{display:none;}
+  .more-section.show{display:block;}
+  .sheet-actions{display:flex;gap:10px;margin-top:14px;position:sticky;bottom:0;background:var(--surface);padding-top:6px;}
+  .sheet-actions button{flex:1;padding:13px;border-radius:10px;font-size:14.5px;font-weight:600;border:none;}
+  .btn-save{background:var(--accent);color:var(--accent-text);}
+  .btn-sale{background:var(--sale);color:#2a0e3d;}
+  .btn-cancel{background:var(--surface-2);color:var(--text-dim);border:1px solid var(--border);}
+  .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .header-top h1{margin:0;}
+  .backup-actions{display:flex;gap:6px;}
+  .backup-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);border-radius:8px;padding:6px 10px;font-size:11.5px;}
+  .backup-btn:active{border-color:var(--accent);color:var(--accent);}
+  .backup-reminder{display:none;align-items:center;justify-content:space-between;gap:8px;background:var(--nonpta-bg);border:1px solid var(--nonpta);color:var(--nonpta);border-radius:10px;padding:9px 12px;margin-top:10px;font-size:12.5px;}
+  .backup-reminder.show{display:flex;}
+  .backup-reminder button{flex-shrink:0;background:var(--nonpta);color:#2a2213;border:none;border-radius:7px;padding:6px 10px;font-size:11.5px;font-weight:600;}
+  .backup-reminder .dismiss{background:transparent;color:var(--nonpta);border:1px solid var(--nonpta);margin-left:4px;font-weight:400;}
+  .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:var(--surface-3);color:var(--text);border:1px solid var(--border-strong);border-radius:10px;padding:10px 16px;font-size:12.5px;max-width:88%;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;z-index:50;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
+  .toast.undo-toast{display:flex;align-items:center;gap:12px;text-align:left;}
+  .toast.undo-toast #undoToastBtn{flex-shrink:0;background:var(--accent);color:var(--accent-text);border:none;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;}
+  .storage-bar-wrap{margin-top:10px;}
+  .storage-bar-track{height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden;}
+  .storage-bar-fill{height:100%;width:0%;background:var(--pta);transition:width .3s;}
+  .storage-bar-label{font-size:10.5px;color:var(--text-dim);margin-top:4px;text-align:right;}
+  .save-error-banner{display:none;background:var(--cpid-bg);border:1px solid var(--cpid);color:var(--cpid);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12.5px;line-height:1.5;}
+  .save-error-banner.show{display:block;}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="header-top">
+      <h1>Mobile Ledger</h1>
+      <div class="backup-actions">
+        <button class="backup-btn" id="btnBackup">⬇ Backup</button>
+        <button class="backup-btn" id="btnRestore">⬆ Restore</button>
+        <input type="file" id="restoreFile" accept="application/json" style="display:none;">
+      </div>
+    </div>
+    <div class="backup-reminder" id="backupReminder">
+      <span>24 ghante se zyada ho gaye, backup nahi ho saka — abhi le lein.</span>
+      <span style="display:flex;">
+        <button id="reminderBackupBtn">Backup lein</button>
+        <button class="dismiss" id="reminderDismissBtn">Baad mein</button>
+      </span>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="storage-bar-wrap">
+      <div class="storage-bar-track"><div class="storage-bar-fill" id="storageBarFill"></div></div>
+      <div class="storage-bar-label" id="storageBarLabel">Storage: 0% used</div>
+    </div>
+  </header>
+  <div class="search-row">
+    <input type="text" id="search" placeholder="Model, customer se search karein">
+    <select id="sortSelect">
+      <option value="default">Default (model order)</option>
+      <option value="brand-qty-desc">Model (zyada quantity wala upar)</option>
+      <option value="newest">Naye pehle</option>
+      <option value="oldest">Purane pehle</option>
+      <option value="qty-desc">Zyada quantity pehle</option>
+      <option value="qty-asc">Kam quantity pehle</option>
+    </select>
+  </div>
+  <div class="chips-scroll" id="brandFilterChips"></div>
+  <div class="chips-scroll" id="filterChips"></div>
+  <div class="list" id="list"></div>
+</div>
+
+<button class="fab" id="fabAdd">+</button>
+<div class="toast" id="toast"></div>
+<div class="toast undo-toast" id="undoToast">
+  <span id="undoToastMsg"></span>
+  <button type="button" id="undoToastBtn">Undo</button>
+</div>
+
+<div class="overlay hidden" id="overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2 id="sheetTitle">Nayi stock entry</h2>
+    <div class="save-error-banner" id="saveErrorBanner"></div>
+
+    <div class="sec-label">Brand</div>
+    <div class="chip-row" id="brandChips"></div>
+    <div class="field" id="brandOtherWrap" style="display:none;margin-top:8px;">
+      <input id="f-brand-other" placeholder="Brand ka naam likhein">
+    </div>
+
+    <div class="sec-label">Model</div>
+    <div class="model-input-row">
+      <input id="f-model-other" placeholder="Model likhein" autocomplete="off">
+      <button type="button" class="model-dropdown-btn" id="modelDropdownBtn" title="List se chunein">▾</button>
+    </div>
+    <div class="model-suggestions" id="modelSuggestions"></div>
+    <div class="field" id="modelSelectWrap" style="display:none;margin-top:8px;">
+      <select id="f-model-select"></select>
+    </div>
+
+    <div class="sec-label">Pics (optional)</div>
+    <div class="photo-add-row">
+      <div class="photo-strip" id="photoStrip"></div>
+      <label class="photo-add-btn" id="photoAddBtn">+ Pic
+        <input type="file" id="photoInput" accept="image/*" multiple style="display:none;">
+      </label>
+    </div>
+
+    <div class="sec-label">Status</div>
+    <div class="chip-row" id="statusChips"></div>
+
+    <div class="field" style="margin-top:12px;">
+      <label id="qtyLabel">Quantity (kitne piece — SIRF agar sabka price/condition bilkul same hai)</label>
+      <input id="f-qty" type="number" inputmode="numeric" min="1" value="1">
+      <div class="qty-warning" id="qtyWarning">⚠️ Agar price ya condition alag ho to yahan 1 hi rahne dein — alag piece "+ Isi model ka aur piece add karein" button se add karein.</div>
+    </div>
+
+    <div class="two-col">
+      <div class="field"><label>Buy price</label><input id="f-buy" type="text" inputmode="decimal" placeholder="e.g. 45k"><div class="price-hint" id="f-buy-hint"></div></div>
+      <div class="field"><label>Sell price range</label><input id="f-range" placeholder="45k-47k"><div class="price-hint" id="f-range-hint"></div></div>
+    </div>
+
+    <div id="extraBuyList" class="extra-buy-list"></div>
+    <div class="add-extra-buy" id="addExtraBuyBtn">+ Isi model ka aur piece, alag price/condition par, add karein</div>
+
+    <div class="more-section" id="saleFieldsWrap">
+      <div class="two-col big-input">
+        <div class="field"><label>Sale price</label><input id="f-sellprice" type="text" inputmode="decimal" placeholder="e.g. 45k"><div class="price-hint" id="f-sellprice-hint"></div></div>
+        <div class="field"><label>Buy price</label><input id="f-buy-insale" type="text" inputmode="decimal" placeholder="e.g. 40k"><div class="price-hint" id="f-buy-insale-hint"></div></div>
+      </div>
+      <div class="two-col">
+        <div class="field"><label>Customer name</label><input id="f-customer" placeholder="Naam"></div>
+        <div class="field"><label>Payment method</label><input id="f-payment" placeholder="Cash / Easypaisa"></div>
+      </div>
+    </div>
+
+    <div class="more-toggle" id="moreToggle">+ Zyada details add karein</div>
+
+    <div class="more-section" id="moreSection">
+      <div class="sec-label">RAM</div>
+      <div class="chip-row" id="ramChips"></div>
+
+      <div class="sec-label">Storage</div>
+      <div class="chip-row" id="storageChips"></div>
+
+      <div class="sec-label">Network</div>
+      <div class="chip-row" id="networkChips"></div>
+
+      <div class="sec-label">Display</div>
+      <div class="chip-row" id="displayChips"></div>
+
+      <div class="sec-label">Touch</div>
+      <div class="chip-row" id="touchChips"></div>
+
+      <div class="sec-label">Camera</div>
+      <div class="chip-row" id="cameraChips"></div>
+
+      <div class="sec-label">Body</div>
+      <div class="chip-row" id="bodyChips"></div>
+
+      <div class="sec-label">Open aur Repair</div>
+      <div class="chip-row" id="openRepairChips"></div>
+
+      <div class="sec-label">Battery health</div>
+      <div class="chip-row" id="batteryChips"></div>
+
+      <div class="sec-label">Box</div>
+      <div class="chip-row" id="boxChips"></div>
+
+      <div class="sec-label">Packing</div>
+      <div class="chip-row" id="packingChips"></div>
+
+      <div class="sec-label">Charger</div>
+      <div class="chip-row" id="chargerChips"></div>
+
+      <div class="sec-label">Face ID</div>
+      <div class="chip-row" id="faceidChips"></div>
+
+      <div class="sec-label">True Tone</div>
+      <div class="chip-row" id="truetoneChips"></div>
+
+      <div class="field" style="margin-top:10px;"><label>Notes</label><input id="f-notes" placeholder="Koi khaas baat"></div>
+    </div>
+
+    <div class="sheet-actions">
+      <button class="btn-cancel" id="btnCancel">Cancel</button>
+      <button class="btn-save" id="btnSave">Save entry</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="sellOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Sale entry</h2>
+    <div class="save-error-banner" id="sellErrorBanner"></div>
+    <div class="sheet-item-name" id="sellItemName"></div>
+
+    <div class="field"><label id="sellQtyLabel">Kitne piece beche</label><input id="s-qty" type="number" inputmode="numeric" min="1" value="1"></div>
+    <div class="two-col big-input">
+      <div class="field"><label>Sale price (per piece)</label><input id="s-price" type="text" inputmode="decimal" placeholder="e.g. 45k"><div class="price-hint" id="s-price-hint"></div></div>
+    </div>
+    <div class="two-col">
+      <div class="field"><label>Customer name</label><input id="s-customer" placeholder="Naam"></div>
+      <div class="field"><label>Payment method</label><input id="s-payment" placeholder="Cash / Easypaisa"></div>
+    </div>
+    <div class="profit-preview">
+      <span>Profit (is sale par)</span>
+      <span class="v" id="sellProfitPreview">0</span>
+    </div>
+
+    <div class="sheet-actions">
+      <button class="btn-cancel" id="btnSellCancel">Cancel</button>
+      <button class="btn-sale" id="btnSellConfirm">Sale confirm karein</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="cropOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Photo crop karein</h2>
+    <div class="crop-stage-wrap">
+      <div class="crop-stage" id="cropStage">
+        <img id="cropImg" draggable="false">
+        <div class="crop-box" id="cropBox">
+          <div class="crop-handle tl" data-h="tl"></div>
+          <div class="crop-handle tr" data-h="tr"></div>
+          <div class="crop-handle bl" data-h="bl"></div>
+          <div class="crop-handle br" data-h="br"></div>
+        </div>
+      </div>
+    </div>
+    <div class="crop-hint">Box ko drag karein ya corners se resize karein — koi bhi shape/size chun sakte hain</div>
+    <div class="card-actions" style="margin-top:14px;">
+      <button type="button" id="cropCancelBtn">Cancel</button>
+      <button type="button" class="sell-btn" id="cropConfirmBtn">Use photo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let inventory = [];
+let editingId = null;
+let currentFilter = 'all';
+let currentBrandFilter = 'all';
+let currentSort = 'default';
+let sellingId = null;
+
+const BRANDS = ['Samsung','Google','iPhone','OnePlus','Vivo','Oppo','Realme','Infinix','Tecno','Xiaomi','Motorola','Other'];
+const STATUS_OPTS = ['PTA','Non-PTA','CPID','JV','Bypass/MDM'];
+const RAM_OPTS = ['2GB','3GB','4GB','6GB','8GB','12GB','16GB'];
+const STORAGE_OPTS = ['32GB','64GB','128GB','256GB','512GB'];
+const NETWORK_OPTS = ['4G','5G'];
+const DISPLAY_OPTS = ['Original panel','Minor shade','Minor lines','Line','Dark spots','Minor spot','Light spot','Scratches','Cracked','Glass changed','Panel changed','Changed but genuine'];
+const TOUCH_OPTS = ['Perfect','Minor lag','Dead zones','Not working'];
+const CAMERA_OPTS = ['Perfect','No dots','Dot','Dots','Blurry/spots','Not working'];
+const BATTERY_OPTS = ['Perfect','100%','95-99%','90-94%','85-89%','80-84%','79-75%','74-69%','Below 69%','On service','Boosted'];
+const CHARGER_OPTS = ['No charger','Original charger','5W','10W','15W','18W','20W','25W','30W','33W','35W','45W','65W','67W','80W','100W','120W'];
+const BODY_OPTS = ['Original','Back changed','Back crack','Body changed'];
+const OPEN_REPAIR_OPTS = ['No open, no repair','Repaired','Refurbished'];
+const PACKING_OPTS = ['No pack','Water pack','Air tight'];
+
+const MODEL_CATALOG = {
+  Samsung: ['Galaxy S8','Galaxy S9','Galaxy S9+','Galaxy S10','Galaxy S10+','Galaxy S10+ 5G','Galaxy S10 Lite','Galaxy S20','Galaxy S20+','Galaxy S20 Ultra','Galaxy S21','Galaxy S21+','Galaxy S21 Ultra','Galaxy S22','Galaxy S22 Ultra','Galaxy S23','Galaxy S23 Ultra','Galaxy Note 8','Galaxy Note 9','Galaxy Note 10','Galaxy Note 10+','Galaxy Note 20','Galaxy Note 20 Ultra','Galaxy A10','Galaxy A20','Galaxy A30','Galaxy A50','Galaxy A51','Galaxy A52','Galaxy A54','Galaxy A70','Galaxy A71','Galaxy A73'],
+  Google: ['Pixel 3','Pixel 3a','Pixel 4','Pixel 4 XL','Pixel 4a','Pixel 5','Pixel 5a','Pixel 6','Pixel 6a','Pixel 6 Pro','Pixel 7','Pixel 7a','Pixel 7 Pro','Pixel 8','Pixel 8a','Pixel 8 Pro'],
+  iPhone: ['iPhone 6','iPhone 6s','iPhone 7','iPhone 7 Plus','iPhone 8','iPhone 8 Plus','iPhone X','iPhone XR','iPhone XS','iPhone XS Max','iPhone 11','iPhone 11 Pro','iPhone 11 Pro Max','iPhone SE (2020)','iPhone 12','iPhone 12 Mini','iPhone 12 Pro','iPhone 12 Pro Max','iPhone 13','iPhone 13 Mini','iPhone 13 Pro','iPhone 13 Pro Max','iPhone SE (2022)','iPhone 14','iPhone 14 Plus','iPhone 14 Pro','iPhone 14 Pro Max','iPhone 15','iPhone 15 Plus','iPhone 15 Pro','iPhone 15 Pro Max'],
+  OnePlus: ['OnePlus 6','OnePlus 6T','OnePlus 7','OnePlus 7 Pro','OnePlus 7T','OnePlus 7T Pro','OnePlus 8','OnePlus 8 Pro','OnePlus 8T','OnePlus 9','OnePlus 9 Pro','OnePlus 9R','OnePlus 9RT','OnePlus Nord','OnePlus Nord 2','OnePlus Nord CE','OnePlus 10 Pro','OnePlus 10T','OnePlus 11'],
+  Vivo: ['Y12','Y15','Y17','Y19','Y19s','Y20','Y21','Y30','Y50','Y71','V15','V17','V20','V21','V23','X50','X60','X70','X80','S1'],
+  Oppo: ['A5','A5s','A7','A9','A12','A15','A31','A37','A52','A54','A57','A74','A76','A77','F9','F11','F17','F19','Reno 4','Reno 5','Reno 6','Reno 7','Reno 8'],
+  Realme: ['5','5i','5 Pro','6','6i','6 Pro','7','7i','7 Pro','8','8i','8 Pro','9','9i','9 Pro','10','10 Pro','11','C11','C12','C15','C17','C21','C25','Narzo 30','Narzo 50','GT','GT Neo','Note 50','Note 60'],
+  Infinix: ['Hot 8','Hot 9','Hot 10','Hot 11','Hot 12','Note 7','Note 8','Note 10','Note 11','Note 12','Smart 5','Smart 6','Smart 7','Smart 8','Smart 10','Zero 5G'],
+  Tecno: ['Spark 5','Spark 6','Spark 7','Spark 8','Spark 9','Spark 10','Camon 15','Camon 16','Camon 17','Camon 18','Camon 19','Camon 20','Pova','Pova 2','Pova 3','Pova 4','Pop 4','Pop 5'],
+  Xiaomi: ['Redmi Note 8','Redmi Note 9','Redmi Note 10','Redmi Note 11','Redmi Note 12','Redmi 8','Redmi 9','Redmi 10','Redmi 12','Mi 9','Mi 10','Mi 11','Poco X3','Poco F3','Poco M3','Poco X5'],
+  Motorola: ['Moto G Power','Moto G Play','Moto G Stylus','Moto G Pure','Moto G6','Moto G7','Moto G8','Moto G9','Edge','Edge+','One Fusion','One Vision']
+};
+const OTHER_MODEL_VAL = '__other__';
+
+let customModels = {};
+
+function getBrandModels(brand){
+  const base = MODEL_CATALOG[brand] || [];
+  const custom = customModels[brand] || [];
+  return base.concat(custom.filter(function(m){ return base.indexOf(m)===-1; }));
+}
+
+const LS_INVENTORY_KEY = 'mobileLedger_inventory';
+const LS_CUSTOM_MODELS_KEY = 'mobileLedger_customModels';
+const LS_LAST_BACKUP_KEY = 'mobileLedger_lastBackup';
+const LS_REMINDER_DISMISSED_KEY = 'mobileLedger_reminderDismissedAt';
+
+async function loadCustomModels(){
+  try{
+    const raw = localStorage.getItem(LS_CUSTOM_MODELS_KEY);
+    customModels = raw ? JSON.parse(raw) : {};
+  }catch(e){
+    customModels = {};
+  }
+}
+
+async function saveCustomModels(){
+  try{
+    localStorage.setItem(LS_CUSTOM_MODELS_KEY, JSON.stringify(customModels));
+  }catch(e){
+    console.error('Storage error', e);
+  }
+}
+
+function addCustomModelIfNew(brand, model){
+  if(!brand || !model) return;
+  const base = MODEL_CATALOG[brand] || [];
+  if(base.indexOf(model)!==-1) return;
+  if(!customModels[brand]) customModels[brand] = [];
+  if(customModels[brand].indexOf(model)===-1){
+    customModels[brand].push(model);
+    saveCustomModels();
+  }
+}
+
+let formState = {};
+let formPhotos = [];
+
+function resizeImageFile(file, maxDim, quality){
+  return new Promise(function(resolve, reject){
+    const reader = new FileReader();
+    reader.onload = function(){
+      const img = new Image();
+      img.onload = function(){
+        let w = img.width, h = img.height;
+        if(w > h && w > maxDim){ h = Math.round(h*maxDim/w); w = maxDim; }
+        else if(h >= w && h > maxDim){ w = Math.round(w*maxDim/h); h = maxDim; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = function(){ reject(new Error('image load failed')); };
+      img.src = reader.result;
+    };
+    reader.onerror = function(){ reject(new Error('file read failed')); };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderPhotoStrip(){
+  const strip = document.getElementById('photoStrip');
+  if(!strip) return;
+  strip.innerHTML = formPhotos.map(function(p, i){
+    return '<div class="photo-thumb-wrap"><img class="photo-thumb" src="'+p+'"><button type="button" class="photo-remove" data-i="'+i+'">×</button></div>';
+  }).join('');
+  strip.querySelectorAll('.photo-remove').forEach(function(b){
+    b.onclick = function(){
+      formPhotos.splice(Number(b.dataset.i), 1);
+      renderPhotoStrip();
+    };
+  });
+}
+
+let cropQueue = [];
+let cropState = {active:false};
+
+function processNextCropFile(){
+  if(!cropQueue.length){ cropState.active = false; return; }
+  cropState.active = true;
+  const file = cropQueue.shift();
+  const reader = new FileReader();
+  reader.onload = function(){ openCropOverlay(reader.result); };
+  reader.onerror = function(){
+    showToast('Ek photo load nahi ho saki, dobara try karein.');
+    processNextCropFile();
+  };
+  reader.readAsDataURL(file);
+}
+
+function openCropOverlay(dataUrl){
+  const imgEl = document.getElementById('cropImg');
+  imgEl.onload = function(){
+    // Wait a tick so the overlay is visible and the image has real layout size.
+    requestAnimationFrame(function(){
+      const dispW = imgEl.clientWidth, dispH = imgEl.clientHeight;
+      cropState.nw = imgEl.naturalWidth; cropState.nh = imgEl.naturalHeight;
+      cropState.dispW = dispW; cropState.dispH = dispH;
+      // Default box: centered, 80% of the image.
+      const w = dispW*0.8, h = dispH*0.8;
+      cropState.box = {x:(dispW-w)/2, y:(dispH-h)/2, w:w, h:h};
+      layoutCropBox();
+    });
+  };
+  imgEl.src = dataUrl;
+  document.getElementById('cropOverlay').classList.remove('hidden');
+}
+
+function closeCropOverlay(){
+  document.getElementById('cropOverlay').classList.add('hidden');
+  document.getElementById('cropImg').src = '';
+}
+
+function layoutCropBox(){
+  const box = document.getElementById('cropBox');
+  const b = cropState.box;
+  box.style.left = b.x+'px';
+  box.style.top = b.y+'px';
+  box.style.width = b.w+'px';
+  box.style.height = b.h+'px';
+}
+
+(function(){
+  const box = document.getElementById('cropBox');
+  const MIN = 32;
+  let moving = false, resizing = null;
+  let startX = 0, startY = 0, startBox = null;
+
+  box.addEventListener('pointerdown', function(e){
+    if(e.target.classList.contains('crop-handle') || !cropState.box) return;
+    moving = true;
+    startX = e.clientX; startY = e.clientY;
+    startBox = Object.assign({}, cropState.box);
+    box.setPointerCapture(e.pointerId);
+  });
+  box.addEventListener('pointermove', function(e){
+    if(!moving) return;
+    const dx = e.clientX-startX, dy = e.clientY-startY;
+    let nx = startBox.x+dx, ny = startBox.y+dy;
+    nx = Math.max(0, Math.min(nx, cropState.dispW-startBox.w));
+    ny = Math.max(0, Math.min(ny, cropState.dispH-startBox.h));
+    cropState.box.x = nx; cropState.box.y = ny;
+    layoutCropBox();
+  });
+  box.addEventListener('pointerup', function(){ moving = false; });
+  box.addEventListener('pointercancel', function(){ moving = false; });
+
+  document.querySelectorAll('.crop-handle').forEach(function(h){
+    h.addEventListener('pointerdown', function(e){
+      e.stopPropagation();
+      if(!cropState.box) return;
+      resizing = h.dataset.h;
+      startX = e.clientX; startY = e.clientY;
+      startBox = Object.assign({}, cropState.box);
+      h.setPointerCapture(e.pointerId);
+    });
+    h.addEventListener('pointermove', function(e){
+      if(!resizing) return;
+      const dx = e.clientX-startX, dy = e.clientY-startY;
+      let x=startBox.x, y=startBox.y, w=startBox.w, hh=startBox.h;
+      if(resizing==='br'){
+        w = Math.min(cropState.dispW-x, Math.max(MIN, startBox.w+dx));
+        hh = Math.min(cropState.dispH-y, Math.max(MIN, startBox.h+dy));
+      } else if(resizing==='bl'){
+        const nx = Math.max(0, Math.min(startBox.x+dx, startBox.x+startBox.w-MIN));
+        w = startBox.x+startBox.w-nx; x = nx;
+        hh = Math.min(cropState.dispH-y, Math.max(MIN, startBox.h+dy));
+      } else if(resizing==='tr'){
+        const ny = Math.max(0, Math.min(startBox.y+dy, startBox.y+startBox.h-MIN));
+        hh = startBox.y+startBox.h-ny; y = ny;
+        w = Math.min(cropState.dispW-x, Math.max(MIN, startBox.w+dx));
+      } else if(resizing==='tl'){
+        const nx = Math.max(0, Math.min(startBox.x+dx, startBox.x+startBox.w-MIN));
+        const ny = Math.max(0, Math.min(startBox.y+dy, startBox.y+startBox.h-MIN));
+        w = startBox.x+startBox.w-nx; hh = startBox.y+startBox.h-ny;
+        x = nx; y = ny;
+      }
+      cropState.box = {x:x,y:y,w:w,h:hh};
+      layoutCropBox();
+    });
+    h.addEventListener('pointerup', function(){ resizing = null; });
+    h.addEventListener('pointercancel', function(){ resizing = null; });
+  });
+})();
+
+document.getElementById('cropConfirmBtn').onclick = function(){
+  const s = cropState;
+  if(!s.box) return;
+  const imgEl = document.getElementById('cropImg');
+  const ratio = s.nw / s.dispW;
+  const sx = s.box.x*ratio, sy = s.box.y*ratio;
+  const sw = s.box.w*ratio, sh = s.box.h*ratio;
+  const maxDim = 900;
+  let ow = sw, oh = sh;
+  if(Math.max(ow,oh) > maxDim){
+    if(ow>=oh){ oh = oh*maxDim/ow; ow = maxDim; } else { ow = ow*maxDim/oh; oh = maxDim; }
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1,Math.round(ow)); canvas.height = Math.max(1,Math.round(oh));
+  canvas.getContext('2d').drawImage(imgEl, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+  formPhotos.push(canvas.toDataURL('image/jpeg', 0.8));
+  renderPhotoStrip();
+  closeCropOverlay();
+  processNextCropFile();
+};
+
+document.getElementById('cropCancelBtn').onclick = function(){
+  closeCropOverlay();
+  processNextCropFile();
+};
+
+document.getElementById('cropOverlay').onclick = function(e){
+  if(e.target.id==='cropOverlay'){
+    closeCropOverlay();
+    processNextCropFile();
+  }
+};
+
+document.getElementById('photoInput').addEventListener('change', function(){
+  const files = Array.from(this.files || []);
+  this.value = '';
+  if(!files.length) return;
+  cropQueue = cropQueue.concat(files);
+  if(!cropState.active) processNextCropFile();
+});
+
+const seed = [
+  {brand:"Google",model:"Pixel 6a",range:"45,000-47,000",status:"PTA",notes:"",lastUpdated:"04-Jul-2026"},
+  {brand:"Google",model:"Pixel 6a",range:"32,000-34,000",status:"PTA",notes:"glass changed",lastUpdated:"04-Jul-2026"},
+  {brand:"Motorola",model:"Moto G Stylus",range:"28,000-30,000",status:"Non-PTA",notes:"",lastUpdated:"04-Jul-2026"},
+  {brand:"OnePlus",model:"OnePlus 7 Pro",range:"38,000-40,000",status:"CPID",notes:"",lastUpdated:"04-Jul-2026"},
+  {brand:"OnePlus",model:"OnePlus 8",range:"30,000-32,000",status:"CPID",notes:"",lastUpdated:"04-Jul-2026"},
+  {brand:"Realme",model:"Note 60",range:"20,000-21,000",status:"PTA",notes:"",lastUpdated:"04-Jul-2026"},
+  {brand:"Samsung",model:"Galaxy S10+",range:"35,000-36,000",status:"CPID",notes:"Grey",lastUpdated:"04-Jul-2026"},
+  {brand:"Samsung",model:"Galaxy Note 10+",range:"40,000-41,000",status:"CPID",notes:"",lastUpdated:"04-Jul-2026"},
+  {brand:"Vivo",model:"Y19s",range:"20,500-22,000",status:"Non-PTA",notes:"",lastUpdated:"04-Jul-2026"},
+  {brand:"Google",model:"Pixel 7a",range:"53,000-56,000",status:"PTA",notes:"",lastUpdated:"04-Jul-2026"},
+  {brand:"Infinix",model:"Smart 10",range:"20,000-21,000",status:"PTA",notes:"",lastUpdated:""},
+  {brand:"Google",model:"Pixel 4 XL",range:"22,000-25,000",status:"Non-PTA",notes:"",lastUpdated:""},
+  {brand:"Google",model:"Pixel 8 Pro",range:"80,000-83,000",status:"CPID",notes:"",lastUpdated:""},
+  {brand:"Samsung",model:"Galaxy S10+ 5G",range:"42,000-43,000",status:"CPID",notes:"",lastUpdated:""},
+  {brand:"Google",model:"Pixel 6",range:"38,000-40,000",status:"PTA",notes:"",lastUpdated:""}
+].map(function(e,i){
+  return {
+    id:"seed_"+i, brand:e.brand, model:e.model, range:e.range,
+    buy:null, sell:null, quantity:1, ram:"", storage:"", status:e.status,
+    display:"", battery:"", box:"No", charger:"No",
+    sold:false, customer:"", payment:"", lastUpdated:e.lastUpdated, notes:e.notes
+  };
+});
+
+async function loadInventory(){
+  try{
+    const raw = localStorage.getItem(LS_INVENTORY_KEY);
+    inventory = raw ? JSON.parse(raw) : seed;
+  }catch(e){
+    inventory = seed;
+  }
+  if(!inventory.length) inventory = seed;
+  inventory.forEach(function(e){ if(e.quantity===undefined) e.quantity = 1; });
+  render();
+}
+
+// Tries to write a candidate inventory array to storage WITHOUT touching the
+// live `inventory` variable first. Only if the write actually succeeds (and a
+// read-back confirms it) do we swap it in as the real inventory. This is the
+// core guarantee: if this returns false, nothing on disk or in memory changed,
+// so the form still has the person's typed data and nothing is silently lost.
+function tryCommitInventory(candidateInventory){
+  const json = JSON.stringify(candidateInventory);
+  try{
+    localStorage.setItem(LS_INVENTORY_KEY, json);
+    // Read back to be sure the browser actually persisted it (some browsers
+    // silently ignore writes in private/incognito mode instead of throwing).
+    const check = localStorage.getItem(LS_INVENTORY_KEY);
+    if(check !== json){
+      return false;
+    }
+  }catch(e){
+    console.error('Storage error', e);
+    return false;
+  }
+  inventory = candidateInventory;
+  return true;
+}
+
+// Kept for the few callers (custom models, restore) that don't need the
+// read-before-write safety of tryCommitInventory.
+async function saveInventory(){
+  try{
+    localStorage.setItem(LS_INVENTORY_KEY, JSON.stringify(inventory));
+  }catch(e){
+    console.error('Storage error', e);
+  }
+}
+
+const SAVE_FAIL_MSG = 'Save nahi ho saka — phone ki storage full ho sakti hai ya browser ki private/incognito mode mein hain. Aap ka type kiya hua data abhi bhi is form mein mojood hai, kahin gaya nahi. Purani "Sold" entries delete karke ya kam photos rakh kar dobara "Save" dabayein.';
+
+function showSaveError(bannerId, msg){
+  const el = document.getElementById(bannerId);
+  if(!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+}
+function hideSaveError(bannerId){
+  const el = document.getElementById(bannerId);
+  if(!el) return;
+  el.classList.remove('show');
+  el.textContent = '';
+}
+
+function fmt(n){
+  if(n===null || n===undefined || n==='') return '-';
+  return Number(n).toLocaleString('en-PK');
+}
+
+// Turns "iPhone X / XR / XS / XS Max" into sortable numbers between 9 and 11,
+// matching real release order, so the default sort reads iPhone 9, X, 11, 12...
+function modelSortKey(model){
+  let m = String(model||'').trim();
+  m = m.replace(/\bXS\s*Max\b/i,'10.3').replace(/\bXS\b/i,'10.2').replace(/\bXR\b/i,'10.1').replace(/\bX\b/i,'10');
+  return m;
+}
+
+// Natural sort: compares numeric chunks as numbers so "11" sorts after "9"
+// (unlike plain string sort where "11" < "9").
+function naturalCompare(a, b){
+  const ax = [], bx = [];
+  String(a).replace(/(\d+(?:\.\d+)?)|(\D+)/g, function(_, num, str){
+    ax.push([num !== undefined ? parseFloat(num) : Infinity, str || '']);
+  });
+  String(b).replace(/(\d+(?:\.\d+)?)|(\D+)/g, function(_, num, str){
+    bx.push([num !== undefined ? parseFloat(num) : Infinity, str || '']);
+  });
+  while(ax.length && bx.length){
+    const an = ax.shift(), bn = bx.shift();
+    if(an[0] !== bn[0]) return an[0]-bn[0];
+    if(an[1] !== bn[1]) return an[1] < bn[1] ? -1 : 1;
+  }
+  return ax.length - bx.length;
+}
+
+// Entries are created with id "e_<timestamp>..." — pull the timestamp back out
+// so we can sort by when a piece was actually added.
+function idTimestamp(id){
+  const m = String(id||'').match(/^e_(\d+)/);
+  return m ? Number(m[1]) : 0;
+}
+
+function sortGroups(groups){
+  const arr = groups.slice();
+  function groupQty(g){
+    return g.pieces.reduce(function(s,p){return s+(p.quantity||0);}, 0);
+  }
+  if(currentSort==='qty-desc' || currentSort==='qty-asc'){
+    arr.sort(function(a,b){
+      const qa = groupQty(a), qb = groupQty(b);
+      return currentSort==='qty-desc' ? (qb-qa) : (qa-qb);
+    });
+  } else if(currentSort==='brand-qty-desc'){
+    // Same brand's models stay together (like default), but within a brand,
+    // whichever model has more pieces (e.g. "11" with 3 vs "X" with 2) shows first.
+    arr.sort(function(a,b){
+      if(a.brand !== b.brand) return a.brand.localeCompare(b.brand);
+      const qa = groupQty(a), qb = groupQty(b);
+      if(qa !== qb) return qb-qa;
+      return naturalCompare(modelSortKey(a.model), modelSortKey(b.model));
+    });
+  } else if(currentSort==='newest' || currentSort==='oldest'){
+    function groupTime(g){
+      return g.pieces.reduce(function(mx,p){ return Math.max(mx, idTimestamp(p.id)); }, 0);
+    }
+    arr.sort(function(a,b){
+      const ta = groupTime(a), tb = groupTime(b);
+      return currentSort==='newest' ? (tb-ta) : (ta-tb);
+    });
+  } else {
+    arr.sort(function(a,b){
+      if(a.brand !== b.brand) return a.brand.localeCompare(b.brand);
+      return naturalCompare(modelSortKey(a.model), modelSortKey(b.model));
+    });
+  }
+  return arr;
+}
+
+// Accepts "45000", "45,000", "45k", "45 k", "1.5k", "1 lac" etc and returns a plain number.
+// A plain number typed without a unit and without commas (e.g. "46") is assumed
+// to be shorthand for thousands ("46k" = 46000) if it's under 1000 — that's how
+// prices are normally shorthanded in this shop.
+function parsePrice(val){
+  if(val===null || val===undefined) return null;
+  let s = String(val).trim().toLowerCase();
+  if(s==='') return null;
+  const hadComma = s.indexOf(',')!==-1;
+  s = s.replace(/,/g,'').replace(/\s+/g,' ').trim();
+  const m = s.match(/^([\d]*\.?[\d]+)\s*(k|lac|lakh|l)?$/);
+  if(!m) return null;
+  let num = parseFloat(m[1]);
+  if(isNaN(num)) return null;
+  const suffix = m[2];
+  if(suffix==='k') num *= 1000;
+  else if(suffix==='lac' || suffix==='lakh' || suffix==='l') num *= 100000;
+  else if(!hadComma && num>0 && num<1000) num *= 1000;
+  return num;
+}
+
+// Accepts "45k-47k", "45-47k", "45-47", "45,000-47,000", or a single value like
+// "31" / "31k" / "31,000" and returns a consistently-formatted string. If only
+// one side of a range has a unit (k/lac), the same unit is applied to the
+// other side. If a number (or both sides of a range) has no unit and is small
+// (plain, no commas, <1000), "k" (thousand) is assumed — because that's how
+// prices are normally shorthanded in this shop.
+function normalizeRange(val){
+  if(val===null || val===undefined) return '';
+  let s = String(val).trim();
+  if(s==='') return '';
+  s = s.replace(/[–—−]/g,'-');
+
+  function normSuf(x){
+    if(!x) return '';
+    x = x.toLowerCase();
+    return (x==='l' || x==='lakh') ? 'lac' : x;
+  }
+  function build(numStr, suf){
+    const clean = numStr.replace(/,/g,'');
+    if(suf) return clean + suf;
+    const numVal = Number(clean);
+    return isNaN(numVal) ? clean : numVal.toLocaleString('en-PK');
+  }
+
+  if(s.indexOf('-')===-1){
+    const sm = s.match(/^([\d,]*\.?\d+)\s*(k|lac|lakh|l)?$/i);
+    if(!sm) return s;
+    const numStr = sm[1];
+    let suf = normSuf(sm[2]);
+    const raw = Number(numStr.replace(/,/g,''));
+    if(!suf && numStr.indexOf(',')===-1 && raw>0 && raw<1000) suf = 'k';
+    return build(numStr, suf);
+  }
+
+  const m = s.match(/^([\d,]*\.?\d+)\s*(k|lac|lakh|l)?\s*-\s*([\d,]*\.?\d+)\s*(k|lac|lakh|l)?$/i);
+  if(!m) return s;
+  const num1 = m[1], num2 = m[3];
+  let suf1 = normSuf(m[2]);
+  let suf2 = normSuf(m[4]);
+  if(!suf1 && suf2) suf1 = suf2;
+  if(!suf2 && suf1) suf2 = suf1;
+  const n1raw = Number(num1.replace(/,/g,''));
+  const n2raw = Number(num2.replace(/,/g,''));
+  if(!suf1 && !suf2 && num1.indexOf(',')===-1 && num2.indexOf(',')===-1 && n1raw<1000 && n2raw<1000){
+    suf1 = suf2 = 'k';
+  }
+  return build(num1, suf1) + '-' + build(num2, suf2);
+}
+
+function wireRangeHint(inputId, hintId){
+  const inp = document.getElementById(inputId);
+  const hint = document.getElementById(hintId);
+  if(!inp || !hint) return;
+  inp.addEventListener('input', function(){
+    const v = inp.value.trim();
+    if(v===''){ hint.textContent=''; return; }
+    const norm = normalizeRange(v);
+    hint.textContent = (norm && norm!==v) ? ('= ' + norm) : '';
+  });
+}
+
+function wirePriceHint(inputId, hintId){
+  const inp = document.getElementById(inputId);
+  const hint = document.getElementById(hintId);
+  if(!inp || !hint) return;
+  inp.addEventListener('input', function(){
+    const v = inp.value.trim();
+    if(v===''){ hint.textContent = ''; return; }
+    const p = parsePrice(v);
+    hint.textContent = (p===null) ? 'Samajh nahi aya, dobara likhein' : ('= ' + fmt(p));
+  });
+}
+wirePriceHint('f-buy','f-buy-hint');
+wirePriceHint('f-sellprice','f-sellprice-hint');
+wirePriceHint('f-buy-insale','f-buy-insale-hint');
+wirePriceHint('s-price','s-price-hint');
+wireRangeHint('f-range','f-range-hint');
+
+document.getElementById('f-qty').addEventListener('input', function(){
+  const warn = document.getElementById('qtyWarning');
+  const v = Number(this.value || 1);
+  if(v > 1) warn.classList.add('show'); else warn.classList.remove('show');
+});
+
+let extraPieceCount = 0;
+
+// Every field an extra piece can override, shown as chip-rows (same look as
+// the main form) instead of dropdowns, with a leading "same as upar" chip so
+// nothing needs opening — everything visible at a glance, like the main entry.
+const EP_FIELD_DEFS = [
+  {key:'status', label:'Status', options: STATUS_OPTS, statusStyle:true},
+  {key:'display', label:'Display', options: DISPLAY_OPTS},
+  {key:'touch', label:'Touch', options: TOUCH_OPTS},
+  {key:'camera', label:'Camera', options: CAMERA_OPTS},
+  {key:'ram', label:'RAM', options: RAM_OPTS},
+  {key:'storage', label:'Storage', options: STORAGE_OPTS},
+  {key:'network', label:'Network', options: NETWORK_OPTS},
+  {key:'body', label:'Body', options: BODY_OPTS},
+  {key:'openrepair', label:'Open aur Repair', options: OPEN_REPAIR_OPTS},
+  {key:'battery', label:'Battery health', options: BATTERY_OPTS},
+  {key:'box', label:'Box', options:['No','Yes']},
+  {key:'packing', label:'Packing', options: PACKING_OPTS},
+  {key:'charger', label:'Charger', options: CHARGER_OPTS},
+  {key:'faceid', label:'Face ID', options:['No','Yes']},
+  {key:'truetone', label:'True Tone', options:['No','Yes']}
+];
+
+function epChipRowHtml(field, selected){
+  const opts = [''].concat(field.options);
+  return '<div class="sec-label" style="margin-top:10px;">'+field.label+'</div>'+
+    '<div class="chip-row ep-chip-row" data-field="'+field.key+'">'+
+      opts.map(function(o){
+        const label = o===''? '-- same as upar --' : o;
+        const cls = 'chip-opt ep-chip'+(field.statusStyle?' status-opt':'')+(selected===o?' on':'');
+        return '<div class="'+cls+'" data-val="'+o+'">'+label+'</div>';
+      }).join('')+
+    '</div>';
+}
+
+function addExtraBuyRow(){
+  extraPieceCount++;
+  const list = document.getElementById('extraBuyList');
+  const block = document.createElement('div');
+  block.className = 'extra-piece-block';
+  const n = extraPieceCount + 1; // piece #1 is the main form above
+
+  // Blank means "same as upar" (inherits the main entry's value) until tapped.
+  const epState = {};
+  EP_FIELD_DEFS.forEach(function(f){ epState[f.key] = ''; });
+  block._epState = epState;
+
+  block.innerHTML =
+    '<div class="extra-piece-head"><span>Piece #'+n+'</span><button type="button" class="extra-buy-remove">×</button></div>'+
+    '<div class="two-col">'+
+      '<div class="field"><label>Buy price</label><input type="text" inputmode="decimal" class="extra-buy-input" placeholder="e.g. 40k"><div class="price-hint extra-hint"></div></div>'+
+      '<div class="field"><label>Sell range</label><input type="text" class="extra-range-input" placeholder="agar alag ho, e.g. 45-50k"><div class="price-hint extra-range-hint"></div></div>'+
+    '</div>'+
+    EP_FIELD_DEFS.map(function(f){ return epChipRowHtml(f, epState[f.key]); }).join('')+
+    '<div class="field" style="margin-top:10px;"><label>Notes</label><input type="text" class="ep-notes" placeholder="agar alag ho"></div>';
+
+  block.querySelectorAll('.ep-chip-row').forEach(function(row){
+    const fieldKey = row.dataset.field;
+    row.querySelectorAll('.chip-opt').forEach(function(c){
+      c.onclick = function(){
+        epState[fieldKey] = c.dataset.val;
+        row.querySelectorAll('.chip-opt').forEach(function(x){ x.classList.remove('on'); });
+        c.classList.add('on');
+      };
+    });
+  });
+
+  block.querySelector('.extra-buy-remove').onclick = function(){ block.remove(); };
+  const buyInp = block.querySelector('.extra-buy-input');
+  const hint = block.querySelector('.extra-hint');
+  buyInp.oninput = function(){
+    const v = buyInp.value.trim();
+    if(v===''){ hint.textContent=''; return; }
+    const p = parsePrice(v);
+    hint.textContent = (p===null) ? 'Samajh nahi aya, dobara likhein' : ('= ' + fmt(p));
+  };
+  const rangeInp = block.querySelector('.extra-range-input');
+  const rangeHint = block.querySelector('.extra-range-hint');
+  rangeInp.oninput = function(){
+    const v = rangeInp.value.trim();
+    if(v===''){ rangeHint.textContent=''; return; }
+    const norm = normalizeRange(v);
+    rangeHint.textContent = (norm && norm!==v) ? ('= ' + norm) : '';
+  };
+  list.appendChild(block);
+  buyInp.focus();
+}
+
+function todayStr(){
+  const d = new Date();
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return String(d.getDate()).padStart(2,'0')+'-'+months[d.getMonth()]+'-'+d.getFullYear();
+}
+
+function renderStats(){
+  const availableUnits = inventory.filter(function(e){return !e.sold;})
+    .reduce(function(s,e){return s+(e.quantity||0);},0);
+  const soldUnits = inventory.filter(function(e){return e.sold;})
+    .reduce(function(s,e){return s+(e.quantity||0);},0);
+  const totalProfit = inventory.filter(function(e){return e.sold && e.buy!=null && e.sell!=null;})
+    .reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0);
+  document.getElementById('stats').innerHTML =
+    '<div class="stat"><div class="v num">'+availableUnits+'</div><div class="l">Stock mein</div></div>'+
+    '<div class="stat"><div class="v num">'+soldUnits+'</div><div class="l">Sold</div></div>'+
+    '<div class="stat"><div class="v num" style="color:var(--pta)">'+fmt(totalProfit)+'</div><div class="l">Total profit</div></div>';
+}
+
+// Most browsers give roughly 5MB per site for localStorage. There's no
+// official API to ask "how much is left", so we estimate usage from the
+// actual string length of what we store (UTF-16 => ~2 bytes/char) against
+// that conservative 5MB assumption. It won't be exact on every browser, but
+// it gives an honest early warning well before a save can actually fail.
+function getStorageUsageInfo(){
+  let chars = 0;
+  try{
+    chars += (localStorage.getItem(LS_INVENTORY_KEY) || '').length;
+    chars += (localStorage.getItem(LS_CUSTOM_MODELS_KEY) || '').length;
+  }catch(e){}
+  const bytes = chars * 2;
+  const assumedQuota = 5 * 1024 * 1024;
+  const pct = Math.min(100, Math.round((bytes/assumedQuota)*100));
+  return {bytes:bytes, pct:pct};
+}
+
+function renderStorageBar(){
+  const fill = document.getElementById('storageBarFill');
+  const label = document.getElementById('storageBarLabel');
+  if(!fill || !label) return;
+  const info = getStorageUsageInfo();
+  let colorVar = '--pta';
+  if(info.pct >= 85) colorVar = '--danger';
+  else if(info.pct >= 60) colorVar = '--nonpta';
+  fill.style.width = info.pct + '%';
+  fill.style.background = 'var('+colorVar+')';
+  const mb = (info.bytes/1024/1024).toFixed(1);
+  label.textContent = 'Storage: ' + info.pct + '% used (~' + mb + ' MB)';
+  label.style.color = 'var('+colorVar+')';
+}
+
+function renderBrandFilter(){
+  const invBrands = inventory.map(function(e){return e.brand;});
+  // Always show every known brand (even with 0 stock right now), plus any
+  // custom/other brand names actually present in the data.
+  const allBrands = BRANDS.filter(function(b){ return b!=='Other'; }).concat(invBrands);
+  const distinct = allBrands.filter(function(b,i){return b && allBrands.indexOf(b)===i;});
+  // Count distinct models saved under each brand — the brand with the most
+  // models shows up first.
+  const modelCount = {};
+  distinct.forEach(function(b){
+    const models = inventory.filter(function(e){return e.brand===b;}).map(function(e){return e.model;}).filter(Boolean);
+    modelCount[b] = models.filter(function(m,i){return models.indexOf(m)===i;}).length;
+  });
+  distinct.sort(function(a,b){
+    const ca = modelCount[a]||0, cb = modelCount[b]||0;
+    if(ca!==cb) return cb-ca;
+    return a.localeCompare(b);
+  });
+  const wrap = document.getElementById('brandFilterChips');
+  wrap.innerHTML = '<div class="chip '+(currentBrandFilter==='all'?'active':'')+'" data-brand="all">Sab brands</div>' +
+    distinct.map(function(b){
+      return '<div class="chip '+(currentBrandFilter===b?'active':'')+'" data-brand="'+b+'">'+b+'</div>';
+    }).join('');
+  wrap.querySelectorAll('.chip').forEach(function(c){
+    c.onclick = function(){
+      currentBrandFilter = c.dataset.brand;
+      renderBrandFilter();
+      renderList();
+    };
+  });
+}
+
+function renderFilterChips(){
+  const filters = [
+    {key:'all',label:'Sab'},
+    {key:'available',label:'Available'},
+    {key:'sold',label:'Sold'},
+    {key:'PTA',label:'PTA'},
+    {key:'Non-PTA',label:'Non-PTA'},
+    {key:'CPID',label:'CPID'},
+    {key:'JV',label:'JV'},
+    {key:'Bypass/MDM',label:'Bypass/MDM'}
+  ];
+  document.getElementById('filterChips').innerHTML = filters.map(function(f){
+    return '<div class="chip '+(currentFilter===f.key?'active':'')+'" data-key="'+f.key+'">'+f.label+'</div>';
+  }).join('');
+  document.querySelectorAll('#filterChips .chip').forEach(function(c){
+    c.onclick = function(){
+      currentFilter = c.dataset.key;
+      document.querySelectorAll('#filterChips .chip').forEach(function(x){x.classList.remove('active');});
+      c.classList.add('active');
+      renderList();
+    };
+  });
+}
+
+function statusBadgeClass(s){
+  if(s==='PTA') return 'pta';
+  if(s==='Non-PTA') return 'nonpta';
+  if(s==='JV') return 'jv';
+  if(s==='Bypass/MDM') return 'bypass';
+  return 'cpid';
+}
+
+function renderList(){
+  const searchVal = document.getElementById('search').value.trim().toLowerCase();
+  let items = inventory.filter(function(e){
+    if(currentFilter==='available' && (e.sold || e.quantity<=0)) return false;
+    if(currentFilter==='sold' && !e.sold) return false;
+    if(['PTA','Non-PTA','CPID','JV','Bypass/MDM'].indexOf(currentFilter)!==-1 && e.status!==currentFilter) return false;
+    if(currentBrandFilter!=='all' && e.brand!==currentBrandFilter) return false;
+    if(searchVal){
+      const hay = (e.brand+' '+e.model+' '+(e.customer||'')+' '+(e.notes||'')).toLowerCase();
+      if(hay.indexOf(searchVal)===-1) return false;
+    }
+    return true;
+  });
+
+  const listEl = document.getElementById('list');
+  if(items.length===0){
+    listEl.innerHTML = '<div class="empty">Koi entry nahi mili. Naya add karne ke liye + button dabayein.</div>';
+    return;
+  }
+
+  const soldItems = items.filter(function(e){return e.sold;});
+  const stockItems = items.filter(function(e){return !e.sold;});
+
+  // group in-stock pieces of the same brand+model together so each piece keeps its own price/condition
+  const groups = [];
+  const groupIndex = {};
+  stockItems.forEach(function(e){
+    const key = e.brand+'|||'+e.model;
+    if(groupIndex[key]===undefined){
+      groupIndex[key] = groups.length;
+      groups.push({brand:e.brand, model:e.model, pieces:[]});
+    }
+    groups[groupIndex[key]].pieces.push(e);
+  });
+
+  let html = '';
+  sortGroups(groups).forEach(function(g){ html += renderStockGroup(g); });
+  soldItems.forEach(function(e){ html += renderSoldCard(e); });
+
+  listEl.innerHTML = html;
+
+  listEl.querySelectorAll('[data-edit]').forEach(function(b){b.onclick=function(){openEdit(b.dataset.edit);};});
+  listEl.querySelectorAll('[data-del]').forEach(function(b){b.onclick=function(){deleteEntry(b.dataset.del);};});
+  listEl.querySelectorAll('[data-sell]').forEach(function(b){b.onclick=function(){openSell(b.dataset.sell);};});
+  listEl.querySelectorAll('[data-split]').forEach(function(b){b.onclick=function(){splitEntry(b.dataset.split);};});
+  listEl.querySelectorAll('[data-share]').forEach(function(b){b.onclick=function(){shareEntry(b.dataset.share);};});
+  listEl.querySelectorAll('[data-piece-brand]').forEach(function(b){
+    b.onclick = function(){ openAddPiece(decodeURIComponent(b.dataset.pieceBrand), decodeURIComponent(b.dataset.pieceModel)); };
+  });
+}
+
+function pieceStatusBadges(e, outOfStock){
+  return (
+    '<span class="badge '+statusBadgeClass(e.status)+'">'+e.status+'</span>'+
+    '<span class="badge qty">'+(outOfStock?'Out of stock':(e.quantity+' piece'+(e.quantity>1?'s':'')))+'</span>'
+  );
+}
+
+function pieceSpecBadges(e){
+  return (
+    (e.display ? '<span class="badge spec">'+e.display+'</span>':'')+
+    (e.battery ? '<span class="badge spec">'+e.battery+'</span>':'')+
+    (e.ram ? '<span class="badge spec">'+e.ram+'</span>':'')+
+    (e.storage ? '<span class="badge spec">'+e.storage+'</span>':'')+
+    (e.network ? '<span class="badge spec">'+e.network+'</span>':'')+
+    (e.packing && e.packing!=='No pack' ? '<span class="badge spec">'+e.packing+'</span>':'')
+  );
+}
+
+function cardPhotoHtml(e){
+  if(!e.photos || !e.photos.length) return '';
+  return '<div class="card-photo-strip"><img class="card-photo-thumb" src="'+e.photos[0]+'">'+
+    (e.photos.length>1 ? '<span class="card-photo-count">+'+(e.photos.length-1)+' aur</span>' : '')+
+    '</div>';
+}
+
+function renderSingleStockCard(e){
+  const outOfStock = (e.quantity||0) <= 0;
+  const canSplit = !outOfStock && (e.quantity||1) > 1;
+  return (
+  '<div class="card '+(outOfStock?'outofstock':'')+'">'+
+    '<div class="card-title">'+e.brand+' '+e.model+'</div>'+
+    '<div class="card-sub">'+(e.range||'')+'</div>'+
+    cardPhotoHtml(e)+
+    '<div class="badges">'+pieceStatusBadges(e, outOfStock)+'</div>'+
+    (pieceSpecBadges(e) ? '<div class="badges spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
+    (e.buy!=null ? '<div class="sale-meta">Buy price: <span class="num">'+fmt(e.buy)+'</span></div>' : '')+
+    (e.notes ? '<div class="sale-meta">'+e.notes+'</div>' : '')+
+    (canSplit ? '<div class="sale-meta">Ye '+e.quantity+' pieces ek sath ek hi price/condition ke sath saved hain. Agar inki price/condition alag karni hai to Split dabayein.</div>' : '')+
+    '<div class="card-actions">'+
+      '<button data-edit="'+e.id+'">Edit</button>'+
+      (outOfStock ? '' : '<button class="sell-btn" data-sell="'+e.id+'">Sell</button>')+
+      (canSplit ? '<button data-split="'+e.id+'">Split</button>' : '')+
+      '<button class="share-btn" data-share="'+e.id+'">Share</button>'+
+      '<button class="del-btn" data-del="'+e.id+'">Delete</button>'+
+    '</div>'+
+    '<button class="add-piece-btn" data-piece-brand="'+encodeURIComponent(e.brand)+'" data-piece-model="'+encodeURIComponent(e.model)+'">+ Isi model ka naya piece add karein</button>'+
+  '</div>');
+}
+
+function renderStockGroup(g){
+  if(g.pieces.length === 1){
+    return renderSingleStockCard(g.pieces[0]);
+  }
+  const totalQty = g.pieces.reduce(function(s,p){return s+(p.quantity||0);}, 0);
+  const inner = g.pieces.map(function(e){
+    const outOfStock = (e.quantity||0) <= 0;
+    const canSplit = !outOfStock && (e.quantity||1) > 1;
+    return (
+    '<div class="piece-row '+(outOfStock?'outofstock':'')+'">'+
+      '<div class="piece-row-top">'+pieceStatusBadges(e, outOfStock)+'</div>'+
+      (pieceSpecBadges(e) ? '<div class="piece-row-top spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
+      cardPhotoHtml(e)+
+      (e.buy!=null || e.range ? '<div class="sale-meta">'+(e.buy!=null?'Buy: <span class="num">'+fmt(e.buy)+'</span>':'')+(e.buy!=null&&e.range?' &bull; ':'')+(e.range?'Sell range: '+e.range:'')+'</div>' : '')+
+      (e.notes ? '<div class="sale-meta">'+e.notes+'</div>' : '')+
+      '<div class="card-actions">'+
+        '<button data-edit="'+e.id+'">Edit</button>'+
+        (outOfStock ? '' : '<button class="sell-btn" data-sell="'+e.id+'">Sell</button>')+
+        (canSplit ? '<button data-split="'+e.id+'">Split</button>' : '')+
+        '<button class="share-btn" data-share="'+e.id+'">Share</button>'+
+        '<button class="del-btn" data-del="'+e.id+'">Delete</button>'+
+      '</div>'+
+    '</div>');
+  }).join('');
+  return (
+    '<div class="card group-card">'+
+      '<div class="card-title">'+g.brand+' '+g.model+'</div>'+
+      '<div class="card-sub">'+g.pieces.length+' alag pieces &bull; '+totalQty+' total stock mein</div>'+
+      '<div class="piece-list">'+inner+'</div>'+
+      '<button class="add-piece-btn" data-piece-brand="'+encodeURIComponent(g.brand)+'" data-piece-model="'+encodeURIComponent(g.model)+'">+ Isi model ka naya piece add karein</button>'+
+    '</div>'
+  );
+}
+
+function renderSoldCard(e){
+  const profit = (e.buy!=null && e.sell!=null) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : null;
+  const profitClass = profit===null ? 'dim' : (profit>=0 ? 'profit-pos' : 'profit-neg');
+  return (
+  '<div class="card">'+
+    '<div class="card-title">'+e.brand+' '+e.model+'</div>'+
+    '<div class="badges">'+
+      '<span class="badge '+statusBadgeClass(e.status)+'">'+e.status+'</span>'+
+      '<span class="badge sold-badge">Sold'+(e.quantity>1?(' x'+e.quantity):'')+'</span>'+
+    '</div>'+
+    cardPhotoHtml(e)+
+    '<div class="price-row">'+
+      '<div class="price-col"><div class="l">Buy</div><div class="v num">'+fmt(e.buy)+'</div></div>'+
+      '<div class="price-col"><div class="l">Sell</div><div class="v num">'+fmt(e.sell)+'</div></div>'+
+      '<div class="price-col"><div class="l">Profit</div><div class="v num '+profitClass+'">'+(profit===null?'-':fmt(profit))+'</div></div>'+
+    '</div>'+
+    (e.customer||e.payment ? '<div class="sale-meta">'+(e.customer||'')+(e.customer&&e.payment?' - ':'')+(e.payment||'')+' - '+(e.lastUpdated||'')+'</div>' : '')+
+    '<div class="card-actions">'+
+      '<button data-edit="'+e.id+'">Edit</button>'+
+      '<button class="share-btn" data-share="'+e.id+'">Share</button>'+
+      '<button class="del-btn" data-del="'+e.id+'">Delete</button>'+
+    '</div>'+
+  '</div>');
+}
+
+function render(){
+  renderStats();
+  renderStorageBar();
+  renderBrandFilter();
+  renderFilterChips();
+  renderList();
+}
+
+function upperPriceFromRange(range){
+  if(!range) return '';
+  const parts = String(range).split('-');
+  if(parts.length < 2) return range;
+  const upper = parsePrice(parts[parts.length-1].trim());
+  return upper===null ? range : fmt(upper);
+}
+
+const BATTERY_GOOD = ['Perfect','100%','95-99%','90-94%'];
+
+function chargerShareLine(e){
+  const c = e.charger;
+  if(!c || c==='No charger' || c==='No') return '';
+  if(c==='Yes') return 'Charger: Original charger';
+  return 'Charger: ' + c;
+}
+
+function buildShareText(e){
+  const lines = [];
+
+  if(e.network==='5G') lines.push('📶 5G');
+
+  lines.push('*'+e.brand+' '+e.model+'*');
+  lines.push('Status: '+e.status);
+
+  if(e.range){
+    lines.push('Price: '+upperPriceFromRange(e.range));
+  }
+  if(e.sold && e.sell!=null) lines.push('Sale price: '+fmt(e.sell));
+
+  if(e.ram) lines.push('RAM: '+e.ram);
+  if(e.storage) lines.push('Storage: '+e.storage);
+
+  if(e.battery && BATTERY_GOOD.indexOf(e.battery)!==-1) lines.push('Battery: Perfect');
+
+  if(e.openrepair==='No open, no repair') lines.push('No open, no repair');
+
+  const conditionPerfect = e.display==='Original panel' && e.touch==='Perfect' && e.camera==='Perfect';
+  if(conditionPerfect) lines.push('No any issue');
+
+  const chargerLine = chargerShareLine(e);
+  if(chargerLine) lines.push(chargerLine);
+
+  if(e.box==='Yes') lines.push('Box: Available');
+  if(e.packing && e.packing!=='No pack') lines.push('Packing: '+e.packing);
+  if(e.brand==='iPhone' && e.faceid==='Yes') lines.push('Face ID: Working');
+  if(e.brand==='iPhone' && e.truetone==='Yes') lines.push('True Tone: Working');
+  if(e.notes) lines.push('Notes: '+e.notes);
+
+  lines.push('');
+  lines.push('✅ 3 days check warranty');
+
+  return lines.join('\n');
+}
+
+async function shareEntry(id){
+  const e = inventory.find(function(x){return x.id===id;});
+  if(!e) return;
+  const text = buildShareText(e);
+  const title = e.brand+' '+e.model;
+
+  const files = [];
+  if(e.photos && e.photos.length){
+    for(let i=0;i<e.photos.length;i++){
+      try{
+        const res = await fetch(e.photos[i]);
+        const blob = await res.blob();
+        files.push(new File([blob], (title+'-'+(i+1)+'.jpg').replace(/\s+/g,'_'), {type: blob.type || 'image/jpeg'}));
+      }catch(err){ /* skip a photo that fails to convert */ }
+    }
+  }
+
+  if(navigator.share){
+    try{
+      if(files.length && navigator.canShare && navigator.canShare({files: files})){
+        await navigator.share({title: title, text: text, files: files});
+      } else {
+        await navigator.share({title: title, text: text});
+      }
+      return;
+    }catch(err){
+      if(err && err.name === 'AbortError') return; // user cancelled share sheet
+    }
+  }
+
+  try{
+    await navigator.clipboard.writeText(text);
+    showToast('Is browser mein direct share support nahi hai — info copy kar di gayi hai.');
+  }catch(err){
+    alert(text);
+  }
+}
+
+function deleteEntry(id){
+  if(!confirm('Ye entry delete kar dein?')) return;
+  const idx = inventory.findIndex(function(x){return x.id===id;});
+  if(idx===-1) return;
+  const removedItem = inventory[idx];
+  const candidate = inventory.slice(0,idx).concat(inventory.slice(idx+1));
+  const ok = tryCommitInventory(candidate);
+  if(!ok){
+    alert(SAVE_FAIL_MSG);
+    return;
+  }
+  render();
+  showUndoToast('Entry delete ho gayi.', function(){
+    const restored = inventory.slice(0,idx).concat([removedItem], inventory.slice(idx));
+    const ok2 = tryCommitInventory(restored);
+    if(ok2){
+      render();
+      showToast('✓ Wapis aa gayi');
+    } else {
+      alert(SAVE_FAIL_MSG);
+    }
+  });
+  backupAfterChange();
+}
+
+function splitEntry(id){
+  const idx = inventory.findIndex(function(x){return x.id===id;});
+  if(idx===-1) return;
+  const e = inventory[idx];
+  const n = e.quantity||1;
+  if(n <= 1) return;
+  if(!confirm('Ye '+n+' pieces ko '+n+' alag pieces mein tod dein? Har piece ki price/condition phir alag se edit ki ja sakegi.')) return;
+  let candidate = inventory.slice(0,idx).concat(inventory.slice(idx+1));
+  for(let i=0; i<n; i++){
+    candidate = [Object.assign({}, e, {
+      id: 'e_'+Date.now()+'_split_'+i+'_'+Math.random().toString(36).slice(2,6),
+      quantity: 1
+    })].concat(candidate);
+  }
+  const ok = tryCommitInventory(candidate);
+  if(!ok){
+    alert(SAVE_FAIL_MSG);
+    return;
+  }
+  render();
+  showToast('✓ Split ho gaya');
+  backupAfterChange();
+}
+
+function renderChipGroup(containerId, options, groupKey, extraClass){
+  const container = document.getElementById(containerId);
+  container.innerHTML = options.map(function(o){
+    return '<div class="chip-opt '+(extraClass||'')+' '+(formState[groupKey]===o?'on':'')+'" data-val="'+o+'">'+o+'</div>';
+  }).join('');
+  container.querySelectorAll('.chip-opt').forEach(function(c){
+    c.onclick = function(){
+      formState[groupKey] = c.dataset.val;
+      if(groupKey==='brand'){
+        document.getElementById('brandOtherWrap').style.display = (c.dataset.val==='Other') ? 'block' : 'none';
+        updateModelField(c.dataset.val);
+      }
+      renderAllChips();
+    };
+  });
+}
+
+function renderAllChips(){
+  renderChipGroup('brandChips', BRANDS, 'brand');
+  renderChipGroup('statusChips', STATUS_OPTS, 'status', 'status-opt');
+  renderChipGroup('ramChips', RAM_OPTS, 'ram');
+  renderChipGroup('storageChips', STORAGE_OPTS, 'storage');
+  renderChipGroup('networkChips', NETWORK_OPTS, 'network');
+  renderChipGroup('displayChips', DISPLAY_OPTS, 'display');
+  renderChipGroup('touchChips', TOUCH_OPTS, 'touch');
+  renderChipGroup('cameraChips', CAMERA_OPTS, 'camera');
+  renderChipGroup('bodyChips', BODY_OPTS, 'body');
+  renderChipGroup('openRepairChips', OPEN_REPAIR_OPTS, 'openrepair');
+  renderChipGroup('batteryChips', BATTERY_OPTS, 'battery');
+  renderChipGroup('boxChips', ['No','Yes'], 'box');
+  renderChipGroup('packingChips', PACKING_OPTS, 'packing');
+  renderChipGroup('chargerChips', CHARGER_OPTS, 'charger');
+  renderChipGroup('faceidChips', ['No','Yes'], 'faceid');
+  renderChipGroup('truetoneChips', ['No','Yes'], 'truetone');
+}
+
+function updateModelField(brand){
+  // Manual input stays the primary field for every brand; just refresh suggestions/dropdown list.
+  renderModelSuggestions('');
+  document.getElementById('modelSelectWrap').style.display = 'none';
+  document.getElementById('modelDropdownBtn').classList.remove('on');
+}
+
+function renderModelSuggestions(typedVal){
+  const box = document.getElementById('modelSuggestions');
+  const brand = formState.brand;
+  const list = getBrandModels(brand);
+  const q = (typedVal||'').trim().toLowerCase();
+  let matches = q ? list.filter(function(m){ return m.toLowerCase().indexOf(q)!==-1; }) : list.slice(0, 8);
+  matches = matches.slice(0, 8);
+  if(!matches.length){
+    box.innerHTML = '';
+    return;
+  }
+  box.innerHTML = matches.map(function(m){
+    return '<div class="model-suggestion-chip" data-val="'+m+'">'+m+'</div>';
+  }).join('');
+  box.querySelectorAll('.model-suggestion-chip').forEach(function(c){
+    c.onclick = function(){
+      document.getElementById('f-model-other').value = c.dataset.val;
+      box.innerHTML = '';
+    };
+  });
+}
+
+function getFormModel(){
+  return document.getElementById('f-model-other').value.trim();
+}
+
+document.getElementById('f-model-other').addEventListener('input', function(){
+  renderModelSuggestions(this.value);
+});
+
+document.getElementById('modelDropdownBtn').addEventListener('click', function(){
+  const wrap = document.getElementById('modelSelectWrap');
+  const opening = wrap.style.display === 'none';
+  if(opening){
+    const list = getBrandModels(formState.brand);
+    const sel = document.getElementById('f-model-select');
+    sel.innerHTML = '<option value="">-- list se chunein --</option>' +
+      list.map(function(m){return '<option value="'+m+'">'+m+'</option>';}).join('');
+    sel.value = '';
+    wrap.style.display = 'block';
+    this.classList.add('on');
+  } else {
+    wrap.style.display = 'none';
+    this.classList.remove('on');
+  }
+});
+
+document.getElementById('f-model-select').addEventListener('change', function(){
+  if(this.value){
+    document.getElementById('f-model-other').value = this.value;
+    document.getElementById('modelSuggestions').innerHTML = '';
+  }
+  document.getElementById('modelSelectWrap').style.display = 'none';
+  document.getElementById('modelDropdownBtn').classList.remove('on');
+});
+
+function openAdd(){
+  hideSaveError('saveErrorBanner');
+  editingId = null;
+  document.getElementById('sheetTitle').textContent = 'Nayi stock entry';
+  document.getElementById('qtyLabel').textContent = 'Quantity (kitne piece)';
+  formState = {brand:'', status:'JV', ram:'', storage:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'No', packing:'No pack', charger:'Original charger', faceid:'Yes', truetone:'Yes', isSold:false};
+  formPhotos = [];
+  renderPhotoStrip();
+  document.getElementById('f-brand-other').value = '';
+  document.getElementById('f-model-other').value = '';
+  document.getElementById('f-qty').value = 1;
+  document.getElementById('qtyWarning').classList.remove('show');
+  document.getElementById('f-buy').value = '';
+  document.getElementById('f-buy-hint').textContent = '';
+  document.getElementById('f-range').value = '';
+  document.getElementById('f-range-hint').textContent = '';
+  document.getElementById('f-notes').value = '';
+  document.getElementById('brandOtherWrap').style.display = 'none';
+  document.getElementById('saleFieldsWrap').classList.remove('show');
+  document.getElementById('moreSection').classList.remove('show');
+  document.getElementById('moreToggle').textContent = '+ Zyada details add karein';
+  document.getElementById('modelSelectWrap').style.display = 'none';
+  document.getElementById('modelDropdownBtn').classList.remove('on');
+  document.getElementById('modelSuggestions').innerHTML = '';
+  document.getElementById('extraBuyList').innerHTML = '';
+  extraPieceCount = 0;
+  document.getElementById('addExtraBuyBtn').style.display = 'block';
+  renderAllChips();
+  document.getElementById('overlay').classList.remove('hidden');
+}
+
+function openAddPiece(brand, model){
+  openAdd();
+  const brandKnown = BRANDS.indexOf(brand)!==-1;
+  formState.brand = brandKnown ? brand : 'Other';
+  document.getElementById('f-brand-other').value = brandKnown ? '' : brand;
+  document.getElementById('brandOtherWrap').style.display = brandKnown ? 'none' : 'block';
+  updateModelField(formState.brand);
+  document.getElementById('f-model-other').value = model || '';
+  renderModelSuggestions(model || '');
+  document.getElementById('sheetTitle').textContent = brand+' '+model+' - naya piece';
+  renderAllChips();
+}
+
+function openEdit(id){
+  hideSaveError('saveErrorBanner');
+  const e = inventory.find(function(x){return x.id===id;});
+  if(!e) return;
+  editingId = id;
+  document.getElementById('sheetTitle').textContent = e.sold ? 'Sale entry edit karein' : 'Stock entry edit karein';
+  document.getElementById('qtyLabel').textContent = e.sold ? 'Kitne piece is sale mein' : 'Quantity (kitne piece)';
+  const brandKnown = BRANDS.indexOf(e.brand)!==-1;
+  formState = {
+    brand: brandKnown ? e.brand : 'Other',
+    status: e.status || 'PTA',
+    ram: e.ram || '', storage: e.storage || '', network: e.network || '',
+    display: e.display || 'Original panel', touch: e.touch || 'Perfect', camera: e.camera || 'Perfect', body: e.body || 'Original', openrepair: e.openrepair || 'No open, no repair', battery: e.battery || 'Perfect',
+    box: e.box || 'No', packing: e.packing || 'No pack', charger: e.charger || 'Original charger',
+    faceid: e.faceid || 'No', truetone: e.truetone || 'No',
+    isSold: !!e.sold
+  };
+  formPhotos = (e.photos || []).slice();
+  renderPhotoStrip();
+  document.getElementById('f-brand-other').value = brandKnown ? '' : e.brand;
+  document.getElementById('brandOtherWrap').style.display = brandKnown ? 'none' : 'block';
+  updateModelField(formState.brand);
+  document.getElementById('f-model-other').value = e.model || '';
+  renderModelSuggestions(e.model || '');
+  document.getElementById('f-qty').value = e.quantity || 1;
+  document.getElementById('qtyWarning').classList.toggle('show', (e.quantity||1) > 1);
+  document.getElementById('f-buy').value = e.buy != null ? e.buy : '';
+  document.getElementById('f-range').value = e.range || '';
+  document.getElementById('f-range-hint').textContent = '';
+  document.getElementById('f-notes').value = e.notes || '';
+
+  if(e.sold){
+    document.getElementById('saleFieldsWrap').classList.add('show');
+    document.getElementById('f-sellprice').value = e.sell != null ? e.sell : '';
+    document.getElementById('f-buy-insale').value = e.buy != null ? e.buy : '';
+    document.getElementById('f-customer').value = e.customer || '';
+    document.getElementById('f-payment').value = e.payment || '';
+  } else {
+    document.getElementById('saleFieldsWrap').classList.remove('show');
+  }
+
+  document.getElementById('f-buy-hint').textContent = '';
+  document.getElementById('f-sellprice-hint').textContent = '';
+  document.getElementById('f-buy-insale-hint').textContent = '';
+  document.getElementById('moreSection').classList.add('show');
+  document.getElementById('moreToggle').textContent = '- Details chupayein';
+  document.getElementById('extraBuyList').innerHTML = '';
+  extraPieceCount = 0;
+  document.getElementById('addExtraBuyBtn').style.display = 'none';
+  renderAllChips();
+  document.getElementById('overlay').classList.remove('hidden');
+}
+
+function closeSheet(){
+  document.getElementById('overlay').classList.add('hidden');
+}
+
+function saveEntry(){
+  hideSaveError('saveErrorBanner');
+  const brand = formState.brand==='Other' ? document.getElementById('f-brand-other').value.trim() : formState.brand;
+  const model = getFormModel();
+  if(!brand || !model){
+    alert('Brand aur model zaroori hai');
+    return;
+  }
+  const qty = Math.max(1, Number(document.getElementById('f-qty').value || 1));
+  const data = {
+    brand: brand, model: model,
+    range: normalizeRange(document.getElementById('f-range').value.trim()),
+    quantity: qty,
+    ram: formState.ram || '',
+    storage: formState.storage || '',
+    network: formState.network || '',
+    status: formState.status || 'PTA',
+    display: formState.display || 'Original panel',
+    touch: formState.touch || 'Perfect',
+    camera: formState.camera || 'Perfect',
+    body: formState.body || 'Original',
+    openrepair: formState.openrepair || 'No open, no repair',
+    battery: formState.battery || 'Perfect',
+    box: formState.box || 'No',
+    packing: formState.packing || 'No pack',
+    charger: formState.charger || 'Original charger',
+    faceid: formState.faceid || 'No',
+    truetone: formState.truetone || 'No',
+    notes: document.getElementById('f-notes').value.trim(),
+    photos: formPhotos.slice(),
+    lastUpdated: todayStr()
+  };
+
+  if(formState.isSold){
+    data.sold = true;
+    const sellVal = document.getElementById('f-sellprice').value.trim();
+    const buyVal = document.getElementById('f-buy-insale').value.trim();
+    if(sellVal !== '' && parsePrice(sellVal)===null){ alert('Sale price samajh nahi aaya. "45000" ya "45k" jese likhein.'); return; }
+    if(buyVal !== '' && parsePrice(buyVal)===null){ alert('Buy price samajh nahi aaya. "40000" ya "40k" jese likhein.'); return; }
+    data.sell = sellVal === '' ? null : parsePrice(sellVal);
+    data.buy = buyVal === '' ? null : parsePrice(buyVal);
+    data.customer = document.getElementById('f-customer').value.trim();
+    data.payment = document.getElementById('f-payment').value.trim();
+  } else {
+    const buyVal = document.getElementById('f-buy').value.trim();
+    if(buyVal !== '' && parsePrice(buyVal)===null){ alert('Buy price samajh nahi aaya. "40000" ya "40k" jese likhein.'); return; }
+    data.buy = buyVal === '' ? null : parsePrice(buyVal);
+  }
+
+  // Build the candidate array WITHOUT touching the real `inventory` yet —
+  // if the save fails below, nothing changes and the form stays open with
+  // everything the person typed still in it.
+  let candidate = inventory.slice();
+
+  if(editingId){
+    const idx = candidate.findIndex(function(x){return x.id===editingId;});
+    if(idx===-1){ alert('Ye entry ab nahi mili — shayad kahin aur se delete ho gayi.'); return; }
+    candidate[idx] = Object.assign({}, candidate[idx], data);
+  } else {
+    const extraBlocks = Array.from(document.querySelectorAll('#extraBuyList .extra-piece-block'));
+    const extras = [];
+    for(let i=0; i<extraBlocks.length; i++){
+      const block = extraBlocks[i];
+      const buyValRaw = block.querySelector('.extra-buy-input').value.trim();
+      if(buyValRaw !== '' && parsePrice(buyValRaw)===null){
+        alert('Piece #'+(i+2)+' ka buy price samajh nahi aaya. "40000" ya "40k" jese likhein, ya khali chhor dein.');
+        return;
+      }
+      const epState = block._epState || {};
+      const rangeRaw = block.querySelector('.extra-range-input').value.trim();
+      extras.push({
+        buy: buyValRaw === '' ? null : parsePrice(buyValRaw),
+        range: rangeRaw === '' ? '' : normalizeRange(rangeRaw),
+        status: epState.status || '',
+        display: epState.display || '',
+        touch: epState.touch || '',
+        camera: epState.camera || '',
+        ram: epState.ram || '',
+        storage: epState.storage || '',
+        network: epState.network || '',
+        body: epState.body || '',
+        openrepair: epState.openrepair || '',
+        battery: epState.battery || '',
+        box: epState.box || '',
+        packing: epState.packing || '',
+        charger: epState.charger || '',
+        faceid: epState.faceid || '',
+        truetone: epState.truetone || '',
+        notes: block.querySelector('.ep-notes').value.trim()
+      });
+    }
+
+    const mainEntry = Object.assign({id:'e_'+Date.now(), sold:false, sell:null, customer:'', payment:''}, data);
+    candidate = [mainEntry].concat(candidate);
+    extras.forEach(function(ep, i){
+      const extraData = Object.assign({}, data, {
+        quantity: 1,
+        buy: ep.buy,
+        range: ep.range !== '' ? ep.range : data.range,
+        status: ep.status || data.status,
+        display: ep.display !== '' ? ep.display : data.display,
+        touch: ep.touch !== '' ? ep.touch : data.touch,
+        camera: ep.camera !== '' ? ep.camera : data.camera,
+        ram: ep.ram !== '' ? ep.ram : data.ram,
+        storage: ep.storage !== '' ? ep.storage : data.storage,
+        network: ep.network !== '' ? ep.network : data.network,
+        body: ep.body || data.body,
+        openrepair: ep.openrepair || data.openrepair,
+        battery: ep.battery !== '' ? ep.battery : data.battery,
+        box: ep.box || data.box,
+        packing: ep.packing || data.packing,
+        charger: ep.charger || data.charger,
+        faceid: ep.faceid || data.faceid,
+        truetone: ep.truetone || data.truetone,
+        notes: ep.notes !== '' ? ep.notes : data.notes
+      });
+      const extraEntry = Object.assign({id:'e_'+Date.now()+'_'+i+'_'+Math.random().toString(36).slice(2,6), sold:false, sell:null, customer:'', payment:''}, extraData);
+      candidate = [extraEntry].concat(candidate);
+    });
+  }
+
+  const ok = tryCommitInventory(candidate);
+  if(!ok){
+    showSaveError('saveErrorBanner', SAVE_FAIL_MSG);
+    return; // sheet stays open, form data untouched, nothing was lost
+  }
+
+  addCustomModelIfNew(brand, model);
+  closeSheet();
+  render();
+  showToast('✓ Save ho gaya');
+  backupAfterChange();
+}
+
+function openSell(id){
+  hideSaveError('sellErrorBanner');
+  const e = inventory.find(function(x){return x.id===id;});
+  if(!e) return;
+  sellingId = id;
+  document.getElementById('sellItemName').textContent = e.brand+' '+e.model+' - '+e.status+' ('+e.quantity+' available)';
+  document.getElementById('sellQtyLabel').textContent = 'Kitne piece beche (max '+e.quantity+')';
+  document.getElementById('s-qty').value = 1;
+  document.getElementById('s-qty').max = e.quantity;
+  document.getElementById('s-price').value = '';
+  document.getElementById('s-price-hint').textContent = '';
+  document.getElementById('s-customer').value = '';
+  document.getElementById('s-payment').value = '';
+  updateSellProfitPreview();
+  document.getElementById('sellOverlay').classList.remove('hidden');
+}
+
+function closeSellSheet(){
+  document.getElementById('sellOverlay').classList.add('hidden');
+  sellingId = null;
+}
+
+function updateSellProfitPreview(){
+  const e = inventory.find(function(x){return x.id===sellingId;});
+  const qty = Math.max(1, Number(document.getElementById('s-qty').value || 1));
+  const priceVal = document.getElementById('s-price').value.trim();
+  const price = priceVal==='' ? 0 : (parsePrice(priceVal) || 0);
+  const el = document.getElementById('sellProfitPreview');
+  if(e && e.buy!=null){
+    const profit = (price - Number(e.buy)) * qty;
+    el.textContent = fmt(profit);
+    el.style.color = profit>=0 ? 'var(--pta)' : 'var(--danger)';
+  } else {
+    el.textContent = '-';
+    el.style.color = 'var(--text-faint)';
+  }
+}
+
+function confirmSell(){
+  hideSaveError('sellErrorBanner');
+  const idx = inventory.findIndex(function(x){return x.id===sellingId;});
+  if(idx===-1) return;
+  const e = inventory[idx];
+  const qty = Math.max(1, Number(document.getElementById('s-qty').value || 1));
+  const priceRaw = document.getElementById('s-price').value.trim();
+  if(priceRaw===''){
+    alert('Sale price zaroori hai');
+    return;
+  }
+  const price = parsePrice(priceRaw);
+  if(price===null){
+    alert('Sale price samajh nahi aaya. "45000" ya "45k" jese likhein.');
+    return;
+  }
+  if(qty > e.quantity){
+    alert('Itne piece stock mein nahi hain');
+    return;
+  }
+  const soldRecord = Object.assign({}, e, {
+    id: 'sold_'+Date.now(),
+    quantity: qty,
+    sold: true,
+    sell: price,
+    customer: document.getElementById('s-customer').value.trim(),
+    payment: document.getElementById('s-payment').value.trim(),
+    lastUpdated: todayStr()
+  });
+  const updatedStockItem = Object.assign({}, e, {quantity: e.quantity - qty, lastUpdated: todayStr()});
+
+  const candidate = inventory.slice();
+  candidate[idx] = updatedStockItem;
+  const finalCandidate = [soldRecord].concat(candidate);
+
+  const ok = tryCommitInventory(finalCandidate);
+  if(!ok){
+    showSaveError('sellErrorBanner', SAVE_FAIL_MSG);
+    return; // sell sheet stays open, nothing was changed, retry after freeing space
+  }
+
+  closeSellSheet();
+  currentFilter = 'all';
+  render();
+  showToast('✓ Sold ho gaya — '+fmt(price)+' mein.');
+}
+
+document.getElementById('fabAdd').onclick = openAdd;
+document.getElementById('addExtraBuyBtn').onclick = addExtraBuyRow;
+document.getElementById('btnCancel').onclick = closeSheet;
+document.getElementById('btnSave').onclick = saveEntry;
+document.getElementById('overlay').onclick = function(e){ if(e.target.id==='overlay') closeSheet(); };
+document.getElementById('btnSellCancel').onclick = closeSellSheet;
+document.getElementById('btnSellConfirm').onclick = confirmSell;
+document.getElementById('sellOverlay').onclick = function(e){ if(e.target.id==='sellOverlay') closeSellSheet(); };
+document.getElementById('s-qty').oninput = updateSellProfitPreview;
+document.getElementById('s-price').oninput = updateSellProfitPreview;
+document.getElementById('search').oninput = renderList;
+document.getElementById('sortSelect').onchange = function(){ currentSort = this.value; renderList(); };
+document.getElementById('moreToggle').onclick = function(){
+  const sec = document.getElementById('moreSection');
+  sec.classList.toggle('show');
+  document.getElementById('moreToggle').textContent = sec.classList.contains('show') ? '- Details chupayein' : '+ Zyada details add karein';
+};
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(function(){ t.classList.remove('show'); }, 3500);
+}
+
+function showUndoToast(msg, onUndo){
+  const t = document.getElementById('undoToast');
+  document.getElementById('undoToastMsg').textContent = msg;
+  const btn = document.getElementById('undoToastBtn');
+  t.classList.add('show');
+  clearTimeout(showUndoToast._timer);
+  btn.onclick = function(){
+    clearTimeout(showUndoToast._timer);
+    t.classList.remove('show');
+    onUndo();
+  };
+  showUndoToast._timer = setTimeout(function(){ t.classList.remove('show'); }, 5000);
+}
+
+function backupData(silent){
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    inventory: inventory,
+    customModels: customModels
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = todayStr().replace(/-/g,'');
+  a.href = url;
+  a.download = 'mobile-ledger-backup-' + stamp + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  try{ localStorage.setItem(LS_LAST_BACKUP_KEY, String(Date.now())); }catch(e){}
+  hideBackupReminder();
+  if(silent){
+    showToast('Auto-backup ho gaya (Downloads mein) — isay WhatsApp/Drive par bhi kahin save kar lein.');
+  }
+}
+
+// Runs after every entry is added/edited so a fresh backup file is always
+// available, without ever blocking or breaking the save itself.
+function backupAfterChange(){
+  try{
+    backupData(true);
+  }catch(e){
+    // Browser blocked the auto-download (e.g. no user gesture) — fall back
+    // to the manual reminder banner so the person isn't left without one.
+    checkBackupReminder();
+  }
+}
+
+function restoreData(file){
+  const reader = new FileReader();
+  reader.onload = function(){
+    try{
+      const parsed = JSON.parse(reader.result);
+      const incomingInventory = Array.isArray(parsed.inventory) ? parsed.inventory : (Array.isArray(parsed) ? parsed : null);
+      if(!incomingInventory){
+        alert('Ye file valid backup nahi lag rahi.');
+        return;
+      }
+      if(!confirm('Restore karne se abhi ka mojooda data is backup se replace ho jayega. Aage badhein?')) return;
+      incomingInventory.forEach(function(e){ if(e.quantity===undefined) e.quantity = 1; });
+      const ok = tryCommitInventory(incomingInventory);
+      if(!ok){
+        alert('Restore save nahi ho saka — phone ki storage full hai. Purana data abhi bhi jaisa tha waisa hi hai, kuch nahi badla.');
+        return;
+      }
+      customModels = parsed.customModels && typeof parsed.customModels === 'object' ? parsed.customModels : {};
+      saveCustomModels();
+      try{ localStorage.setItem(LS_LAST_BACKUP_KEY, String(Date.now())); }catch(e){}
+      render();
+      checkBackupReminder();
+      alert('✓ Data restore ho gaya.');
+    }catch(e){
+      alert('File padhne mein masla hua. Sahi backup JSON file chunein.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function hideBackupReminder(){
+  document.getElementById('backupReminder').classList.remove('show');
+}
+
+const BACKUP_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
+
+function checkBackupReminder(){
+  if(!inventory.length){ hideBackupReminder(); return; }
+  let lastBackup = 0;
+  let dismissedAt = 0;
+  try{
+    lastBackup = Number(localStorage.getItem(LS_LAST_BACKUP_KEY) || 0);
+    dismissedAt = Number(localStorage.getItem(LS_REMINDER_DISMISSED_KEY) || 0);
+  }catch(e){}
+  const now = Date.now();
+  const backupIsStale = (now - lastBackup) > BACKUP_INTERVAL;
+  const dismissalIsStale = (now - dismissedAt) > BACKUP_INTERVAL;
+  if(backupIsStale && dismissalIsStale){
+    document.getElementById('backupReminder').classList.add('show');
+  } else {
+    hideBackupReminder();
+  }
+}
+
+function autoBackupIfDue(){
+  if(!inventory.length) return;
+  let lastBackup = 0;
+  try{
+    lastBackup = Number(localStorage.getItem(LS_LAST_BACKUP_KEY) || 0);
+  }catch(e){}
+  const now = Date.now();
+  if((now - lastBackup) > BACKUP_INTERVAL){
+    try{
+      backupData(true);
+    }catch(e){
+      // Auto-download blocked by the browser — fall back to the manual reminder banner.
+      checkBackupReminder();
+    }
+  }
+}
+
+document.getElementById('btnBackup').onclick = function(){ backupData(false); };
+document.getElementById('btnRestore').onclick = function(){
+  document.getElementById('restoreFile').click();
+};
+document.getElementById('restoreFile').onchange = function(){
+  if(this.files && this.files[0]){
+    restoreData(this.files[0]);
+    this.value = '';
+  }
+};
+document.getElementById('reminderBackupBtn').onclick = function(){ backupData(false); };
+document.getElementById('reminderDismissBtn').onclick = function(){
+  try{ localStorage.setItem(LS_REMINDER_DISMISSED_KEY, String(Date.now())); }catch(e){}
+  hideBackupReminder();
+};
+
+loadCustomModels();
+loadInventory();
+autoBackupIfDue();
+checkBackupReminder();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('service-worker.js').catch(function(err){
+      console.error('Service worker register failed', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
