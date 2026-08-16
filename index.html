@@ -635,6 +635,45 @@ let currentBrandFilter = 'all';
 let currentSort = 'default';
 let sellingId = null;
 
+// ---------- Back-gesture / browser-back handling ----------
+// Without this, every overlay (Add entry, Sell, Dashboard, Reports,
+// Settings, photo crop, etc.) is "invisible" to the phone's back button —
+// so a back gesture doesn't close the open sheet, it closes/exits the whole
+// app instead. Fix: every time an overlay opens, push a history entry.
+// A real back gesture then triggers our popstate handler first, which just
+// closes the topmost open overlay instead of leaving the app. If nothing is
+// open, there's nothing pushed, so back behaves normally (exits/leaves as
+// before).
+const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','expensesOverlay'];
+let overlayHistoryStack = [];
+
+function pushOverlayHistory(id){
+  overlayHistoryStack.push(id);
+  try{ history.pushState({mlOverlay:id}, '', location.href); }catch(e){}
+}
+
+// Every Cancel/×/"Band karein" button and every backdrop-tap should call
+// this instead of hiding the overlay directly, so tapping Close and using
+// the back gesture behave identically and never get out of sync.
+function requestOverlayClose(){
+  if(overlayHistoryStack.length){
+    history.back();
+  }
+}
+
+window.addEventListener('popstate', function(){
+  if(!overlayHistoryStack.length) return; // nothing of ours open — let real back/exit happen
+  const id = overlayHistoryStack.pop();
+  const el = document.getElementById(id);
+  if(el) el.classList.add('hidden');
+  if(id==='sellOverlay') sellingId = null;
+  if(id==='cropOverlay'){
+    document.getElementById('cropImg').src = '';
+    // If more photos were queued to crop (multi-photo select), keep going.
+    processNextCropFile();
+  }
+});
+
 const BRANDS = ['Samsung','Google','iPhone','OnePlus','Vivo','Oppo','Realme','Infinix','Tecno','Xiaomi','Motorola','Other'];
 const STATUS_OPTS = ['PTA','Non-PTA','CPID','JV','Bypass/MDM'];
 const RAM_OPTS = ['2GB','3GB','4GB','6GB','8GB','12GB','16GB'];
@@ -878,11 +917,7 @@ function openCropOverlay(dataUrl){
   };
   imgEl.src = dataUrl;
   document.getElementById('cropOverlay').classList.remove('hidden');
-}
-
-function closeCropOverlay(){
-  document.getElementById('cropOverlay').classList.add('hidden');
-  document.getElementById('cropImg').src = '';
+  pushOverlayHistory('cropOverlay');
 }
 
 function layoutCropBox(){
@@ -974,19 +1009,16 @@ document.getElementById('cropConfirmBtn').onclick = function(){
   canvas.getContext('2d').drawImage(imgEl, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
   formPhotos.push(canvas.toDataURL('image/jpeg', 0.8));
   renderPhotoStrip();
-  closeCropOverlay();
-  processNextCropFile();
+  requestOverlayClose(); // popstate handler hides cropOverlay and continues the queue
 };
 
 document.getElementById('cropCancelBtn').onclick = function(){
-  closeCropOverlay();
-  processNextCropFile();
+  requestOverlayClose();
 };
 
 document.getElementById('cropOverlay').onclick = function(e){
   if(e.target.id==='cropOverlay'){
-    closeCropOverlay();
-    processNextCropFile();
+    requestOverlayClose();
   }
 };
 
@@ -2134,6 +2166,7 @@ function openAdd(){
   document.getElementById('addExtraBuyBtn').style.display = 'block';
   renderAllChips();
   document.getElementById('overlay').classList.remove('hidden');
+  pushOverlayHistory('overlay');
 }
 
 function openAddPiece(brand, model){
@@ -2208,10 +2241,11 @@ function openEdit(id){
   document.getElementById('addExtraBuyBtn').style.display = 'none';
   renderAllChips();
   document.getElementById('overlay').classList.remove('hidden');
+  pushOverlayHistory('overlay');
 }
 
 function closeSheet(){
-  document.getElementById('overlay').classList.add('hidden');
+  requestOverlayClose();
 }
 
 function saveEntry(){
@@ -2373,11 +2407,11 @@ function openSell(id){
   document.getElementById('s-saledate').value = todayISO();
   updateSellProfitPreview();
   document.getElementById('sellOverlay').classList.remove('hidden');
+  pushOverlayHistory('sellOverlay');
 }
 
 function closeSellSheet(){
-  document.getElementById('sellOverlay').classList.add('hidden');
-  sellingId = null;
+  requestOverlayClose();
 }
 
 function updateSellProfitPreview(){
@@ -2671,12 +2705,13 @@ function renderDashboard(){
 document.getElementById('btnDashboard').onclick = function(){
   renderDashboard();
   document.getElementById('dashboardOverlay').classList.remove('hidden');
+  pushOverlayHistory('dashboardOverlay');
 };
 document.getElementById('btnDashboardClose').onclick = function(){
-  document.getElementById('dashboardOverlay').classList.add('hidden');
+  requestOverlayClose();
 };
 document.getElementById('dashboardOverlay').onclick = function(e){
-  if(e.target.id==='dashboardOverlay') document.getElementById('dashboardOverlay').classList.add('hidden');
+  if(e.target.id==='dashboardOverlay') requestOverlayClose();
 };
 
 // ---------- Reports ----------
@@ -2742,12 +2777,13 @@ document.getElementById('btnReports').onclick = function(){
   document.getElementById('rp-customer').value = '';
   renderReports();
   document.getElementById('reportsOverlay').classList.remove('hidden');
+  pushOverlayHistory('reportsOverlay');
 };
 document.getElementById('btnReportsClose').onclick = function(){
-  document.getElementById('reportsOverlay').classList.add('hidden');
+  requestOverlayClose();
 };
 document.getElementById('reportsOverlay').onclick = function(e){
-  if(e.target.id==='reportsOverlay') document.getElementById('reportsOverlay').classList.add('hidden');
+  if(e.target.id==='reportsOverlay') requestOverlayClose();
 };
 document.getElementById('rp-from').onchange = renderReports;
 document.getElementById('rp-to').onchange = renderReports;
@@ -2890,12 +2926,13 @@ document.getElementById('btnExpenses').onclick = function(){
   document.getElementById('exp-to').value = '';
   renderExpensesList();
   document.getElementById('expensesOverlay').classList.remove('hidden');
+  pushOverlayHistory('expensesOverlay');
 };
 document.getElementById('btnExpensesClose').onclick = function(){
-  document.getElementById('expensesOverlay').classList.add('hidden');
+  requestOverlayClose();
 };
 document.getElementById('expensesOverlay').onclick = function(e){
-  if(e.target.id==='expensesOverlay') document.getElementById('expensesOverlay').classList.add('hidden');
+  if(e.target.id==='expensesOverlay') requestOverlayClose();
 };
 document.getElementById('exp-from').onchange = renderExpensesList;
 document.getElementById('exp-to').onchange = renderExpensesList;
@@ -2973,12 +3010,13 @@ document.getElementById('btnContacts').onclick = function(){
   document.getElementById('contactsSearch').value = '';
   renderContacts();
   document.getElementById('contactsOverlay').classList.remove('hidden');
+  pushOverlayHistory('contactsOverlay');
 };
 document.getElementById('btnContactsClose').onclick = function(){
-  document.getElementById('contactsOverlay').classList.add('hidden');
+  requestOverlayClose();
 };
 document.getElementById('contactsOverlay').onclick = function(e){
-  if(e.target.id==='contactsOverlay') document.getElementById('contactsOverlay').classList.add('hidden');
+  if(e.target.id==='contactsOverlay') requestOverlayClose();
 };
 document.getElementById('contactsSearch').oninput = renderContacts;
 
@@ -3260,12 +3298,13 @@ document.getElementById('btnSettings').onclick = function(){
   renderSettingsFieldOptions();
   renderSettingsBrands();
   document.getElementById('settingsOverlay').classList.remove('hidden');
+  pushOverlayHistory('settingsOverlay');
 };
 document.getElementById('btnSettingsClose').onclick = function(){
-  document.getElementById('settingsOverlay').classList.add('hidden');
+  requestOverlayClose();
 };
 document.getElementById('settingsOverlay').onclick = function(e){
-  if(e.target.id==='settingsOverlay') document.getElementById('settingsOverlay').classList.add('hidden');
+  if(e.target.id==='settingsOverlay') requestOverlayClose();
 };
 
 document.getElementById('btnPrivacyToggle').onclick = function(){
