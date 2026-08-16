@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Mobile Ledger</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f1115">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -240,6 +241,10 @@
   .badge-order-item .handle{color:var(--text-faint);font-size:14px;}
   .card.compact .sale-meta{display:none;}
   .piece-row.compact-row .sale-meta{display:none;}
+  .badge.spec-prominent{font-size:14px;font-weight:800;padding:7px 14px;border-width:2px;box-shadow:0 0 0 3px rgba(255,193,7,0.15);}
+  .settings-opts .card-vis-toggle.is-prominent{background:#ffc107;color:#1a1400;font-weight:800;}
+  .privacy-masked{filter:blur(6px);user-select:none;}
+  #btnPrivacyToggle.privacy-on{background:var(--nonpta-bg);color:var(--nonpta);border-color:var(--nonpta);}
 </style>
 </head>
 <body>
@@ -261,12 +266,20 @@
       </span>
     </div>
     <div class="header-actions-row">
+      <button class="backup-btn" id="btnExcelBackup">📊 Excel Backup</button>
+      <button class="backup-btn" id="btnExcelRestore">📥 Excel Import</button>
+      <input type="file" id="excelFile" accept=".xlsx,.xls" style="display:none;">
+    </div>
+    <div class="header-actions-row">
       <button class="backup-btn" id="btnDashboard">📊 Dashboard</button>
       <button class="backup-btn" id="btnReports">📄 Reports</button>
     </div>
     <div class="header-actions-row">
       <button class="backup-btn" id="btnContacts">👥 Contacts</button>
       <button class="backup-btn" id="btnSettings">⚙️ Customize karein</button>
+    </div>
+    <div class="header-actions-row">
+      <button class="backup-btn" id="btnPrivacyToggle">🙈 Privacy mode</button>
     </div>
     <div class="stats" id="stats"></div>
     <div class="storage-bar-wrap">
@@ -533,6 +546,15 @@
     <div class="sec-label" style="margin-top:0;">Card view</div>
     <div class="settings-opts" id="cardViewModeToggles"></div>
 
+    <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">Privacy mode</div>
+    <div class="settings-opts" id="privacyEnabledToggles"></div>
+    <div class="settings-opts" id="privacyProfitToggles" style="margin-top:8px;"></div>
+    <div class="settings-add-row" style="margin-top:8px;">
+      <input type="number" id="privacyMarkupInput" placeholder="Markup %, e.g. 20" min="0" style="max-width:120px;">
+      <span style="font-size:12.5px;color:var(--text-dim);align-self:center;">% jitna zyada karke buy price screen par dikhaya jaye</span>
+    </div>
+    <div class="settings-note">Jab Privacy mode ON ho, to Total profit har jagah •••• dikhega, aur Buy price jahan bhi screen par ho (card, dashboard, reports) aslee amount na dikha kar upar diye gaye % ke hisaab se barha kar dikhaya jayega. Yaad rahe: 🙈 button header mein tap karke isay kabhi bhi turant on/off kar sakte hain — settings mein aana zaroori nahi.</div>
+
     <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">Badges kis tarteeb mein dikhein (drag kar ke order set karein)</div>
     <div class="badge-order-list" id="badgeOrderList"></div>
 
@@ -543,7 +565,7 @@
       <input type="text" id="settingsNewOption" placeholder="Naya option likhein">
       <button type="button" class="sell-btn" id="settingsAddBtn">Add karein</button>
     </div>
-    <div class="settings-note" id="settingsIssueNote">Kisi option pe × dabane se wo list se hat jayega (delete nahi hoga, sirf chupega — dobara zaroorat pare to hum yahin se wapas la sakte hain). "Normal/⚠ Issue" us value ke color/warning ke liye hai. <b>"Card pe / Hidden"</b> button decide karta hai ke wo specific value model mein select hone par main-screen card pe dikhe ya nahi — har value ka apna alag control hai. Rangeen dot dabakar us value ka apna badge color bhi set kar sakte hain. Naya option likh kar "Add karein" dabayein.</div>
+    <div class="settings-note" id="settingsIssueNote">Kisi option pe × dabane se wo list se hat jayega (delete nahi hoga, sirf chupega — dobara zaroorat pare to hum yahin se wapas la sakte hain). "Normal/⚠ Issue" us value ke color/warning ke liye hai. <b>"Card pe / Hidden / ⭐ Prominent"</b> button pe baar baar tap karein — pehli tap se card pe dikhna shuru hoga, dusri tap se wo <b>bara/bold (prominent)</b> ho jayega aur baqi badges se pehle dikhega, teesri tap se dobara chup jayega. Rangeen dot dabakar us value ka apna badge color bhi set kar sakte hain. Naya option likh kar "Add karein" dabayein.</div>
 
     <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">Brands customize karein</div>
     <div class="settings-opts" id="settingsBrandsList"></div>
@@ -612,13 +634,14 @@ const LS_CUSTOM_OPTIONS_KEY = 'mobileLedger_customOptions';
 function loadCustomOptionData(){
   try{
     const raw = localStorage.getItem(LS_CUSTOM_OPTIONS_KEY);
-    customOptionData = raw ? JSON.parse(raw) : {extra:{}, hidden:{}, issueOverrides:{}, cardVisibility:{}, badgeColor:{}};
-  }catch(err){ customOptionData = {extra:{}, hidden:{}, issueOverrides:{}, cardVisibility:{}, badgeColor:{}}; }
+    customOptionData = raw ? JSON.parse(raw) : {extra:{}, hidden:{}, issueOverrides:{}, cardVisibility:{}, badgeColor:{}, badgeProminent:{}};
+  }catch(err){ customOptionData = {extra:{}, hidden:{}, issueOverrides:{}, cardVisibility:{}, badgeColor:{}, badgeProminent:{}}; }
   if(!customOptionData.extra) customOptionData.extra = {};
   if(!customOptionData.hidden) customOptionData.hidden = {};
   if(!customOptionData.issueOverrides) customOptionData.issueOverrides = {};
   if(!customOptionData.cardVisibility) customOptionData.cardVisibility = {};
   if(!customOptionData.badgeColor) customOptionData.badgeColor = {};
+  if(!customOptionData.badgeProminent) customOptionData.badgeProminent = {};
 }
 
 function saveCustomOptionData(){
@@ -1267,7 +1290,7 @@ function renderStats(){
   document.getElementById('stats').innerHTML =
     '<div class="stat"><div class="v num">'+availableUnits+'</div><div class="l">Stock mein</div></div>'+
     '<div class="stat"><div class="v num">'+soldUnits+'</div><div class="l">Sold</div></div>'+
-    '<div class="stat"><div class="v num" style="color:var(--pta)">'+fmt(totalProfit)+'</div><div class="l">Total profit</div></div>';
+    '<div class="stat"><div class="v num" style="color:var(--pta)">'+displayProfitHtml(totalProfit)+'</div><div class="l">Total profit</div></div>';
 }
 
 // Most browsers give roughly 5MB per site for localStorage. There's no
@@ -1459,7 +1482,12 @@ let cardDisplaySettings = {
   showFields: {display:true, battery:true, touch:true, camera:true, body:true, openrepair:true, ram:true, storage:true, network:true, packing:true},
   batteryMode: 'always', // 'always' | 'issue-only' | 'never' — legacy default only
   badgeOrder: DEFAULT_BADGE_ORDER.slice(),
-  cardViewMode: 'detailed' // 'detailed' | 'compact'
+  cardViewMode: 'detailed', // 'detailed' | 'compact'
+  privacy: {
+    enabled: false,        // quick on/off — flip this when someone else is looking at the phone
+    hideProfit: true,      // when on, profit numbers everywhere show as •••• instead of the real figure
+    buyMarkupPercent: 20   // when on, any buy/purchase price shown on screen is inflated by this % so the real cost stays private
+  }
 };
 const LS_CARD_DISPLAY_KEY = 'mobileLedger_cardDisplaySettings';
 
@@ -1471,6 +1499,7 @@ function loadCardDisplaySettings(){
       if(parsed.showFields) Object.assign(cardDisplaySettings.showFields, parsed.showFields);
       if(parsed.batteryMode) cardDisplaySettings.batteryMode = parsed.batteryMode;
       if(parsed.cardViewMode) cardDisplaySettings.cardViewMode = parsed.cardViewMode;
+      if(parsed.privacy) Object.assign(cardDisplaySettings.privacy, parsed.privacy);
       if(Array.isArray(parsed.badgeOrder) && parsed.badgeOrder.length){
         // Keep any valid known keys from storage, then append any newer
         // fields (e.g. added in an update) that aren't in the saved order yet.
@@ -1483,6 +1512,36 @@ function loadCardDisplaySettings(){
 }
 function saveCardDisplaySettings(){
   try{ localStorage.setItem(LS_CARD_DISPLAY_KEY, JSON.stringify(cardDisplaySettings)); }catch(err){}
+}
+
+// ---------- Privacy mode ----------
+// Quick-flip protection for when someone else picks up the phone in the shop.
+// It never lies about your data — it only changes what's shown on screen.
+function isPrivacyOn(){ return !!(cardDisplaySettings.privacy && cardDisplaySettings.privacy.enabled); }
+
+// Buy/purchase price for on-screen display only — inflated by the configured
+// markup so a passerby doesn't learn your real cost. Never used for actual
+// profit math or when editing the entry.
+function displayBuyPrice(buy){
+  if(buy==null) return null;
+  if(!isPrivacyOn()) return Number(buy);
+  const pct = Number(cardDisplaySettings.privacy.buyMarkupPercent)||0;
+  return Math.round(Number(buy) * (1 + pct/100));
+}
+
+// Wraps a profit figure for display — replaced with dots when privacy mode
+// + hideProfit are both on.
+function displayProfitHtml(amount){
+  if(isPrivacyOn() && cardDisplaySettings.privacy.hideProfit) return '••••';
+  return fmt(amount);
+}
+
+function updatePrivacyButtonUI(){
+  const btn = document.getElementById('btnPrivacyToggle');
+  if(!btn) return;
+  const on = isPrivacyOn();
+  btn.classList.toggle('privacy-on', on);
+  btn.textContent = on ? '🙈 Privacy: ON' : '🙈 Privacy mode';
 }
 
 // A value's issue/normal classification can be overridden per field per
@@ -1543,13 +1602,20 @@ function effectiveBadgeColor(field, val){
   return null;
 }
 
+// Whether this value's badge should stand out (bigger/bolder), set from Settings.
+function effectiveBadgeProminent(field, val){
+  const prom = customOptionData.badgeProminent && customOptionData.badgeProminent[field];
+  return !!(prom && prom[val]);
+}
+
 function fieldBadge(field, val){
   if(!val) return '';
   if(!effectiveCardVisible(field, val)) return '';
   const color = effectiveBadgeColor(field, val);
+  const prominent = effectiveBadgeProminent(field, val);
   const isCondition = !!GOOD_CONDITION_VALUES[field];
   const issue = isCondition && isConditionIssue(field, val);
-  const cls = issue ? 'badge spec-issue' : 'badge spec';
+  const cls = (issue ? 'badge spec-issue' : 'badge spec') + (prominent ? ' spec-prominent' : '');
   const prefix = issue ? '⚠ ' : '';
   const label = isCondition ? CONDITION_FIELD_LABELS[field] : PLAIN_FIELD_LABELS[field];
   const text = (label && (isCondition || PLAIN_FIELD_LABELS[field])) ? (label+': '+val) : val;
@@ -1563,7 +1629,14 @@ function conditionBadge(field, val){ return fieldBadge(field, val); }
 
 function pieceSpecBadges(e){
   const order = (cardDisplaySettings.badgeOrder && cardDisplaySettings.badgeOrder.length) ? cardDisplaySettings.badgeOrder : DEFAULT_BADGE_ORDER;
-  return order.map(function(field){
+  // Fields the person marked "Prominent" jump to the front, in their chosen
+  // order, so what matters most to them is always the first thing seen.
+  const prominentFirst = order.slice().sort(function(a,b){
+    const pa = effectiveBadgeProminent(a, e[a]) ? 0 : 1;
+    const pb = effectiveBadgeProminent(b, e[b]) ? 0 : 1;
+    return pa - pb;
+  });
+  return prominentFirst.map(function(field){
     if((field==='faceid' || field==='truetone') && e.brand!=='iPhone') return '';
     return fieldBadge(field, e[field]);
   }).join('');
@@ -1587,7 +1660,7 @@ function renderSingleStockCard(e){
     cardPhotoHtml(e)+
     '<div class="badges">'+pieceStatusBadges(e, outOfStock)+'</div>'+
     (pieceSpecBadges(e) ? '<div class="badges spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
-    (e.buy!=null ? '<div class="sale-meta">Buy price: <span class="num">'+fmt(e.buy)+'</span></div>' : '')+
+    (e.buy!=null ? '<div class="sale-meta">Buy price: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span></div>' : '')+
     (e.notes ? '<div class="sale-meta">'+e.notes+'</div>' : '')+
     (canSplit ? '<div class="sale-meta">Ye '+e.quantity+' pieces ek sath ek hi price/condition ke sath saved hain. Agar inki price/condition alag karni hai to Split dabayein.</div>' : '')+
     '<div class="card-actions">'+
@@ -1615,7 +1688,7 @@ function renderStockGroup(g){
       '<div class="piece-row-top">'+pieceStatusBadges(e, outOfStock)+'</div>'+
       (pieceSpecBadges(e) ? '<div class="piece-row-top spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
       cardPhotoHtml(e)+
-      (e.buy!=null || e.range ? '<div class="sale-meta">'+(e.buy!=null?'Buy: <span class="num">'+fmt(e.buy)+'</span>':'')+(e.buy!=null&&e.range?' &bull; ':'')+(e.range?'Sell range: '+e.range:'')+'</div>' : '')+
+      (e.buy!=null || e.range ? '<div class="sale-meta">'+(e.buy!=null?'Buy: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span>':'')+(e.buy!=null&&e.range?' &bull; ':'')+(e.range?'Sell range: '+e.range:'')+'</div>' : '')+
       (e.notes ? '<div class="sale-meta">'+e.notes+'</div>' : '')+
       '<div class="card-actions">'+
         '<button data-edit="'+e.id+'">Edit</button>'+
@@ -1667,6 +1740,7 @@ function render(){
   renderBrandFilter();
   renderFilterChips();
   renderList();
+  updatePrivacyButtonUI();
 }
 
 function upperPriceFromRange(range){
@@ -2372,7 +2446,8 @@ function restoreData(file){
           hidden: parsed.customOptionData.hidden || {},
           issueOverrides: parsed.customOptionData.issueOverrides || {},
           cardVisibility: parsed.customOptionData.cardVisibility || {},
-          badgeColor: parsed.customOptionData.badgeColor || {}
+          badgeColor: parsed.customOptionData.badgeColor || {},
+          badgeProminent: parsed.customOptionData.badgeProminent || {}
         };
         saveCustomOptionData();
         renderAllChips();
@@ -2462,11 +2537,11 @@ function renderDashboard(){
     .reduce(function(s,e){ return s + ((Number(e.sell)-Number(e.buy))*(e.quantity||1)); }, 0);
 
   const cards = [
-    {v: fmt(totalStockValue), l:'Total stock value (khareed pe)'},
+    {v: displayProfitHtml(totalStockValue), l:'Total stock value (khareed pe)'},
     {v: pendingUnits, l:'Pending (stock mein)'},
     {v: unitsSoldThisMonth, l:'Is mahine sold'},
-    {v: fmt(profitThisMonth), l:'Is mahine ka profit'},
-    {v: fmt(allTimeProfit), l:'Total profit (ab tak)'},
+    {v: displayProfitHtml(profitThisMonth), l:'Is mahine ka profit'},
+    {v: displayProfitHtml(allTimeProfit), l:'Total profit (ab tak)'},
     {v: soldItems.reduce(function(s,e){return s+(e.quantity||0);},0), l:'Total sold (ab tak)'}
   ];
   document.getElementById('dashboardGrid').innerHTML = cards.map(function(c){
@@ -2531,14 +2606,14 @@ function renderReports(){
     if(profit!=null) totalProfit += profit;
     const profitColor = profit==null ? 'var(--text-faint)' : (profit>=0 ? 'var(--pta)' : 'var(--danger)');
     return '<div class="report-row">'+
-      '<div class="rr-top"><span>'+e.brand+' '+e.model+'</span><span class="rr-profit" style="color:'+profitColor+'">'+(profit==null?'-':fmt(profit))+'</span></div>'+
-      '<div class="rr-sub">'+formatDateDisplay(e.saleDate)+' • Buy: '+fmt(e.buy)+' • Sell: '+fmt(e.sell)+(e.quantity>1?(' • x'+e.quantity):'')+'</div>'+
+      '<div class="rr-top"><span>'+e.brand+' '+e.model+'</span><span class="rr-profit" style="color:'+profitColor+'">'+(profit==null?'-':displayProfitHtml(profit))+'</span></div>'+
+      '<div class="rr-sub">'+formatDateDisplay(e.saleDate)+' • Buy: '+fmt(displayBuyPrice(e.buy))+' • Sell: '+fmt(e.sell)+(e.quantity>1?(' • x'+e.quantity):'')+'</div>'+
       (e.customer || e.customerNumber ? '<div class="rr-sub">'+(e.customer||'')+(e.customerNumber?' - '+e.customerNumber:'')+'</div>' : '')+
     '</div>';
   }).join('');
   document.getElementById('rp-list').innerHTML = rowsHtml || '<div class="rr-sub" style="text-align:center;padding:20px 0;">Koi entry nahi mili in filters se.</div>';
   const totalEl = document.getElementById('rp-total-profit');
-  totalEl.textContent = fmt(totalProfit);
+  totalEl.textContent = displayProfitHtml(totalProfit);
   totalEl.style.color = totalProfit>=0 ? 'var(--pta)' : 'var(--danger)';
 }
 
@@ -2713,6 +2788,42 @@ function renderCardViewModeToggles(){
   });
 }
 
+function renderPrivacySettings(){
+  const onOff = [{key:'on', label:'ON'}, {key:'off', label:'OFF'}];
+  const enEl = document.getElementById('privacyEnabledToggles');
+  enEl.innerHTML = onOff.map(function(m){
+    const active = (m.key==='on') === isPrivacyOn();
+    return '<div class="settings-toggle-chip'+(active?' on':'')+'" data-val="'+m.key+'"><span class="dot"></span>Privacy '+m.label+'</div>';
+  }).join('');
+  enEl.querySelectorAll('.settings-toggle-chip').forEach(function(chip){
+    chip.onclick = function(){
+      cardDisplaySettings.privacy.enabled = chip.dataset.val==='on';
+      saveCardDisplaySettings();
+      renderPrivacySettings();
+      render();
+    };
+  });
+
+  const profitEl = document.getElementById('privacyProfitToggles');
+  const hideOn = !!cardDisplaySettings.privacy.hideProfit;
+  profitEl.innerHTML = '<div class="settings-toggle-chip'+(hideOn?' on':'')+'" data-val="toggle"><span class="dot"></span>Total profit chupayein jab Privacy ON ho</div>';
+  profitEl.querySelector('.settings-toggle-chip').onclick = function(){
+    cardDisplaySettings.privacy.hideProfit = !cardDisplaySettings.privacy.hideProfit;
+    saveCardDisplaySettings();
+    renderPrivacySettings();
+    render();
+  };
+
+  const markupInput = document.getElementById('privacyMarkupInput');
+  markupInput.value = cardDisplaySettings.privacy.buyMarkupPercent;
+  markupInput.onchange = function(){
+    const v = Number(markupInput.value);
+    cardDisplaySettings.privacy.buyMarkupPercent = isNaN(v) ? 0 : Math.max(0, v);
+    saveCardDisplaySettings();
+    render();
+  };
+}
+
 let badgeOrderDragKey = null;
 function renderBadgeOrderList(){
   const order = cardDisplaySettings.badgeOrder && cardDisplaySettings.badgeOrder.length ? cardDisplaySettings.badgeOrder : DEFAULT_BADGE_ORDER;
@@ -2758,7 +2869,9 @@ function renderSettingsFieldOptions(){
   }
   function cardVisToggleHtml(val){
     const vis = effectiveCardVisible(fieldKey, val);
-    return '<span class="card-vis-toggle'+(vis?' is-visible':'')+'" data-val="'+val+'">'+(vis?'👁 Card pe':'🚫 Hidden')+'</span>';
+    const prom = effectiveBadgeProminent(fieldKey, val);
+    const label = !vis ? '🚫 Hidden' : (prom ? '⭐ Prominent' : '👁 Card pe');
+    return '<span class="card-vis-toggle'+(vis?' is-visible':'')+(prom?' is-prominent':'')+'" data-val="'+val+'">'+label+'</span>';
   }
   function colorInputHtml(val){
     const color = effectiveBadgeColor(fieldKey, val) || '#8a8a93';
@@ -2791,8 +2904,22 @@ function renderSettingsFieldOptions(){
     btn.onclick = function(e){
       e.stopPropagation();
       const val = btn.dataset.val;
+      const vis = effectiveCardVisible(fieldKey, val);
+      const prom = effectiveBadgeProminent(fieldKey, val);
       if(!customOptionData.cardVisibility[fieldKey]) customOptionData.cardVisibility[fieldKey] = {};
-      customOptionData.cardVisibility[fieldKey][val] = !effectiveCardVisible(fieldKey, val);
+      if(!customOptionData.badgeProminent[fieldKey]) customOptionData.badgeProminent[fieldKey] = {};
+      if(!vis){
+        // Hidden -> Card pe (normal)
+        customOptionData.cardVisibility[fieldKey][val] = true;
+        customOptionData.badgeProminent[fieldKey][val] = false;
+      } else if(vis && !prom){
+        // Card pe -> Prominent
+        customOptionData.badgeProminent[fieldKey][val] = true;
+      } else {
+        // Prominent -> Hidden
+        customOptionData.cardVisibility[fieldKey][val] = false;
+        customOptionData.badgeProminent[fieldKey][val] = false;
+      }
       saveCustomOptionData();
       renderSettingsFieldOptions();
       renderList();
@@ -2914,6 +3041,7 @@ document.getElementById('btnSettings').onclick = function(){
   const sel = document.getElementById('settings-field-select');
   sel.innerHTML = CUSTOMIZABLE_FIELDS.map(function(f){ return '<option value="'+f.key+'">'+f.label+'</option>'; }).join('');
   renderCardViewModeToggles();
+  renderPrivacySettings();
   renderBadgeOrderList();
   renderSettingsFieldOptions();
   renderSettingsBrands();
@@ -2924,6 +3052,88 @@ document.getElementById('btnSettingsClose').onclick = function(){
 };
 document.getElementById('settingsOverlay').onclick = function(e){
   if(e.target.id==='settingsOverlay') document.getElementById('settingsOverlay').classList.add('hidden');
+};
+
+document.getElementById('btnPrivacyToggle').onclick = function(){
+  cardDisplaySettings.privacy.enabled = !cardDisplaySettings.privacy.enabled;
+  saveCardDisplaySettings();
+  render();
+  showToast(isPrivacyOn() ? '🙈 Privacy mode ON — profit chupa hai, buy price barha kar dikh raha hai.' : 'Privacy mode OFF.');
+};
+
+// ---------- Excel backup/import ----------
+// Same data as the JSON backup, but as a spreadsheet the person can open,
+// read, edit, or forward to someone else — unlike the JSON file.
+const EXCEL_COLUMNS = ['id','brand','model','status','quantity','sold','display','touch','camera','body','openrepair','battery','ram','storage','network','packing','charger','box','faceid','truetone','buy','sell','range','buyDate','saleDate','customerName','customerNumber','notes','lastUpdated'];
+
+function exportExcel(){
+  if(typeof XLSX==='undefined'){ alert('Excel feature load nahi ho saka — internet connection check karke dobara try karein.'); return; }
+  const rows = inventory.map(function(e){
+    const row = {};
+    EXCEL_COLUMNS.forEach(function(k){
+      let v = e[k];
+      if(k==='sold') v = e.sold ? 'Yes' : 'No';
+      row[k] = (v==null) ? '' : v;
+    });
+    return row;
+  });
+  const ws = XLSX.utils.json_to_sheet(rows, {header: EXCEL_COLUMNS});
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Inventory');
+  XLSX.writeFile(wb, 'mobile-ledger-'+todayStr()+'.xlsx');
+  try{ localStorage.setItem(LS_LAST_BACKUP_KEY, String(Date.now())); }catch(e){}
+  hideBackupReminder();
+  showToast('✓ Excel file ban gayi (Downloads mein) — WhatsApp/kisi ko bhi bhej sakte hain.');
+}
+
+function importExcel(file){
+  if(typeof XLSX==='undefined'){ alert('Excel feature load nahi ho saka — internet connection check karke dobara try karein.'); return; }
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    try{
+      const data = new Uint8Array(evt.target.result);
+      const wb = XLSX.read(data, {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+      if(!rows.length){ alert('Is Excel file mein koi data nahi mila.'); return; }
+      if(!confirm('Excel import karne se mojooda stock is file ke data se replace ho jayega. Aage badhein?')) return;
+      const newInventory = rows.map(function(r){
+        const e = {};
+        EXCEL_COLUMNS.forEach(function(k){ e[k] = (r[k]===undefined || r[k]==='') ? null : r[k]; });
+        e.id = e.id || (Date.now().toString(36)+Math.random().toString(36).slice(2));
+        e.brand = e.brand || '';
+        e.model = e.model || '';
+        e.status = e.status || 'JV';
+        e.quantity = Number(e.quantity)||1;
+        e.sold = String(r.sold).toLowerCase()==='yes';
+        e.buy = e.buy===null ? null : Number(e.buy);
+        e.sell = e.sell===null ? null : Number(e.sell);
+        e.box = e.box || 'No';
+        e.charger = e.charger || 'Original charger';
+        e.lastUpdated = e.lastUpdated || todayStr();
+        e.photos = [];
+        return e;
+      });
+      const ok = tryCommitInventory(newInventory);
+      if(!ok){ alert('Import save nahi ho saka — phone ki storage full hai. Purana data waisa hi hai.'); return; }
+      render();
+      alert('✓ Excel se '+newInventory.length+' entries import ho gayi.');
+    }catch(err){
+      alert('Excel file padhne mein masla hua. Sahi .xlsx file chunein (usi format mein jo "Excel Backup" se banti hai).');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+document.getElementById('btnExcelBackup').onclick = function(){ exportExcel(); };
+document.getElementById('btnExcelRestore').onclick = function(){
+  document.getElementById('excelFile').click();
+};
+document.getElementById('excelFile').onchange = function(){
+  if(this.files && this.files[0]){
+    importExcel(this.files[0]);
+    this.value = '';
+  }
 };
 
 document.getElementById('btnRestore').onclick = function(){
