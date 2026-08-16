@@ -552,10 +552,10 @@
     <div class="settings-opts" id="privacyEnabledToggles"></div>
     <div class="settings-opts" id="privacyProfitToggles" style="margin-top:8px;"></div>
     <div class="settings-add-row" style="margin-top:8px;">
-      <input type="number" id="privacyMarkupInput" placeholder="Markup %, e.g. 20" min="0" style="max-width:120px;">
-      <span style="font-size:12.5px;color:var(--text-dim);align-self:center;">% jitna zyada karke buy price screen par dikhaya jaye</span>
+      <input type="number" id="privacyMarkupInput" placeholder="Amount, e.g. 2000" min="0" style="max-width:120px;">
+      <span style="font-size:12.5px;color:var(--text-dim);align-self:center;">Rs jitni fixed raqam har buy price mein jama karke screen par dikhai jaye</span>
     </div>
-    <div class="settings-note">Jab Privacy mode ON ho, to Total profit har jagah •••• dikhega, aur Buy price jahan bhi screen par ho (card, dashboard, reports) aslee amount na dikha kar upar diye gaye % ke hisaab se barha kar dikhaya jayega. Yaad rahe: 🙈 button header mein tap karke isay kabhi bhi turant on/off kar sakte hain — settings mein aana zaroori nahi.</div>
+    <div class="settings-note">Jab Privacy mode ON ho, to Total profit har jagah •••• dikhega, aur Buy price jahan bhi screen par ho (card, dashboard, reports) aslee amount na dikha kar upar diye gaye fixed Rs jama karke dikhaya jayega — misaal: agar aap 40,000 enter karein aur yahan 2000 likha ho, to screen par 42,000 dikhega. Yaad rahe: 🙈 button header mein tap karke isay kabhi bhi turant on/off kar sakte hain — settings mein aana zaroori nahi.</div>
 
     <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">🗑️ Clear data password</div>
     <div class="settings-add-row">
@@ -1495,7 +1495,7 @@ let cardDisplaySettings = {
   privacy: {
     enabled: false,        // quick on/off — flip this when someone else is looking at the phone
     hideProfit: true,      // when on, profit numbers everywhere show as •••• instead of the real figure
-    buyMarkupPercent: 20   // when on, any buy/purchase price shown on screen is inflated by this % so the real cost stays private
+    buyMarkupAmount: 2000   // when on, this fixed amount is added to any buy/purchase price shown on screen so the real cost stays private
   }
 };
 const LS_CARD_DISPLAY_KEY = 'mobileLedger_cardDisplaySettings';
@@ -1534,8 +1534,8 @@ function isPrivacyOn(){ return !!(cardDisplaySettings.privacy && cardDisplaySett
 function displayBuyPrice(buy){
   if(buy==null) return null;
   if(!isPrivacyOn()) return Number(buy);
-  const pct = Number(cardDisplaySettings.privacy.buyMarkupPercent)||0;
-  return Math.round(Number(buy) * (1 + pct/100));
+  const amount = Number(cardDisplaySettings.privacy.buyMarkupAmount)||0;
+  return Number(buy) + amount;
 }
 
 // Wraps a profit figure for display — replaced with dots when privacy mode
@@ -2828,10 +2828,10 @@ function renderPrivacySettings(){
   };
 
   const markupInput = document.getElementById('privacyMarkupInput');
-  markupInput.value = cardDisplaySettings.privacy.buyMarkupPercent;
+  markupInput.value = cardDisplaySettings.privacy.buyMarkupAmount;
   markupInput.onchange = function(){
     const v = Number(markupInput.value);
-    cardDisplaySettings.privacy.buyMarkupPercent = isNaN(v) ? 0 : Math.max(0, v);
+    cardDisplaySettings.privacy.buyMarkupAmount = isNaN(v) ? 0 : Math.max(0, v);
     saveCardDisplaySettings();
     render();
   };
@@ -3121,7 +3121,7 @@ document.getElementById('btnClearData').onclick = function(){
     batteryMode: 'always',
     badgeOrder: DEFAULT_BADGE_ORDER.slice(),
     cardViewMode: 'detailed',
-    privacy: {enabled:false, hideProfit:true, buyMarkupPercent:20}
+    privacy: {enabled:false, hideProfit:true, buyMarkupAmount:2000}
   };
   saveCardDisplaySettings();
   renderAllChips();
