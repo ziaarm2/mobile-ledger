@@ -244,7 +244,8 @@
   .badge.spec-prominent{font-size:14px;font-weight:800;padding:7px 14px;border-width:2px;box-shadow:0 0 0 3px rgba(255,193,7,0.15);}
   .settings-opts .card-vis-toggle.is-prominent{background:#ffc107;color:#1a1400;font-weight:800;}
   .privacy-masked{filter:blur(6px);user-select:none;}
-  #btnPrivacyToggle.privacy-on{background:var(--nonpta-bg);color:var(--nonpta);border-color:var(--nonpta);}
+  #btnPrivacyToggle{position:relative;}
+  #btnPrivacyToggle.privacy-on::after{content:'';position:absolute;top:6px;right:8px;width:5px;height:5px;border-radius:50%;background:var(--text-faint);opacity:0.6;}
 </style>
 </head>
 <body>
@@ -280,6 +281,7 @@
     </div>
     <div class="header-actions-row">
       <button class="backup-btn" id="btnPrivacyToggle">🙈 Privacy mode</button>
+      <button class="backup-btn" id="btnClearData" style="color:var(--danger);border-color:var(--danger);">🗑️ Clear data</button>
     </div>
     <div class="stats" id="stats"></div>
     <div class="storage-bar-wrap">
@@ -554,6 +556,13 @@
       <span style="font-size:12.5px;color:var(--text-dim);align-self:center;">% jitna zyada karke buy price screen par dikhaya jaye</span>
     </div>
     <div class="settings-note">Jab Privacy mode ON ho, to Total profit har jagah •••• dikhega, aur Buy price jahan bhi screen par ho (card, dashboard, reports) aslee amount na dikha kar upar diye gaye % ke hisaab se barha kar dikhaya jayega. Yaad rahe: 🙈 button header mein tap karke isay kabhi bhi turant on/off kar sakte hain — settings mein aana zaroori nahi.</div>
+
+    <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">🗑️ Clear data password</div>
+    <div class="settings-add-row">
+      <input type="password" id="clearPasswordInput" placeholder="Naya password set karein" autocomplete="new-password">
+      <button type="button" class="sell-btn" id="clearPasswordSaveBtn">Save karein</button>
+    </div>
+    <div class="settings-note">Ye password sirf "🗑️ Clear data" button ke liye hai — jab bhi koi sara data clear karne ki koshish karega, ye password mangega. Jab tak password set na ho, Clear data button kaam nahi karega. Bhool na jayein — ye kahin recover nahi ho sakta, sirf yahin se dobara set ho sakta hai (agar aap khud logged in hain).</div>
 
     <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">Badges kis tarteeb mein dikhein (drag kar ke order set karein)</div>
     <div class="badge-order-list" id="badgeOrderList"></div>
@@ -1540,8 +1549,12 @@ function updatePrivacyButtonUI(){
   const btn = document.getElementById('btnPrivacyToggle');
   if(!btn) return;
   const on = isPrivacyOn();
+  // Deliberately no "ON"/"OFF" text and no strong color change here — the
+  // whole point of privacy mode is that someone glancing at the phone
+  // shouldn't be able to tell it's active. Only a tiny, easy-to-miss dot
+  // (see CSS) hints at the state for the owner themself.
   btn.classList.toggle('privacy-on', on);
-  btn.textContent = on ? '🙈 Privacy: ON' : '🙈 Privacy mode';
+  btn.textContent = '🙈 Privacy mode';
 }
 
 // A value's issue/normal classification can be overridden per field per
@@ -3058,7 +3071,62 @@ document.getElementById('btnPrivacyToggle').onclick = function(){
   cardDisplaySettings.privacy.enabled = !cardDisplaySettings.privacy.enabled;
   saveCardDisplaySettings();
   render();
-  showToast(isPrivacyOn() ? '🙈 Privacy mode ON — profit chupa hai, buy price barha kar dikh raha hai.' : 'Privacy mode OFF.');
+  showToast('✓ Ho gaya.');
+};
+
+// ---------- Clear data (password-protected) ----------
+// Not real cryptographic security — just a deterrent so a curious customer
+// or employee who picks up the phone can't wipe everything by accident or
+// on purpose. Anyone with real access to the browser storage could bypass
+// this, same as any client-side-only protection.
+const LS_CLEAR_PASSWORD_KEY = 'mobileLedger_clearDataPasswordHash';
+function simpleHash(str){
+  let h = 0;
+  for(let i=0;i<str.length;i++){ h = (Math.imul(31,h) + str.charCodeAt(i)) | 0; }
+  return 'h' + h.toString(36);
+}
+
+document.getElementById('clearPasswordSaveBtn').onclick = function(){
+  const input = document.getElementById('clearPasswordInput');
+  const val = input.value;
+  if(!val || val.length < 4){ alert('Kam se kam 4 characters ka password rakhein.'); return; }
+  try{ localStorage.setItem(LS_CLEAR_PASSWORD_KEY, simpleHash(val)); }catch(e){}
+  input.value = '';
+  showToast('✓ Clear-data password save ho gaya.');
+};
+
+document.getElementById('btnClearData').onclick = function(){
+  let storedHash = null;
+  try{ storedHash = localStorage.getItem(LS_CLEAR_PASSWORD_KEY); }catch(e){}
+  if(!storedHash){
+    alert('Pehle Settings mein "🗑️ Clear data password" set karein — usके baghair Clear data kaam nahi karega.');
+    return;
+  }
+  const entered = prompt('Sara data clear karne ke liye password likhein:');
+  if(entered===null) return; // cancelled
+  if(simpleHash(entered) !== storedHash){
+    alert('Galat password — kuch bhi clear nahi hua.');
+    return;
+  }
+  if(!confirm('Ye action WAPIS NAHI HO SAKTA — sara stock, sales history, aur customization mit jayega aur app bilkul nayi shuruaat se save karegi. Pakka aage badhna hai?')) return;
+
+  const ok = tryCommitInventory([]);
+  if(!ok){ alert('Clear nahi ho saka — storage mein masla hua, dobara try karein.'); return; }
+  customModels = {};
+  saveCustomModels();
+  customOptionData = {extra:{}, hidden:{}, issueOverrides:{}, cardVisibility:{}, badgeColor:{}, badgeProminent:{}};
+  saveCustomOptionData();
+  cardDisplaySettings = {
+    showFields: {display:true, battery:true, touch:true, camera:true, body:true, openrepair:true, ram:true, storage:true, network:true, packing:true},
+    batteryMode: 'always',
+    badgeOrder: DEFAULT_BADGE_ORDER.slice(),
+    cardViewMode: 'detailed',
+    privacy: {enabled:false, hideProfit:true, buyMarkupPercent:20}
+  };
+  saveCardDisplaySettings();
+  renderAllChips();
+  render();
+  alert('✓ Sara data clear ho gaya. Ab bilkul nayi shuruaat hai.');
 };
 
 // ---------- Excel backup/import ----------
