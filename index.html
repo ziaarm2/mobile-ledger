@@ -518,10 +518,21 @@
       <div class="field"><label>Customer (naam ya number)</label><input type="text" id="rp-customer" placeholder="Search karein"></div>
     </div>
     <div class="report-summary">
-      <span>Total profit (filtered)</span>
+      <span>Sales profit (gross)</span>
+      <span class="v" id="rp-gross-profit" style="color:var(--pta);">0</span>
+    </div>
+    <div class="report-summary" style="margin-top:8px;">
+      <span>Expenses (filtered date range)</span>
+      <span class="v" id="rp-expenses-total" style="color:var(--danger);">0</span>
+    </div>
+    <div class="report-summary" style="margin-top:8px;border:1px solid var(--border-strong);">
+      <span>Net profit (expenses ke baad)</span>
       <span class="v" id="rp-total-profit">0</span>
     </div>
+    <div class="sec-label" style="margin-top:16px;">Sales (filtered)</div>
     <div class="report-list" id="rp-list"></div>
+    <div class="sec-label" style="margin-top:14px;">Expenses (isi date range mein — brand/customer filter is par lagoo nahi)</div>
+    <div class="report-list" id="rp-expense-list"></div>
     <div class="sheet-actions">
       <button class="btn-cancel" id="btnReportsClose">Band karein</button>
       <button class="btn-save" id="btnReportsPdf">PDF banayein</button>
@@ -2751,13 +2762,22 @@ function getFilteredSoldEntries(){
   });
 }
 
+// Same date range as the sales filter above. Brand/customer filters don't
+// apply to expenses (an expense isn't tied to a phone brand or a customer),
+// so only "Se"/"Tak" narrows this list.
+function getFilteredReportExpenses(){
+  const from = document.getElementById('rp-from').value;
+  const to = document.getElementById('rp-to').value;
+  return expensesInRange(from, to).slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+}
+
 function renderReports(){
   renderReportBrandOptions();
   const entries = getFilteredSoldEntries();
-  let totalProfit = 0;
+  let grossProfit = 0;
   const rowsHtml = entries.map(function(e){
     const profit = (e.buy!=null && e.sell!=null) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : null;
-    if(profit!=null) totalProfit += profit;
+    if(profit!=null) grossProfit += profit;
     const profitColor = profit==null ? 'var(--text-faint)' : (profit>=0 ? 'var(--pta)' : 'var(--danger)');
     return '<div class="report-row">'+
       '<div class="rr-top"><span>'+e.brand+' '+e.model+'</span><span class="rr-profit" style="color:'+profitColor+'">'+(profit==null?'-':displayProfitHtml(profit))+'</span></div>'+
@@ -2766,9 +2786,24 @@ function renderReports(){
     '</div>';
   }).join('');
   document.getElementById('rp-list').innerHTML = rowsHtml || '<div class="rr-sub" style="text-align:center;padding:20px 0;">Koi entry nahi mili in filters se.</div>';
+
+  const expEntries = getFilteredReportExpenses();
+  let expensesTotal = 0;
+  const expRowsHtml = expEntries.map(function(x){
+    expensesTotal += Number(x.amount)||0;
+    return '<div class="report-row">'+
+      '<div class="rr-top"><span>'+x.category+'</span><span class="rr-profit" style="color:var(--danger);">-'+fmt(x.amount)+'</span></div>'+
+      '<div class="rr-sub">'+formatDateDisplay(x.date)+(x.notes?' • '+x.notes:'')+'</div>'+
+    '</div>';
+  }).join('');
+  document.getElementById('rp-expense-list').innerHTML = expRowsHtml || '<div class="rr-sub" style="text-align:center;padding:20px 0;">Is date range mein koi expense nahi mila.</div>';
+
+  const netProfit = grossProfit - expensesTotal;
+  document.getElementById('rp-gross-profit').textContent = displayProfitHtml(grossProfit);
+  document.getElementById('rp-expenses-total').textContent = fmt(expensesTotal);
   const totalEl = document.getElementById('rp-total-profit');
-  totalEl.textContent = displayProfitHtml(totalProfit);
-  totalEl.style.color = totalProfit>=0 ? 'var(--pta)' : 'var(--danger)';
+  totalEl.textContent = displayProfitHtml(netProfit);
+  totalEl.style.color = netProfit>=0 ? 'var(--pta)' : 'var(--danger)';
 }
 
 document.getElementById('btnReports').onclick = function(){
@@ -2795,13 +2830,14 @@ document.getElementById('rp-customer').oninput = renderReports;
 // no external library and works fully offline, matching the rest of the app.
 document.getElementById('btnReportsPdf').onclick = function(){
   const entries = getFilteredSoldEntries();
+  const expEntries = getFilteredReportExpenses();
   const from = document.getElementById('rp-from').value;
   const to = document.getElementById('rp-to').value;
   const brand = document.getElementById('rp-brand').value;
-  let totalProfit = 0;
+  let grossProfit = 0;
   const rows = entries.map(function(e){
     const profit = (e.buy!=null && e.sell!=null) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : null;
-    if(profit!=null) totalProfit += profit;
+    if(profit!=null) grossProfit += profit;
     return '<tr>'+
       '<td>'+formatDateDisplay(e.saleDate)+'</td>'+
       '<td>'+e.brand+' '+e.model+(e.quantity>1?(' x'+e.quantity):'')+'</td>'+
@@ -2811,24 +2847,50 @@ document.getElementById('btnReportsPdf').onclick = function(){
       '<td style="text-align:right;">'+(profit==null?'-':fmt(profit))+'</td>'+
     '</tr>';
   }).join('');
+  let expensesTotal = 0;
+  const expRows = expEntries.map(function(x){
+    expensesTotal += Number(x.amount)||0;
+    return '<tr>'+
+      '<td>'+formatDateDisplay(x.date)+'</td>'+
+      '<td>'+x.category+'</td>'+
+      '<td>'+(x.notes||'')+'</td>'+
+      '<td style="text-align:right;">'+fmt(x.amount)+'</td>'+
+    '</tr>';
+  }).join('');
+  const netProfit = grossProfit - expensesTotal;
   const rangeLabel = (from||to) ? ((from?formatDateDisplay(from):'shuru')+' se '+(to?formatDateDisplay(to):'ab tak')) : 'Sab tareekhein';
   const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Mobile Ledger Report</title>'+
     '<style>'+
     'body{font-family:Arial,sans-serif;padding:24px;color:#111;}'+
     'h1{font-size:20px;margin-bottom:2px;}'+
+    'h2{font-size:15px;margin:22px 0 8px;}'+
     '.sub{color:#555;font-size:12px;margin-bottom:18px;}'+
     'table{width:100%;border-collapse:collapse;font-size:12.5px;}'+
     'th,td{border:1px solid #ccc;padding:6px 8px;text-align:left;}'+
     'th{background:#f0f0f0;}'+
     '.total-row td{font-weight:bold;background:#fafafa;}'+
+    '.summary-table{width:auto;min-width:280px;margin-top:8px;}'+
+    '.summary-table td{border:none;padding:4px 8px;}'+
+    '.summary-table .net td{border-top:2px solid #333;font-weight:bold;font-size:14px;}'+
     '@media print{ body{padding:0;} }'+
     '</style></head><body>'+
     '<h1>Mobile Ledger — Sales Report</h1>'+
     '<div class="sub">'+rangeLabel+(brand!=='all'?(' • Brand: '+brand):'')+' • Banaya gaya: '+formatDateDisplay(todayISO())+'</div>'+
+    '<h2>Sales</h2>'+
     '<table><thead><tr><th>Date</th><th>Item</th><th>Customer</th><th>Buy</th><th>Sell</th><th>Profit</th></tr></thead><tbody>'+
     (rows || '<tr><td colspan="6" style="text-align:center;">Koi entry nahi mili</td></tr>')+
-    '<tr class="total-row"><td colspan="5" style="text-align:right;">Total profit</td><td style="text-align:right;">'+fmt(totalProfit)+'</td></tr>'+
+    '<tr class="total-row"><td colspan="5" style="text-align:right;">Sales profit (gross)</td><td style="text-align:right;">'+fmt(grossProfit)+'</td></tr>'+
     '</tbody></table>'+
+    '<h2>Expenses</h2>'+
+    '<table><thead><tr><th>Date</th><th>Category</th><th>Notes</th><th>Amount</th></tr></thead><tbody>'+
+    (expRows || '<tr><td colspan="4" style="text-align:center;">Koi expense nahi mila</td></tr>')+
+    '<tr class="total-row"><td colspan="3" style="text-align:right;">Total expenses</td><td style="text-align:right;">'+fmt(expensesTotal)+'</td></tr>'+
+    '</tbody></table>'+
+    '<table class="summary-table">'+
+    '<tr><td>Sales profit (gross)</td><td style="text-align:right;">'+fmt(grossProfit)+'</td></tr>'+
+    '<tr><td>Total expenses</td><td style="text-align:right;">-'+fmt(expensesTotal)+'</td></tr>'+
+    '<tr class="net"><td>Net profit</td><td style="text-align:right;">'+fmt(netProfit)+'</td></tr>'+
+    '</table>'+
     '</body></html>';
   const w = window.open('', '_blank');
   if(!w){ alert('Popup block ho gaya — browser settings mein popups allow karein aur dobara koshish karein.'); return; }
