@@ -255,6 +255,7 @@
       <h1>Mobile Ledger</h1>
       <div class="backup-actions">
         <button class="backup-btn" id="btnBackup">⬇ Backup</button>
+        <button class="backup-btn" id="btnShareBackup">📤 Share</button>
         <button class="backup-btn" id="btnRestore">⬆ Restore</button>
         <input type="file" id="restoreFile" accept="application/json" style="display:none;">
       </div>
@@ -262,7 +263,7 @@
     <div class="backup-reminder" id="backupReminder">
       <span>24 ghante se zyada ho gaye, backup nahi ho saka — abhi le lein.</span>
       <span style="display:flex;">
-        <button id="reminderBackupBtn">Backup lein</button>
+        <button id="reminderBackupBtn">📤 WhatsApp/Drive par bhejein</button>
         <button class="dismiss" id="reminderDismissBtn">Baad mein</button>
       </span>
     </div>
@@ -2563,6 +2564,43 @@ function backupData(silent){
   }
 }
 
+// Everything the app saves lives ONLY on this one phone (browser storage +
+// Downloads folder). If the phone is lost, reset, or the app/browser data is
+// cleared, both go together — a backup sitting in Downloads doesn't help if
+// the phone itself is gone. This puts the backup file straight into the
+// phone's native share sheet so it can be sent to WhatsApp, Google Drive,
+// email, etc. in one tap — putting a copy somewhere OTHER than this phone.
+async function shareBackupFile(){
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    inventory: inventory,
+    expenses: expenses,
+    customModels: customModels,
+    customOptionData: customOptionData,
+    cardDisplaySettings: cardDisplaySettings
+  };
+  const json = JSON.stringify(payload, null, 2);
+  const stamp = todayStr().replace(/-/g,'');
+  const filename = 'mobile-ledger-backup-' + stamp + '.json';
+  const file = new File([json], filename, {type:'application/json'});
+
+  try{ localStorage.setItem(LS_LAST_BACKUP_KEY, String(Date.now())); }catch(e){}
+  hideBackupReminder();
+
+  if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+    try{
+      await navigator.share({files:[file], title:'Mobile Ledger Backup', text:'Mobile Ledger ka backup — isay WhatsApp/Drive mein rakh lein taake phone kharab/gum hone par bhi data safe rahe.'});
+      return;
+    }catch(err){
+      if(err && err.name === 'AbortError') return; // user cancelled share sheet
+    }
+  }
+  // Share not supported on this browser — fall back to a normal download
+  // and tell the person to move it off the phone themselves.
+  backupData(false);
+  showToast('Is browser mein direct share support nahi hai — file download ho gayi, isay khud WhatsApp/Drive par bhej dein.');
+}
+
 // Runs after every entry is added/edited so a fresh backup file is always
 // available, without ever blocking or breaking the save itself.
 function backupAfterChange(){
@@ -2902,6 +2940,7 @@ document.getElementById('btnReportsPdf').onclick = function(){
 
 
 document.getElementById('btnBackup').onclick = function(){ backupData(false); };
+document.getElementById('btnShareBackup').onclick = function(){ shareBackupFile(); };
 
 // ---------- Expenses ----------
 function renderExpenseCategoryChips(){
@@ -3516,7 +3555,7 @@ document.getElementById('restoreFile').onchange = function(){
     this.value = '';
   }
 };
-document.getElementById('reminderBackupBtn').onclick = function(){ backupData(false); };
+document.getElementById('reminderBackupBtn').onclick = function(){ shareBackupFile(); };
 document.getElementById('reminderDismissBtn').onclick = function(){
   try{ localStorage.setItem(LS_REMINDER_DISMISSED_KEY, String(Date.now())); }catch(e){}
   hideBackupReminder();
