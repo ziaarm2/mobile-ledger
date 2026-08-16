@@ -4,13 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Mobile Ledger</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0f1115">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Mobile Ledger">
-<link rel="apple-touch-icon" href="icon-192.png">
 <style>
   :root{
     --bg:#0f1115;
@@ -82,7 +75,6 @@
   .badge.bypass{background:var(--bypass-bg);color:var(--bypass);}
   .badge.sold-badge{background:var(--surface-3);color:var(--sale);}
   .badge.spec{background:var(--surface-3);color:var(--text-dim);}
-  .badge.spec-issue{background:var(--nonpta-bg);color:var(--nonpta);font-size:12px;font-weight:700;padding:4px 10px;border:1px solid var(--nonpta);}
   .badge.qty{background:var(--surface-3);color:var(--text);}
 
   .price-row{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:13px;}
@@ -155,6 +147,13 @@
   .crop-handle.bl{top:100%;left:0;}
   .crop-handle.br{top:100%;left:100%;}
   .crop-hint{text-align:center;font-size:11px;color:var(--text-dim);margin-top:8px;line-height:1.4;}
+  .settings-hint{font-size:12px;color:var(--text-dim);margin-top:4px;margin-bottom:10px;line-height:1.4;}
+  .settings-list{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0;min-height:20px;}
+  .settings-item{display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:20px;padding:6px 6px 6px 12px;font-size:12.5px;}
+  .settings-item button{background:var(--nonpta);color:#2a2213;border:none;width:18px;height:18px;border-radius:50%;font-size:11px;line-height:1;font-weight:700;flex-shrink:0;}
+  .settings-add-row{display:flex;gap:8px;}
+  .settings-add-row input{flex:1;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:10px;padding:10px;color:var(--text);font-size:13px;}
+  .settings-add-row button{flex-shrink:0;background:var(--accent);color:var(--accent-text);border:none;border-radius:10px;padding:0 16px;font-weight:600;font-size:13px;}
   .card-photo-strip{display:flex;align-items:center;gap:6px;margin-top:8px;}
   .card-photo-thumb{width:52px;height:52px;object-fit:cover;border-radius:8px;border:1px solid var(--border);}
   .card-photo-count{font-size:11px;color:var(--text-dim);}
@@ -173,7 +172,7 @@
   .btn-cancel{background:var(--surface-2);color:var(--text-dim);border:1px solid var(--border);}
   .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
   .header-top h1{margin:0;}
-  .backup-actions{display:flex;gap:6px;}
+  .backup-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
   .backup-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);border-radius:8px;padding:6px 10px;font-size:11.5px;}
   .backup-btn:active{border-color:var(--accent);color:var(--accent);}
   .backup-reminder{display:none;align-items:center;justify-content:space-between;gap:8px;background:var(--nonpta-bg);border:1px solid var(--nonpta);color:var(--nonpta);border-radius:10px;padding:9px 12px;margin-top:10px;font-size:12.5px;}
@@ -181,71 +180,7 @@
   .backup-reminder button{flex-shrink:0;background:var(--nonpta);color:#2a2213;border:none;border-radius:7px;padding:6px 10px;font-size:11.5px;font-weight:600;}
   .backup-reminder .dismiss{background:transparent;color:var(--nonpta);border:1px solid var(--nonpta);margin-left:4px;font-weight:400;}
   .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:var(--surface-3);color:var(--text);border:1px solid var(--border-strong);border-radius:10px;padding:10px 16px;font-size:12.5px;max-width:88%;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;z-index:50;}
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
-  .toast.undo-toast{display:flex;align-items:center;gap:12px;text-align:left;}
-  .toast.undo-toast #undoToastBtn{flex-shrink:0;background:var(--accent);color:var(--accent-text);border:none;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;}
-  .storage-bar-wrap{margin-top:10px;}
-  .storage-bar-track{height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden;}
-  .storage-bar-fill{height:100%;width:0%;background:var(--pta);transition:width .3s;}
-  .storage-bar-label{font-size:10.5px;color:var(--text-dim);margin-top:4px;text-align:right;}
-  .save-error-banner{display:none;background:var(--cpid-bg);border:1px solid var(--cpid);color:var(--cpid);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12.5px;line-height:1.5;}
-  .save-error-banner.show{display:block;}
-
-  .stat-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
-  .stat-card{background:var(--surface);border-radius:var(--radius);padding:14px 12px;}
-  .stat-card .v{font-size:20px;font-weight:700;}
-  .stat-card .l{font-size:11.5px;color:var(--text-dim);margin-top:4px;}
-  .report-filters{display:flex;flex-direction:column;gap:10px;margin-top:10px;}
-  .report-summary{background:var(--surface);border-radius:var(--radius);padding:12px 14px;margin-top:14px;display:flex;justify-content:space-between;align-items:center;}
-  .report-summary .v{font-size:18px;font-weight:700;color:var(--pta);}
-  .report-list{margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;}
-  .report-row{background:var(--surface);border-radius:10px;padding:10px 12px;font-size:12.5px;}
-  .report-row .rr-top{display:flex;justify-content:space-between;font-weight:600;}
-  .report-row .rr-sub{color:var(--text-dim);margin-top:3px;}
-  .report-row .rr-profit{font-weight:600;}
-  .header-actions-row{display:flex;gap:6px;margin-top:8px;}
-  .header-actions-row .backup-btn{flex:1;}
-  .contact-search{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;margin-top:10px;}
-  .contact-list{margin-top:12px;display:flex;flex-direction:column;gap:10px;max-height:420px;overflow-y:auto;}
-  .contact-card{background:var(--surface);border-radius:var(--radius);padding:12px 14px;}
-  .contact-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
-  .contact-name{font-size:14.5px;font-weight:700;}
-  .contact-number{font-size:12px;color:var(--text-dim);margin-top:2px;}
-  .contact-badges{display:flex;gap:6px;flex-shrink:0;}
-  .contact-tx-list{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);display:flex;flex-direction:column;gap:6px;}
-  .contact-tx{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--text-dim);}
-  .contact-tx .tx-main{color:var(--text);}
-  .contact-tx .tx-date{flex-shrink:0;}
-  .header-actions-row + .header-actions-row{margin-top:6px;}
-  .settings-field-select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;margin-top:10px;}
-  .settings-opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
-  .settings-opt{display:flex;align-items:center;gap:6px;background:var(--surface);border-radius:999px;padding:6px 8px 6px 12px;font-size:13px;}
-  .settings-opt.is-hidden{opacity:0.45;text-decoration:line-through;}
-  .settings-opt .rm{cursor:pointer;color:var(--danger);font-weight:700;padding:0 4px;}
-  .settings-add-row{display:flex;gap:8px;margin-top:14px;}
-  .settings-add-row input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;}
-  .settings-add-row button{white-space:nowrap;}
-  .settings-note{font-size:11.5px;color:var(--text-dim);margin-top:10px;}
-  .settings-toggle-chip{display:flex;align-items:center;gap:6px;background:var(--surface);border-radius:999px;padding:8px 14px;font-size:13px;cursor:pointer;user-select:none;}
-  .settings-toggle-chip.on{background:var(--pta-bg);color:var(--pta);}
-  .settings-toggle-chip .dot{width:8px;height:8px;border-radius:50%;background:var(--text-faint);}
-  .settings-toggle-chip.on .dot{background:var(--pta);}
-  .settings-opt .issue-toggle{font-size:10.5px;padding:2px 8px;border-radius:999px;cursor:pointer;background:var(--surface-3);color:var(--text-dim);margin-left:2px;}
-  .settings-opt .issue-toggle.is-issue{background:var(--nonpta-bg);color:var(--nonpta);font-weight:700;}
-  .settings-opt .card-vis-toggle{font-size:10.5px;padding:2px 8px;border-radius:999px;cursor:pointer;background:var(--surface-3);color:var(--text-faint);margin-left:2px;white-space:nowrap;}
-  .settings-opt .card-vis-toggle.is-visible{background:var(--pta-bg);color:var(--pta);font-weight:700;}
-  .settings-opt .badge-color-input{width:20px;height:20px;padding:0;border:1px solid var(--border);border-radius:6px;background:none;cursor:pointer;margin-left:2px;}
-  .badge-order-list{display:flex;flex-direction:column;gap:6px;margin-top:14px;}
-  .badge-order-item{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;cursor:grab;}
-  .badge-order-item.dragging{opacity:0.4;}
-  .badge-order-item .handle{color:var(--text-faint);font-size:14px;}
-  .card.compact .sale-meta{display:none;}
-  .piece-row.compact-row .sale-meta{display:none;}
-  .badge.spec-prominent{font-size:14px;font-weight:800;padding:7px 14px;border-width:2px;box-shadow:0 0 0 3px rgba(255,193,7,0.15);}
-  .settings-opts .card-vis-toggle.is-prominent{background:#ffc107;color:#1a1400;font-weight:800;}
-  .privacy-masked{filter:blur(6px);user-select:none;}
-  #btnPrivacyToggle{position:relative;}
-  #btnPrivacyToggle.privacy-on::after{content:'';position:absolute;top:6px;right:8px;width:5px;height:5px;border-radius:50%;background:var(--text-faint);opacity:0.6;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
@@ -254,6 +189,7 @@
     <div class="header-top">
       <h1>Mobile Ledger</h1>
       <div class="backup-actions">
+        <button class="backup-btn" id="btnSettings">⚙ Settings</button>
         <button class="backup-btn" id="btnBackup">⬇ Backup</button>
         <button class="backup-btn" id="btnRestore">⬆ Restore</button>
         <input type="file" id="restoreFile" accept="application/json" style="display:none;">
@@ -266,28 +202,7 @@
         <button class="dismiss" id="reminderDismissBtn">Baad mein</button>
       </span>
     </div>
-    <div class="header-actions-row">
-      <button class="backup-btn" id="btnExcelBackup">📊 Excel Backup</button>
-      <button class="backup-btn" id="btnExcelRestore">📥 Excel Import</button>
-      <input type="file" id="excelFile" accept=".xlsx,.xls" style="display:none;">
-    </div>
-    <div class="header-actions-row">
-      <button class="backup-btn" id="btnDashboard">📊 Dashboard</button>
-      <button class="backup-btn" id="btnReports">📄 Reports</button>
-    </div>
-    <div class="header-actions-row">
-      <button class="backup-btn" id="btnContacts">👥 Contacts</button>
-      <button class="backup-btn" id="btnSettings">⚙️ Customize karein</button>
-    </div>
-    <div class="header-actions-row">
-      <button class="backup-btn" id="btnPrivacyToggle">🙈 Privacy mode</button>
-      <button class="backup-btn" id="btnClearData" style="color:var(--danger);border-color:var(--danger);">🗑️ Clear data</button>
-    </div>
     <div class="stats" id="stats"></div>
-    <div class="storage-bar-wrap">
-      <div class="storage-bar-track"><div class="storage-bar-fill" id="storageBarFill"></div></div>
-      <div class="storage-bar-label" id="storageBarLabel">Storage: 0% used</div>
-    </div>
   </header>
   <div class="search-row">
     <input type="text" id="search" placeholder="Model, customer se search karein">
@@ -307,16 +222,11 @@
 
 <button class="fab" id="fabAdd">+</button>
 <div class="toast" id="toast"></div>
-<div class="toast undo-toast" id="undoToast">
-  <span id="undoToastMsg"></span>
-  <button type="button" id="undoToastBtn">Undo</button>
-</div>
 
 <div class="overlay hidden" id="overlay">
   <div class="sheet">
     <div class="sheet-handle"></div>
     <h2 id="sheetTitle">Nayi stock entry</h2>
-    <div class="save-error-banner" id="saveErrorBanner"></div>
 
     <div class="sec-label">Brand</div>
     <div class="chip-row" id="brandChips"></div>
@@ -356,16 +266,6 @@
       <div class="field"><label>Sell price range</label><input id="f-range" placeholder="45k-47k"><div class="price-hint" id="f-range-hint"></div></div>
     </div>
 
-    <div class="two-col">
-      <div class="field"><label>Buy date</label><input id="f-buydate" type="date"></div>
-      <div class="field"><label>IMEI (optional)</label><input id="f-imei" type="text" inputmode="numeric" placeholder="15 digit number"></div>
-    </div>
-
-    <div class="two-col">
-      <div class="field"><label>Seller ka naam (optional)</label><input id="f-seller-name" placeholder="Kis se khareeda"></div>
-      <div class="field"><label>Seller ka number (optional)</label><input id="f-seller-number" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx"></div>
-    </div>
-
     <div id="extraBuyList" class="extra-buy-list"></div>
     <div class="add-extra-buy" id="addExtraBuyBtn">+ Isi model ka aur piece, alag price/condition par, add karein</div>
 
@@ -376,10 +276,6 @@
       </div>
       <div class="two-col">
         <div class="field"><label>Customer name</label><input id="f-customer" placeholder="Naam"></div>
-        <div class="field"><label>Customer number</label><input id="f-customer-number" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx"></div>
-      </div>
-      <div class="two-col">
-        <div class="field"><label>Sale date</label><input id="f-saledate" type="date"></div>
         <div class="field"><label>Payment method</label><input id="f-payment" placeholder="Cash / Easypaisa"></div>
       </div>
     </div>
@@ -443,7 +339,6 @@
   <div class="sheet">
     <div class="sheet-handle"></div>
     <h2>Sale entry</h2>
-    <div class="save-error-banner" id="sellErrorBanner"></div>
     <div class="sheet-item-name" id="sellItemName"></div>
 
     <div class="field"><label id="sellQtyLabel">Kitne piece beche</label><input id="s-qty" type="number" inputmode="numeric" min="1" value="1"></div>
@@ -452,10 +347,6 @@
     </div>
     <div class="two-col">
       <div class="field"><label>Customer name</label><input id="s-customer" placeholder="Naam"></div>
-      <div class="field"><label>Customer number</label><input id="s-customer-number" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx"></div>
-    </div>
-    <div class="two-col">
-      <div class="field"><label>Sale date</label><input id="s-saledate" type="date"></div>
       <div class="field"><label>Payment method</label><input id="s-payment" placeholder="Cash / Easypaisa"></div>
     </div>
     <div class="profit-preview">
@@ -493,98 +384,16 @@
   </div>
 </div>
 
-<div class="overlay hidden" id="dashboardOverlay">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <h2>Dashboard</h2>
-    <div class="stat-grid-2" id="dashboardGrid"></div>
-    <div class="sheet-actions">
-      <button class="btn-cancel" id="btnDashboardClose">Band karein</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay hidden" id="reportsOverlay">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <h2>Reports</h2>
-    <div class="report-filters">
-      <div class="two-col">
-        <div class="field"><label>Se (date)</label><input type="date" id="rp-from"></div>
-        <div class="field"><label>Tak (date)</label><input type="date" id="rp-to"></div>
-      </div>
-      <div class="field"><label>Brand</label><select id="rp-brand"></select></div>
-      <div class="field"><label>Customer (naam ya number)</label><input type="text" id="rp-customer" placeholder="Search karein"></div>
-    </div>
-    <div class="report-summary">
-      <span>Total profit (filtered)</span>
-      <span class="v" id="rp-total-profit">0</span>
-    </div>
-    <div class="report-list" id="rp-list"></div>
-    <div class="sheet-actions">
-      <button class="btn-cancel" id="btnReportsClose">Band karein</button>
-      <button class="btn-save" id="btnReportsPdf">PDF banayein</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay hidden" id="contactsOverlay">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <h2>Contacts</h2>
-    <input type="text" class="contact-search" id="contactsSearch" placeholder="Naam ya number se search karein">
-    <div class="contact-list" id="contactsList"></div>
-    <div class="sheet-actions">
-      <button class="btn-cancel" id="btnContactsClose">Band karein</button>
-    </div>
-  </div>
-</div>
-
 <div class="overlay hidden" id="settingsOverlay">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <h2>Customize karein</h2>
-
-    <div class="sec-label" style="margin-top:0;">Card view</div>
-    <div class="settings-opts" id="cardViewModeToggles"></div>
-
-    <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">Privacy mode</div>
-    <div class="settings-opts" id="privacyEnabledToggles"></div>
-    <div class="settings-opts" id="privacyProfitToggles" style="margin-top:8px;"></div>
-    <div class="settings-add-row" style="margin-top:8px;">
-      <input type="number" id="privacyMarkupInput" placeholder="Amount, e.g. 2000" min="0" style="max-width:120px;">
-      <span style="font-size:12.5px;color:var(--text-dim);align-self:center;">Rs jitni fixed raqam har buy price mein jama karke screen par dikhai jaye</span>
-    </div>
-    <div class="settings-note">Jab Privacy mode ON ho, to Total profit har jagah •••• dikhega, aur Buy price jahan bhi screen par ho (card, dashboard, reports) aslee amount na dikha kar upar diye gaye fixed Rs jama karke dikhaya jayega — misaal: agar aap 40,000 enter karein aur yahan 2000 likha ho, to screen par 42,000 dikhega. Yaad rahe: 🙈 button header mein tap karke isay kabhi bhi turant on/off kar sakte hain — settings mein aana zaroori nahi.</div>
-
-    <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">🗑️ Clear data password</div>
-    <div class="settings-add-row">
-      <input type="password" id="clearPasswordInput" placeholder="Naya password set karein" autocomplete="new-password">
-      <button type="button" class="sell-btn" id="clearPasswordSaveBtn">Save karein</button>
-    </div>
-    <div class="settings-note">Ye password sirf "🗑️ Clear data" button ke liye hai — jab bhi koi sara data clear karne ki koshish karega, ye password mangega. Jab tak password set na ho, Clear data button kaam nahi karega. Bhool na jayein — ye kahin recover nahi ho sakta, sirf yahin se dobara set ho sakta hai (agar aap khud logged in hain).</div>
-
-    <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">Badges kis tarteeb mein dikhein (drag kar ke order set karein)</div>
-    <div class="badge-order-list" id="badgeOrderList"></div>
-
-    <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">Chip options aur "Main screen ke card pe kya dikhe" customize karein</div>
-    <select class="settings-field-select" id="settings-field-select"></select>
-    <div class="settings-opts" id="settingsOptsList"></div>
-    <div class="settings-add-row">
-      <input type="text" id="settingsNewOption" placeholder="Naya option likhein">
-      <button type="button" class="sell-btn" id="settingsAddBtn">Add karein</button>
-    </div>
-    <div class="settings-note" id="settingsIssueNote">Kisi option pe × dabane se wo list se hat jayega (delete nahi hoga, sirf chupega — dobara zaroorat pare to hum yahin se wapas la sakte hain). "Normal/⚠ Issue" us value ke color/warning ke liye hai. <b>"Card pe / Hidden / ⭐ Prominent"</b> button pe baar baar tap karein — pehli tap se card pe dikhna shuru hoga, dusri tap se wo <b>bara/bold (prominent)</b> ho jayega aur baqi badges se pehle dikhega, teesri tap se dobara chup jayega. Rangeen dot dabakar us value ka apna badge color bhi set kar sakte hain. Naya option likh kar "Add karein" dabayein.</div>
-
-    <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">Brands customize karein</div>
-    <div class="settings-opts" id="settingsBrandsList"></div>
-    <div class="settings-add-row">
-      <input type="text" id="settingsNewBrand" placeholder="Naya brand naam likhein">
-      <button type="button" class="sell-btn" id="settingsAddBrandBtn">Add karein</button>
-    </div>
-
-    <div class="sheet-actions">
-      <button class="btn-cancel" id="btnSettingsClose">Band karein</button>
+    <h2>Settings — options customize karein</h2>
+    <div class="settings-hint">Yahan se aap Brand aur condition options mein apni marzi se add/remove kar sakte hain — code change ki zaroorat nahi.</div>
+    <div class="chip-row" id="settingsGroupChips"></div>
+    <div id="settingsGroupBody"></div>
+    <div class="card-actions" style="margin-top:14px;">
+      <button type="button" id="settingsResetBtn" class="del-btn">Is list ko reset karein</button>
+      <button type="button" class="sell-btn" id="settingsDoneBtn">Done</button>
     </div>
   </div>
 </div>
@@ -597,6 +406,35 @@ let currentBrandFilter = 'all';
 let currentSort = 'default';
 let sellingId = null;
 
+// ---- Overlay / sheet back-button handling ----
+// Every time an overlay (add/edit sheet, sell sheet, crop, settings) opens,
+// we push a history entry. That means the phone's back button/gesture closes
+// just that overlay instead of exiting the whole app. If for some reason the
+// history API isn't available/pushState fails, we fall back to closing the
+// overlay directly so nothing ever gets stuck open.
+let overlayStack = [];
+function pushOverlay(id){
+  overlayStack.push(id);
+  try{ history.pushState({ledgerOverlay:true}, ''); }catch(e){}
+}
+function closeOverlayById(id){
+  const el = document.getElementById(id);
+  if(overlayStack.length && overlayStack[overlayStack.length-1]===id){
+    // Let the popstate listener below do the actual hiding/pop, so the
+    // history stack and the visible overlay always stay in sync.
+    try{ history.back(); return; }catch(e){}
+  }
+  overlayStack = overlayStack.filter(function(x){return x!==id;});
+  if(el) el.classList.add('hidden');
+}
+window.addEventListener('popstate', function(){
+  const id = overlayStack.pop();
+  if(id){
+    const el = document.getElementById(id);
+    if(el) el.classList.add('hidden');
+  }
+});
+
 const BRANDS = ['Samsung','Google','iPhone','OnePlus','Vivo','Oppo','Realme','Infinix','Tecno','Xiaomi','Motorola','Other'];
 const STATUS_OPTS = ['PTA','Non-PTA','CPID','JV','Bypass/MDM'];
 const RAM_OPTS = ['2GB','3GB','4GB','6GB','8GB','12GB','16GB'];
@@ -605,64 +443,54 @@ const NETWORK_OPTS = ['4G','5G'];
 const DISPLAY_OPTS = ['Original panel','Minor shade','Minor lines','Line','Dark spots','Minor spot','Light spot','Scratches','Cracked','Glass changed','Panel changed','Changed but genuine'];
 const TOUCH_OPTS = ['Perfect','Minor lag','Dead zones','Not working'];
 const CAMERA_OPTS = ['Perfect','No dots','Dot','Dots','Blurry/spots','Not working'];
-const BATTERY_OPTS = ['Perfect','100%','95-99%','90-94%','85-89%','80-84%','79-75%','74-69%','Below 69%','On service','Boosted','Battery changed'];
+const BATTERY_OPTS = ['Perfect','100%','95-99%','90-94%','85-89%','80-84%','79-75%','74-69%','Below 69%','On service','Boosted'];
 const CHARGER_OPTS = ['No charger','Original charger','5W','10W','15W','18W','20W','25W','30W','33W','35W','45W','65W','67W','80W','100W','120W'];
 const BODY_OPTS = ['Original','Back changed','Back crack','Body changed'];
 const OPEN_REPAIR_OPTS = ['No open, no repair','Repaired','Refurbished'];
 const PACKING_OPTS = ['No pack','Water pack','Air tight'];
 
-// Lets the shop owner add or remove chip options themselves — no coding
-// needed. Built-in options can be hidden (not deleted from code), and any
-// number of custom ones can be added on top, per field.
-const CUSTOMIZABLE_FIELDS = [
-  {key:'status', label:'Status', base: STATUS_OPTS},
-  {key:'ram', label:'RAM', base: RAM_OPTS},
-  {key:'storage', label:'Storage', base: STORAGE_OPTS},
-  {key:'network', label:'Network', base: NETWORK_OPTS},
-  {key:'display', label:'Display / Panel', base: DISPLAY_OPTS},
-  {key:'touch', label:'Touch', base: TOUCH_OPTS},
-  {key:'camera', label:'Camera', base: CAMERA_OPTS},
-  {key:'body', label:'Body', base: BODY_OPTS},
-  {key:'openrepair', label:'Open aur Repair', base: OPEN_REPAIR_OPTS},
-  {key:'battery', label:'Battery health', base: BATTERY_OPTS},
-  {key:'packing', label:'Packing', base: PACKING_OPTS},
-  {key:'charger', label:'Charger', base: CHARGER_OPTS},
-  {key:'box', label:'Box', base: ['No','Yes']},
-  {key:'faceid', label:'Face ID', base: ['No','Yes']},
-  {key:'truetone', label:'True Tone', base: ['No','Yes']}
+// Registry of option lists the user is allowed to customize from Settings.
+// STATUS_OPTS is intentionally excluded — badge colors/logic key off those
+// exact values, so editing it there could break the app's styling.
+const SETTINGS_GROUPS = [
+  {key:'brands', label:'Brands', arr:BRANDS, protect:['Other']},
+  {key:'ram', label:'RAM', arr:RAM_OPTS},
+  {key:'storage', label:'Storage', arr:STORAGE_OPTS},
+  {key:'network', label:'Network', arr:NETWORK_OPTS},
+  {key:'display', label:'Display', arr:DISPLAY_OPTS},
+  {key:'touch', label:'Touch', arr:TOUCH_OPTS},
+  {key:'camera', label:'Camera', arr:CAMERA_OPTS},
+  {key:'battery', label:'Battery health', arr:BATTERY_OPTS},
+  {key:'body', label:'Body', arr:BODY_OPTS},
+  {key:'openrepair', label:'Open & Repair', arr:OPEN_REPAIR_OPTS},
+  {key:'packing', label:'Packing', arr:PACKING_OPTS},
+  {key:'charger', label:'Charger', arr:CHARGER_OPTS}
 ];
 
-// Fields shown as plain spec badges (no good/issue concept) with a label prefix on the card
-const PLAIN_FIELD_LABELS = {box:'Box', faceid:'Face ID', truetone:'True Tone', charger:'Charger', packing:'Packing'};
-// Default order badges appear in on a card
-const DEFAULT_BADGE_ORDER = ['display','battery','touch','camera','body','openrepair','ram','storage','network','packing','charger','box','faceid','truetone'];
+// Snapshot of the built-in defaults, taken before any saved customization is
+// loaded, so "reset" always has something correct to go back to.
+const DEFAULT_OPTION_LISTS = {};
+SETTINGS_GROUPS.forEach(function(g){ DEFAULT_OPTION_LISTS[g.key] = g.arr.slice(); });
 
-let customOptionData = {extra:{}, hidden:{}};
-const LS_CUSTOM_OPTIONS_KEY = 'mobileLedger_customOptions';
+const LS_OPTION_LISTS_KEY = 'mobileLedger_optionLists';
 
-function loadCustomOptionData(){
-  try{
-    const raw = localStorage.getItem(LS_CUSTOM_OPTIONS_KEY);
-    customOptionData = raw ? JSON.parse(raw) : {extra:{}, hidden:{}, issueOverrides:{}, cardVisibility:{}, badgeColor:{}, badgeProminent:{}};
-  }catch(err){ customOptionData = {extra:{}, hidden:{}, issueOverrides:{}, cardVisibility:{}, badgeColor:{}, badgeProminent:{}}; }
-  if(!customOptionData.extra) customOptionData.extra = {};
-  if(!customOptionData.hidden) customOptionData.hidden = {};
-  if(!customOptionData.issueOverrides) customOptionData.issueOverrides = {};
-  if(!customOptionData.cardVisibility) customOptionData.cardVisibility = {};
-  if(!customOptionData.badgeColor) customOptionData.badgeColor = {};
-  if(!customOptionData.badgeProminent) customOptionData.badgeProminent = {};
+function saveOptionLists(){
+  const payload = {};
+  SETTINGS_GROUPS.forEach(function(g){ payload[g.key] = g.arr.slice(); });
+  try{ localStorage.setItem(LS_OPTION_LISTS_KEY, JSON.stringify(payload)); }catch(e){}
 }
 
-function saveCustomOptionData(){
-  try{ localStorage.setItem(LS_CUSTOM_OPTIONS_KEY, JSON.stringify(customOptionData)); }catch(err){}
-}
-
-// Returns the live option list for a field: built-in defaults minus anything
-// the user hid, plus any custom ones they added.
-function getFieldOptions(fieldKey, baseOptions){
-  const hidden = customOptionData.hidden[fieldKey] || [];
-  const extra = customOptionData.extra[fieldKey] || [];
-  return baseOptions.filter(function(o){ return hidden.indexOf(o)===-1; }).concat(extra);
+function loadOptionLists(){
+  let saved = null;
+  try{ saved = JSON.parse(localStorage.getItem(LS_OPTION_LISTS_KEY) || 'null'); }catch(e){ saved = null; }
+  if(!saved) return;
+  SETTINGS_GROUPS.forEach(function(g){
+    const vals = saved[g.key];
+    if(Array.isArray(vals) && vals.length){
+      g.arr.length = 0;
+      vals.forEach(function(v){ g.arr.push(v); });
+    }
+  });
 }
 
 const MODEL_CATALOG = {
@@ -792,10 +620,11 @@ function openCropOverlay(dataUrl){
   };
   imgEl.src = dataUrl;
   document.getElementById('cropOverlay').classList.remove('hidden');
+  pushOverlay('cropOverlay');
 }
 
 function closeCropOverlay(){
-  document.getElementById('cropOverlay').classList.add('hidden');
+  closeOverlayById('cropOverlay');
   document.getElementById('cropImg').src = '';
 }
 
@@ -940,61 +769,24 @@ const seed = [
 async function loadInventory(){
   try{
     const raw = localStorage.getItem(LS_INVENTORY_KEY);
+    // raw === null means this is the very first time the app has ever run on
+    // this device (localStorage key was never created) -> show sample stock.
+    // Any other case (including an intentionally emptied "[]") must NOT
+    // bring the sample stock back.
     inventory = raw ? JSON.parse(raw) : seed;
   }catch(e){
     inventory = seed;
   }
-  if(!inventory.length) inventory = seed;
   inventory.forEach(function(e){ if(e.quantity===undefined) e.quantity = 1; });
   render();
 }
 
-// Tries to write a candidate inventory array to storage WITHOUT touching the
-// live `inventory` variable first. Only if the write actually succeeds (and a
-// read-back confirms it) do we swap it in as the real inventory. This is the
-// core guarantee: if this returns false, nothing on disk or in memory changed,
-// so the form still has the person's typed data and nothing is silently lost.
-function tryCommitInventory(candidateInventory){
-  const json = JSON.stringify(candidateInventory);
-  try{
-    localStorage.setItem(LS_INVENTORY_KEY, json);
-    // Read back to be sure the browser actually persisted it (some browsers
-    // silently ignore writes in private/incognito mode instead of throwing).
-    const check = localStorage.getItem(LS_INVENTORY_KEY);
-    if(check !== json){
-      return false;
-    }
-  }catch(e){
-    console.error('Storage error', e);
-    return false;
-  }
-  inventory = candidateInventory;
-  return true;
-}
-
-// Kept for the few callers (custom models, restore) that don't need the
-// read-before-write safety of tryCommitInventory.
 async function saveInventory(){
   try{
     localStorage.setItem(LS_INVENTORY_KEY, JSON.stringify(inventory));
   }catch(e){
     console.error('Storage error', e);
   }
-}
-
-const SAVE_FAIL_MSG = 'Save nahi ho saka — phone ki storage full ho sakti hai ya browser ki private/incognito mode mein hain. Aap ka type kiya hua data abhi bhi is form mein mojood hai, kahin gaya nahi. Purani "Sold" entries delete karke ya kam photos rakh kar dobara "Save" dabayein.';
-
-function showSaveError(bannerId, msg){
-  const el = document.getElementById(bannerId);
-  if(!el) return;
-  el.textContent = msg;
-  el.classList.add('show');
-}
-function hideSaveError(bannerId){
-  const el = document.getElementById(bannerId);
-  if(!el) return;
-  el.classList.remove('show');
-  el.textContent = '';
 }
 
 function fmt(n){
@@ -1200,8 +992,7 @@ const EP_FIELD_DEFS = [
 ];
 
 function epChipRowHtml(field, selected){
-  const liveOptions = getFieldOptions(field.key, field.options);
-  const opts = [''].concat(liveOptions);
+  const opts = [''].concat(field.options);
   return '<div class="sec-label" style="margin-top:10px;">'+field.label+'</div>'+
     '<div class="chip-row ep-chip-row" data-field="'+field.key+'">'+
       opts.map(function(o){
@@ -1231,7 +1022,6 @@ function addExtraBuyRow(){
       '<div class="field"><label>Sell range</label><input type="text" class="extra-range-input" placeholder="agar alag ho, e.g. 45-50k"><div class="price-hint extra-range-hint"></div></div>'+
     '</div>'+
     EP_FIELD_DEFS.map(function(f){ return epChipRowHtml(f, epState[f.key]); }).join('')+
-    '<div class="field" style="margin-top:10px;"><label>IMEI (optional)</label><input type="text" inputmode="numeric" class="ep-imei" placeholder="15 digit number"></div>'+
     '<div class="field" style="margin-top:10px;"><label>Notes</label><input type="text" class="ep-notes" placeholder="agar alag ho"></div>';
 
   block.querySelectorAll('.ep-chip-row').forEach(function(row){
@@ -1272,23 +1062,6 @@ function todayStr(){
   return String(d.getDate()).padStart(2,'0')+'-'+months[d.getMonth()]+'-'+d.getFullYear();
 }
 
-// ISO (YYYY-MM-DD) is what <input type="date"> needs and what sorts/filters
-// correctly for reports. Display format stays DD-Mon-YYYY for readability.
-function todayISO(){
-  const d = new Date();
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-}
-
-function formatDateDisplay(iso){
-  if(!iso) return '';
-  const parts = String(iso).split('-');
-  if(parts.length!==3) return iso;
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const y=parts[0], m=Number(parts[1])-1, d=Number(parts[2]);
-  if(isNaN(m)||isNaN(d)||!months[m]) return iso;
-  return String(d).padStart(2,'0')+'-'+months[m]+'-'+y;
-}
-
 function renderStats(){
   const availableUnits = inventory.filter(function(e){return !e.sold;})
     .reduce(function(s,e){return s+(e.quantity||0);},0);
@@ -1299,48 +1072,121 @@ function renderStats(){
   document.getElementById('stats').innerHTML =
     '<div class="stat"><div class="v num">'+availableUnits+'</div><div class="l">Stock mein</div></div>'+
     '<div class="stat"><div class="v num">'+soldUnits+'</div><div class="l">Sold</div></div>'+
-    '<div class="stat"><div class="v num" style="color:var(--pta)">'+displayProfitHtml(totalProfit)+'</div><div class="l">Total profit</div></div>';
+    '<div class="stat"><div class="v num" style="color:var(--pta)">'+fmt(totalProfit)+'</div><div class="l">Total profit</div></div>';
 }
 
-// Most browsers give roughly 5MB per site for localStorage. There's no
-// official API to ask "how much is left", so we estimate usage from the
-// actual string length of what we store (UTF-16 => ~2 bytes/char) against
-// that conservative 5MB assumption. It won't be exact on every browser, but
-// it gives an honest early warning well before a save can actually fail.
-function getStorageUsageInfo(){
-  let chars = 0;
-  try{
-    chars += (localStorage.getItem(LS_INVENTORY_KEY) || '').length;
-    chars += (localStorage.getItem(LS_CUSTOM_MODELS_KEY) || '').length;
-    chars += (localStorage.getItem(LS_CUSTOM_OPTIONS_KEY) || '').length;
-    chars += (localStorage.getItem(LS_CARD_DISPLAY_KEY) || '').length;
-  }catch(e){}
-  const bytes = chars * 2;
-  const assumedQuota = 5 * 1024 * 1024;
-  const pct = Math.min(100, Math.round((bytes/assumedQuota)*100));
-  return {bytes:bytes, pct:pct};
+let currentSettingsGroup = 'brands';
+
+function renderSettingsGroupChips(){
+  const wrap = document.getElementById('settingsGroupChips');
+  wrap.innerHTML = SETTINGS_GROUPS.map(function(g){
+    return '<div class="chip '+(currentSettingsGroup===g.key?'active':'')+'" data-g="'+g.key+'">'+g.label+'</div>';
+  }).join('');
+  wrap.querySelectorAll('.chip').forEach(function(c){
+    c.onclick = function(){
+      currentSettingsGroup = c.dataset.g;
+      renderSettingsGroupChips();
+      renderSettingsGroupBody(currentSettingsGroup);
+    };
+  });
 }
 
-function renderStorageBar(){
-  const fill = document.getElementById('storageBarFill');
-  const label = document.getElementById('storageBarLabel');
-  if(!fill || !label) return;
-  const info = getStorageUsageInfo();
-  let colorVar = '--pta';
-  if(info.pct >= 85) colorVar = '--danger';
-  else if(info.pct >= 60) colorVar = '--nonpta';
-  fill.style.width = info.pct + '%';
-  fill.style.background = 'var('+colorVar+')';
-  const mb = (info.bytes/1024/1024).toFixed(1);
-  label.textContent = 'Storage: ' + info.pct + '% used (~' + mb + ' MB)';
-  label.style.color = 'var('+colorVar+')';
+function renderSettingsGroupBody(key){
+  const group = SETTINGS_GROUPS.find(function(g){return g.key===key;});
+  if(!group) return;
+  const body = document.getElementById('settingsGroupBody');
+  body.innerHTML =
+    '<div class="settings-list" id="settingsList"></div>'+
+    '<div class="settings-add-row">'+
+      '<input type="text" id="settingsAddInput" placeholder="Naya option likhein">'+
+      '<button type="button" id="settingsAddBtn">Add</button>'+
+    '</div>';
+  const list = document.getElementById('settingsList');
+  list.innerHTML = group.arr.map(function(val, i){
+    const locked = group.protect && group.protect.indexOf(val)!==-1;
+    return '<span class="settings-item">'+val+(locked ? '' : ' <button type="button" data-i="'+i+'">\u00d7</button>')+'</span>';
+  }).join('');
+  list.querySelectorAll('button').forEach(function(b){
+    b.onclick = function(){ settingsRemoveItem(group, Number(b.dataset.i)); };
+  });
+  const addBtn = document.getElementById('settingsAddBtn');
+  const addInput = document.getElementById('settingsAddInput');
+  addBtn.onclick = function(){
+    settingsAddItem(group, addInput.value);
+    addInput.value = '';
+    addInput.focus();
+  };
+  addInput.addEventListener('keydown', function(e){
+    if(e.key==='Enter'){ e.preventDefault(); addBtn.click(); }
+  });
 }
+
+function afterSettingsChange(group){
+  saveOptionLists();
+  renderSettingsGroupBody(group.key);
+  renderAllChips();
+  if(group.key==='brands') renderBrandFilter();
+}
+
+function settingsAddItem(group, value){
+  value = String(value||'').trim();
+  if(!value) return;
+  if(group.arr.some(function(x){ return x.toLowerCase()===value.toLowerCase(); })){
+    showToast('Yeh option pehle se maujood hai.');
+    return;
+  }
+  if(group.key==='brands' && group.arr.indexOf('Other')!==-1){
+    group.arr.splice(group.arr.indexOf('Other'), 0, value);
+  } else {
+    group.arr.push(value);
+  }
+  afterSettingsChange(group);
+}
+
+function settingsRemoveItem(group, index){
+  const val = group.arr[index];
+  if(group.protect && group.protect.indexOf(val)!==-1){
+    showToast('"'+val+'" ko delete nahi kar sakte — app ke liye zaroori hai.');
+    return;
+  }
+  if(group.arr.length<=1){
+    showToast('Kam se kam ek option zaroori hai.');
+    return;
+  }
+  group.arr.splice(index,1);
+  afterSettingsChange(group);
+}
+
+document.getElementById('btnSettings').onclick = function(){
+  renderSettingsGroupChips();
+  renderSettingsGroupBody(currentSettingsGroup);
+  document.getElementById('settingsOverlay').classList.remove('hidden');
+  pushOverlay('settingsOverlay');
+};
+
+document.getElementById('settingsDoneBtn').onclick = function(){
+  closeOverlayById('settingsOverlay');
+};
+
+document.getElementById('settingsResetBtn').onclick = function(){
+  const group = SETTINGS_GROUPS.find(function(g){return g.key===currentSettingsGroup;});
+  if(!group) return;
+  const def = DEFAULT_OPTION_LISTS[group.key] || [];
+  group.arr.length = 0;
+  def.forEach(function(v){ group.arr.push(v); });
+  afterSettingsChange(group);
+  showToast(group.label+' options default par reset ho gaye.');
+};
+
+document.getElementById('settingsOverlay').onclick = function(e){
+  if(e.target.id==='settingsOverlay') closeOverlayById('settingsOverlay');
+};
 
 function renderBrandFilter(){
   const invBrands = inventory.map(function(e){return e.brand;});
   // Always show every known brand (even with 0 stock right now), plus any
   // custom/other brand names actually present in the data.
-  const allBrands = getLiveBrands().filter(function(b){ return b!=='Other'; }).concat(invBrands);
+  const allBrands = BRANDS.filter(function(b){ return b!=='Other'; }).concat(invBrands);
   const distinct = allBrands.filter(function(b,i){return b && allBrands.indexOf(b)===i;});
   // Count distinct models saved under each brand — the brand with the most
   // models shows up first.
@@ -1408,7 +1254,7 @@ function renderList(){
     if(['PTA','Non-PTA','CPID','JV','Bypass/MDM'].indexOf(currentFilter)!==-1 && e.status!==currentFilter) return false;
     if(currentBrandFilter!=='all' && e.brand!==currentBrandFilter) return false;
     if(searchVal){
-      const hay = (e.brand+' '+e.model+' '+(e.customer||'')+' '+(e.customerNumber||'')+' '+(e.imei||'')+' '+(e.sellerName||'')+' '+(e.sellerNumber||'')+' '+(e.notes||'')).toLowerCase();
+      const hay = (e.brand+' '+e.model+' '+(e.customer||'')+' '+(e.notes||'')).toLowerCase();
       if(hay.indexOf(searchVal)===-1) return false;
     }
     return true;
@@ -1458,201 +1304,15 @@ function pieceStatusBadges(e, outOfStock){
   );
 }
 
-// Baseline "nothing wrong here" value(s) for each condition field. If the
-// value is one of these, there's nothing worth telling the buyer by default.
-// (This is just the *default* — the person can override any specific value's
-// classification, and its card visibility, from Settings.)
-const GOOD_CONDITION_VALUES = {
-  display: ['Original panel'],
-  battery: ['Perfect','100%','95-99%','90-94%'],
-  touch: ['Perfect'],
-  camera: ['Perfect','No dots'],
-  body: ['Original'],
-  openrepair: ['No open, no repair']
-};
-
-// Short label so an issue is unambiguous even when the same word (e.g. "Not
-// working") could belong to more than one field.
-const CONDITION_FIELD_LABELS = {
-  display: 'Panel',
-  battery: 'Battery',
-  touch: 'Touch',
-  camera: 'Camera',
-  body: 'Body',
-  openrepair: 'Repair'
-};
-
-// ---------- Card display settings (what shows on the main-screen cards) ----------
-let cardDisplaySettings = {
-  // Legacy fields kept only so old stored data still computes sane *defaults*
-  // for values the person hasn't explicitly customized yet (see
-  // effectiveCardVisible below). The per-value toggle in Settings is now the
-  // real source of truth.
-  showFields: {display:true, battery:true, touch:true, camera:true, body:true, openrepair:true, ram:true, storage:true, network:true, packing:true},
-  batteryMode: 'always', // 'always' | 'issue-only' | 'never' — legacy default only
-  badgeOrder: DEFAULT_BADGE_ORDER.slice(),
-  cardViewMode: 'detailed', // 'detailed' | 'compact'
-  privacy: {
-    enabled: false,        // quick on/off — flip this when someone else is looking at the phone
-    hideProfit: true,      // when on, profit numbers everywhere show as •••• instead of the real figure
-    buyMarkupAmount: 2000   // when on, this fixed amount is added to any buy/purchase price shown on screen so the real cost stays private
-  }
-};
-const LS_CARD_DISPLAY_KEY = 'mobileLedger_cardDisplaySettings';
-
-function loadCardDisplaySettings(){
-  try{
-    const raw = localStorage.getItem(LS_CARD_DISPLAY_KEY);
-    if(raw){
-      const parsed = JSON.parse(raw);
-      if(parsed.showFields) Object.assign(cardDisplaySettings.showFields, parsed.showFields);
-      if(parsed.batteryMode) cardDisplaySettings.batteryMode = parsed.batteryMode;
-      if(parsed.cardViewMode) cardDisplaySettings.cardViewMode = parsed.cardViewMode;
-      if(parsed.privacy) Object.assign(cardDisplaySettings.privacy, parsed.privacy);
-      if(Array.isArray(parsed.badgeOrder) && parsed.badgeOrder.length){
-        // Keep any valid known keys from storage, then append any newer
-        // fields (e.g. added in an update) that aren't in the saved order yet.
-        const known = parsed.badgeOrder.filter(function(k){ return DEFAULT_BADGE_ORDER.indexOf(k)!==-1; });
-        DEFAULT_BADGE_ORDER.forEach(function(k){ if(known.indexOf(k)===-1) known.push(k); });
-        cardDisplaySettings.badgeOrder = known;
-      }
-    }
-  }catch(err){}
-}
-function saveCardDisplaySettings(){
-  try{ localStorage.setItem(LS_CARD_DISPLAY_KEY, JSON.stringify(cardDisplaySettings)); }catch(err){}
-}
-
-// ---------- Privacy mode ----------
-// Quick-flip protection for when someone else picks up the phone in the shop.
-// It never lies about your data — it only changes what's shown on screen.
-function isPrivacyOn(){ return !!(cardDisplaySettings.privacy && cardDisplaySettings.privacy.enabled); }
-
-// Buy/purchase price for on-screen display only — inflated by the configured
-// markup so a passerby doesn't learn your real cost. Never used for actual
-// profit math or when editing the entry.
-function displayBuyPrice(buy){
-  if(buy==null) return null;
-  if(!isPrivacyOn()) return Number(buy);
-  const amount = Number(cardDisplaySettings.privacy.buyMarkupAmount)||0;
-  return Number(buy) + amount;
-}
-
-// Wraps a profit figure for display — replaced with dots when privacy mode
-// + hideProfit are both on.
-function displayProfitHtml(amount){
-  if(isPrivacyOn() && cardDisplaySettings.privacy.hideProfit) return '••••';
-  return fmt(amount);
-}
-
-function updatePrivacyButtonUI(){
-  const btn = document.getElementById('btnPrivacyToggle');
-  if(!btn) return;
-  const on = isPrivacyOn();
-  // Deliberately no "ON"/"OFF" text and no strong color change here — the
-  // whole point of privacy mode is that someone glancing at the phone
-  // shouldn't be able to tell it's active. Only a tiny, easy-to-miss dot
-  // (see CSS) hints at the state for the owner themself.
-  btn.classList.toggle('privacy-on', on);
-  btn.textContent = '🙈 Privacy mode';
-}
-
-// A value's issue/normal classification can be overridden per field per
-// value from Settings (e.g. maybe "85-89%" battery shouldn't count as a
-// problem for this shop). customOptionData.issueOverrides[field][value] =
-// true (force issue) / false (force normal). Absent = use the built-in default.
-function isConditionIssue(field, val){
-  if(!val) return false;
-  const overrides = customOptionData.issueOverrides && customOptionData.issueOverrides[field];
-  if(overrides && Object.prototype.hasOwnProperty.call(overrides, val)){
-    return !!overrides[val];
-  }
-  const good = GOOD_CONDITION_VALUES[field];
-  if(!good) return false;
-  return good.indexOf(val) === -1;
-}
-
-// The *default* card-visibility for a field+value, used only when the person
-// hasn't explicitly toggled that exact value in Settings yet. This exists so
-// upgrading doesn't silently change what already-saved shops show.
-function defaultCardVisible(field, val){
-  if(GOOD_CONDITION_VALUES[field]){
-    if(field === 'battery'){
-      const mode = cardDisplaySettings.batteryMode;
-      if(mode === 'never') return false;
-      if(mode === 'issue-only') return isConditionIssue(field, val);
-      return true; // 'always'
-    }
-    if(cardDisplaySettings.showFields[field] === false) return false;
-    return isConditionIssue(field, val);
-  }
-  if(field==='ram' || field==='storage' || field==='network'){
-    return cardDisplaySettings.showFields[field] !== false;
-  }
-  if(field==='packing'){
-    return cardDisplaySettings.showFields.packing !== false && val !== 'No pack';
-  }
-  // box / charger / faceid / truetone never showed on cards before this
-  // feature existed, so they default to hidden until the person opts in.
-  return false;
-}
-
-// Per-value show/hide override, set from Settings. Explicit override always
-// wins; otherwise fall back to the computed default above.
-function effectiveCardVisible(field, val){
-  if(!val) return false;
-  const overrides = customOptionData.cardVisibility && customOptionData.cardVisibility[field];
-  if(overrides && Object.prototype.hasOwnProperty.call(overrides, val)){
-    return !!overrides[val];
-  }
-  return defaultCardVisible(field, val);
-}
-
-// Optional per-value custom badge color, set from Settings.
-function effectiveBadgeColor(field, val){
-  const colors = customOptionData.badgeColor && customOptionData.badgeColor[field];
-  if(colors && colors[val]) return colors[val];
-  return null;
-}
-
-// Whether this value's badge should stand out (bigger/bolder), set from Settings.
-function effectiveBadgeProminent(field, val){
-  const prom = customOptionData.badgeProminent && customOptionData.badgeProminent[field];
-  return !!(prom && prom[val]);
-}
-
-function fieldBadge(field, val){
-  if(!val) return '';
-  if(!effectiveCardVisible(field, val)) return '';
-  const color = effectiveBadgeColor(field, val);
-  const prominent = effectiveBadgeProminent(field, val);
-  const isCondition = !!GOOD_CONDITION_VALUES[field];
-  const issue = isCondition && isConditionIssue(field, val);
-  const cls = (issue ? 'badge spec-issue' : 'badge spec') + (prominent ? ' spec-prominent' : '');
-  const prefix = issue ? '⚠ ' : '';
-  const label = isCondition ? CONDITION_FIELD_LABELS[field] : PLAIN_FIELD_LABELS[field];
-  const text = (label && (isCondition || PLAIN_FIELD_LABELS[field])) ? (label+': '+val) : val;
-  const showText = (field==='ram'||field==='storage'||field==='network') ? val : text;
-  const styleAttr = color ? ' style="background:'+color+';color:#fff;"' : '';
-  return '<span class="'+cls+'"'+styleAttr+'>'+prefix+showText+'</span>';
-}
-
-// Backwards-compatible alias used elsewhere in the file.
-function conditionBadge(field, val){ return fieldBadge(field, val); }
-
 function pieceSpecBadges(e){
-  const order = (cardDisplaySettings.badgeOrder && cardDisplaySettings.badgeOrder.length) ? cardDisplaySettings.badgeOrder : DEFAULT_BADGE_ORDER;
-  // Fields the person marked "Prominent" jump to the front, in their chosen
-  // order, so what matters most to them is always the first thing seen.
-  const prominentFirst = order.slice().sort(function(a,b){
-    const pa = effectiveBadgeProminent(a, e[a]) ? 0 : 1;
-    const pb = effectiveBadgeProminent(b, e[b]) ? 0 : 1;
-    return pa - pb;
-  });
-  return prominentFirst.map(function(field){
-    if((field==='faceid' || field==='truetone') && e.brand!=='iPhone') return '';
-    return fieldBadge(field, e[field]);
-  }).join('');
+  return (
+    (e.display ? '<span class="badge spec">'+e.display+'</span>':'')+
+    (e.battery ? '<span class="badge spec">'+e.battery+'</span>':'')+
+    (e.ram ? '<span class="badge spec">'+e.ram+'</span>':'')+
+    (e.storage ? '<span class="badge spec">'+e.storage+'</span>':'')+
+    (e.network ? '<span class="badge spec">'+e.network+'</span>':'')+
+    (e.packing && e.packing!=='No pack' ? '<span class="badge spec">'+e.packing+'</span>':'')
+  );
 }
 
 function cardPhotoHtml(e){
@@ -1665,15 +1325,14 @@ function cardPhotoHtml(e){
 function renderSingleStockCard(e){
   const outOfStock = (e.quantity||0) <= 0;
   const canSplit = !outOfStock && (e.quantity||1) > 1;
-  const compact = cardDisplaySettings.cardViewMode === 'compact';
   return (
-  '<div class="card '+(outOfStock?'outofstock':'')+(compact?' compact':'')+'">'+
+  '<div class="card '+(outOfStock?'outofstock':'')+'">'+
     '<div class="card-title">'+e.brand+' '+e.model+'</div>'+
     '<div class="card-sub">'+(e.range||'')+'</div>'+
     cardPhotoHtml(e)+
     '<div class="badges">'+pieceStatusBadges(e, outOfStock)+'</div>'+
     (pieceSpecBadges(e) ? '<div class="badges spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
-    (e.buy!=null ? '<div class="sale-meta">Buy price: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span></div>' : '')+
+    (e.buy!=null ? '<div class="sale-meta">Buy price: <span class="num">'+fmt(e.buy)+'</span></div>' : '')+
     (e.notes ? '<div class="sale-meta">'+e.notes+'</div>' : '')+
     (canSplit ? '<div class="sale-meta">Ye '+e.quantity+' pieces ek sath ek hi price/condition ke sath saved hain. Agar inki price/condition alag karni hai to Split dabayein.</div>' : '')+
     '<div class="card-actions">'+
@@ -1692,16 +1351,15 @@ function renderStockGroup(g){
     return renderSingleStockCard(g.pieces[0]);
   }
   const totalQty = g.pieces.reduce(function(s,p){return s+(p.quantity||0);}, 0);
-  const compact = cardDisplaySettings.cardViewMode === 'compact';
   const inner = g.pieces.map(function(e){
     const outOfStock = (e.quantity||0) <= 0;
     const canSplit = !outOfStock && (e.quantity||1) > 1;
     return (
-    '<div class="piece-row '+(outOfStock?'outofstock':'')+(compact?' compact-row':'')+'">'+
+    '<div class="piece-row '+(outOfStock?'outofstock':'')+'">'+
       '<div class="piece-row-top">'+pieceStatusBadges(e, outOfStock)+'</div>'+
       (pieceSpecBadges(e) ? '<div class="piece-row-top spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
       cardPhotoHtml(e)+
-      (e.buy!=null || e.range ? '<div class="sale-meta">'+(e.buy!=null?'Buy: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span>':'')+(e.buy!=null&&e.range?' &bull; ':'')+(e.range?'Sell range: '+e.range:'')+'</div>' : '')+
+      (e.buy!=null || e.range ? '<div class="sale-meta">'+(e.buy!=null?'Buy: <span class="num">'+fmt(e.buy)+'</span>':'')+(e.buy!=null&&e.range?' &bull; ':'')+(e.range?'Sell range: '+e.range:'')+'</div>' : '')+
       (e.notes ? '<div class="sale-meta">'+e.notes+'</div>' : '')+
       '<div class="card-actions">'+
         '<button data-edit="'+e.id+'">Edit</button>'+
@@ -1713,7 +1371,7 @@ function renderStockGroup(g){
     '</div>');
   }).join('');
   return (
-    '<div class="card group-card'+(compact?' compact':'')+'">'+
+    '<div class="card group-card">'+
       '<div class="card-title">'+g.brand+' '+g.model+'</div>'+
       '<div class="card-sub">'+g.pieces.length+' alag pieces &bull; '+totalQty+' total stock mein</div>'+
       '<div class="piece-list">'+inner+'</div>'+
@@ -1738,7 +1396,7 @@ function renderSoldCard(e){
       '<div class="price-col"><div class="l">Sell</div><div class="v num">'+fmt(e.sell)+'</div></div>'+
       '<div class="price-col"><div class="l">Profit</div><div class="v num '+profitClass+'">'+(profit===null?'-':fmt(profit))+'</div></div>'+
     '</div>'+
-    (e.customer||e.payment ? '<div class="sale-meta">'+(e.customer||'')+(e.customer&&e.customerNumber?' ('+e.customerNumber+')':'')+(e.customer&&e.payment?' - ':'')+(e.payment||'')+' - '+(e.saleDate?formatDateDisplay(e.saleDate):(e.lastUpdated||''))+'</div>' : '')+
+    (e.customer||e.payment ? '<div class="sale-meta">'+(e.customer||'')+(e.customer&&e.payment?' - ':'')+(e.payment||'')+' - '+(e.lastUpdated||'')+'</div>' : '')+
     '<div class="card-actions">'+
       '<button data-edit="'+e.id+'">Edit</button>'+
       '<button class="share-btn" data-share="'+e.id+'">Share</button>'+
@@ -1749,11 +1407,9 @@ function renderSoldCard(e){
 
 function render(){
   renderStats();
-  renderStorageBar();
   renderBrandFilter();
   renderFilterChips();
   renderList();
-  updatePrivacyButtonUI();
 }
 
 function upperPriceFromRange(range){
@@ -1789,19 +1445,12 @@ function buildShareText(e){
   if(e.ram) lines.push('RAM: '+e.ram);
   if(e.storage) lines.push('Storage: '+e.storage);
 
-  if(e.battery) lines.push('Battery: '+e.battery);
+  if(e.battery && BATTERY_GOOD.indexOf(e.battery)!==-1) lines.push('Battery: Perfect');
 
-  const shareIssues = [];
-  if(isConditionIssue('display', e.display)) shareIssues.push('Panel: '+e.display);
-  if(isConditionIssue('touch', e.touch)) shareIssues.push('Touch: '+e.touch);
-  if(isConditionIssue('camera', e.camera)) shareIssues.push('Camera: '+e.camera);
-  if(isConditionIssue('body', e.body)) shareIssues.push('Body: '+e.body);
-  if(isConditionIssue('openrepair', e.openrepair)) shareIssues.push('Repair: '+e.openrepair);
-  if(shareIssues.length){
-    shareIssues.forEach(function(i){ lines.push('⚠ '+i); });
-  } else {
-    lines.push('No any issue');
-  }
+  if(e.openrepair==='No open, no repair') lines.push('No open, no repair');
+
+  const conditionPerfect = e.display==='Original panel' && e.touch==='Perfect' && e.camera==='Perfect';
+  if(conditionPerfect) lines.push('No any issue');
 
   const chargerLine = chargerShareLine(e);
   if(chargerLine) lines.push(chargerLine);
@@ -1858,27 +1507,9 @@ async function shareEntry(id){
 
 function deleteEntry(id){
   if(!confirm('Ye entry delete kar dein?')) return;
-  const idx = inventory.findIndex(function(x){return x.id===id;});
-  if(idx===-1) return;
-  const removedItem = inventory[idx];
-  const candidate = inventory.slice(0,idx).concat(inventory.slice(idx+1));
-  const ok = tryCommitInventory(candidate);
-  if(!ok){
-    alert(SAVE_FAIL_MSG);
-    return;
-  }
+  inventory = inventory.filter(function(x){return x.id!==id;});
+  saveInventory();
   render();
-  showUndoToast('Entry delete ho gayi.', function(){
-    const restored = inventory.slice(0,idx).concat([removedItem], inventory.slice(idx));
-    const ok2 = tryCommitInventory(restored);
-    if(ok2){
-      render();
-      showToast('✓ Wapis aa gayi');
-    } else {
-      alert(SAVE_FAIL_MSG);
-    }
-  });
-  backupAfterChange();
 }
 
 function splitEntry(id){
@@ -1888,21 +1519,15 @@ function splitEntry(id){
   const n = e.quantity||1;
   if(n <= 1) return;
   if(!confirm('Ye '+n+' pieces ko '+n+' alag pieces mein tod dein? Har piece ki price/condition phir alag se edit ki ja sakegi.')) return;
-  let candidate = inventory.slice(0,idx).concat(inventory.slice(idx+1));
+  inventory.splice(idx, 1);
   for(let i=0; i<n; i++){
-    candidate = [Object.assign({}, e, {
+    inventory.unshift(Object.assign({}, e, {
       id: 'e_'+Date.now()+'_split_'+i+'_'+Math.random().toString(36).slice(2,6),
       quantity: 1
-    })].concat(candidate);
+    }));
   }
-  const ok = tryCommitInventory(candidate);
-  if(!ok){
-    alert(SAVE_FAIL_MSG);
-    return;
-  }
+  saveInventory();
   render();
-  showToast('✓ Split ho gaya');
-  backupAfterChange();
 }
 
 function renderChipGroup(containerId, options, groupKey, extraClass){
@@ -1923,22 +1548,22 @@ function renderChipGroup(containerId, options, groupKey, extraClass){
 }
 
 function renderAllChips(){
-  renderChipGroup('brandChips', getLiveBrands(), 'brand');
-  renderChipGroup('statusChips', getFieldOptions('status', STATUS_OPTS), 'status', 'status-opt');
-  renderChipGroup('ramChips', getFieldOptions('ram', RAM_OPTS), 'ram');
-  renderChipGroup('storageChips', getFieldOptions('storage', STORAGE_OPTS), 'storage');
-  renderChipGroup('networkChips', getFieldOptions('network', NETWORK_OPTS), 'network');
-  renderChipGroup('displayChips', getFieldOptions('display', DISPLAY_OPTS), 'display');
-  renderChipGroup('touchChips', getFieldOptions('touch', TOUCH_OPTS), 'touch');
-  renderChipGroup('cameraChips', getFieldOptions('camera', CAMERA_OPTS), 'camera');
-  renderChipGroup('bodyChips', getFieldOptions('body', BODY_OPTS), 'body');
-  renderChipGroup('openRepairChips', getFieldOptions('openrepair', OPEN_REPAIR_OPTS), 'openrepair');
-  renderChipGroup('batteryChips', getFieldOptions('battery', BATTERY_OPTS), 'battery');
-  renderChipGroup('boxChips', getFieldOptions('box', ['No','Yes']), 'box');
-  renderChipGroup('packingChips', getFieldOptions('packing', PACKING_OPTS), 'packing');
-  renderChipGroup('chargerChips', getFieldOptions('charger', CHARGER_OPTS), 'charger');
-  renderChipGroup('faceidChips', getFieldOptions('faceid', ['No','Yes']), 'faceid');
-  renderChipGroup('truetoneChips', getFieldOptions('truetone', ['No','Yes']), 'truetone');
+  renderChipGroup('brandChips', BRANDS, 'brand');
+  renderChipGroup('statusChips', STATUS_OPTS, 'status', 'status-opt');
+  renderChipGroup('ramChips', RAM_OPTS, 'ram');
+  renderChipGroup('storageChips', STORAGE_OPTS, 'storage');
+  renderChipGroup('networkChips', NETWORK_OPTS, 'network');
+  renderChipGroup('displayChips', DISPLAY_OPTS, 'display');
+  renderChipGroup('touchChips', TOUCH_OPTS, 'touch');
+  renderChipGroup('cameraChips', CAMERA_OPTS, 'camera');
+  renderChipGroup('bodyChips', BODY_OPTS, 'body');
+  renderChipGroup('openRepairChips', OPEN_REPAIR_OPTS, 'openrepair');
+  renderChipGroup('batteryChips', BATTERY_OPTS, 'battery');
+  renderChipGroup('boxChips', ['No','Yes'], 'box');
+  renderChipGroup('packingChips', PACKING_OPTS, 'packing');
+  renderChipGroup('chargerChips', CHARGER_OPTS, 'charger');
+  renderChipGroup('faceidChips', ['No','Yes'], 'faceid');
+  renderChipGroup('truetoneChips', ['No','Yes'], 'truetone');
 }
 
 function updateModelField(brand){
@@ -2005,7 +1630,6 @@ document.getElementById('f-model-select').addEventListener('change', function(){
 });
 
 function openAdd(){
-  hideSaveError('saveErrorBanner');
   editingId = null;
   document.getElementById('sheetTitle').textContent = 'Nayi stock entry';
   document.getElementById('qtyLabel').textContent = 'Quantity (kitne piece)';
@@ -2020,12 +1644,6 @@ function openAdd(){
   document.getElementById('f-buy-hint').textContent = '';
   document.getElementById('f-range').value = '';
   document.getElementById('f-range-hint').textContent = '';
-  document.getElementById('f-buydate').value = todayISO();
-  document.getElementById('f-imei').value = '';
-  document.getElementById('f-seller-name').value = '';
-  document.getElementById('f-seller-number').value = '';
-  document.getElementById('f-customer-number').value = '';
-  document.getElementById('f-saledate').value = todayISO();
   document.getElementById('f-notes').value = '';
   document.getElementById('brandOtherWrap').style.display = 'none';
   document.getElementById('saleFieldsWrap').classList.remove('show');
@@ -2039,6 +1657,7 @@ function openAdd(){
   document.getElementById('addExtraBuyBtn').style.display = 'block';
   renderAllChips();
   document.getElementById('overlay').classList.remove('hidden');
+  pushOverlay('overlay');
 }
 
 function openAddPiece(brand, model){
@@ -2055,7 +1674,6 @@ function openAddPiece(brand, model){
 }
 
 function openEdit(id){
-  hideSaveError('saveErrorBanner');
   const e = inventory.find(function(x){return x.id===id;});
   if(!e) return;
   editingId = id;
@@ -2083,10 +1701,6 @@ function openEdit(id){
   document.getElementById('f-buy').value = e.buy != null ? e.buy : '';
   document.getElementById('f-range').value = e.range || '';
   document.getElementById('f-range-hint').textContent = '';
-  document.getElementById('f-buydate').value = e.buyDate || todayISO();
-  document.getElementById('f-imei').value = e.imei || '';
-  document.getElementById('f-seller-name').value = e.sellerName || '';
-  document.getElementById('f-seller-number').value = e.sellerNumber || '';
   document.getElementById('f-notes').value = e.notes || '';
 
   if(e.sold){
@@ -2094,13 +1708,9 @@ function openEdit(id){
     document.getElementById('f-sellprice').value = e.sell != null ? e.sell : '';
     document.getElementById('f-buy-insale').value = e.buy != null ? e.buy : '';
     document.getElementById('f-customer').value = e.customer || '';
-    document.getElementById('f-customer-number').value = e.customerNumber || '';
     document.getElementById('f-payment').value = e.payment || '';
-    document.getElementById('f-saledate').value = e.saleDate || todayISO();
   } else {
     document.getElementById('saleFieldsWrap').classList.remove('show');
-    document.getElementById('f-customer-number').value = '';
-    document.getElementById('f-saledate').value = todayISO();
   }
 
   document.getElementById('f-buy-hint').textContent = '';
@@ -2113,29 +1723,26 @@ function openEdit(id){
   document.getElementById('addExtraBuyBtn').style.display = 'none';
   renderAllChips();
   document.getElementById('overlay').classList.remove('hidden');
+  pushOverlay('overlay');
 }
 
 function closeSheet(){
-  document.getElementById('overlay').classList.add('hidden');
+  closeOverlayById('overlay');
 }
 
 function saveEntry(){
-  hideSaveError('saveErrorBanner');
   const brand = formState.brand==='Other' ? document.getElementById('f-brand-other').value.trim() : formState.brand;
   const model = getFormModel();
   if(!brand || !model){
     alert('Brand aur model zaroori hai');
     return;
   }
+  addCustomModelIfNew(brand, model);
   const qty = Math.max(1, Number(document.getElementById('f-qty').value || 1));
   const data = {
     brand: brand, model: model,
     range: normalizeRange(document.getElementById('f-range').value.trim()),
     quantity: qty,
-    imei: document.getElementById('f-imei').value.trim(),
-    buyDate: document.getElementById('f-buydate').value || todayISO(),
-    sellerName: document.getElementById('f-seller-name').value.trim(),
-    sellerNumber: document.getElementById('f-seller-number').value.trim(),
     ram: formState.ram || '',
     storage: formState.storage || '',
     network: formState.network || '',
@@ -2165,25 +1772,19 @@ function saveEntry(){
     data.sell = sellVal === '' ? null : parsePrice(sellVal);
     data.buy = buyVal === '' ? null : parsePrice(buyVal);
     data.customer = document.getElementById('f-customer').value.trim();
-    data.customerNumber = document.getElementById('f-customer-number').value.trim();
     data.payment = document.getElementById('f-payment').value.trim();
-    data.saleDate = document.getElementById('f-saledate').value || todayISO();
   } else {
     const buyVal = document.getElementById('f-buy').value.trim();
     if(buyVal !== '' && parsePrice(buyVal)===null){ alert('Buy price samajh nahi aaya. "40000" ya "40k" jese likhein.'); return; }
     data.buy = buyVal === '' ? null : parsePrice(buyVal);
   }
 
-  // Build the candidate array WITHOUT touching the real `inventory` yet —
-  // if the save fails below, nothing changes and the form stays open with
-  // everything the person typed still in it.
-  let candidate = inventory.slice();
-
   if(editingId){
-    const idx = candidate.findIndex(function(x){return x.id===editingId;});
-    if(idx===-1){ alert('Ye entry ab nahi mili — shayad kahin aur se delete ho gayi.'); return; }
-    candidate[idx] = Object.assign({}, candidate[idx], data);
+    const idx = inventory.findIndex(function(x){return x.id===editingId;});
+    inventory[idx] = Object.assign({}, inventory[idx], data);
   } else {
+    // Validate every extra piece FIRST, so a typo in piece #3 doesn't silently
+    // drop that piece or partially save the rest.
     const extraBlocks = Array.from(document.querySelectorAll('#extraBuyList .extra-piece-block'));
     const extras = [];
     for(let i=0; i<extraBlocks.length; i++){
@@ -2198,7 +1799,6 @@ function saveEntry(){
       extras.push({
         buy: buyValRaw === '' ? null : parsePrice(buyValRaw),
         range: rangeRaw === '' ? '' : normalizeRange(rangeRaw),
-        imei: block.querySelector('.ep-imei').value.trim(),
         status: epState.status || '',
         display: epState.display || '',
         touch: epState.touch || '',
@@ -2218,14 +1818,12 @@ function saveEntry(){
       });
     }
 
-    const mainEntry = Object.assign({id:'e_'+Date.now(), sold:false, sell:null, customer:'', customerNumber:'', payment:''}, data);
-    candidate = [mainEntry].concat(candidate);
+    inventory.unshift(Object.assign({id:'e_'+Date.now(), sold:false, sell:null, customer:'', payment:''}, data));
     extras.forEach(function(ep, i){
       const extraData = Object.assign({}, data, {
         quantity: 1,
         buy: ep.buy,
         range: ep.range !== '' ? ep.range : data.range,
-        imei: ep.imei || '',
         status: ep.status || data.status,
         display: ep.display !== '' ? ep.display : data.display,
         touch: ep.touch !== '' ? ep.touch : data.touch,
@@ -2243,26 +1841,16 @@ function saveEntry(){
         truetone: ep.truetone || data.truetone,
         notes: ep.notes !== '' ? ep.notes : data.notes
       });
-      const extraEntry = Object.assign({id:'e_'+Date.now()+'_'+i+'_'+Math.random().toString(36).slice(2,6), sold:false, sell:null, customer:'', customerNumber:'', payment:''}, extraData);
-      candidate = [extraEntry].concat(candidate);
+      inventory.unshift(Object.assign({id:'e_'+Date.now()+'_'+i+'_'+Math.random().toString(36).slice(2,6), sold:false, sell:null, customer:'', payment:''}, extraData));
     });
   }
-
-  const ok = tryCommitInventory(candidate);
-  if(!ok){
-    showSaveError('saveErrorBanner', SAVE_FAIL_MSG);
-    return; // sheet stays open, form data untouched, nothing was lost
-  }
-
-  addCustomModelIfNew(brand, model);
+  saveInventory();
   closeSheet();
   render();
-  showToast('✓ Save ho gaya');
   backupAfterChange();
 }
 
 function openSell(id){
-  hideSaveError('sellErrorBanner');
   const e = inventory.find(function(x){return x.id===id;});
   if(!e) return;
   sellingId = id;
@@ -2273,15 +1861,14 @@ function openSell(id){
   document.getElementById('s-price').value = '';
   document.getElementById('s-price-hint').textContent = '';
   document.getElementById('s-customer').value = '';
-  document.getElementById('s-customer-number').value = '';
   document.getElementById('s-payment').value = '';
-  document.getElementById('s-saledate').value = todayISO();
   updateSellProfitPreview();
   document.getElementById('sellOverlay').classList.remove('hidden');
+  pushOverlay('sellOverlay');
 }
 
 function closeSellSheet(){
-  document.getElementById('sellOverlay').classList.add('hidden');
+  closeOverlayById('sellOverlay');
   sellingId = null;
 }
 
@@ -2302,10 +1889,8 @@ function updateSellProfitPreview(){
 }
 
 function confirmSell(){
-  hideSaveError('sellErrorBanner');
-  const idx = inventory.findIndex(function(x){return x.id===sellingId;});
-  if(idx===-1) return;
-  const e = inventory[idx];
+  const e = inventory.find(function(x){return x.id===sellingId;});
+  if(!e) return;
   const qty = Math.max(1, Number(document.getElementById('s-qty').value || 1));
   const priceRaw = document.getElementById('s-price').value.trim();
   if(priceRaw===''){
@@ -2327,37 +1912,27 @@ function confirmSell(){
     sold: true,
     sell: price,
     customer: document.getElementById('s-customer').value.trim(),
-    customerNumber: document.getElementById('s-customer-number').value.trim(),
     payment: document.getElementById('s-payment').value.trim(),
-    saleDate: document.getElementById('s-saledate').value || todayISO(),
     lastUpdated: todayStr()
   });
-  const updatedStockItem = Object.assign({}, e, {quantity: e.quantity - qty, lastUpdated: todayStr()});
-
-  const candidate = inventory.slice();
-  candidate[idx] = updatedStockItem;
-  const finalCandidate = [soldRecord].concat(candidate);
-
-  const ok = tryCommitInventory(finalCandidate);
-  if(!ok){
-    showSaveError('sellErrorBanner', SAVE_FAIL_MSG);
-    return; // sell sheet stays open, nothing was changed, retry after freeing space
-  }
-
+  e.quantity = e.quantity - qty;
+  e.lastUpdated = todayStr();
+  inventory.unshift(soldRecord);
+  saveInventory();
   closeSellSheet();
   currentFilter = 'all';
   render();
-  showToast('✓ Sold ho gaya — '+fmt(price)+' mein.');
+  showToast('Sold ho gaya — '+fmt(price)+' mein.');
 }
 
 document.getElementById('fabAdd').onclick = openAdd;
 document.getElementById('addExtraBuyBtn').onclick = addExtraBuyRow;
 document.getElementById('btnCancel').onclick = closeSheet;
 document.getElementById('btnSave').onclick = saveEntry;
-document.getElementById('overlay').onclick = function(e){ if(e.target.id==='overlay') closeSheet(); };
+document.getElementById('overlay').onclick = function(e){ if(e.target.id==='overlay') closeOverlayById('overlay'); };
 document.getElementById('btnSellCancel').onclick = closeSellSheet;
 document.getElementById('btnSellConfirm').onclick = confirmSell;
-document.getElementById('sellOverlay').onclick = function(e){ if(e.target.id==='sellOverlay') closeSellSheet(); };
+document.getElementById('sellOverlay').onclick = function(e){ if(e.target.id==='sellOverlay') closeOverlayById('sellOverlay'); };
 document.getElementById('s-qty').oninput = updateSellProfitPreview;
 document.getElementById('s-price').oninput = updateSellProfitPreview;
 document.getElementById('search').oninput = renderList;
@@ -2376,39 +1951,16 @@ function showToast(msg){
   showToast._timer = setTimeout(function(){ t.classList.remove('show'); }, 3500);
 }
 
-function showUndoToast(msg, onUndo){
-  const t = document.getElementById('undoToast');
-  document.getElementById('undoToastMsg').textContent = msg;
-  const btn = document.getElementById('undoToastBtn');
-  t.classList.add('show');
-  clearTimeout(showUndoToast._timer);
-  btn.onclick = function(){
-    clearTimeout(showUndoToast._timer);
-    t.classList.remove('show');
-    onUndo();
-  };
-  showUndoToast._timer = setTimeout(function(){ t.classList.remove('show'); }, 5000);
-}
-
 function backupData(silent){
   const payload = {
     exportedAt: new Date().toISOString(),
     inventory: inventory,
-    customModels: customModels,
-    customOptionData: customOptionData,
-    cardDisplaySettings: cardDisplaySettings
+    customModels: customModels
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  const d = new Date();
-  const dateStamp = todayStr().replace(/-/g,'');
-  // Add hours-minutes-seconds so every auto-backup this same day gets its own
-  // filename — otherwise the phone treats it as "downloading the same file
-  // again" and pops up a confirmation, which is exactly the interruption we
-  // don't want while entering several stock items back to back.
-  const timeStamp = String(d.getHours()).padStart(2,'0') + String(d.getMinutes()).padStart(2,'0') + String(d.getSeconds()).padStart(2,'0');
-  const stamp = silent ? (dateStamp + '-' + timeStamp) : dateStamp;
+  const stamp = todayStr().replace(/-/g,'');
   a.href = url;
   a.download = 'mobile-ledger-backup-' + stamp + '.json';
   document.body.appendChild(a);
@@ -2445,41 +1997,15 @@ function restoreData(file){
         return;
       }
       if(!confirm('Restore karne se abhi ka mojooda data is backup se replace ho jayega. Aage badhein?')) return;
-      incomingInventory.forEach(function(e){ if(e.quantity===undefined) e.quantity = 1; });
-      const ok = tryCommitInventory(incomingInventory);
-      if(!ok){
-        alert('Restore save nahi ho saka — phone ki storage full hai. Purana data abhi bhi jaisa tha waisa hi hai, kuch nahi badla.');
-        return;
-      }
+      inventory = incomingInventory;
+      inventory.forEach(function(e){ if(e.quantity===undefined) e.quantity = 1; });
       customModels = parsed.customModels && typeof parsed.customModels === 'object' ? parsed.customModels : {};
+      saveInventory();
       saveCustomModels();
-      if(parsed.customOptionData && typeof parsed.customOptionData === 'object'){
-        customOptionData = {
-          extra: parsed.customOptionData.extra || {},
-          hidden: parsed.customOptionData.hidden || {},
-          issueOverrides: parsed.customOptionData.issueOverrides || {},
-          cardVisibility: parsed.customOptionData.cardVisibility || {},
-          badgeColor: parsed.customOptionData.badgeColor || {},
-          badgeProminent: parsed.customOptionData.badgeProminent || {}
-        };
-        saveCustomOptionData();
-        renderAllChips();
-      }
-      if(parsed.cardDisplaySettings && typeof parsed.cardDisplaySettings === 'object'){
-        if(parsed.cardDisplaySettings.showFields) Object.assign(cardDisplaySettings.showFields, parsed.cardDisplaySettings.showFields);
-        if(parsed.cardDisplaySettings.batteryMode) cardDisplaySettings.batteryMode = parsed.cardDisplaySettings.batteryMode;
-        if(parsed.cardDisplaySettings.cardViewMode) cardDisplaySettings.cardViewMode = parsed.cardDisplaySettings.cardViewMode;
-        if(Array.isArray(parsed.cardDisplaySettings.badgeOrder) && parsed.cardDisplaySettings.badgeOrder.length){
-          const known = parsed.cardDisplaySettings.badgeOrder.filter(function(k){ return DEFAULT_BADGE_ORDER.indexOf(k)!==-1; });
-          DEFAULT_BADGE_ORDER.forEach(function(k){ if(known.indexOf(k)===-1) known.push(k); });
-          cardDisplaySettings.badgeOrder = known;
-        }
-        saveCardDisplaySettings();
-      }
       try{ localStorage.setItem(LS_LAST_BACKUP_KEY, String(Date.now())); }catch(e){}
       render();
       checkBackupReminder();
-      alert('✓ Data restore ho gaya.');
+      alert('Data restore ho gaya.');
     }catch(e){
       alert('File padhne mein masla hua. Sahi backup JSON file chunein.');
     }
@@ -2528,682 +2054,7 @@ function autoBackupIfDue(){
   }
 }
 
-// ---------- Dashboard ----------
-function renderDashboard(){
-  const now = new Date();
-  const curMonthKey = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  const stockItems = inventory.filter(function(e){ return !e.sold; });
-  const soldItems = inventory.filter(function(e){ return e.sold; });
-
-  const totalStockValue = stockItems.reduce(function(s,e){ return s + ((e.buy!=null?Number(e.buy):0) * (e.quantity||0)); }, 0);
-  const pendingUnits = stockItems.reduce(function(s,e){ return s + (e.quantity||0); }, 0);
-
-  const soldThisMonth = soldItems.filter(function(e){
-    const d = e.saleDate || e.lastUpdated;
-    return d && String(d).indexOf(curMonthKey) === 0;
-  });
-  const unitsSoldThisMonth = soldThisMonth.reduce(function(s,e){ return s + (e.quantity||0); }, 0);
-  const profitThisMonth = soldThisMonth.filter(function(e){ return e.buy!=null && e.sell!=null; })
-    .reduce(function(s,e){ return s + ((Number(e.sell)-Number(e.buy))*(e.quantity||1)); }, 0);
-
-  const allTimeProfit = soldItems.filter(function(e){ return e.buy!=null && e.sell!=null; })
-    .reduce(function(s,e){ return s + ((Number(e.sell)-Number(e.buy))*(e.quantity||1)); }, 0);
-
-  const cards = [
-    {v: displayProfitHtml(totalStockValue), l:'Total stock value (khareed pe)'},
-    {v: pendingUnits, l:'Pending (stock mein)'},
-    {v: unitsSoldThisMonth, l:'Is mahine sold'},
-    {v: displayProfitHtml(profitThisMonth), l:'Is mahine ka profit'},
-    {v: displayProfitHtml(allTimeProfit), l:'Total profit (ab tak)'},
-    {v: soldItems.reduce(function(s,e){return s+(e.quantity||0);},0), l:'Total sold (ab tak)'}
-  ];
-  document.getElementById('dashboardGrid').innerHTML = cards.map(function(c){
-    return '<div class="stat-card"><div class="v num">'+c.v+'</div><div class="l">'+c.l+'</div></div>';
-  }).join('');
-}
-
-document.getElementById('btnDashboard').onclick = function(){
-  renderDashboard();
-  document.getElementById('dashboardOverlay').classList.remove('hidden');
-};
-document.getElementById('btnDashboardClose').onclick = function(){
-  document.getElementById('dashboardOverlay').classList.add('hidden');
-};
-document.getElementById('dashboardOverlay').onclick = function(e){
-  if(e.target.id==='dashboardOverlay') document.getElementById('dashboardOverlay').classList.add('hidden');
-};
-
-// ---------- Reports ----------
-function getReportBrands(){
-  const brands = inventory.filter(function(e){return e.sold;}).map(function(e){return e.brand;});
-  return brands.filter(function(b,i){return b && brands.indexOf(b)===i;}).sort();
-}
-
-function renderReportBrandOptions(){
-  const sel = document.getElementById('rp-brand');
-  const cur = sel.value || 'all';
-  sel.innerHTML = '<option value="all">Sab brands</option>' + getReportBrands().map(function(b){
-    return '<option value="'+b+'">'+b+'</option>';
-  }).join('');
-  sel.value = cur;
-}
-
-function getFilteredSoldEntries(){
-  const from = document.getElementById('rp-from').value;
-  const to = document.getElementById('rp-to').value;
-  const brand = document.getElementById('rp-brand').value;
-  const customerQ = document.getElementById('rp-customer').value.trim().toLowerCase();
-
-  return inventory.filter(function(e){
-    if(!e.sold) return false;
-    const d = e.saleDate || '';
-    if(from && d && d < from) return false;
-    if(to && d && d > to) return false;
-    if(brand!=='all' && e.brand!==brand) return false;
-    if(customerQ){
-      const hay = ((e.customer||'')+' '+(e.customerNumber||'')).toLowerCase();
-      if(hay.indexOf(customerQ)===-1) return false;
-    }
-    return true;
-  }).sort(function(a,b){
-    return (b.saleDate||'').localeCompare(a.saleDate||'');
-  });
-}
-
-function renderReports(){
-  renderReportBrandOptions();
-  const entries = getFilteredSoldEntries();
-  let totalProfit = 0;
-  const rowsHtml = entries.map(function(e){
-    const profit = (e.buy!=null && e.sell!=null) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : null;
-    if(profit!=null) totalProfit += profit;
-    const profitColor = profit==null ? 'var(--text-faint)' : (profit>=0 ? 'var(--pta)' : 'var(--danger)');
-    return '<div class="report-row">'+
-      '<div class="rr-top"><span>'+e.brand+' '+e.model+'</span><span class="rr-profit" style="color:'+profitColor+'">'+(profit==null?'-':displayProfitHtml(profit))+'</span></div>'+
-      '<div class="rr-sub">'+formatDateDisplay(e.saleDate)+' • Buy: '+fmt(displayBuyPrice(e.buy))+' • Sell: '+fmt(e.sell)+(e.quantity>1?(' • x'+e.quantity):'')+'</div>'+
-      (e.customer || e.customerNumber ? '<div class="rr-sub">'+(e.customer||'')+(e.customerNumber?' - '+e.customerNumber:'')+'</div>' : '')+
-    '</div>';
-  }).join('');
-  document.getElementById('rp-list').innerHTML = rowsHtml || '<div class="rr-sub" style="text-align:center;padding:20px 0;">Koi entry nahi mili in filters se.</div>';
-  const totalEl = document.getElementById('rp-total-profit');
-  totalEl.textContent = displayProfitHtml(totalProfit);
-  totalEl.style.color = totalProfit>=0 ? 'var(--pta)' : 'var(--danger)';
-}
-
-document.getElementById('btnReports').onclick = function(){
-  document.getElementById('rp-from').value = '';
-  document.getElementById('rp-to').value = '';
-  document.getElementById('rp-customer').value = '';
-  renderReports();
-  document.getElementById('reportsOverlay').classList.remove('hidden');
-};
-document.getElementById('btnReportsClose').onclick = function(){
-  document.getElementById('reportsOverlay').classList.add('hidden');
-};
-document.getElementById('reportsOverlay').onclick = function(e){
-  if(e.target.id==='reportsOverlay') document.getElementById('reportsOverlay').classList.add('hidden');
-};
-document.getElementById('rp-from').onchange = renderReports;
-document.getElementById('rp-to').onchange = renderReports;
-document.getElementById('rp-brand').onchange = renderReports;
-document.getElementById('rp-customer').oninput = renderReports;
-
-// PDF export: builds a printable HTML report in a new tab and opens the
-// browser's print dialog, where the person picks "Save as PDF". This needs
-// no external library and works fully offline, matching the rest of the app.
-document.getElementById('btnReportsPdf').onclick = function(){
-  const entries = getFilteredSoldEntries();
-  const from = document.getElementById('rp-from').value;
-  const to = document.getElementById('rp-to').value;
-  const brand = document.getElementById('rp-brand').value;
-  let totalProfit = 0;
-  const rows = entries.map(function(e){
-    const profit = (e.buy!=null && e.sell!=null) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : null;
-    if(profit!=null) totalProfit += profit;
-    return '<tr>'+
-      '<td>'+formatDateDisplay(e.saleDate)+'</td>'+
-      '<td>'+e.brand+' '+e.model+(e.quantity>1?(' x'+e.quantity):'')+'</td>'+
-      '<td>'+(e.customer||'')+(e.customerNumber?'<br>'+e.customerNumber:'')+'</td>'+
-      '<td style="text-align:right;">'+fmt(e.buy)+'</td>'+
-      '<td style="text-align:right;">'+fmt(e.sell)+'</td>'+
-      '<td style="text-align:right;">'+(profit==null?'-':fmt(profit))+'</td>'+
-    '</tr>';
-  }).join('');
-  const rangeLabel = (from||to) ? ((from?formatDateDisplay(from):'shuru')+' se '+(to?formatDateDisplay(to):'ab tak')) : 'Sab tareekhein';
-  const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Mobile Ledger Report</title>'+
-    '<style>'+
-    'body{font-family:Arial,sans-serif;padding:24px;color:#111;}'+
-    'h1{font-size:20px;margin-bottom:2px;}'+
-    '.sub{color:#555;font-size:12px;margin-bottom:18px;}'+
-    'table{width:100%;border-collapse:collapse;font-size:12.5px;}'+
-    'th,td{border:1px solid #ccc;padding:6px 8px;text-align:left;}'+
-    'th{background:#f0f0f0;}'+
-    '.total-row td{font-weight:bold;background:#fafafa;}'+
-    '@media print{ body{padding:0;} }'+
-    '</style></head><body>'+
-    '<h1>Mobile Ledger — Sales Report</h1>'+
-    '<div class="sub">'+rangeLabel+(brand!=='all'?(' • Brand: '+brand):'')+' • Banaya gaya: '+formatDateDisplay(todayISO())+'</div>'+
-    '<table><thead><tr><th>Date</th><th>Item</th><th>Customer</th><th>Buy</th><th>Sell</th><th>Profit</th></tr></thead><tbody>'+
-    (rows || '<tr><td colspan="6" style="text-align:center;">Koi entry nahi mili</td></tr>')+
-    '<tr class="total-row"><td colspan="5" style="text-align:right;">Total profit</td><td style="text-align:right;">'+fmt(totalProfit)+'</td></tr>'+
-    '</tbody></table>'+
-    '</body></html>';
-  const w = window.open('', '_blank');
-  if(!w){ alert('Popup block ho gaya — browser settings mein popups allow karein aur dobara koshish karein.'); return; }
-  w.document.open();
-  w.document.write(html);
-  w.document.close();
-  setTimeout(function(){ w.print(); }, 300);
-};
-
-
 document.getElementById('btnBackup').onclick = function(){ backupData(false); };
-
-// ---------- Contacts ----------
-// Groups every customer (from sales) and seller (from purchases) into one
-// address-book-style list, keyed by phone number when available (since the
-// same person's name might get typed slightly differently each time).
-function contactKey(name, number){
-  const digits = (number||'').replace(/\D/g,'');
-  if(digits) return 'n:'+digits;
-  return 'name:'+(name||'').trim().toLowerCase();
-}
-
-function addContactTx(map, name, number, tx){
-  if(!name && !number) return;
-  const key = contactKey(name, number);
-  if(!map[key]) map[key] = {name: name || '(Naam nahi diya)', number: number || '', transactions: []};
-  if((!map[key].name || map[key].name==='(Naam nahi diya)') && name) map[key].name = name;
-  if(!map[key].number && number) map[key].number = number;
-  map[key].transactions.push(tx);
-}
-
-function buildContactsList(){
-  const map = {};
-  inventory.forEach(function(e){
-    if(e.sold && (e.customer || e.customerNumber)){
-      addContactTx(map, e.customer, e.customerNumber, {
-        type:'sale', brand:e.brand, model:e.model, date:e.saleDate||e.lastUpdated, amount:e.sell, qty:e.quantity||1
-      });
-    }
-    if(!e.sold && (e.sellerName || e.sellerNumber)){
-      addContactTx(map, e.sellerName, e.sellerNumber, {
-        type:'purchase', brand:e.brand, model:e.model, date:e.buyDate||e.lastUpdated, amount:e.buy, qty:e.quantity||1
-      });
-    }
-  });
-  return Object.keys(map).map(function(k){ return map[k]; })
-    .sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
-}
-
-function renderContacts(){
-  const q = document.getElementById('contactsSearch').value.trim().toLowerCase();
-  let contacts = buildContactsList();
-  if(q){
-    contacts = contacts.filter(function(c){
-      return (c.name||'').toLowerCase().indexOf(q)!==-1 || (c.number||'').toLowerCase().indexOf(q)!==-1;
-    });
-  }
-  const html = contacts.map(function(c){
-    const saleCount = c.transactions.filter(function(t){return t.type==='sale';}).length;
-    const buyCount = c.transactions.filter(function(t){return t.type==='purchase';}).length;
-    const txHtml = c.transactions.slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); })
-      .map(function(t){
-        return '<div class="contact-tx">'+
-          '<span class="tx-main">'+(t.type==='sale'?'Becha':'Khareeda')+': '+t.brand+' '+t.model+(t.qty>1?(' x'+t.qty):'')+' — '+fmt(t.amount)+'</span>'+
-          '<span class="tx-date">'+formatDateDisplay(t.date)+'</span>'+
-        '</div>';
-      }).join('');
-    return '<div class="contact-card">'+
-      '<div class="contact-head">'+
-        '<div><div class="contact-name">'+c.name+'</div>'+(c.number?'<div class="contact-number">'+c.number+'</div>':'')+'</div>'+
-        '<div class="contact-badges">'+
-          (saleCount?'<span class="badge sold-badge">'+saleCount+' sale</span>':'')+
-          (buyCount?'<span class="badge qty">'+buyCount+' khareed</span>':'')+
-        '</div>'+
-      '</div>'+
-      '<div class="contact-tx-list">'+txHtml+'</div>'+
-    '</div>';
-  }).join('');
-  document.getElementById('contactsList').innerHTML = html || '<div style="text-align:center;color:var(--text-dim);font-size:12.5px;padding:20px 0;">Abhi koi customer/seller record nahi hai. Jaise hi koi sale ya purchase customer/seller ke naam se save hogi, yahan nazar aayegi.</div>';
-}
-
-document.getElementById('btnContacts').onclick = function(){
-  document.getElementById('contactsSearch').value = '';
-  renderContacts();
-  document.getElementById('contactsOverlay').classList.remove('hidden');
-};
-document.getElementById('btnContactsClose').onclick = function(){
-  document.getElementById('contactsOverlay').classList.add('hidden');
-};
-document.getElementById('contactsOverlay').onclick = function(e){
-  if(e.target.id==='contactsOverlay') document.getElementById('contactsOverlay').classList.add('hidden');
-};
-document.getElementById('contactsSearch').oninput = renderContacts;
-
-// ---------- Settings (customize options without coding) ----------
-const CARD_FIELD_LABELS = Object.assign({}, CONDITION_FIELD_LABELS, PLAIN_FIELD_LABELS, {ram:'RAM', storage:'Storage', network:'Network'});
-
-function renderCardViewModeToggles(){
-  const modes = [{key:'detailed', label:'Detailed (sab tafseel)'}, {key:'compact', label:'Compact (sirf zaroori)'}];
-  const html = modes.map(function(m){
-    return '<div class="settings-toggle-chip'+(cardDisplaySettings.cardViewMode===m.key?' on':'')+'" data-mode="'+m.key+'"><span class="dot"></span>'+m.label+'</div>';
-  }).join('');
-  const el = document.getElementById('cardViewModeToggles');
-  el.innerHTML = html;
-  el.querySelectorAll('.settings-toggle-chip').forEach(function(chip){
-    chip.onclick = function(){
-      cardDisplaySettings.cardViewMode = chip.dataset.mode;
-      saveCardDisplaySettings();
-      renderCardViewModeToggles();
-      render();
-    };
-  });
-}
-
-function renderPrivacySettings(){
-  const onOff = [{key:'on', label:'ON'}, {key:'off', label:'OFF'}];
-  const enEl = document.getElementById('privacyEnabledToggles');
-  enEl.innerHTML = onOff.map(function(m){
-    const active = (m.key==='on') === isPrivacyOn();
-    return '<div class="settings-toggle-chip'+(active?' on':'')+'" data-val="'+m.key+'"><span class="dot"></span>Privacy '+m.label+'</div>';
-  }).join('');
-  enEl.querySelectorAll('.settings-toggle-chip').forEach(function(chip){
-    chip.onclick = function(){
-      cardDisplaySettings.privacy.enabled = chip.dataset.val==='on';
-      saveCardDisplaySettings();
-      renderPrivacySettings();
-      render();
-    };
-  });
-
-  const profitEl = document.getElementById('privacyProfitToggles');
-  const hideOn = !!cardDisplaySettings.privacy.hideProfit;
-  profitEl.innerHTML = '<div class="settings-toggle-chip'+(hideOn?' on':'')+'" data-val="toggle"><span class="dot"></span>Total profit chupayein jab Privacy ON ho</div>';
-  profitEl.querySelector('.settings-toggle-chip').onclick = function(){
-    cardDisplaySettings.privacy.hideProfit = !cardDisplaySettings.privacy.hideProfit;
-    saveCardDisplaySettings();
-    renderPrivacySettings();
-    render();
-  };
-
-  const markupInput = document.getElementById('privacyMarkupInput');
-  markupInput.value = cardDisplaySettings.privacy.buyMarkupAmount;
-  markupInput.onchange = function(){
-    const v = Number(markupInput.value);
-    cardDisplaySettings.privacy.buyMarkupAmount = isNaN(v) ? 0 : Math.max(0, v);
-    saveCardDisplaySettings();
-    render();
-  };
-}
-
-let badgeOrderDragKey = null;
-function renderBadgeOrderList(){
-  const order = cardDisplaySettings.badgeOrder && cardDisplaySettings.badgeOrder.length ? cardDisplaySettings.badgeOrder : DEFAULT_BADGE_ORDER;
-  const el = document.getElementById('badgeOrderList');
-  el.innerHTML = order.map(function(key){
-    return '<div class="badge-order-item" draggable="true" data-key="'+key+'"><span class="handle">⠿</span>'+(CARD_FIELD_LABELS[key]||key)+'</div>';
-  }).join('');
-  el.querySelectorAll('.badge-order-item').forEach(function(item){
-    item.ondragstart = function(){ badgeOrderDragKey = item.dataset.key; item.classList.add('dragging'); };
-    item.ondragend = function(){ item.classList.remove('dragging'); };
-    item.ondragover = function(e){ e.preventDefault(); };
-    item.ondrop = function(e){
-      e.preventDefault();
-      const targetKey = item.dataset.key;
-      if(!badgeOrderDragKey || badgeOrderDragKey===targetKey) return;
-      const cur = cardDisplaySettings.badgeOrder.slice();
-      const fromIdx = cur.indexOf(badgeOrderDragKey);
-      const toIdx = cur.indexOf(targetKey);
-      if(fromIdx===-1 || toIdx===-1) return;
-      cur.splice(fromIdx,1);
-      cur.splice(toIdx,0,badgeOrderDragKey);
-      cardDisplaySettings.badgeOrder = cur;
-      saveCardDisplaySettings();
-      renderBadgeOrderList();
-      render();
-    };
-  });
-}
-
-function renderSettingsFieldOptions(){
-  const fieldKey = document.getElementById('settings-field-select').value;
-  const fieldDef = CUSTOMIZABLE_FIELDS.filter(function(f){ return f.key===fieldKey; })[0];
-  if(!fieldDef) return;
-  const hidden = customOptionData.hidden[fieldKey] || [];
-  const extra = customOptionData.extra[fieldKey] || [];
-  const canHaveIssue = !!GOOD_CONDITION_VALUES[fieldKey];
-  document.getElementById('settingsIssueNote').style.display = 'block';
-
-  function issueToggleHtml(val){
-    if(!canHaveIssue) return '';
-    const isIssue = isConditionIssue(fieldKey, val);
-    return '<span class="issue-toggle'+(isIssue?' is-issue':'')+'" data-val="'+val+'">'+(isIssue?'⚠ Issue':'Normal')+'</span>';
-  }
-  function cardVisToggleHtml(val){
-    const vis = effectiveCardVisible(fieldKey, val);
-    const prom = effectiveBadgeProminent(fieldKey, val);
-    const label = !vis ? '🚫 Hidden' : (prom ? '⭐ Prominent' : '👁 Card pe');
-    return '<span class="card-vis-toggle'+(vis?' is-visible':'')+(prom?' is-prominent':'')+'" data-val="'+val+'">'+label+'</span>';
-  }
-  function colorInputHtml(val){
-    const color = effectiveBadgeColor(fieldKey, val) || '#8a8a93';
-    return '<input type="color" class="badge-color-input" data-val="'+val+'" value="'+color+'" title="Is value ka badge color">';
-  }
-
-  const baseHtml = fieldDef.base.map(function(o){
-    const isHidden = hidden.indexOf(o)!==-1;
-    return '<div class="settings-opt'+(isHidden?' is-hidden':'')+'" data-kind="base" data-val="'+o+'">'+o+
-      issueToggleHtml(o)+cardVisToggleHtml(o)+colorInputHtml(o)+
-      '<span class="rm" data-action="'+(isHidden?'restore':'hide')+'">'+(isHidden?'↺':'×')+'</span></div>';
-  }).join('');
-  const extraHtml = extra.map(function(o){
-    return '<div class="settings-opt" data-kind="extra" data-val="'+o+'">'+o+issueToggleHtml(o)+cardVisToggleHtml(o)+colorInputHtml(o)+'<span class="rm" data-action="delete">×</span></div>';
-  }).join('');
-  document.getElementById('settingsOptsList').innerHTML = baseHtml + extraHtml;
-
-  document.getElementById('settingsOptsList').querySelectorAll('.issue-toggle').forEach(function(btn){
-    btn.onclick = function(e){
-      e.stopPropagation();
-      const val = btn.dataset.val;
-      if(!customOptionData.issueOverrides[fieldKey]) customOptionData.issueOverrides[fieldKey] = {};
-      customOptionData.issueOverrides[fieldKey][val] = !isConditionIssue(fieldKey, val);
-      saveCustomOptionData();
-      renderSettingsFieldOptions();
-      renderList();
-    };
-  });
-  document.getElementById('settingsOptsList').querySelectorAll('.card-vis-toggle').forEach(function(btn){
-    btn.onclick = function(e){
-      e.stopPropagation();
-      const val = btn.dataset.val;
-      const vis = effectiveCardVisible(fieldKey, val);
-      const prom = effectiveBadgeProminent(fieldKey, val);
-      if(!customOptionData.cardVisibility[fieldKey]) customOptionData.cardVisibility[fieldKey] = {};
-      if(!customOptionData.badgeProminent[fieldKey]) customOptionData.badgeProminent[fieldKey] = {};
-      if(!vis){
-        // Hidden -> Card pe (normal)
-        customOptionData.cardVisibility[fieldKey][val] = true;
-        customOptionData.badgeProminent[fieldKey][val] = false;
-      } else if(vis && !prom){
-        // Card pe -> Prominent
-        customOptionData.badgeProminent[fieldKey][val] = true;
-      } else {
-        // Prominent -> Hidden
-        customOptionData.cardVisibility[fieldKey][val] = false;
-        customOptionData.badgeProminent[fieldKey][val] = false;
-      }
-      saveCustomOptionData();
-      renderSettingsFieldOptions();
-      renderList();
-    };
-  });
-  document.getElementById('settingsOptsList').querySelectorAll('.badge-color-input').forEach(function(input){
-    input.onclick = function(e){ e.stopPropagation(); };
-    input.onchange = function(e){
-      e.stopPropagation();
-      const val = input.dataset.val;
-      if(!customOptionData.badgeColor[fieldKey]) customOptionData.badgeColor[fieldKey] = {};
-      customOptionData.badgeColor[fieldKey][val] = input.value;
-      saveCustomOptionData();
-      renderList();
-    };
-  });
-  document.getElementById('settingsOptsList').querySelectorAll('.rm').forEach(function(btn){
-    btn.onclick = function(e){
-      e.stopPropagation();
-      const parent = btn.closest('.settings-opt');
-      const val = parent.dataset.val;
-      const kind = parent.dataset.kind;
-      const action = btn.dataset.action;
-      if(kind==='base'){
-        if(!customOptionData.hidden[fieldKey]) customOptionData.hidden[fieldKey] = [];
-        if(action==='hide'){
-          if(customOptionData.hidden[fieldKey].indexOf(val)===-1) customOptionData.hidden[fieldKey].push(val);
-        } else {
-          customOptionData.hidden[fieldKey] = customOptionData.hidden[fieldKey].filter(function(x){ return x!==val; });
-        }
-      } else {
-        customOptionData.extra[fieldKey] = (customOptionData.extra[fieldKey]||[]).filter(function(x){ return x!==val; });
-      }
-      saveCustomOptionData();
-      renderSettingsFieldOptions();
-      renderAllChips();
-    };
-  });
-}
-
-document.getElementById('settingsAddBtn').onclick = function(){
-  const fieldKey = document.getElementById('settings-field-select').value;
-  const input = document.getElementById('settingsNewOption');
-  const val = input.value.trim();
-  if(!val) return;
-  const fieldDef = CUSTOMIZABLE_FIELDS.filter(function(f){ return f.key===fieldKey; })[0];
-  if(!customOptionData.extra[fieldKey]) customOptionData.extra[fieldKey] = [];
-  const already = fieldDef.base.indexOf(val)!==-1 || customOptionData.extra[fieldKey].indexOf(val)!==-1;
-  if(already){ alert('Ye option pehle se maujood hai.'); return; }
-  customOptionData.extra[fieldKey].push(val);
-  saveCustomOptionData();
-  input.value = '';
-  renderSettingsFieldOptions();
-  renderAllChips();
-};
-
-document.getElementById('settings-field-select').onchange = renderSettingsFieldOptions;
-
-// ---------- Brand list customization ----------
-const BASE_BRANDS = BRANDS.filter(function(b){ return b!=='Other'; });
-
-function getLiveBrands(){
-  return getFieldOptions('brand', BASE_BRANDS).concat(['Other']);
-}
-
-function renderSettingsBrands(){
-  const hidden = customOptionData.hidden['brand'] || [];
-  const extra = customOptionData.extra['brand'] || [];
-  const baseHtml = BASE_BRANDS.map(function(b){
-    const isHidden = hidden.indexOf(b)!==-1;
-    return '<div class="settings-opt'+(isHidden?' is-hidden':'')+'" data-kind="base" data-val="'+b+'">'+b+
-      '<span class="rm" data-action="'+(isHidden?'restore':'hide')+'">'+(isHidden?'↺':'×')+'</span></div>';
-  }).join('');
-  const extraHtml = extra.map(function(b){
-    return '<div class="settings-opt" data-kind="extra" data-val="'+b+'">'+b+'<span class="rm" data-action="delete">×</span></div>';
-  }).join('');
-  document.getElementById('settingsBrandsList').innerHTML = baseHtml + extraHtml + '<div class="settings-opt" style="opacity:0.6;">Other (hamesha rahega)</div>';
-  document.getElementById('settingsBrandsList').querySelectorAll('.rm').forEach(function(btn){
-    btn.onclick = function(e){
-      e.stopPropagation();
-      const parent = btn.closest('.settings-opt');
-      const val = parent.dataset.val;
-      const kind = parent.dataset.kind;
-      const action = btn.dataset.action;
-      if(kind==='base'){
-        if(!customOptionData.hidden['brand']) customOptionData.hidden['brand'] = [];
-        if(action==='hide'){
-          if(customOptionData.hidden['brand'].indexOf(val)===-1) customOptionData.hidden['brand'].push(val);
-        } else {
-          customOptionData.hidden['brand'] = customOptionData.hidden['brand'].filter(function(x){ return x!==val; });
-        }
-      } else {
-        customOptionData.extra['brand'] = (customOptionData.extra['brand']||[]).filter(function(x){ return x!==val; });
-      }
-      saveCustomOptionData();
-      renderSettingsBrands();
-      renderAllChips();
-      renderBrandFilter();
-    };
-  });
-}
-
-document.getElementById('settingsAddBrandBtn').onclick = function(){
-  const input = document.getElementById('settingsNewBrand');
-  const val = input.value.trim();
-  if(!val) return;
-  if(!customOptionData.extra['brand']) customOptionData.extra['brand'] = [];
-  const already = BASE_BRANDS.indexOf(val)!==-1 || customOptionData.extra['brand'].indexOf(val)!==-1 || val==='Other';
-  if(already){ alert('Ye brand pehle se maujood hai.'); return; }
-  customOptionData.extra['brand'].push(val);
-  saveCustomOptionData();
-  input.value = '';
-  renderSettingsBrands();
-  renderAllChips();
-  renderBrandFilter();
-};
-
-document.getElementById('btnSettings').onclick = function(){
-  const sel = document.getElementById('settings-field-select');
-  sel.innerHTML = CUSTOMIZABLE_FIELDS.map(function(f){ return '<option value="'+f.key+'">'+f.label+'</option>'; }).join('');
-  renderCardViewModeToggles();
-  renderPrivacySettings();
-  renderBadgeOrderList();
-  renderSettingsFieldOptions();
-  renderSettingsBrands();
-  document.getElementById('settingsOverlay').classList.remove('hidden');
-};
-document.getElementById('btnSettingsClose').onclick = function(){
-  document.getElementById('settingsOverlay').classList.add('hidden');
-};
-document.getElementById('settingsOverlay').onclick = function(e){
-  if(e.target.id==='settingsOverlay') document.getElementById('settingsOverlay').classList.add('hidden');
-};
-
-document.getElementById('btnPrivacyToggle').onclick = function(){
-  cardDisplaySettings.privacy.enabled = !cardDisplaySettings.privacy.enabled;
-  saveCardDisplaySettings();
-  render();
-  showToast('✓ Ho gaya.');
-};
-
-// ---------- Clear data (password-protected) ----------
-// Not real cryptographic security — just a deterrent so a curious customer
-// or employee who picks up the phone can't wipe everything by accident or
-// on purpose. Anyone with real access to the browser storage could bypass
-// this, same as any client-side-only protection.
-const LS_CLEAR_PASSWORD_KEY = 'mobileLedger_clearDataPasswordHash';
-function simpleHash(str){
-  let h = 0;
-  for(let i=0;i<str.length;i++){ h = (Math.imul(31,h) + str.charCodeAt(i)) | 0; }
-  return 'h' + h.toString(36);
-}
-
-document.getElementById('clearPasswordSaveBtn').onclick = function(){
-  const input = document.getElementById('clearPasswordInput');
-  const val = input.value;
-  if(!val || val.length < 4){ alert('Kam se kam 4 characters ka password rakhein.'); return; }
-  try{ localStorage.setItem(LS_CLEAR_PASSWORD_KEY, simpleHash(val)); }catch(e){}
-  input.value = '';
-  showToast('✓ Clear-data password save ho gaya.');
-};
-
-document.getElementById('btnClearData').onclick = function(){
-  let storedHash = null;
-  try{ storedHash = localStorage.getItem(LS_CLEAR_PASSWORD_KEY); }catch(e){}
-  if(!storedHash){
-    alert('Pehle Settings mein "🗑️ Clear data password" set karein — usके baghair Clear data kaam nahi karega.');
-    return;
-  }
-  const entered = prompt('Sara data clear karne ke liye password likhein:');
-  if(entered===null) return; // cancelled
-  if(simpleHash(entered) !== storedHash){
-    alert('Galat password — kuch bhi clear nahi hua.');
-    return;
-  }
-  if(!confirm('Ye action WAPIS NAHI HO SAKTA — sara stock, sales history, aur customization mit jayega aur app bilkul nayi shuruaat se save karegi. Pakka aage badhna hai?')) return;
-
-  const ok = tryCommitInventory([]);
-  if(!ok){ alert('Clear nahi ho saka — storage mein masla hua, dobara try karein.'); return; }
-  customModels = {};
-  saveCustomModels();
-  customOptionData = {extra:{}, hidden:{}, issueOverrides:{}, cardVisibility:{}, badgeColor:{}, badgeProminent:{}};
-  saveCustomOptionData();
-  cardDisplaySettings = {
-    showFields: {display:true, battery:true, touch:true, camera:true, body:true, openrepair:true, ram:true, storage:true, network:true, packing:true},
-    batteryMode: 'always',
-    badgeOrder: DEFAULT_BADGE_ORDER.slice(),
-    cardViewMode: 'detailed',
-    privacy: {enabled:false, hideProfit:true, buyMarkupAmount:2000}
-  };
-  saveCardDisplaySettings();
-  renderAllChips();
-  render();
-  alert('✓ Sara data clear ho gaya. Ab bilkul nayi shuruaat hai.');
-};
-
-// ---------- Excel backup/import ----------
-// Same data as the JSON backup, but as a spreadsheet the person can open,
-// read, edit, or forward to someone else — unlike the JSON file.
-const EXCEL_COLUMNS = ['id','brand','model','status','quantity','sold','display','touch','camera','body','openrepair','battery','ram','storage','network','packing','charger','box','faceid','truetone','buy','sell','range','buyDate','saleDate','customerName','customerNumber','notes','lastUpdated'];
-
-function exportExcel(){
-  if(typeof XLSX==='undefined'){ alert('Excel feature load nahi ho saka — internet connection check karke dobara try karein.'); return; }
-  const rows = inventory.map(function(e){
-    const row = {};
-    EXCEL_COLUMNS.forEach(function(k){
-      let v = e[k];
-      if(k==='sold') v = e.sold ? 'Yes' : 'No';
-      row[k] = (v==null) ? '' : v;
-    });
-    return row;
-  });
-  const ws = XLSX.utils.json_to_sheet(rows, {header: EXCEL_COLUMNS});
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Inventory');
-  XLSX.writeFile(wb, 'mobile-ledger-'+todayStr()+'.xlsx');
-  try{ localStorage.setItem(LS_LAST_BACKUP_KEY, String(Date.now())); }catch(e){}
-  hideBackupReminder();
-  showToast('✓ Excel file ban gayi (Downloads mein) — WhatsApp/kisi ko bhi bhej sakte hain.');
-}
-
-function importExcel(file){
-  if(typeof XLSX==='undefined'){ alert('Excel feature load nahi ho saka — internet connection check karke dobara try karein.'); return; }
-  const reader = new FileReader();
-  reader.onload = function(evt){
-    try{
-      const data = new Uint8Array(evt.target.result);
-      const wb = XLSX.read(data, {type:'array'});
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
-      if(!rows.length){ alert('Is Excel file mein koi data nahi mila.'); return; }
-      if(!confirm('Excel import karne se mojooda stock is file ke data se replace ho jayega. Aage badhein?')) return;
-      const newInventory = rows.map(function(r){
-        const e = {};
-        EXCEL_COLUMNS.forEach(function(k){ e[k] = (r[k]===undefined || r[k]==='') ? null : r[k]; });
-        e.id = e.id || (Date.now().toString(36)+Math.random().toString(36).slice(2));
-        e.brand = e.brand || '';
-        e.model = e.model || '';
-        e.status = e.status || 'JV';
-        e.quantity = Number(e.quantity)||1;
-        e.sold = String(r.sold).toLowerCase()==='yes';
-        e.buy = e.buy===null ? null : Number(e.buy);
-        e.sell = e.sell===null ? null : Number(e.sell);
-        e.box = e.box || 'No';
-        e.charger = e.charger || 'Original charger';
-        e.lastUpdated = e.lastUpdated || todayStr();
-        e.photos = [];
-        return e;
-      });
-      const ok = tryCommitInventory(newInventory);
-      if(!ok){ alert('Import save nahi ho saka — phone ki storage full hai. Purana data waisa hi hai.'); return; }
-      render();
-      alert('✓ Excel se '+newInventory.length+' entries import ho gayi.');
-    }catch(err){
-      alert('Excel file padhne mein masla hua. Sahi .xlsx file chunein (usi format mein jo "Excel Backup" se banti hai).');
-    }
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-document.getElementById('btnExcelBackup').onclick = function(){ exportExcel(); };
-document.getElementById('btnExcelRestore').onclick = function(){
-  document.getElementById('excelFile').click();
-};
-document.getElementById('excelFile').onchange = function(){
-  if(this.files && this.files[0]){
-    importExcel(this.files[0]);
-    this.value = '';
-  }
-};
-
 document.getElementById('btnRestore').onclick = function(){
   document.getElementById('restoreFile').click();
 };
@@ -3219,20 +2070,11 @@ document.getElementById('reminderDismissBtn').onclick = function(){
   hideBackupReminder();
 };
 
-loadCardDisplaySettings();
-loadCustomOptionData();
+loadOptionLists();
 loadCustomModels();
 loadInventory();
 autoBackupIfDue();
 checkBackupReminder();
-
-if('serviceWorker' in navigator){
-  window.addEventListener('load', function(){
-    navigator.serviceWorker.register('service-worker.js').catch(function(err){
-      console.error('Service worker register failed', err);
-    });
-  });
-}
 </script>
 </body>
 </html>
