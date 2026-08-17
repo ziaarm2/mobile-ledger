@@ -667,6 +667,15 @@
       <div class="report-summary" id="accountShopRow" style="display:none;">
         <span>Shop</span>
         <span class="v" id="accountShopLabel" style="font-size:14px;color:var(--text);"></span>
+        <a href="javascript:void(0)" id="btnEditShopProfile" style="color:var(--accent);font-size:12px;margin-left:8px;text-decoration:none;">✏️ Edit</a>
+      </div>
+      <div id="editShopProfileBlock" style="display:none;margin-top:10px;">
+        <div class="field"><label>Shop ka naam</label><input type="text" id="edit-shopname" placeholder="jaise: Ali Mobile Center"></div>
+        <div class="field"><label>Owner ka naam</label><input type="text" id="edit-ownername" placeholder="jaise: Ali Raza"></div>
+        <div class="sheet-actions" style="position:static;margin-top:8px;">
+          <button class="btn-save" id="btnSaveShopProfile" style="flex:1;">Save karein</button>
+          <button class="btn-cancel" id="btnCancelShopProfile" style="flex:1;">Cancel</button>
+        </div>
       </div>
       <div class="settings-note" id="accountSyncStatus">Sync status: —</div>
       <div class="settings-note">Yaad rahe: Email se bana account aur Phone se bana account do alag accounts hain (alag data). Sab devices par hamesha SAME tareeqa (ya email, ya phone) use karein taake data ek hi jaga sync ho.</div>
@@ -3997,10 +4006,8 @@ function updateAccountUI(){
     if(emailLabel) emailLabel.textContent = accountDisplayId(fbUser);
     const shopRow = document.getElementById('accountShopRow');
     const shopLabel = document.getElementById('accountShopLabel');
-    if(shopProfile.shopName || shopProfile.ownerName){
-      if(shopLabel) shopLabel.textContent = [shopProfile.shopName, shopProfile.ownerName].filter(Boolean).join(' — ');
-      if(shopRow) shopRow.style.display = 'flex';
-    } else if(shopRow) shopRow.style.display = 'none';
+    if(shopLabel) shopLabel.textContent = [shopProfile.shopName, shopProfile.ownerName].filter(Boolean).join(' — ') || 'Set nahi kiya';
+    if(shopRow) shopRow.style.display = 'flex';
     if(statusLine){
       const who = shopProfile.shopName || accountDisplayId(fbUser);
       statusLine.textContent = '✓ Logged in — ' + who + ' (sync ON)';
@@ -4160,6 +4167,25 @@ document.getElementById('btnAccountForgotPassword').onclick = function(){
 document.getElementById('btnAccountLogout').onclick = function(){
   if(!confirm('Is device se logout karna hai? App is device par offline/local mode mein chalti rahegi.')) return;
   fbAuth.signOut();
+};
+document.getElementById('btnEditShopProfile').onclick = function(){
+  document.getElementById('edit-shopname').value = shopProfile.shopName || '';
+  document.getElementById('edit-ownername').value = shopProfile.ownerName || '';
+  document.getElementById('editShopProfileBlock').style.display = 'block';
+};
+document.getElementById('btnCancelShopProfile').onclick = function(){
+  document.getElementById('editShopProfileBlock').style.display = 'none';
+};
+document.getElementById('btnSaveShopProfile').onclick = function(){
+  shopProfile = {
+    shopName: document.getElementById('edit-shopname').value.trim(),
+    ownerName: document.getElementById('edit-ownername').value.trim()
+  };
+  try{ localStorage.setItem(LS_SHOP_PROFILE_KEY, JSON.stringify(shopProfile)); }catch(e){}
+  schedulePush();
+  updateAccountUI();
+  document.getElementById('editShopProfileBlock').style.display = 'none';
+  showToast('✓ Shop details update ho gayi.');
 };
 
 // ---------- Login method tabs (Email / Phone) ----------
