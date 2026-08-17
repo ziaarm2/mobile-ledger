@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Mobile Ledger</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f1115">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -283,6 +286,10 @@
       <button class="menu-item" id="btnExcelRestore">📥 Excel Import</button>
       <input type="file" id="restoreFile" accept="application/json" style="display:none;">
       <input type="file" id="excelFile" accept=".xlsx,.xls" style="display:none;">
+
+      <div class="menu-divider"></div>
+      <div class="menu-section-label">Account (multi-device sync)</div>
+      <button class="menu-item" id="btnAccount">👤 <span id="accountStatusLabel">Sign in nahi hai</span></button>
 
       <div class="menu-divider"></div>
       <div class="menu-section-label">Settings</div>
@@ -605,6 +612,39 @@
   </div>
 </div>
 
+<div class="overlay hidden" id="accountOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Account — Multi-device sync</h2>
+    <div class="settings-note" style="margin-top:0;">Isi email/password se dusre kisi bhi phone/computer par login karke wahi stock, sales aur expenses turant nazar aayenge — data khud-ba-khud sync hota rahega. <b>Note:</b> photos har device par alag rehti hain (sync nahi hoti), baqi sab kuch (stock list, prices, condition, expenses, settings) sync hota hai.</div>
+
+    <div id="accountLoggedOutView">
+      <div class="field" style="margin-top:14px;"><label>Email</label><input type="email" id="acc-email" placeholder="aap@example.com" autocomplete="username"></div>
+      <div class="field"><label>Password</label><input type="password" id="acc-password" placeholder="Kam se kam 6 characters" autocomplete="current-password"></div>
+      <div id="accountErrorMsg" style="color:var(--danger);font-size:12.5px;margin-top:6px;display:none;"></div>
+      <div class="sheet-actions" style="position:static;margin-top:12px;">
+        <button class="btn-save" id="btnAccountLogin" style="flex:1;">Login karein</button>
+        <button class="btn-save" id="btnAccountSignup" style="flex:1;">Naya account banayein</button>
+      </div>
+    </div>
+
+    <div id="accountLoggedInView" style="display:none;">
+      <div class="report-summary" style="margin-top:14px;">
+        <span>Logged in as</span>
+        <span class="v" id="accountEmailLabel" style="font-size:14px;color:var(--text);"></span>
+      </div>
+      <div class="settings-note" id="accountSyncStatus">Sync status: —</div>
+      <div class="sheet-actions" style="position:static;margin-top:12px;">
+        <button class="btn-cancel" id="btnAccountLogout" style="width:100%;">Logout karein (is device se)</button>
+      </div>
+    </div>
+
+    <div class="sheet-actions">
+      <button class="btn-cancel" id="btnAccountClose">Band karein</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay hidden" id="contactsOverlay">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -776,6 +816,7 @@ function loadCustomOptionData(){
 
 function saveCustomOptionData(){
   try{ localStorage.setItem(LS_CUSTOM_OPTIONS_KEY, JSON.stringify(customOptionData)); }catch(err){}
+  schedulePush();
 }
 
 // Returns the live option list for a field: built-in defaults minus anything
@@ -841,6 +882,7 @@ function tryCommitExpenses(candidateExpenses){
     return false;
   }
   expenses = candidateExpenses;
+  schedulePush();
   return true;
 }
 
@@ -874,6 +916,7 @@ async function saveCustomModels(){
   }catch(e){
     console.error('Storage error', e);
   }
+  schedulePush();
 }
 
 function addCustomModelIfNew(brand, model){
@@ -1232,6 +1275,7 @@ function tryCommitInventory(candidateInventory){
     return false;
   }
   inventory = candidateInventory;
+  schedulePush();
   return true;
 }
 
@@ -1243,6 +1287,7 @@ async function saveInventory(){
   }catch(e){
     console.error('Storage error', e);
   }
+  schedulePush();
 }
 
 const SAVE_FAIL_MSG = 'Save nahi ho saka — phone ki storage full ho sakti hai ya browser ki private/incognito mode mein hain. Aap ka type kiya hua data abhi bhi is form mein mojood hai, kahin gaya nahi. Purani "Sold" entries delete karke ya kam photos rakh kar dobara "Save" dabayein.';
@@ -1834,6 +1879,7 @@ function loadCardDisplaySettings(){
 }
 function saveCardDisplaySettings(){
   try{ localStorage.setItem(LS_CARD_DISPLAY_KEY, JSON.stringify(cardDisplaySettings)); }catch(err){}
+  schedulePush();
 }
 
 // ---------- Privacy mode ----------
@@ -3843,6 +3889,187 @@ document.getElementById('reminderDismissBtn').onclick = function(){
   hideBackupReminder();
 };
 
+// ================= Firebase multi-device sync (optional) =================
+// Paste your own Firebase project's config below (Firebase console →
+// Project settings → General → "Your apps" → SDK setup and configuration).
+// Until this is filled in, the app behaves exactly as before — fully
+// offline, local-only, nothing breaks. Once filled in + a person signs in
+// on the Account screen, their data (stock, sales, expenses, settings —
+// NOT photos, which stay local per device) syncs across every device they
+// log into with the same email.
+const firebaseConfig = {
+  apiKey: "AIzaSyDYM4AXQxUqRWxxVz8tBxWXiTM20bF6S9g",
+  authDomain: "mobile-ledger-d04d6.firebaseapp.com",
+  projectId: "mobile-ledger-d04d6",
+  storageBucket: "mobile-ledger-d04d6.firebasestorage.app",
+  messagingSenderId: "330510941060",
+  appId: "1:330510941060:web:b5e45cab53791c2c8e3bd1"
+};
+
+let fbAuth = null, fbDb = null, fbUser = null;
+let cloudUnsub = null;
+let applyingRemoteUpdate = false; // true while a cloud update is being written locally, so we don't immediately re-push it
+let pushDebounceTimer = null;
+
+function firebaseReady(){
+  return typeof firebase !== 'undefined' && firebaseConfig.apiKey && firebaseConfig.apiKey.indexOf('PASTE_') !== 0;
+}
+
+function initFirebaseSync(){
+  if(!firebaseReady()){ updateAccountUI(); return; }
+  try{
+    firebase.initializeApp(firebaseConfig);
+    fbAuth = firebase.auth();
+    fbDb = firebase.firestore();
+    fbAuth.onAuthStateChanged(function(user){
+      fbUser = user;
+      updateAccountUI();
+      if(cloudUnsub){ cloudUnsub(); cloudUnsub = null; }
+      if(user) startCloudSync(user.uid);
+    });
+  }catch(e){
+    console.error('Firebase init failed', e);
+  }
+}
+
+function updateAccountUI(){
+  const label = document.getElementById('accountStatusLabel');
+  if(!label) return;
+  const loggedOutView = document.getElementById('accountLoggedOutView');
+  const loggedInView = document.getElementById('accountLoggedInView');
+  if(fbUser){
+    label.textContent = fbUser.email + ' (sync ON)';
+    if(loggedOutView) loggedOutView.style.display = 'none';
+    if(loggedInView) loggedInView.style.display = 'block';
+    const emailLabel = document.getElementById('accountEmailLabel');
+    if(emailLabel) emailLabel.textContent = fbUser.email;
+  } else {
+    label.textContent = firebaseReady() ? 'Sign in nahi hai' : 'Sync set up nahi hai';
+    if(loggedOutView) loggedOutView.style.display = 'block';
+    if(loggedInView) loggedInView.style.display = 'none';
+  }
+}
+
+function setAccountSyncStatus(text){
+  const el = document.getElementById('accountSyncStatus');
+  if(el) el.textContent = 'Sync status: ' + text;
+}
+
+// Firestore doc shape: everything except photos (photos stay local-only per
+// device — this keeps each sync write small, fast and free-tier-friendly;
+// Firestore documents are capped at 1MB and photos would blow past that
+// fast across dozens of stock entries).
+function buildCloudPayload(){
+  return {
+    inventory: inventory.map(function(e){ const c = Object.assign({}, e); delete c.photos; return c; }),
+    expenses: expenses,
+    customModels: customModels,
+    customOptionData: customOptionData,
+    cardDisplaySettings: cardDisplaySettings,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+}
+
+function schedulePush(){
+  if(!fbUser || applyingRemoteUpdate) return;
+  clearTimeout(pushDebounceTimer);
+  setAccountSyncStatus('save ho raha hai…');
+  pushDebounceTimer = setTimeout(function(){
+    fbDb.collection('shops').doc(fbUser.uid).set(buildCloudPayload(), {merge:true})
+      .then(function(){ setAccountSyncStatus('sab devices par sync ho gaya ✓'); })
+      .catch(function(err){ console.error('Cloud push failed', err); setAccountSyncStatus('sync fail hua — internet check karein'); });
+  }, 1200);
+}
+
+function startCloudSync(uid){
+  setAccountSyncStatus('data la rahe hain…');
+  cloudUnsub = fbDb.collection('shops').doc(uid).onSnapshot(function(snap){
+    if(!snap.exists){
+      // Brand-new account: seed the cloud with whatever's already on this device.
+      setAccountSyncStatus('nayi account — is device ka data upload ho raha hai');
+      schedulePush();
+      return;
+    }
+    const data = snap.data();
+    applyingRemoteUpdate = true;
+    if(Array.isArray(data.inventory)){
+      const localPhotosById = {};
+      inventory.forEach(function(e){ if(e.photos && e.photos.length) localPhotosById[e.id] = e.photos; });
+      inventory = data.inventory.map(function(e){ const c = Object.assign({}, e); c.photos = localPhotosById[e.id] || []; return c; });
+      try{ localStorage.setItem(LS_INVENTORY_KEY, JSON.stringify(inventory)); }catch(err){}
+    }
+    if(Array.isArray(data.expenses)){
+      expenses = data.expenses;
+      try{ localStorage.setItem(LS_EXPENSES_KEY, JSON.stringify(expenses)); }catch(err){}
+    }
+    if(data.customModels){
+      customModels = data.customModels;
+      try{ localStorage.setItem(LS_CUSTOM_MODELS_KEY, JSON.stringify(customModels)); }catch(err){}
+    }
+    if(data.customOptionData){
+      customOptionData = data.customOptionData;
+      try{ localStorage.setItem(LS_CUSTOM_OPTIONS_KEY, JSON.stringify(customOptionData)); }catch(err){}
+    }
+    if(data.cardDisplaySettings){
+      Object.assign(cardDisplaySettings, data.cardDisplaySettings);
+      try{ localStorage.setItem(LS_CARD_DISPLAY_KEY, JSON.stringify(cardDisplaySettings)); }catch(err){}
+    }
+    applyingRemoteUpdate = false;
+    render();
+    setAccountSyncStatus('sab devices par sync ho gaya ✓');
+  }, function(err){
+    console.error('Cloud sync listen failed', err);
+    setAccountSyncStatus('sync connect nahi ho saka — internet check karein');
+  });
+}
+
+function showAccountError(msg){
+  const el = document.getElementById('accountErrorMsg');
+  if(!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function friendlyAuthError(err){
+  const code = (err && err.code) || '';
+  if(code.indexOf('wrong-password')!==-1 || code.indexOf('user-not-found')!==-1 || code.indexOf('invalid-credential')!==-1) return 'Email ya password ghalat hai.';
+  if(code.indexOf('email-already-in-use')!==-1) return 'Ye email pehle se registered hai — "Login karein" try karein.';
+  if(code.indexOf('weak-password')!==-1) return 'Password kam se kam 6 characters ka hona chahiye.';
+  if(code.indexOf('invalid-email')!==-1) return 'Email sahi format mein likhein.';
+  return 'Masla hua: ' + ((err && err.message) || 'dobara try karein.');
+}
+
+document.getElementById('btnAccount').onclick = function(){
+  document.getElementById('accountErrorMsg').style.display = 'none';
+  document.getElementById('accountOverlay').classList.remove('hidden');
+};
+document.getElementById('btnAccountClose').onclick = function(){
+  document.getElementById('accountOverlay').classList.add('hidden');
+};
+document.getElementById('btnAccountLogin').onclick = function(){
+  if(!firebaseReady()){ showAccountError('Sync abhi set up nahi hua (Firebase config missing).'); return; }
+  const email = document.getElementById('acc-email').value.trim();
+  const pass = document.getElementById('acc-password').value;
+  if(!email || !pass){ showAccountError('Email aur password dono likhein.'); return; }
+  fbAuth.signInWithEmailAndPassword(email, pass)
+    .then(function(){ document.getElementById('accountOverlay').classList.add('hidden'); showToast('✓ Login ho gaya — sync shuru.'); })
+    .catch(function(err){ showAccountError(friendlyAuthError(err)); });
+};
+document.getElementById('btnAccountSignup').onclick = function(){
+  if(!firebaseReady()){ showAccountError('Sync abhi set up nahi hua (Firebase config missing).'); return; }
+  const email = document.getElementById('acc-email').value.trim();
+  const pass = document.getElementById('acc-password').value;
+  if(!email || !pass){ showAccountError('Email aur password dono likhein.'); return; }
+  if(pass.length < 6){ showAccountError('Password kam se kam 6 characters ka ho.'); return; }
+  fbAuth.createUserWithEmailAndPassword(email, pass)
+    .then(function(){ document.getElementById('accountOverlay').classList.add('hidden'); showToast('✓ Account ban gaya — sync shuru.'); })
+    .catch(function(err){ showAccountError(friendlyAuthError(err)); });
+};
+document.getElementById('btnAccountLogout').onclick = function(){
+  if(!confirm('Is device se logout karna hai? App is device par offline/local mode mein chalti rahegi.')) return;
+  fbAuth.signOut();
+};
+
+
 loadCardDisplaySettings();
 loadCustomOptionData();
 loadCustomModels();
@@ -3850,6 +4077,7 @@ loadExpenses();
 loadInventory();
 autoBackupIfDue();
 checkBackupReminder();
+initFirebaseSync();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
