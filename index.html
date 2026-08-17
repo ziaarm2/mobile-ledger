@@ -299,6 +299,7 @@
     </div>
 
     <div class="stats" id="stats"></div>
+    <div class="account-status-line" id="accountStatusLine" style="display:none;font-size:12px;color:var(--text-dim);margin-top:10px;"></div>
     <div class="storage-bar-wrap">
       <div class="storage-bar-track"><div class="storage-bar-fill" id="storageBarFill"></div></div>
       <div class="storage-bar-label" id="storageBarLabel">Storage: 0% used</div>
@@ -627,6 +628,11 @@
       <div id="accEmailBlock">
         <div class="field" style="margin-top:12px;"><label>Email</label><input type="email" id="acc-email" placeholder="aap@example.com" autocomplete="username"></div>
         <div class="field"><label>Password</label><input type="password" id="acc-password" placeholder="Kam se kam 6 characters" autocomplete="current-password"></div>
+        <div id="accSignupOnlyFields">
+          <div class="field"><label>Shop ka naam</label><input type="text" id="acc-shopname" placeholder="jaise: Ali Mobile Center"></div>
+          <div class="field"><label>Owner ka naam</label><input type="text" id="acc-ownername" placeholder="jaise: Ali Raza"></div>
+          <div class="settings-note" style="margin-top:0;font-size:11.5px;">Ye sirf naya account banate waqt chahiye — login karte waqt khali chhor dein.</div>
+        </div>
         <div class="sheet-actions" style="position:static;margin-top:12px;">
           <button class="btn-save" id="btnAccountLogin" style="flex:1;">Login karein</button>
           <button class="btn-save" id="btnAccountSignup" style="flex:1;">Naya account banayein</button>
@@ -657,6 +663,10 @@
       <div class="report-summary" style="margin-top:14px;">
         <span>Logged in as</span>
         <span class="v" id="accountEmailLabel" style="font-size:14px;color:var(--text);"></span>
+      </div>
+      <div class="report-summary" id="accountShopRow" style="display:none;">
+        <span>Shop</span>
+        <span class="v" id="accountShopLabel" style="font-size:14px;color:var(--text);"></span>
       </div>
       <div class="settings-note" id="accountSyncStatus">Sync status: —</div>
       <div class="settings-note">Yaad rahe: Email se bana account aur Phone se bana account do alag accounts hain (alag data). Sab devices par hamesha SAME tareeqa (ya email, ya phone) use karein taake data ek hi jaga sync ho.</div>
@@ -3942,6 +3952,12 @@ let fbAuth = null, fbDb = null, fbUser = null;
 let cloudUnsub = null;
 let applyingRemoteUpdate = false; // true while a cloud update is being written locally, so we don't immediately re-push it
 let pushDebounceTimer = null;
+let shopProfile = {shopName:"", ownerName:""};
+const LS_SHOP_PROFILE_KEY = 'mobileLedger_shopProfile';
+try{
+  const rawProfile = localStorage.getItem(LS_SHOP_PROFILE_KEY);
+  if(rawProfile) shopProfile = Object.assign(shopProfile, JSON.parse(rawProfile));
+}catch(e){}
 
 function firebaseReady(){
   return typeof firebase !== 'undefined' && firebaseConfig.apiKey && firebaseConfig.apiKey.indexOf('PASTE_') !== 0;
@@ -3972,16 +3988,29 @@ function updateAccountUI(){
   if(!label) return;
   const loggedOutView = document.getElementById('accountLoggedOutView');
   const loggedInView = document.getElementById('accountLoggedInView');
+  const statusLine = document.getElementById('accountStatusLine');
   if(fbUser){
     label.textContent = accountDisplayId(fbUser) + ' (sync ON)';
     if(loggedOutView) loggedOutView.style.display = 'none';
     if(loggedInView) loggedInView.style.display = 'block';
     const emailLabel = document.getElementById('accountEmailLabel');
     if(emailLabel) emailLabel.textContent = accountDisplayId(fbUser);
+    const shopRow = document.getElementById('accountShopRow');
+    const shopLabel = document.getElementById('accountShopLabel');
+    if(shopProfile.shopName || shopProfile.ownerName){
+      if(shopLabel) shopLabel.textContent = [shopProfile.shopName, shopProfile.ownerName].filter(Boolean).join(' — ');
+      if(shopRow) shopRow.style.display = 'flex';
+    } else if(shopRow) shopRow.style.display = 'none';
+    if(statusLine){
+      const who = shopProfile.shopName || accountDisplayId(fbUser);
+      statusLine.textContent = '✓ Logged in — ' + who + ' (sync ON)';
+      statusLine.style.display = 'block';
+    }
   } else {
     label.textContent = firebaseReady() ? 'Sign in nahi hai' : 'Sync set up nahi hai';
     if(loggedOutView) loggedOutView.style.display = 'block';
     if(loggedInView) loggedInView.style.display = 'none';
+    if(statusLine) statusLine.style.display = 'none';
   }
 }
 
@@ -4001,6 +4030,7 @@ function buildCloudPayload(){
     customModels: customModels,
     customOptionData: customOptionData,
     cardDisplaySettings: cardDisplaySettings,
+    shopProfile: shopProfile,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 }
@@ -4049,8 +4079,13 @@ function startCloudSync(uid){
       Object.assign(cardDisplaySettings, data.cardDisplaySettings);
       try{ localStorage.setItem(LS_CARD_DISPLAY_KEY, JSON.stringify(cardDisplaySettings)); }catch(err){}
     }
+    if(data.shopProfile){
+      shopProfile = Object.assign({shopName:"", ownerName:""}, data.shopProfile);
+      try{ localStorage.setItem(LS_SHOP_PROFILE_KEY, JSON.stringify(shopProfile)); }catch(err){}
+    }
     applyingRemoteUpdate = false;
     render();
+    updateAccountUI();
     setAccountSyncStatus('sab devices par sync ho gaya ✓');
   }, function(err){
     console.error('Cloud sync listen failed', err);
@@ -4097,10 +4132,20 @@ document.getElementById('btnAccountSignup').onclick = function(){
   if(!firebaseReady()){ showAccountError('Sync abhi set up nahi hua (Firebase config missing).'); return; }
   const email = document.getElementById('acc-email').value.trim();
   const pass = document.getElementById('acc-password').value;
+  const shopName = document.getElementById('acc-shopname').value.trim();
+  const ownerName = document.getElementById('acc-ownername').value.trim();
   if(!email || !pass){ showAccountError('Email aur password dono likhein.'); return; }
   if(pass.length < 6){ showAccountError('Password kam se kam 6 characters ka ho.'); return; }
   fbAuth.createUserWithEmailAndPassword(email, pass)
-    .then(function(){ document.getElementById('accountOverlay').classList.add('hidden'); showToast('✓ Account ban gaya — sync shuru.'); })
+    .then(function(){
+      shopProfile = {shopName:shopName, ownerName:ownerName};
+      try{ localStorage.setItem(LS_SHOP_PROFILE_KEY, JSON.stringify(shopProfile)); }catch(e){}
+      if(!fbUser) fbUser = fbAuth.currentUser;
+      updateAccountUI();
+      schedulePush();
+      document.getElementById('accountOverlay').classList.add('hidden');
+      showToast('✓ Account ban gaya — sync shuru.');
+    })
     .catch(function(err){ showAccountError(friendlyAuthError(err)); });
 };
 document.getElementById('btnAccountForgotPassword').onclick = function(){
