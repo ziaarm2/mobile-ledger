@@ -1270,7 +1270,13 @@ async function loadInventory(){
     // khali hi rehna chahiye. Pehle yahan ek line thi jo khali inventory ko
     // dobara seed data se bhar deti thi — isi wajah se Clear data ke baad
     // refresh karne par purani 15 entries wapis aa jati thi. Wo line hata di.
-    inventory = (raw === null) ? seed : JSON.parse(raw);
+    //
+    // Firebase multi-device sync ab live hai: naye/khali device par demo seed
+    // dikhana ab sahi nahi, kyunki cloud se real data aane se pehle ye 15
+    // demo entries dikh jati hain (aur agar sync fail ho jaye to reh bhi
+    // jati hain). Is liye jab Firebase configured ho, naya/khali device
+    // seedha khali shuru hoga — login karte hi cloud se asli data aa jayega.
+    inventory = (raw === null) ? (firebaseReady() ? [] : seed) : JSON.parse(raw);
   }catch(e){
     inventory = seed;
   }
