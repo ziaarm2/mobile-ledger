@@ -619,13 +619,35 @@
     <div class="settings-note" style="margin-top:0;">Isi email/password se dusre kisi bhi phone/computer par login karke wahi stock, sales aur expenses turant nazar aayenge — data khud-ba-khud sync hota rahega. <b>Note:</b> photos har device par alag rehti hain (sync nahi hoti), baqi sab kuch (stock list, prices, condition, expenses, settings) sync hota hai.</div>
 
     <div id="accountLoggedOutView">
-      <div class="field" style="margin-top:14px;"><label>Email</label><input type="email" id="acc-email" placeholder="aap@example.com" autocomplete="username"></div>
-      <div class="field"><label>Password</label><input type="password" id="acc-password" placeholder="Kam se kam 6 characters" autocomplete="current-password"></div>
-      <div id="accountErrorMsg" style="color:var(--danger);font-size:12.5px;margin-top:6px;display:none;"></div>
-      <div class="sheet-actions" style="position:static;margin-top:12px;">
-        <button class="btn-save" id="btnAccountLogin" style="flex:1;">Login karein</button>
-        <button class="btn-save" id="btnAccountSignup" style="flex:1;">Naya account banayein</button>
+      <div class="chip-row" style="margin-top:14px;">
+        <div class="settings-toggle-chip on" data-method="email" id="accMethodEmailTab"><span class="dot"></span>Email se</div>
+        <div class="settings-toggle-chip" data-method="phone" id="accMethodPhoneTab"><span class="dot"></span>Phone number se</div>
       </div>
+
+      <div id="accEmailBlock">
+        <div class="field" style="margin-top:12px;"><label>Email</label><input type="email" id="acc-email" placeholder="aap@example.com" autocomplete="username"></div>
+        <div class="field"><label>Password</label><input type="password" id="acc-password" placeholder="Kam se kam 6 characters" autocomplete="current-password"></div>
+        <div class="sheet-actions" style="position:static;margin-top:12px;">
+          <button class="btn-save" id="btnAccountLogin" style="flex:1;">Login karein</button>
+          <button class="btn-save" id="btnAccountSignup" style="flex:1;">Naya account banayein</button>
+        </div>
+      </div>
+
+      <div id="accPhoneBlock" style="display:none;">
+        <div class="field" style="margin-top:12px;"><label>Phone number (country code samet)</label><input type="tel" id="acc-phone" placeholder="+923001234567" value="+92"></div>
+        <div class="sheet-actions" style="position:static;margin-top:12px;">
+          <button class="btn-save" id="btnAccountSendOtp" style="width:100%;">OTP bhejein (SMS)</button>
+        </div>
+        <div id="accPhoneOtpRow" style="display:none;">
+          <div class="field" style="margin-top:10px;"><label>SMS mein aya hua code</label><input type="text" inputmode="numeric" id="acc-otp" placeholder="123456"></div>
+          <div class="sheet-actions" style="position:static;margin-top:10px;">
+            <button class="btn-save" id="btnAccountVerifyOtp" style="width:100%;">Tasdeeq karein (Verify)</button>
+          </div>
+        </div>
+        <div id="recaptcha-container" style="margin-top:8px;"></div>
+      </div>
+
+      <div id="accountErrorMsg" style="color:var(--danger);font-size:12.5px;margin-top:10px;display:none;"></div>
     </div>
 
     <div id="accountLoggedInView" style="display:none;">
@@ -634,6 +656,7 @@
         <span class="v" id="accountEmailLabel" style="font-size:14px;color:var(--text);"></span>
       </div>
       <div class="settings-note" id="accountSyncStatus">Sync status: —</div>
+      <div class="settings-note">Yaad rahe: Email se bana account aur Phone se bana account do alag accounts hain (alag data). Sab devices par hamesha SAME tareeqa (ya email, ya phone) use karein taake data ek hi jaga sync ho.</div>
       <div class="sheet-actions" style="position:static;margin-top:12px;">
         <button class="btn-cancel" id="btnAccountLogout" style="width:100%;">Logout karein (is device se)</button>
       </div>
@@ -3932,17 +3955,20 @@ function initFirebaseSync(){
   }
 }
 
+function accountDisplayId(user){
+  return user.email || user.phoneNumber || user.uid;
+}
 function updateAccountUI(){
   const label = document.getElementById('accountStatusLabel');
   if(!label) return;
   const loggedOutView = document.getElementById('accountLoggedOutView');
   const loggedInView = document.getElementById('accountLoggedInView');
   if(fbUser){
-    label.textContent = fbUser.email + ' (sync ON)';
+    label.textContent = accountDisplayId(fbUser) + ' (sync ON)';
     if(loggedOutView) loggedOutView.style.display = 'none';
     if(loggedInView) loggedInView.style.display = 'block';
     const emailLabel = document.getElementById('accountEmailLabel');
-    if(emailLabel) emailLabel.textContent = fbUser.email;
+    if(emailLabel) emailLabel.textContent = accountDisplayId(fbUser);
   } else {
     label.textContent = firebaseReady() ? 'Sign in nahi hai' : 'Sync set up nahi hai';
     if(loggedOutView) loggedOutView.style.display = 'block';
@@ -4035,6 +4061,10 @@ function friendlyAuthError(err){
   if(code.indexOf('email-already-in-use')!==-1) return 'Ye email pehle se registered hai — "Login karein" try karein.';
   if(code.indexOf('weak-password')!==-1) return 'Password kam se kam 6 characters ka hona chahiye.';
   if(code.indexOf('invalid-email')!==-1) return 'Email sahi format mein likhein.';
+  if(code.indexOf('invalid-phone-number')!==-1) return 'Phone number sahi format mein likhein — country code samet, jaise +923001234567.';
+  if(code.indexOf('too-many-requests')!==-1) return 'Bohat zyada koshishein ho gayi hain — thodi der baad try karein.';
+  if(code.indexOf('invalid-verification-code')!==-1) return 'Code ghalat hai — dobara check karke likhein.';
+  if(code.indexOf('code-expired')!==-1) return 'Code expire ho gaya — dobara OTP mangwayein.';
   return 'Masla hua: ' + ((err && err.message) || 'dobara try karein.');
 }
 
@@ -4067,6 +4097,66 @@ document.getElementById('btnAccountSignup').onclick = function(){
 document.getElementById('btnAccountLogout').onclick = function(){
   if(!confirm('Is device se logout karna hai? App is device par offline/local mode mein chalti rahegi.')) return;
   fbAuth.signOut();
+};
+
+// ---------- Login method tabs (Email / Phone) ----------
+document.getElementById('accMethodEmailTab').onclick = function(){
+  document.getElementById('accMethodEmailTab').classList.add('on');
+  document.getElementById('accMethodPhoneTab').classList.remove('on');
+  document.getElementById('accEmailBlock').style.display = 'block';
+  document.getElementById('accPhoneBlock').style.display = 'none';
+  document.getElementById('accountErrorMsg').style.display = 'none';
+};
+document.getElementById('accMethodPhoneTab').onclick = function(){
+  document.getElementById('accMethodPhoneTab').classList.add('on');
+  document.getElementById('accMethodEmailTab').classList.remove('on');
+  document.getElementById('accEmailBlock').style.display = 'none';
+  document.getElementById('accPhoneBlock').style.display = 'block';
+  document.getElementById('accountErrorMsg').style.display = 'none';
+};
+
+// ---------- Phone number (SMS OTP) login ----------
+let recaptchaVerifier = null;
+let phoneConfirmationResult = null;
+
+function ensureRecaptcha(){
+  if(recaptchaVerifier) return recaptchaVerifier;
+  recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {size:'invisible'});
+  return recaptchaVerifier;
+}
+
+document.getElementById('btnAccountSendOtp').onclick = function(){
+  if(!firebaseReady()){ showAccountError('Sync abhi set up nahi hua (Firebase config missing).'); return; }
+  const phone = document.getElementById('acc-phone').value.trim();
+  if(!phone || phone.indexOf('+')!==0){ showAccountError('Phone number "+" aur country code ke sath likhein, jaise +923001234567.'); return; }
+  const btn = document.getElementById('btnAccountSendOtp');
+  btn.disabled = true; btn.textContent = 'Bhej rahe hain…';
+  fbAuth.signInWithPhoneNumber(phone, ensureRecaptcha())
+    .then(function(result){
+      phoneConfirmationResult = result;
+      document.getElementById('accPhoneOtpRow').style.display = 'block';
+      showToast('✓ OTP bhej diya — SMS check karein.');
+      btn.textContent = 'Dobara OTP bhejein';
+      btn.disabled = false;
+    })
+    .catch(function(err){
+      showAccountError(friendlyAuthError(err));
+      btn.textContent = 'OTP bhejein (SMS)';
+      btn.disabled = false;
+      if(recaptchaVerifier){ recaptchaVerifier.render().then(function(id){ if(typeof grecaptcha!=='undefined') grecaptcha.reset(id); }); }
+    });
+};
+
+document.getElementById('btnAccountVerifyOtp').onclick = function(){
+  const code = document.getElementById('acc-otp').value.trim();
+  if(!phoneConfirmationResult){ showAccountError('Pehle OTP mangwayein.'); return; }
+  if(!code){ showAccountError('SMS mein aya hua code likhein.'); return; }
+  phoneConfirmationResult.confirm(code)
+    .then(function(){
+      document.getElementById('accountOverlay').classList.add('hidden');
+      showToast('✓ Login ho gaya — sync shuru.');
+    })
+    .catch(function(err){ showAccountError(friendlyAuthError(err)); });
 };
 
 
