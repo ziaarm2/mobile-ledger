@@ -631,6 +631,9 @@
           <button class="btn-save" id="btnAccountLogin" style="flex:1;">Login karein</button>
           <button class="btn-save" id="btnAccountSignup" style="flex:1;">Naya account banayein</button>
         </div>
+        <div style="text-align:center;margin-top:10px;">
+          <a href="javascript:void(0)" id="btnAccountForgotPassword" style="color:var(--accent);font-size:13px;text-decoration:none;">Password bhool gaye?</a>
+        </div>
       </div>
 
       <div id="accPhoneBlock" style="display:none;">
@@ -4098,6 +4101,15 @@ document.getElementById('btnAccountSignup').onclick = function(){
   if(pass.length < 6){ showAccountError('Password kam se kam 6 characters ka ho.'); return; }
   fbAuth.createUserWithEmailAndPassword(email, pass)
     .then(function(){ document.getElementById('accountOverlay').classList.add('hidden'); showToast('✓ Account ban gaya — sync shuru.'); })
+    .catch(function(err){ showAccountError(friendlyAuthError(err)); });
+};
+document.getElementById('btnAccountForgotPassword').onclick = function(){
+  if(!firebaseReady()){ showAccountError('Sync abhi set up nahi hua (Firebase config missing).'); return; }
+  document.getElementById('accountErrorMsg').style.display = 'none';
+  const email = document.getElementById('acc-email').value.trim();
+  if(!email){ showAccountError('Pehle upar wale box mein apna email likhein, phir "Password bhool gaye?" par tap karein.'); return; }
+  fbAuth.sendPasswordResetEmail(email)
+    .then(function(){ showToast('✓ Reset link "' + email + '" par bhej diya — apna inbox check karein.'); })
     .catch(function(err){ showAccountError(friendlyAuthError(err)); });
 };
 document.getElementById('btnAccountLogout').onclick = function(){
