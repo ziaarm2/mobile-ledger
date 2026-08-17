@@ -173,9 +173,16 @@
   .btn-cancel{background:var(--surface-2);color:var(--text-dim);border:1px solid var(--border);}
   .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
   .header-top h1{margin:0;}
-  .backup-actions{display:flex;gap:6px;}
-  .backup-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);border-radius:8px;padding:6px 10px;font-size:11.5px;}
-  .backup-btn:active{border-color:var(--accent);color:var(--accent);}
+  .menu-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;}
+  .menu-btn:active{border-color:var(--accent);color:var(--accent);}
+  .menu-dropdown{position:absolute;top:52px;right:14px;left:14px;max-width:340px;margin-left:auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.25);padding:8px;z-index:50;max-height:75vh;overflow-y:auto;}
+  .menu-dropdown.hidden{display:none;}
+  .menu-section-label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-faint);padding:10px 10px 4px;}
+  .menu-section-label:first-child{padding-top:4px;}
+  .menu-item{display:block;width:100%;text-align:left;background:transparent;border:none;color:var(--text);padding:10px;border-radius:8px;font-size:14px;}
+  .menu-item:active{background:var(--bg);}
+  .menu-item.danger{color:var(--danger);}
+  .menu-divider{height:1px;background:var(--border);margin:6px 4px;}
   .backup-reminder{display:none;align-items:center;justify-content:space-between;gap:8px;background:var(--nonpta-bg);border:1px solid var(--nonpta);color:var(--nonpta);border-radius:10px;padding:9px 12px;margin-top:10px;font-size:12.5px;}
   .backup-reminder.show{display:flex;}
   .backup-reminder button{flex-shrink:0;background:var(--nonpta);color:#2a2213;border:none;border-radius:7px;padding:6px 10px;font-size:11.5px;font-weight:600;}
@@ -203,8 +210,6 @@
   .report-row .rr-top{display:flex;justify-content:space-between;font-weight:600;}
   .report-row .rr-sub{color:var(--text-dim);margin-top:3px;}
   .report-row .rr-profit{font-weight:600;}
-  .header-actions-row{display:flex;gap:6px;margin-top:8px;}
-  .header-actions-row .backup-btn{flex:1;}
   .contact-search{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;margin-top:10px;}
   .contact-list{margin-top:12px;display:flex;flex-direction:column;gap:10px;max-height:420px;overflow-y:auto;}
   .contact-card{background:var(--surface);border-radius:var(--radius);padding:12px 14px;}
@@ -216,7 +221,6 @@
   .contact-tx{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--text-dim);}
   .contact-tx .tx-main{color:var(--text);}
   .contact-tx .tx-date{flex-shrink:0;}
-  .header-actions-row + .header-actions-row{margin-top:6px;}
   .settings-field-select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;margin-top:10px;}
   .settings-opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
   .settings-opt{display:flex;align-items:center;gap:6px;background:var(--surface);border-radius:999px;padding:6px 8px 6px 12px;font-size:13px;}
@@ -250,15 +254,10 @@
 </head>
 <body>
 <div class="app">
-  <header>
+  <header style="position:relative;">
     <div class="header-top">
       <h1>Mobile Ledger</h1>
-      <div class="backup-actions">
-        <button class="backup-btn" id="btnBackup">⬇ Backup</button>
-        <button class="backup-btn" id="btnShareBackup">📤 Share</button>
-        <button class="backup-btn" id="btnRestore">⬆ Restore</button>
-        <input type="file" id="restoreFile" accept="application/json" style="display:none;">
-      </div>
+      <button class="menu-btn" id="btnMenu">☰ Menu</button>
     </div>
     <div class="backup-reminder" id="backupReminder">
       <span>24 ghante se zyada ho gaye, backup nahi ho saka — abhi le lein.</span>
@@ -267,24 +266,31 @@
         <button class="dismiss" id="reminderDismissBtn">Baad mein</button>
       </span>
     </div>
-    <div class="header-actions-row">
-      <button class="backup-btn" id="btnExcelBackup">📊 Excel Backup</button>
-      <button class="backup-btn" id="btnExcelRestore">📥 Excel Import</button>
+
+    <div class="menu-dropdown hidden" id="menuDropdown">
+      <div class="menu-section-label">Overview</div>
+      <button class="menu-item" id="btnDashboard">📊 Dashboard</button>
+      <button class="menu-item" id="btnReports">📄 Reports</button>
+      <button class="menu-item" id="btnExpenses">💵 Expenses (kharcha)</button>
+      <button class="menu-item" id="btnContacts">👥 Contacts</button>
+
+      <div class="menu-divider"></div>
+      <div class="menu-section-label">Backup &amp; Restore</div>
+      <button class="menu-item" id="btnShareBackup">📤 Backup share karein (WhatsApp/Drive)</button>
+      <button class="menu-item" id="btnBackup">⬇ Backup download karein (JSON)</button>
+      <button class="menu-item" id="btnRestore">⬆ Restore (JSON se)</button>
+      <button class="menu-item" id="btnExcelBackup">📊 Excel Backup</button>
+      <button class="menu-item" id="btnExcelRestore">📥 Excel Import</button>
+      <input type="file" id="restoreFile" accept="application/json" style="display:none;">
       <input type="file" id="excelFile" accept=".xlsx,.xls" style="display:none;">
+
+      <div class="menu-divider"></div>
+      <div class="menu-section-label">Settings</div>
+      <button class="menu-item" id="btnPrivacyToggle">🙈 Privacy mode</button>
+      <button class="menu-item" id="btnSettings">⚙️ Customize karein</button>
+      <button class="menu-item danger" id="btnClearData">🗑️ Clear data</button>
     </div>
-    <div class="header-actions-row">
-      <button class="backup-btn" id="btnDashboard">📊 Dashboard</button>
-      <button class="backup-btn" id="btnReports">📄 Reports</button>
-      <button class="backup-btn" id="btnExpenses">💵 Expenses</button>
-    </div>
-    <div class="header-actions-row">
-      <button class="backup-btn" id="btnContacts">👥 Contacts</button>
-      <button class="backup-btn" id="btnSettings">⚙️ Customize karein</button>
-    </div>
-    <div class="header-actions-row">
-      <button class="backup-btn" id="btnPrivacyToggle">🙈 Privacy mode</button>
-      <button class="backup-btn" id="btnClearData" style="color:var(--danger);border-color:var(--danger);">🗑️ Clear data</button>
-    </div>
+
     <div class="stats" id="stats"></div>
     <div class="storage-bar-wrap">
       <div class="storage-bar-track"><div class="storage-bar-fill" id="storageBarFill"></div></div>
@@ -2942,6 +2948,28 @@ document.getElementById('btnReportsPdf').onclick = function(){
 document.getElementById('btnBackup').onclick = function(){ backupData(false); };
 document.getElementById('btnShareBackup').onclick = function(){ shareBackupFile(); };
 
+// ---------- Menu dropdown ----------
+// Single "☰ Menu" button replaces the wall of buttons that used to sit
+// under the title. Tapping any action inside closes the dropdown right
+// after that action's own click handler runs, so opening e.g. Dashboard
+// also tidies the menu away automatically.
+document.getElementById('btnMenu').onclick = function(e){
+  e.stopPropagation();
+  document.getElementById('menuDropdown').classList.toggle('hidden');
+};
+document.getElementById('menuDropdown').addEventListener('click', function(e){
+  if(e.target.tagName === 'BUTTON'){
+    document.getElementById('menuDropdown').classList.add('hidden');
+  }
+});
+document.addEventListener('click', function(e){
+  const menu = document.getElementById('menuDropdown');
+  const btn = document.getElementById('btnMenu');
+  if(!menu.classList.contains('hidden') && !menu.contains(e.target) && e.target!==btn){
+    menu.classList.add('hidden');
+  }
+});
+
 // ---------- Expenses ----------
 function renderExpenseCategoryChips(){
   const opts = getFieldOptions('expenseCategory', EXPENSE_CATEGORY_OPTS);
@@ -3474,7 +3502,11 @@ document.getElementById('btnClearData').onclick = function(){
 // ---------- Excel backup/import ----------
 // Same data as the JSON backup, but as a spreadsheet the person can open,
 // read, edit, or forward to someone else — unlike the JSON file.
-const EXCEL_COLUMNS = ['id','brand','model','status','quantity','sold','display','touch','camera','body','openrepair','battery','ram','storage','network','packing','charger','box','faceid','truetone','buy','sell','range','buyDate','saleDate','customerName','customerNumber','notes','lastUpdated'];
+// Note: 'customer' (not 'customerName') matches the actual field saved on
+// each entry — using the wrong key here silently exported blank customer
+// names in every previous Excel backup.
+const EXCEL_COLUMNS = ['id','brand','model','status','quantity','sold','display','touch','camera','body','openrepair','battery','ram','storage','network','packing','charger','box','faceid','truetone','buy','sell','range','imei','buyDate','sellerName','sellerNumber','saleDate','customer','customerNumber','payment','notes','lastUpdated'];
+const EXCEL_EXPENSE_COLUMNS = ['id','category','amount','date','notes'];
 
 function exportExcel(){
   if(typeof XLSX==='undefined'){ alert('Excel feature load nahi ho saka — internet connection check karke dobara try karein.'); return; }
@@ -3487,13 +3519,23 @@ function exportExcel(){
     });
     return row;
   });
+  const expenseRows = expenses.map(function(x){
+    const row = {};
+    EXCEL_EXPENSE_COLUMNS.forEach(function(k){
+      const v = x[k];
+      row[k] = (v==null) ? '' : v;
+    });
+    return row;
+  });
   const ws = XLSX.utils.json_to_sheet(rows, {header: EXCEL_COLUMNS});
+  const wsExp = XLSX.utils.json_to_sheet(expenseRows, {header: EXCEL_EXPENSE_COLUMNS});
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Inventory');
+  XLSX.utils.book_append_sheet(wb, wsExp, 'Expenses');
   XLSX.writeFile(wb, 'mobile-ledger-'+todayStr()+'.xlsx');
   try{ localStorage.setItem(LS_LAST_BACKUP_KEY, String(Date.now())); }catch(e){}
   hideBackupReminder();
-  showToast('✓ Excel file ban gayi (Downloads mein) — WhatsApp/kisi ko bhi bhej sakte hain.');
+  showToast('✓ Excel file ban gayi (Inventory + Expenses dono sheets) — Downloads mein, WhatsApp/kisi ko bhi bhej sakte hain.');
 }
 
 function importExcel(file){
@@ -3506,7 +3548,15 @@ function importExcel(file){
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
       if(!rows.length){ alert('Is Excel file mein koi data nahi mila.'); return; }
-      if(!confirm('Excel import karne se mojooda stock is file ke data se replace ho jayega. Aage badhein?')) return;
+
+      const expSheet = wb.Sheets['Expenses'];
+      const expRows = expSheet ? XLSX.utils.sheet_to_json(expSheet, {defval:''}) : [];
+
+      const confirmMsg = expSheet
+        ? 'Excel import karne se mojooda stock AUR expenses is file ke data se replace ho jayenge. Aage badhein?'
+        : 'Excel import karne se mojooda stock is file ke data se replace ho jayega. (Is file mein "Expenses" sheet nahi mili, is liye maujooda expenses waise hi rahenge.) Aage badhein?';
+      if(!confirm(confirmMsg)) return;
+
       const newInventory = rows.map(function(r){
         const e = {};
         EXCEL_COLUMNS.forEach(function(k){ e[k] = (r[k]===undefined || r[k]==='') ? null : r[k]; });
@@ -3526,8 +3576,23 @@ function importExcel(file){
       });
       const ok = tryCommitInventory(newInventory);
       if(!ok){ alert('Import save nahi ho saka — phone ki storage full hai. Purana data waisa hi hai.'); return; }
+
+      let importedExpenseCount = 0;
+      if(expSheet && expRows.length){
+        const newExpenses = expRows.map(function(r){
+          return {
+            id: r.id || ('exp_'+Date.now().toString(36)+Math.random().toString(36).slice(2)),
+            category: r.category || 'Other',
+            amount: Number(r.amount)||0,
+            date: r.date || todayISO(),
+            notes: r.notes || ''
+          };
+        });
+        if(tryCommitExpenses(newExpenses)) importedExpenseCount = newExpenses.length;
+      }
+
       render();
-      alert('✓ Excel se '+newInventory.length+' entries import ho gayi.');
+      alert('✓ Excel se '+newInventory.length+' entries'+(importedExpenseCount ? ' aur '+importedExpenseCount+' expenses' : '')+' import ho gaye.');
     }catch(err){
       alert('Excel file padhne mein masla hua. Sahi .xlsx file chunein (usi format mein jo "Excel Backup" se banti hai).');
     }
