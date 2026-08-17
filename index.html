@@ -3004,7 +3004,7 @@ function renderReports(){
   const expRowsHtml = expEntries.map(function(x){
     expensesTotal += Number(x.amount)||0;
     return '<div class="report-row">'+
-      '<div class="rr-top"><span>'+x.category+'</span><span class="rr-profit" style="color:var(--danger);">-'+fmt(x.amount)+'</span></div>'+
+      '<div class="rr-top"><span>'+x.category+'</span><span class="rr-profit" style="color:var(--danger);">-'+displayProfitHtml(x.amount)+'</span></div>'+
       '<div class="rr-sub">'+formatDateDisplay(x.date)+(x.notes?' • '+x.notes:'')+'</div>'+
     '</div>';
   }).join('');
@@ -3012,7 +3012,7 @@ function renderReports(){
 
   const netProfit = grossProfit - expensesTotal;
   document.getElementById('rp-gross-profit').textContent = displayProfitHtml(grossProfit);
-  document.getElementById('rp-expenses-total').textContent = fmt(expensesTotal);
+  document.getElementById('rp-expenses-total').textContent = displayProfitHtml(expensesTotal);
   const totalEl = document.getElementById('rp-total-profit');
   totalEl.textContent = displayProfitHtml(netProfit);
   totalEl.style.color = netProfit>=0 ? 'var(--pta)' : 'var(--danger)';
@@ -3163,13 +3163,13 @@ function renderExpensesList(){
   const rowsHtml = filtered.map(function(x){
     total += Number(x.amount)||0;
     return '<div class="report-row">'+
-      '<div class="rr-top"><span>'+x.category+'</span><span class="rr-profit" style="color:var(--danger);">-'+fmt(x.amount)+'</span></div>'+
+      '<div class="rr-top"><span>'+x.category+'</span><span class="rr-profit" style="color:var(--danger);">-'+displayProfitHtml(x.amount)+'</span></div>'+
       '<div class="rr-sub">'+formatDateDisplay(x.date)+(x.notes?' &bull; '+x.notes:'')+'</div>'+
       '<div class="card-actions" style="margin-top:6px;"><button data-exp-edit="'+x.id+'">Edit</button><button class="del-btn" data-exp-del="'+x.id+'">Delete</button></div>'+
     '</div>';
   }).join('');
   document.getElementById('exp-list').innerHTML = rowsHtml || '<div class="rr-sub" style="text-align:center;padding:20px 0;">Koi expense nahi mila.</div>';
-  document.getElementById('exp-total').textContent = fmt(total);
+  document.getElementById('exp-total').textContent = displayProfitHtml(total);
   document.getElementById('exp-list').querySelectorAll('[data-exp-del]').forEach(function(b){
     b.onclick = function(){ deleteExpenseEntry(b.dataset.expDel); };
   });
@@ -3455,6 +3455,7 @@ function renderSettingsFieldOptions(){
   const hidden = customOptionData.hidden[fieldKey] || [];
   const extra = customOptionData.extra[fieldKey] || [];
   const canHaveIssue = !!GOOD_CONDITION_VALUES[fieldKey];
+  const isCardBadgeField = DEFAULT_BADGE_ORDER.indexOf(fieldKey) !== -1;
   document.getElementById('settingsIssueNote').style.display = 'block';
 
   function issueToggleHtml(val){
@@ -3463,12 +3464,14 @@ function renderSettingsFieldOptions(){
     return '<span class="issue-toggle'+(isIssue?' is-issue':'')+'" data-val="'+val+'">'+(isIssue?'⚠ Issue':'Normal')+'</span>';
   }
   function cardVisToggleHtml(val){
+    if(!isCardBadgeField) return ''; // Status & Expense category never show as a card badge, so this toggle would do nothing.
     const vis = effectiveCardVisible(fieldKey, val);
     const prom = effectiveBadgeProminent(fieldKey, val);
     const label = !vis ? '🚫 Hidden' : (prom ? '⭐ Prominent' : '👁 Card pe');
     return '<span class="card-vis-toggle'+(vis?' is-visible':'')+(prom?' is-prominent':'')+'" data-val="'+val+'">'+label+'</span>';
   }
   function colorInputHtml(val){
+    if(!isCardBadgeField) return '';
     const color = effectiveBadgeColor(fieldKey, val) || '#8a8a93';
     return '<input type="color" class="badge-color-input" data-val="'+val+'" value="'+color+'" title="Is value ka badge color">';
   }
