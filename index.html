@@ -366,7 +366,12 @@
 
     <div class="two-col">
       <div class="field"><label>Buy date</label><input id="f-buydate" type="date"></div>
-      <div class="field"><label>IMEI (optional)</label><input id="f-imei" type="text" inputmode="numeric" placeholder="15 digit number"></div>
+      <div class="field"><label>IMEI (optional)</label>
+        <div style="display:flex;gap:6px;">
+          <input id="f-imei" type="text" inputmode="numeric" placeholder="15 digit number" style="flex:1;">
+          <button type="button" class="imei-scan-btn" data-imei-target="f-imei" style="flex-shrink:0;padding:0 12px;border-radius:8px;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);font-size:12.5px;">📷 Scan</button>
+        </div>
+      </div>
     </div>
 
     <div class="two-col">
@@ -501,6 +506,21 @@
   </div>
 </div>
 
+<div class="overlay hidden" id="imeiScanOverlay">
+  <div class="sheet" style="padding-bottom:16px;">
+    <div class="sheet-handle"></div>
+    <h2>IMEI Scan Karein</h2>
+    <div style="position:relative;border-radius:12px;overflow:hidden;background:#000;">
+      <video id="imeiScanVideo" autoplay playsinline muted style="width:100%;display:block;max-height:360px;object-fit:cover;"></video>
+      <div style="position:absolute;inset:14%;border:2px solid rgba(255,255,255,0.55);border-radius:8px;pointer-events:none;"></div>
+    </div>
+    <div style="text-align:center;margin-top:10px;color:var(--text-dim);font-size:12.5px;" id="imeiScanStatus">Phone ke box/back par jo barcode hai usay camera ke samne rakhein.</div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" id="btnImeiScanCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay hidden" id="dashboardOverlay">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -552,19 +572,20 @@
     <div class="sheet-handle"></div>
     <h2>Expenses (Kharcha)</h2>
 
-    <div class="sec-label" style="margin-top:0;">Naya expense add karein</div>
+    <div class="sec-label" style="margin-top:0;" id="exp-form-title">Naya expense add karein</div>
     <div class="chip-row" id="expenseCategoryChips"></div>
     <div class="field" id="expenseCategoryOtherWrap" style="display:none;margin-top:8px;">
       <input id="exp-category-other" placeholder="Category ka naam likhein">
     </div>
     <div class="two-col" style="margin-top:10px;">
-      <div class="field"><label>Amount</label><input id="exp-amount" type="text" inputmode="decimal" placeholder="e.g. 5k"><div class="price-hint" id="exp-amount-hint"></div></div>
+      <div class="field"><label>Amount</label><input id="exp-amount" type="text" inputmode="decimal" placeholder="e.g. 500 ya 5k"><div class="price-hint" id="exp-amount-hint"></div></div>
       <div class="field"><label>Date</label><input id="exp-date" type="date"></div>
     </div>
     <div class="field"><label>Notes (optional)</label><input id="exp-notes" placeholder="Koi tafseel"></div>
     <div class="sheet-actions" style="position:static;margin-top:6px;">
       <button class="btn-save" id="btnAddExpense" style="flex:none;width:100%;">+ Expense add karein</button>
     </div>
+    <button class="btn-cancel" id="expenseCancelEditBtn" style="display:none;width:100%;margin-top:8px;">Edit cancel karein</button>
 
     <div class="sec-label" style="margin-top:18px;padding-top:14px;border-top:1px dashed var(--border);">Filters</div>
     <div class="two-col">
@@ -662,7 +683,7 @@ let sellingId = null;
 // closes the topmost open overlay instead of leaving the app. If nothing is
 // open, there's nothing pushed, so back behaves normally (exits/leaves as
 // before).
-const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','expensesOverlay'];
+const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','imeiScanOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','expensesOverlay'];
 let overlayHistoryStack = [];
 
 function pushOverlayHistory(id){
@@ -690,6 +711,7 @@ window.addEventListener('popstate', function(){
     // If more photos were queued to crop (multi-photo select), keep going.
     processNextCropFile();
   }
+  if(id==='imeiScanOverlay') stopImeiScan();
 });
 
 const BRANDS = ['Samsung','Google','iPhone','OnePlus','Vivo','Oppo','Realme','Infinix','Tecno','Xiaomi','Motorola','Other'];
@@ -795,6 +817,7 @@ const LS_EXPENSES_KEY = 'mobileLedger_expenses';
 
 let expenses = [];
 let expenseFormState = {category:''};
+let editingExpenseId = null;
 
 async function loadExpenses(){
   try{
@@ -1040,6 +1063,105 @@ document.getElementById('cropOverlay').onclick = function(e){
   }
 };
 
+// ---------- IMEI camera scan ----------
+// Uses the phone's camera + the browser's native BarcodeDetector to read the
+// barcode printed on the phone's box/back panel (which almost always
+// encodes the IMEI) instead of typing all 15 digits by hand.
+// Support note: BarcodeDetector currently only works in Chrome/Edge on
+// Android — not in Safari/iPhone or Firefox. On those, we tell the person
+// to type the IMEI manually instead of showing a broken scan screen.
+let imeiScanStream = null;
+let imeiScanRAF = null;
+let imeiScanTargetInput = null;
+
+function stopImeiScan(){
+  if(imeiScanRAF) cancelAnimationFrame(imeiScanRAF);
+  imeiScanRAF = null;
+  if(imeiScanStream){
+    imeiScanStream.getTracks().forEach(function(t){ t.stop(); });
+    imeiScanStream = null;
+  }
+  const video = document.getElementById('imeiScanVideo');
+  if(video) video.srcObject = null;
+}
+
+async function openImeiScan(targetInput){
+  if(!targetInput) return;
+  if(!('BarcodeDetector' in window)){
+    alert('Is browser/phone mein barcode scan support nahi hai (ye sirf Android Chrome mein kaam karta hai). IMEI khud type kar dein.');
+    return;
+  }
+  imeiScanTargetInput = targetInput;
+  document.getElementById('imeiScanStatus').textContent = 'Phone ke box/back par jo barcode hai usay camera ke samne rakhein.';
+  document.getElementById('imeiScanOverlay').classList.remove('hidden');
+  pushOverlayHistory('imeiScanOverlay');
+
+  let stream;
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+  }catch(err){
+    document.getElementById('imeiScanStatus').textContent = 'Camera access nahi mila — phone ki settings mein is browser ko camera permission dein, ya IMEI khud type karein.';
+    return;
+  }
+  imeiScanStream = stream;
+  const video = document.getElementById('imeiScanVideo');
+  video.srcObject = stream;
+  try{ await video.play(); }catch(e){}
+
+  let detector;
+  try{
+    detector = new BarcodeDetector({formats:['code_128','code_39','ean_13','upc_a','itf','qr_code']});
+  }catch(e){
+    detector = new BarcodeDetector();
+  }
+
+  function scanLoop(){
+    if(!imeiScanStream) return; // scan was cancelled/closed
+    detector.detect(video).then(function(codes){
+      for(let i=0;i<codes.length;i++){
+        const digits = String(codes[i].rawValue||'').replace(/\D/g,'');
+        if(digits.length>=14 && digits.length<=16){
+          if(imeiScanTargetInput) imeiScanTargetInput.value = digits;
+          stopImeiScan();
+          requestOverlayClose();
+          showToast('✓ IMEI mil gaya: '+digits);
+          return;
+        }
+      }
+      imeiScanRAF = requestAnimationFrame(scanLoop);
+    }).catch(function(){
+      imeiScanRAF = requestAnimationFrame(scanLoop);
+    });
+  }
+  scanLoop();
+}
+
+// Delegated click so this works for the main IMEI field AND every
+// dynamically-added "extra piece" IMEI field without wiring each one by hand.
+document.addEventListener('click', function(e){
+  const btn = e.target.closest ? e.target.closest('.imei-scan-btn') : null;
+  if(!btn) return;
+  let targetInput = null;
+  if(btn.dataset.imeiTarget){
+    targetInput = document.getElementById(btn.dataset.imeiTarget);
+  } else if(btn.dataset.imeiTargetSelector){
+    const block = btn.closest('.extra-piece-block');
+    targetInput = block ? block.querySelector(btn.dataset.imeiTargetSelector) : null;
+  }
+  openImeiScan(targetInput);
+});
+
+document.getElementById('btnImeiScanCancel').onclick = function(){
+  stopImeiScan();
+  requestOverlayClose();
+};
+document.getElementById('imeiScanOverlay').onclick = function(e){
+  if(e.target.id==='imeiScanOverlay'){
+    stopImeiScan();
+    requestOverlayClose();
+  }
+};
+
 document.getElementById('photoInput').addEventListener('change', function(){
   const files = Array.from(this.files || []);
   this.value = '';
@@ -1138,9 +1260,23 @@ function hideSaveError(bannerId){
   el.textContent = '';
 }
 
+// Used everywhere a rupee amount is *displayed* (buy/sell price, profit,
+// expenses, dashboard/report totals, price-hints while typing). Anything
+// 1000 or above shows in "k" form (45000 -> "45k", 100000 -> "100k",
+// 45500 -> "45.5k") for quicker reading — this only changes how numbers are
+// SHOWN; typing/parsing rules (parsePrice / parseExpenseAmount) are
+// unchanged, so what you type and how it's stored/calculated stays exactly
+// the same.
 function fmt(n){
   if(n===null || n===undefined || n==='') return '-';
-  return Number(n).toLocaleString('en-PK');
+  const num = Number(n);
+  if(isNaN(num)) return '-';
+  const neg = num < 0;
+  const abs = Math.abs(num);
+  if(abs < 1000) return (neg?'-':'') + abs.toLocaleString('en-PK');
+  let k = Math.round((abs/1000) * 100) / 100; // keep up to 2 decimals
+  let kStr = k.toFixed(2).replace(/\.?0+$/,''); // trim trailing zeros ("45.00"->"45", "45.50"->"45.5")
+  return (neg?'-':'') + kStr + 'k';
 }
 
 // Turns "iPhone X / XR / XS / XS Max" into sortable numbers between 9 and 11,
@@ -1254,7 +1390,7 @@ function normalizeRange(val){
     const clean = numStr.replace(/,/g,'');
     if(suf) return clean + suf;
     const numVal = Number(clean);
-    return isNaN(numVal) ? clean : numVal.toLocaleString('en-PK');
+    return isNaN(numVal) ? clean : fmt(numVal);
   }
 
   if(s.indexOf('-')===-1){
@@ -1291,6 +1427,38 @@ function wireRangeHint(inputId, hintId){
     if(v===''){ hint.textContent=''; return; }
     const norm = normalizeRange(v);
     hint.textContent = (norm && norm!==v) ? ('= ' + norm) : '';
+  });
+}
+
+// Same shorthand support as parsePrice ("k" / "lac") but this one NEVER
+// auto-multiplies a plain small number by 1000. Phone buy/sell prices are
+// usually shorthanded ("45" really means "45k"), but expenses are often
+// genuinely small (e.g. a 500 rupee protector, an 800 rupee repair) — those
+// must stay exactly 500 / 800 unless the person actually types "k".
+function parseExpenseAmount(val){
+  if(val===null || val===undefined) return null;
+  let s = String(val).trim().toLowerCase();
+  if(s==='') return null;
+  s = s.replace(/,/g,'').replace(/\s+/g,' ').trim();
+  const m = s.match(/^([\d]*\.?[\d]+)\s*(k|lac|lakh|l)?$/);
+  if(!m) return null;
+  let num = parseFloat(m[1]);
+  if(isNaN(num)) return null;
+  const suffix = m[2];
+  if(suffix==='k') num *= 1000;
+  else if(suffix==='lac' || suffix==='lakh' || suffix==='l') num *= 100000;
+  return num;
+}
+
+function wireExpenseAmountHint(inputId, hintId){
+  const inp = document.getElementById(inputId);
+  const hint = document.getElementById(hintId);
+  if(!inp || !hint) return;
+  inp.addEventListener('input', function(){
+    const v = inp.value.trim();
+    if(v===''){ hint.textContent = ''; return; }
+    const p = parseExpenseAmount(v);
+    hint.textContent = (p===null) ? 'Samajh nahi aya, dobara likhein' : ('= ' + fmt(p));
   });
 }
 
@@ -1372,7 +1540,7 @@ function addExtraBuyRow(){
       '<div class="field"><label>Sell range</label><input type="text" class="extra-range-input" placeholder="agar alag ho, e.g. 45-50k"><div class="price-hint extra-range-hint"></div></div>'+
     '</div>'+
     EP_FIELD_DEFS.map(function(f){ return epChipRowHtml(f, epState[f.key]); }).join('')+
-    '<div class="field" style="margin-top:10px;"><label>IMEI (optional)</label><input type="text" inputmode="numeric" class="ep-imei" placeholder="15 digit number"></div>'+
+    '<div class="field" style="margin-top:10px;"><label>IMEI (optional)</label><div style="display:flex;gap:6px;"><input type="text" inputmode="numeric" class="ep-imei" placeholder="15 digit number" style="flex:1;"><button type="button" class="imei-scan-btn" data-imei-target-selector=".ep-imei" style="flex-shrink:0;padding:0 12px;border-radius:8px;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);font-size:12.5px;">📷 Scan</button></div></div>'+
     '<div class="field" style="margin-top:10px;"><label>Notes</label><input type="text" class="ep-notes" placeholder="agar alag ho"></div>';
 
   block.querySelectorAll('.ep-chip-row').forEach(function(row){
@@ -2997,13 +3165,16 @@ function renderExpensesList(){
     return '<div class="report-row">'+
       '<div class="rr-top"><span>'+x.category+'</span><span class="rr-profit" style="color:var(--danger);">-'+fmt(x.amount)+'</span></div>'+
       '<div class="rr-sub">'+formatDateDisplay(x.date)+(x.notes?' &bull; '+x.notes:'')+'</div>'+
-      '<div class="card-actions" style="margin-top:6px;"><button class="del-btn" data-exp-del="'+x.id+'">Delete</button></div>'+
+      '<div class="card-actions" style="margin-top:6px;"><button data-exp-edit="'+x.id+'">Edit</button><button class="del-btn" data-exp-del="'+x.id+'">Delete</button></div>'+
     '</div>';
   }).join('');
   document.getElementById('exp-list').innerHTML = rowsHtml || '<div class="rr-sub" style="text-align:center;padding:20px 0;">Koi expense nahi mila.</div>';
   document.getElementById('exp-total').textContent = fmt(total);
   document.getElementById('exp-list').querySelectorAll('[data-exp-del]').forEach(function(b){
     b.onclick = function(){ deleteExpenseEntry(b.dataset.expDel); };
+  });
+  document.getElementById('exp-list').querySelectorAll('[data-exp-edit]').forEach(function(b){
+    b.onclick = function(){ editExpenseEntry(b.dataset.expEdit); };
   });
 }
 
@@ -3012,37 +3183,38 @@ function deleteExpenseEntry(id){
   const candidate = expenses.filter(function(x){ return x.id!==id; });
   const ok = tryCommitExpenses(candidate);
   if(!ok){ alert(SAVE_FAIL_MSG); return; }
+  if(editingExpenseId===id) resetExpenseForm(); // was mid-edit on the entry that just got deleted
   renderExpensesList();
   render();
   backupAfterChange();
 }
 
-wirePriceHint('exp-amount','exp-amount-hint');
-
-document.getElementById('btnAddExpense').onclick = function(){
-  const category = expenseFormState.category==='Other' ? document.getElementById('exp-category-other').value.trim() : expenseFormState.category;
-  if(!category){ alert('Category chunein ya likhein.'); return; }
-  const amountRaw = document.getElementById('exp-amount').value.trim();
-  if(amountRaw===''){ alert('Amount likhein.'); return; }
-  const amount = parsePrice(amountRaw);
-  if(amount===null){ alert('Amount samajh nahi aaya. "5000" ya "5k" jese likhein.'); return; }
-  const date = document.getElementById('exp-date').value || todayISO();
-  const notes = document.getElementById('exp-notes').value.trim();
-  const entry = {id:'exp_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), category:category, amount:amount, date:date, notes:notes};
-  const candidate = [entry].concat(expenses);
-  const ok = tryCommitExpenses(candidate);
-  if(!ok){ alert(SAVE_FAIL_MSG); return; }
-  document.getElementById('exp-amount').value = '';
+// Fills the same add-form with an existing expense's data and flips it into
+// "update" mode, instead of needing a separate edit screen.
+function editExpenseEntry(id){
+  const entry = expenses.find(function(x){ return x.id===id; });
+  if(!entry) return;
+  editingExpenseId = id;
+  const knownOpts = getFieldOptions('expenseCategory', EXPENSE_CATEGORY_OPTS);
+  const isKnown = knownOpts.indexOf(entry.category)!==-1;
+  expenseFormState.category = isKnown ? entry.category : 'Other';
+  renderExpenseCategoryChips();
+  document.getElementById('expenseCategoryOtherWrap').style.display = isKnown ? 'none' : 'block';
+  document.getElementById('exp-category-other').value = isKnown ? '' : entry.category;
+  document.getElementById('exp-amount').value = entry.amount;
   document.getElementById('exp-amount-hint').textContent = '';
-  document.getElementById('exp-notes').value = '';
-  document.getElementById('exp-category-other').value = '';
-  renderExpensesList();
-  render();
-  showToast('✓ Expense add ho gaya');
-  backupAfterChange();
-};
+  document.getElementById('exp-date').value = entry.date || '';
+  document.getElementById('exp-notes').value = entry.notes || '';
+  document.getElementById('exp-form-title').textContent = 'Expense update karein';
+  document.getElementById('btnAddExpense').textContent = '✓ Expense update karein';
+  document.getElementById('expenseCancelEditBtn').style.display = 'block';
+  document.getElementById('exp-form-title').scrollIntoView({behavior:'smooth', block:'start'});
+}
 
-document.getElementById('btnExpenses').onclick = function(){
+// Resets the add-form back to its normal "add new" state (used both by the
+// explicit Cancel-edit button and automatically after a successful save).
+function resetExpenseForm(){
+  editingExpenseId = null;
   expenseFormState = {category: EXPENSE_CATEGORY_OPTS[0]};
   renderExpenseCategoryChips();
   document.getElementById('expenseCategoryOtherWrap').style.display = 'none';
@@ -3051,6 +3223,48 @@ document.getElementById('btnExpenses').onclick = function(){
   document.getElementById('exp-amount-hint').textContent = '';
   document.getElementById('exp-notes').value = '';
   document.getElementById('exp-date').value = todayISO();
+  document.getElementById('exp-form-title').textContent = 'Naya expense add karein';
+  document.getElementById('btnAddExpense').textContent = '+ Expense add karein';
+  document.getElementById('expenseCancelEditBtn').style.display = 'none';
+}
+
+wireExpenseAmountHint('exp-amount','exp-amount-hint');
+
+document.getElementById('btnAddExpense').onclick = function(){
+  const category = expenseFormState.category==='Other' ? document.getElementById('exp-category-other').value.trim() : expenseFormState.category;
+  if(!category){ alert('Category chunein ya likhein.'); return; }
+  const amountRaw = document.getElementById('exp-amount').value.trim();
+  if(amountRaw===''){ alert('Amount likhein.'); return; }
+  const amount = parseExpenseAmount(amountRaw);
+  if(amount===null){ alert('Amount samajh nahi aaya. "500" (jaisa likha waisa hi), ya "5k" jese likhein.'); return; }
+  const date = document.getElementById('exp-date').value || todayISO();
+  const notes = document.getElementById('exp-notes').value.trim();
+
+  let candidate;
+  const wasEditing = !!editingExpenseId;
+  if(wasEditing){
+    candidate = expenses.map(function(x){
+      return x.id===editingExpenseId ? Object.assign({}, x, {category:category, amount:amount, date:date, notes:notes}) : x;
+    });
+  } else {
+    const entry = {id:'exp_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), category:category, amount:amount, date:date, notes:notes};
+    candidate = [entry].concat(expenses);
+  }
+  const ok = tryCommitExpenses(candidate);
+  if(!ok){ alert(SAVE_FAIL_MSG); return; }
+  resetExpenseForm();
+  renderExpensesList();
+  render();
+  showToast(wasEditing ? '✓ Expense update ho gaya' : '✓ Expense add ho gaya');
+  backupAfterChange();
+};
+
+document.getElementById('expenseCancelEditBtn').onclick = function(){
+  resetExpenseForm();
+};
+
+document.getElementById('btnExpenses').onclick = function(){
+  resetExpenseForm();
   document.getElementById('exp-from').value = '';
   document.getElementById('exp-to').value = '';
   renderExpensesList();
