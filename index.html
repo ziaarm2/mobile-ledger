@@ -752,6 +752,11 @@
     <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">Naye requests</div>
     <div id="employeesPendingList"><div class="settings-note" style="margin-top:0;">Koi pending request nahi hai.</div></div>
 
+    <div id="adminsSection" style="display:none;">
+      <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">Admins</div>
+      <div id="adminsActiveList"></div>
+    </div>
+
     <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">Active employees</div>
     <div id="employeesActiveList"><div class="settings-note" style="margin-top:0;">Abhi koi employee shamil nahi hua.</div></div>
 
@@ -4217,12 +4222,13 @@ function watchOwnStatusWhilePending(uid){
   pendingUserUnsub = fbDb.collection('users').doc(uid).onSnapshot(function(snap){
     if(!snap.exists) return;
     const d = snap.data();
-    if(d.status === 'active' && d.role === 'employee'){
-      userRole = 'employee'; userShopId = d.shopId; userStatus = 'active';
+    if(d.status === 'active' && (d.role === 'employee' || d.role === 'admin')){
+      userRole = d.role; userShopId = d.shopId; userStatus = 'active';
       if(pendingUserUnsub){ pendingUserUnsub(); pendingUserUnsub = null; }
       updateAccountUI();
       setAuthGateView('unlocked');
       startCloudSync(userShopId);
+      if(userRole === 'admin') startEmployeesPanelSync(userShopId);
       showToast('✓ Aapki request accept ho gayi — khush aamdeed!');
     }
   }, function(err){ console.error('Pending watch failed', err); });
@@ -4255,7 +4261,7 @@ function initFirebaseSync(){
           } else {
             setAuthGateView('unlocked');
             startCloudSync(userShopId);
-            if(userRole === 'owner') startEmployeesPanelSync(user.uid);
+            if(userRole === 'owner' || userRole === 'admin') startEmployeesPanelSync(userShopId);
           }
         });
       } else {
@@ -4283,7 +4289,7 @@ function updateAccountUI(){
   const statusLine = document.getElementById('accountStatusLine');
   const employeesBtn = document.getElementById('btnEmployees');
   if(fbUser && userStatus === 'active'){
-    const roleTag = userRole === 'owner' ? 'Owner' : 'Employee';
+    const roleTag = userRole === 'owner' ? 'Owner' : (userRole === 'admin' ? 'Admin' : 'Employee');
     label.textContent = accountDisplayId(fbUser) + ' — ' + roleTag + ' (sync ON)';
     if(loggedOutView) loggedOutView.style.display = 'none';
     if(loggedInView) loggedInView.style.display = 'block';
@@ -4298,7 +4304,7 @@ function updateAccountUI(){
       statusLine.textContent = '✓ Logged in — ' + who + ' (' + roleTag + ')';
       statusLine.style.display = 'block';
     }
-    if(employeesBtn) employeesBtn.style.display = userRole === 'owner' ? 'block' : 'none';
+    if(employeesBtn) employeesBtn.style.display = (userRole === 'owner' || userRole === 'admin') ? 'block' : 'none';
   } else {
     label.textContent = firebaseReady() ? 'Sign in nahi hai' : 'Sync set up nahi hai';
     if(loggedOutView) loggedOutView.style.display = 'block';
@@ -4568,17 +4574,18 @@ document.getElementById('btnAccountVerifyOtp').onclick = function(){
     .catch(function(err){ showAccountError(friendlyAuthError(err)); });
 };
 
-// ================= Employees panel (owner only) =================
-let employeesPendingUnsub = null, employeesActiveUnsub = null;
+// ================= Employees panel (owner + admin) =================
+let employeesPendingUnsub = null, employeesActiveUnsub = null, adminsActiveUnsub = null;
 let knownPendingRequestIds = null; // used to detect *new* pending requests for the notification toast
 
-function startEmployeesPanelSync(ownerUid){
+function startEmployeesPanelSync(shopId){
   if(employeesPendingUnsub) employeesPendingUnsub();
   if(employeesActiveUnsub) employeesActiveUnsub();
+  if(adminsActiveUnsub) adminsActiveUnsub();
   knownPendingRequestIds = null;
 
   employeesPendingUnsub = fbDb.collection('joinRequests')
-    .where('shopId', '==', ownerUid).where('status', '==', 'pending')
+    .where('shopId', '==', shopId).where('status', '==', 'pending')
     .onSnapshot(function(snap){
       const docs = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
       if(knownPendingRequestIds !== null){
@@ -4598,13 +4605,20 @@ function startEmployeesPanelSync(ownerUid){
     }, function(err){ console.error('Pending requests sync failed', err); });
 
   employeesActiveUnsub = fbDb.collection('users')
-    .where('shopId', '==', ownerUid).where('role', '==', 'employee').where('status', '==', 'active')
+    .where('shopId', '==', shopId).where('role', '==', 'employee').where('status', '==', 'active')
     .onSnapshot(function(snap){
       const docs = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
       renderEmployeesActive(docs);
     }, function(err){ console.error('Active employees sync failed', err); });
 
-  fbDb.collection('shops').doc(ownerUid).get().then(function(snap){
+  adminsActiveUnsub = fbDb.collection('users')
+    .where('shopId', '==', shopId).where('role', '==', 'admin').where('status', '==', 'active')
+    .onSnapshot(function(snap){
+      const docs = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      renderAdminsActive(docs);
+    }, function(err){ console.error('Active admins sync failed', err); });
+
+  fbDb.collection('shops').doc(shopId).get().then(function(snap){
     const codeLabel = document.getElementById('employeesShopCodeLabel');
     if(codeLabel) codeLabel.textContent = (snap.exists && snap.data().shopCode) || '——';
   });
@@ -4614,16 +4628,24 @@ function renderEmployeesPending(docs){
   const wrap = document.getElementById('employeesPendingList');
   if(!wrap) return;
   if(!docs.length){ wrap.innerHTML = '<div class="settings-note" style="margin-top:0;">Koi pending request nahi hai.</div>'; return; }
+  const iAmOwner = (userRole === 'owner');
   wrap.innerHTML = docs.map(function(r){
+    const acceptBtns = iAmOwner
+      ? ('<button type="button" class="sell-btn" data-accept-employee="' + r.id + '">✓ Employee</button>' +
+         '<button type="button" class="sell-btn" data-accept-admin="' + r.id + '" style="background:var(--sale);color:#2a0e3d;">✓ Admin</button>')
+      : ('<button type="button" class="sell-btn" data-accept-employee="' + r.id + '">✓ Accept</button>');
     return '<div class="report-summary" style="margin-top:8px;flex-wrap:wrap;gap:8px;">' +
       '<span style="flex:1;min-width:140px;word-break:break-all;">' + escapeHtml(r.email || r.uid) + '</span>' +
-      '<span style="display:flex;gap:6px;">' +
-        '<button type="button" class="sell-btn" data-accept="' + r.id + '">✓ Accept</button>' +
+      '<span style="display:flex;gap:6px;flex-wrap:wrap;">' +
+        acceptBtns +
         '<button type="button" class="btn-cancel" data-reject="' + r.id + '" style="padding:6px 10px;">✕ Reject</button>' +
       '</span></div>';
   }).join('');
-  wrap.querySelectorAll('[data-accept]').forEach(function(btn){
-    btn.onclick = function(){ acceptJoinRequest(btn.getAttribute('data-accept')); };
+  wrap.querySelectorAll('[data-accept-employee]').forEach(function(btn){
+    btn.onclick = function(){ acceptJoinRequest(btn.getAttribute('data-accept-employee'), 'employee'); };
+  });
+  wrap.querySelectorAll('[data-accept-admin]').forEach(function(btn){
+    btn.onclick = function(){ acceptJoinRequest(btn.getAttribute('data-accept-admin'), 'admin'); };
   });
   wrap.querySelectorAll('[data-reject]').forEach(function(btn){
     btn.onclick = function(){ rejectJoinRequest(btn.getAttribute('data-reject')); };
@@ -4637,11 +4659,36 @@ function renderEmployeesActive(docs){
   wrap.innerHTML = docs.map(function(e){
     return '<div class="report-summary" style="margin-top:8px;flex-wrap:wrap;gap:8px;">' +
       '<span style="flex:1;min-width:140px;word-break:break-all;">' + escapeHtml(e.email || e.id) + '</span>' +
-      '<button type="button" class="btn-cancel" data-remove="' + e.id + '" style="padding:6px 10px;">Hata dein</button>' +
+      '<button type="button" class="btn-cancel" data-remove-employee="' + e.id + '" style="padding:6px 10px;">Hata dein</button>' +
       '</div>';
   }).join('');
-  wrap.querySelectorAll('[data-remove]').forEach(function(btn){
-    btn.onclick = function(){ removeEmployee(btn.getAttribute('data-remove')); };
+  wrap.querySelectorAll('[data-remove-employee]').forEach(function(btn){
+    btn.onclick = function(){ removeMember(btn.getAttribute('data-remove-employee')); };
+  });
+}
+
+// Admins are only manageable by the OWNER — admin accounts never get a
+// remove button here for anyone but the owner (and never for themselves,
+// since an admin can't demote/remove other admins, per Firestore rules too).
+function renderAdminsActive(docs){
+  const wrap = document.getElementById('adminsActiveList');
+  const section = document.getElementById('adminsSection');
+  if(!wrap || !section) return;
+  if(userRole !== 'owner' && !docs.length){ section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  const iAmOwner = (userRole === 'owner');
+  if(!docs.length){ wrap.innerHTML = '<div class="settings-note" style="margin-top:0;">Koi admin nahi hai.</div>'; return; }
+  wrap.innerHTML = docs.map(function(a){
+    const removeBtn = iAmOwner
+      ? ('<button type="button" class="btn-cancel" data-remove-admin="' + a.id + '" style="padding:6px 10px;">Hata dein</button>')
+      : '';
+    return '<div class="report-summary" style="margin-top:8px;flex-wrap:wrap;gap:8px;">' +
+      '<span style="flex:1;min-width:140px;word-break:break-all;">' + escapeHtml(a.email || a.id) + '</span>' +
+      removeBtn +
+      '</div>';
+  }).join('');
+  wrap.querySelectorAll('[data-remove-admin]').forEach(function(btn){
+    btn.onclick = function(){ removeMember(btn.getAttribute('data-remove-admin'), true); };
   });
 }
 
@@ -4651,17 +4698,18 @@ function escapeHtml(s){
   });
 }
 
-function acceptJoinRequest(reqId){
-  if(!fbUser || userRole !== 'owner') return;
+function acceptJoinRequest(reqId, asRole){
+  if(!fbUser || (userRole !== 'owner' && userRole !== 'admin')) return;
+  if(asRole === 'admin' && userRole !== 'owner'){ showToast('Sirf Owner hi kisi ko Admin bana sakta hai.'); return; }
   fbDb.collection('joinRequests').doc(reqId).get().then(function(snap){
     if(!snap.exists) return;
     const r = snap.data();
-    if(r.shopId !== fbUser.uid){ return; }
+    if(r.shopId !== userShopId){ return; }
     const batchOps = [
-      fbDb.collection('users').doc(r.uid).set({role:'employee', shopId: fbUser.uid, status:'active'}, {merge:true}),
+      fbDb.collection('users').doc(r.uid).set({role: asRole, shopId: userShopId, status:'active'}, {merge:true}),
       fbDb.collection('joinRequests').doc(reqId).set({status:'accepted', decidedAt: firebase.firestore.FieldValue.serverTimestamp()}, {merge:true})
     ];
-    Promise.all(batchOps).then(function(){ showToast('✓ Employee shamil ho gaya.'); })
+    Promise.all(batchOps).then(function(){ showToast(asRole === 'admin' ? '✓ Admin shamil ho gaya.' : '✓ Employee shamil ho gaya.'); })
       .catch(function(err){ console.error('Accept failed', err); showToast('Masla hua — dobara try karein.'); });
   });
 }
@@ -4672,10 +4720,16 @@ function rejectJoinRequest(reqId){
     .catch(function(err){ console.error('Reject failed', err); });
 }
 
-function removeEmployee(uid){
-  if(!confirm('Is employee ki access hatani hai? Wo dobara login nahi kar sakega jab tak naya request accept na karein.')) return;
+// Revokes access for an employee OR admin (sets them back to 'pending').
+// Removing an admin is owner-only — enforced both here (button only renders
+// for the owner) and server-side in Firestore rules.
+function removeMember(uid, isAdminTarget){
+  const msg = isAdminTarget
+    ? 'Is Admin ki access hatani hai? Wo dobara login nahi kar sakega jab tak naya request accept na karein.'
+    : 'Is employee ki access hatani hai? Wo dobara login nahi kar sakega jab tak naya request accept na karein.';
+  if(!confirm(msg)) return;
   fbDb.collection('users').doc(uid).set({role:'pending', shopId:null, status:'pending'}, {merge:true})
-    .then(function(){ showToast('✓ Employee hata diya gaya.'); })
+    .then(function(){ showToast('✓ Access hata di gayi.'); })
     .catch(function(err){ console.error('Remove failed', err); showToast('Masla hua — dobara try karein.'); });
 }
 
