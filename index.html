@@ -640,7 +640,13 @@
     <h2 id="accountOverlayTitle">Account — Multi-device sync</h2>
     <div class="settings-note" style="margin-top:0;" id="accountOverlayNote">Isi email/password se dusre kisi bhi phone/computer par login karke wahi stock, sales aur expenses turant nazar aayenge — data khud-ba-khud sync hota rahega. <b>Note:</b> photos har device par alag rehti hain (sync nahi hoti), baqi sab kuch (stock list, prices, condition, expenses, settings) sync hota hai.</div>
 
-    <div id="accountCheckingView" style="display:none;padding:26px 4px;text-align:center;color:var(--text-dim);font-size:13.5px;">Session check ho raha hai…</div>
+    <div id="accountCheckingView" style="display:none;padding:26px 4px;text-align:center;color:var(--text-dim);font-size:13.5px;">
+      Session check ho raha hai…
+      <div id="accountCheckingSlow" style="display:none;margin-top:16px;">
+        <div style="margin-bottom:10px;">Internet slow lag raha hai ya connection nahi mil raha.</div>
+        <button type="button" class="sell-btn" id="btnAccountCheckingRetry">Dobara koshish karein</button>
+      </div>
+    </div>
 
     <div id="accountLoggedOutView">
       <div class="chip-row" style="margin-top:14px;">
@@ -850,7 +856,7 @@ let sellingId = null;
 // closes the topmost open overlay instead of leaving the app. If nothing is
 // open, there's nothing pushed, so back behaves normally (exits/leaves as
 // before).
-const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','imeiScanOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','expensesOverlay'];
+const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','imeiScanOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','expensesOverlay','employeesOverlay'];
 let overlayHistoryStack = [];
 
 function pushOverlayHistory(id){
@@ -1014,11 +1020,11 @@ function tryCommitExpenses(candidateExpenses){
 }
 
 function totalExpensesAllTime(){
-  return expenses.reduce(function(s,x){ return s + (Number(x.amount)||0); }, 0);
+  return expenses.reduce(function(s,x){ return s + (x.refunded ? 0 : (Number(x.amount)||0)); }, 0);
 }
 function expensesInMonth(monthKey){
   return expenses.filter(function(x){ return x.date && String(x.date).indexOf(monthKey)===0; })
-    .reduce(function(s,x){ return s + (Number(x.amount)||0); }, 0);
+    .reduce(function(s,x){ return s + (x.refunded ? 0 : (Number(x.amount)||0)); }, 0);
 }
 function expensesInRange(from, to){
   return expenses.filter(function(x){
@@ -3184,10 +3190,14 @@ function renderReports(){
   const expEntries = getFilteredReportExpenses();
   let expensesTotal = 0;
   const expRowsHtml = expEntries.map(function(x){
-    expensesTotal += Number(x.amount)||0;
+    if(!x.refunded) expensesTotal += Number(x.amount)||0;
+    const amountHtml = x.refunded
+      ? '<span class="rr-profit" style="color:var(--text-faint);text-decoration:line-through;">-'+displayProfitHtml(x.amount)+'</span>'
+      : '<span class="rr-profit" style="color:var(--danger);">-'+displayProfitHtml(x.amount)+'</span>';
+    const refundNote = x.refunded ? (' • ↩ Wapis mil gaya'+(x.refundNote?' ('+x.refundNote+')':'')) : '';
     return '<div class="report-row">'+
-      '<div class="rr-top"><span>'+x.category+'</span><span class="rr-profit" style="color:var(--danger);">-'+displayProfitHtml(x.amount)+'</span></div>'+
-      '<div class="rr-sub">'+formatDateDisplay(x.date)+(x.notes?' • '+x.notes:'')+'</div>'+
+      '<div class="rr-top"><span>'+x.category+'</span>'+amountHtml+'</div>'+
+      '<div class="rr-sub">'+formatDateDisplay(x.date)+(x.notes?' • '+x.notes:'')+refundNote+'</div>'+
     '</div>';
   }).join('');
   document.getElementById('rp-expense-list').innerHTML = expRowsHtml || '<div class="rr-sub" style="text-align:center;padding:20px 0;">Is date range mein koi expense nahi mila.</div>';
@@ -3244,11 +3254,12 @@ document.getElementById('btnReportsPdf').onclick = function(){
   }).join('');
   let expensesTotal = 0;
   const expRows = expEntries.map(function(x){
-    expensesTotal += Number(x.amount)||0;
-    return '<tr>'+
+    if(!x.refunded) expensesTotal += Number(x.amount)||0;
+    const noteText = (x.notes||'') + (x.refunded ? (' [Wapis mil gaya' + (x.refundNote?': '+x.refundNote:'') + ']') : '');
+    return '<tr'+(x.refunded?' style="color:#888;"':'')+'>'+
       '<td>'+formatDateDisplay(x.date)+'</td>'+
       '<td>'+x.category+'</td>'+
-      '<td>'+(x.notes||'')+'</td>'+
+      '<td>'+noteText+'</td>'+
       '<td style="text-align:right;">'+fmt(x.amount)+'</td>'+
     '</tr>';
   }).join('');
@@ -3344,11 +3355,21 @@ function renderExpensesList(){
   const filtered = expensesInRange(from, to).slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
   let total = 0;
   const rowsHtml = filtered.map(function(x){
-    total += Number(x.amount)||0;
+    if(!x.refunded) total += Number(x.amount)||0;
+    const amountHtml = x.refunded
+      ? '<span class="rr-profit" style="color:var(--text-faint);text-decoration:line-through;">-'+displayProfitHtml(x.amount)+'</span>'
+      : '<span class="rr-profit" style="color:var(--danger);">-'+displayProfitHtml(x.amount)+'</span>';
+    const refundBadge = x.refunded
+      ? '<div class="rr-sub" style="color:var(--pta);">↩ Wapis mil gaya'+(x.refundNote?' &bull; '+x.refundNote:'')+'</div>'
+      : '';
+    const refundBtn = x.refunded
+      ? '<button data-exp-unrefund="'+x.id+'">Undo wapis</button>'
+      : '<button data-exp-refund="'+x.id+'">↩ Wapis mila</button>';
     return '<div class="report-row">'+
-      '<div class="rr-top"><span>'+x.category+'</span><span class="rr-profit" style="color:var(--danger);">-'+displayProfitHtml(x.amount)+'</span></div>'+
+      '<div class="rr-top"><span>'+x.category+'</span>'+amountHtml+'</div>'+
       '<div class="rr-sub">'+formatDateDisplay(x.date)+(x.notes?' &bull; '+x.notes:'')+'</div>'+
-      '<div class="card-actions" style="margin-top:6px;"><button data-exp-edit="'+x.id+'">Edit</button><button class="del-btn" data-exp-del="'+x.id+'">Delete</button></div>'+
+      refundBadge+
+      '<div class="card-actions" style="margin-top:6px;">'+refundBtn+'<button data-exp-edit="'+x.id+'">Edit</button><button class="del-btn" data-exp-del="'+x.id+'">Delete</button></div>'+
     '</div>';
   }).join('');
   document.getElementById('exp-list').innerHTML = rowsHtml || '<div class="rr-sub" style="text-align:center;padding:20px 0;">Koi expense nahi mila.</div>';
@@ -3359,6 +3380,12 @@ function renderExpensesList(){
   document.getElementById('exp-list').querySelectorAll('[data-exp-edit]').forEach(function(b){
     b.onclick = function(){ editExpenseEntry(b.dataset.expEdit); };
   });
+  document.getElementById('exp-list').querySelectorAll('[data-exp-refund]').forEach(function(b){
+    b.onclick = function(){ markExpenseRefunded(b.dataset.expRefund); };
+  });
+  document.getElementById('exp-list').querySelectorAll('[data-exp-unrefund]').forEach(function(b){
+    b.onclick = function(){ unmarkExpenseRefunded(b.dataset.expUnrefund); };
+  });
 }
 
 function deleteExpenseEntry(id){
@@ -3367,6 +3394,38 @@ function deleteExpenseEntry(id){
   const ok = tryCommitExpenses(candidate);
   if(!ok){ alert(SAVE_FAIL_MSG); return; }
   if(editingExpenseId===id) resetExpenseForm(); // was mid-edit on the entry that just got deleted
+  renderExpensesList();
+  render();
+  backupAfterChange();
+}
+
+// "Paise wapis mil gaye" — instead of deleting the expense (losing the
+// record entirely), mark it as refunded with a note. Refunded expenses stay
+// visible everywhere for record-keeping but are excluded from all expense
+// totals/net-profit math, since the money isn't actually spent anymore.
+function markExpenseRefunded(id){
+  const entry = expenses.find(function(x){ return x.id===id; });
+  if(!entry) return;
+  const note = prompt('Note likhein (jaise: kis se wapis mile, kab, kitne):', entry.refundNote || '');
+  if(note===null) return; // cancelled
+  const candidate = expenses.map(function(x){
+    return x.id===id ? Object.assign({}, x, {refunded:true, refundNote: note.trim()}) : x;
+  });
+  const ok = tryCommitExpenses(candidate);
+  if(!ok){ alert(SAVE_FAIL_MSG); return; }
+  renderExpensesList();
+  render();
+  showToast('✓ Wapis mila hua note ho gaya — expense record mein rahega.');
+  backupAfterChange();
+}
+
+// Undo, in case "Wapis mila" was tapped by mistake.
+function unmarkExpenseRefunded(id){
+  const candidate = expenses.map(function(x){
+    return x.id===id ? Object.assign({}, x, {refunded:false}) : x;
+  });
+  const ok = tryCommitExpenses(candidate);
+  if(!ok){ alert(SAVE_FAIL_MSG); return; }
   renderExpensesList();
   render();
   backupAfterChange();
@@ -4124,7 +4183,11 @@ function firebaseReady(){
 // The whole app is behind login now. accountOverlay doubles as the gate:
 // while we don't know/have a signed-in user, it's forced open with no way
 // to close it. Once signed in, it hides and the app becomes usable.
+let authCheckingSlowTimer = null;
 function setAuthGateView(mode){ // 'checking' | 'locked' | 'pending' | 'unlocked'
+  if(authCheckingSlowTimer){ clearTimeout(authCheckingSlowTimer); authCheckingSlowTimer = null; }
+  const checkingSlow = document.getElementById('accountCheckingSlow');
+  if(checkingSlow) checkingSlow.style.display = 'none';
   const overlay = document.getElementById('accountOverlay');
   const checking = document.getElementById('accountCheckingView');
   const loggedOut = document.getElementById('accountLoggedOutView');
@@ -4146,6 +4209,11 @@ function setAuthGateView(mode){ // 'checking' | 'locked' | 'pending' | 'unlocked
     note.style.display = 'none';
     if(appEl) appEl.style.visibility = 'hidden';
     if(fab) fab.style.display = 'none';
+    // If this takes too long (weak/no internet), stop making the user
+    // stare at a frozen screen — offer a retry instead of hanging forever.
+    authCheckingSlowTimer = setTimeout(function(){
+      if(checkingSlow) checkingSlow.style.display = 'block';
+    }, 9000);
   } else if(mode === 'locked'){
     overlay.classList.remove('hidden');
     checking.style.display = 'none';
@@ -4327,6 +4395,13 @@ function initFirebaseSync(){
     setAuthGateView('locked');
   }
 }
+
+document.getElementById('btnAccountCheckingRetry').onclick = function(){
+  // Simplest reliable recovery from a stuck/half-finished session check —
+  // start the whole load fresh rather than trying to patch up in-flight
+  // Firestore reads that may already be wedged.
+  location.reload();
+};
 
 function accountDisplayId(user){
   return user.email || user.phoneNumber || user.uid;
@@ -4819,9 +4894,25 @@ function removeMember(uid, isAdminTarget){
 document.getElementById('btnEmployees').onclick = function(){
   document.getElementById('employeesOverlay').classList.remove('hidden');
   document.getElementById('menuDropdown').classList.add('hidden');
+  pushOverlayHistory('employeesOverlay');
+  // Self-heal: if the shop code failed to generate at login time (e.g. app
+  // was offline right after signup), retry it every time this panel opens
+  // instead of leaving the label stuck on "——" until the next fresh login.
+  if(userShopId && (userRole === 'owner' || userRole === 'admin')){
+    const codeLabel = document.getElementById('employeesShopCodeLabel');
+    (userRole === 'owner' ? ensureShopCode(userShopId) : Promise.resolve())
+      .then(function(){ return fbDb.collection('shops').doc(userShopId).get(); })
+      .then(function(snap){
+        if(codeLabel) codeLabel.textContent = (snap.exists && snap.data().shopCode) || '——';
+      })
+      .catch(function(err){ console.error('Shop code refresh failed', err); });
+  }
 };
 document.getElementById('btnEmployeesClose').onclick = function(){
-  document.getElementById('employeesOverlay').classList.add('hidden');
+  requestOverlayClose();
+};
+document.getElementById('employeesOverlay').onclick = function(e){
+  if(e.target.id==='employeesOverlay') requestOverlayClose();
 };
 document.getElementById('btnCopyShopCode').onclick = function(){
   const code = document.getElementById('employeesShopCodeLabel').textContent.trim();
