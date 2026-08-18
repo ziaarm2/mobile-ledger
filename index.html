@@ -172,6 +172,10 @@
   .sheet-actions{display:flex;gap:10px;margin-top:14px;position:sticky;bottom:0;background:var(--surface);padding-top:6px;}
   .sheet-actions button{flex:1;padding:13px;border-radius:10px;font-size:14.5px;font-weight:600;border:none;}
   .btn-save{background:var(--accent);color:var(--accent-text);}
+  /* Employee role: buy price, profit, delete, settings, dashboard & reports
+     are all tagged with .emp-hide and hidden purely via this CSS class on
+     <body> — no need to re-render anything when the role resolves/changes. */
+  body.role-employee .emp-hide{display:none !important;}
   .fab-expense{
     position:fixed; left:18px; bottom:22px; z-index:20;
     width:56px; height:56px; border-radius:50%;
@@ -289,18 +293,18 @@
 
     <div class="menu-dropdown hidden" id="menuDropdown">
       <div class="menu-section-label">Overview</div>
-      <button class="menu-item" id="btnDashboard">📊 Dashboard</button>
-      <button class="menu-item" id="btnReports">📄 Reports</button>
+      <button class="menu-item emp-hide" id="btnDashboard">📊 Dashboard</button>
+      <button class="menu-item emp-hide" id="btnReports">📄 Reports</button>
       <button class="menu-item" id="btnExpenses">💵 Expenses (kharcha)</button>
       <button class="menu-item" id="btnContacts">👥 Contacts</button>
 
       <div class="menu-divider"></div>
       <div class="menu-section-label">Backup &amp; Restore</div>
-      <button class="menu-item" id="btnShareBackup">📤 Backup share karein (WhatsApp/Drive)</button>
-      <button class="menu-item" id="btnBackup">⬇ Backup download karein (JSON)</button>
-      <button class="menu-item" id="btnRestore">⬆ Restore (JSON se)</button>
-      <button class="menu-item" id="btnExcelBackup">📊 Excel Backup</button>
-      <button class="menu-item" id="btnExcelRestore">📥 Excel Import</button>
+      <button class="menu-item emp-hide" id="btnShareBackup">📤 Backup share karein (WhatsApp/Drive)</button>
+      <button class="menu-item emp-hide" id="btnBackup">⬇ Backup download karein (JSON)</button>
+      <button class="menu-item emp-hide" id="btnRestore">⬆ Restore (JSON se)</button>
+      <button class="menu-item emp-hide" id="btnExcelBackup">📊 Excel Backup</button>
+      <button class="menu-item emp-hide" id="btnExcelRestore">📥 Excel Import</button>
       <input type="file" id="restoreFile" accept="application/json" style="display:none;">
       <input type="file" id="excelFile" accept=".xlsx,.xls" style="display:none;">
 
@@ -312,7 +316,7 @@
       <div class="menu-divider"></div>
       <div class="menu-section-label">Settings</div>
       <button class="menu-item" id="btnPrivacyToggle">🙈 Privacy mode</button>
-      <button class="menu-item" id="btnSettings">⚙️ Customize karein</button>
+      <button class="menu-item emp-hide" id="btnSettings">⚙️ Customize karein</button>
       <button class="menu-item danger" id="btnClearData">🗑️ Clear data</button>
     </div>
 
@@ -385,7 +389,7 @@
     </div>
 
     <div class="two-col">
-      <div class="field"><label>Buy price</label><input id="f-buy" type="text" inputmode="decimal" placeholder="e.g. 45k"><div class="price-hint" id="f-buy-hint"></div></div>
+      <div class="field emp-hide"><label>Buy price</label><input id="f-buy" type="text" inputmode="decimal" placeholder="e.g. 45k"><div class="price-hint" id="f-buy-hint"></div></div>
       <div class="field"><label>Sell price range</label><input id="f-range" placeholder="45k-47k"><div class="price-hint" id="f-range-hint"></div></div>
     </div>
 
@@ -410,7 +414,7 @@
     <div class="more-section" id="saleFieldsWrap">
       <div class="two-col big-input">
         <div class="field"><label>Sale price</label><input id="f-sellprice" type="text" inputmode="decimal" placeholder="e.g. 45k"><div class="price-hint" id="f-sellprice-hint"></div></div>
-        <div class="field"><label>Buy price</label><input id="f-buy-insale" type="text" inputmode="decimal" placeholder="e.g. 40k"><div class="price-hint" id="f-buy-insale-hint"></div></div>
+        <div class="field emp-hide"><label>Buy price</label><input id="f-buy-insale" type="text" inputmode="decimal" placeholder="e.g. 40k"><div class="price-hint" id="f-buy-insale-hint"></div></div>
       </div>
       <div class="two-col">
         <div class="field"><label>Customer name</label><input id="f-customer" placeholder="Naam"></div>
@@ -496,7 +500,7 @@
       <div class="field"><label>Sale date</label><input id="s-saledate" type="date"></div>
       <div class="field"><label>Payment method</label><input id="s-payment" placeholder="Cash / Easypaisa"></div>
     </div>
-    <div class="profit-preview">
+    <div class="profit-preview emp-hide">
       <span>Profit (is sale par)</span>
       <span class="v" id="sellProfitPreview">0</span>
     </div>
@@ -1710,7 +1714,7 @@ function addExtraBuyRow(){
   block.innerHTML =
     '<div class="extra-piece-head"><span>Piece #'+n+'</span><button type="button" class="extra-buy-remove">×</button></div>'+
     '<div class="two-col">'+
-      '<div class="field"><label>Buy price</label><input type="text" inputmode="decimal" class="extra-buy-input" placeholder="e.g. 40k"><div class="price-hint extra-hint"></div></div>'+
+      '<div class="field emp-hide"><label>Buy price</label><input type="text" inputmode="decimal" class="extra-buy-input" placeholder="e.g. 40k"><div class="price-hint extra-hint"></div></div>'+
       '<div class="field"><label>Sell range</label><input type="text" class="extra-range-input" placeholder="agar alag ho, e.g. 45-50k"><div class="price-hint extra-range-hint"></div></div>'+
     '</div>'+
     EP_FIELD_DEFS.map(function(f){ return epChipRowHtml(f, epState[f.key]); }).join('')+
@@ -1786,7 +1790,7 @@ function renderStats(){
   document.getElementById('stats').innerHTML =
     '<div class="stat"><div class="v num">'+availableUnits+'</div><div class="l">Stock mein</div></div>'+
     '<div class="stat"><div class="v num">'+soldUnits+'</div><div class="l">Sold</div></div>'+
-    '<div class="stat"><div class="v num" style="color:'+netProfitColor+'">'+displayProfitHtml(totalProfit)+'</div><div class="l">Net profit</div></div>';
+    '<div class="stat emp-hide"><div class="v num" style="color:'+netProfitColor+'">'+displayProfitHtml(totalProfit)+'</div><div class="l">Net profit</div></div>';
 }
 
 // Most browsers give roughly 5MB per site for localStorage. There's no
@@ -2162,7 +2166,7 @@ function renderSingleStockCard(e){
     cardPhotoHtml(e)+
     '<div class="badges">'+pieceStatusBadges(e, outOfStock)+'</div>'+
     (pieceSpecBadges(e) ? '<div class="badges spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
-    (e.buy!=null ? '<div class="sale-meta">Buy price: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span></div>' : '')+
+    (e.buy!=null ? '<div class="sale-meta emp-hide">Buy price: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span></div>' : '')+
     (e.notes ? '<div class="sale-meta">'+e.notes+'</div>' : '')+
     (canSplit ? '<div class="sale-meta">Ye '+e.quantity+' pieces ek sath ek hi price/condition ke sath saved hain. Agar inki price/condition alag karni hai to Split dabayein.</div>' : '')+
     '<div class="card-actions">'+
@@ -2170,7 +2174,7 @@ function renderSingleStockCard(e){
       (outOfStock ? '' : '<button class="sell-btn" data-sell="'+e.id+'">Sell</button>')+
       (canSplit ? '<button data-split="'+e.id+'">Split</button>' : '')+
       '<button class="share-btn" data-share="'+e.id+'">Share</button>'+
-      '<button class="del-btn" data-del="'+e.id+'">Delete</button>'+
+      '<button class="del-btn emp-hide" data-del="'+e.id+'">Delete</button>'+
     '</div>'+
     '<button class="add-piece-btn" data-piece-brand="'+encodeURIComponent(e.brand)+'" data-piece-model="'+encodeURIComponent(e.model)+'">+ Isi model ka naya piece add karein</button>'+
   '</div>');
@@ -2190,14 +2194,14 @@ function renderStockGroup(g){
       '<div class="piece-row-top">'+pieceStatusBadges(e, outOfStock)+'</div>'+
       (pieceSpecBadges(e) ? '<div class="piece-row-top spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
       cardPhotoHtml(e)+
-      (e.buy!=null || e.range ? '<div class="sale-meta">'+(e.buy!=null?'Buy: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span>':'')+(e.buy!=null&&e.range?' &bull; ':'')+(e.range?'Sell range: '+e.range:'')+'</div>' : '')+
+      (e.buy!=null || e.range ? '<div class="sale-meta">'+(e.buy!=null?'<span class="emp-hide">Buy: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span></span>':'')+(e.buy!=null&&e.range?'<span class="emp-hide"> &bull; </span>':'')+(e.range?'Sell range: '+e.range:'')+'</div>' : '')+
       (e.notes ? '<div class="sale-meta">'+e.notes+'</div>' : '')+
       '<div class="card-actions">'+
         '<button data-edit="'+e.id+'">Edit</button>'+
         (outOfStock ? '' : '<button class="sell-btn" data-sell="'+e.id+'">Sell</button>')+
         (canSplit ? '<button data-split="'+e.id+'">Split</button>' : '')+
         '<button class="share-btn" data-share="'+e.id+'">Share</button>'+
-        '<button class="del-btn" data-del="'+e.id+'">Delete</button>'+
+        '<button class="del-btn emp-hide" data-del="'+e.id+'">Delete</button>'+
       '</div>'+
     '</div>');
   }).join('');
@@ -2223,15 +2227,15 @@ function renderSoldCard(e){
     '</div>'+
     cardPhotoHtml(e)+
     '<div class="price-row">'+
-      '<div class="price-col"><div class="l">Buy</div><div class="v num">'+fmt(e.buy)+'</div></div>'+
+      '<div class="price-col emp-hide"><div class="l">Buy</div><div class="v num">'+fmt(e.buy)+'</div></div>'+
       '<div class="price-col"><div class="l">Sell</div><div class="v num">'+fmt(e.sell)+'</div></div>'+
-      '<div class="price-col"><div class="l">Profit</div><div class="v num '+profitClass+'">'+(profit===null?'-':fmt(profit))+'</div></div>'+
+      '<div class="price-col emp-hide"><div class="l">Profit</div><div class="v num '+profitClass+'">'+(profit===null?'-':fmt(profit))+'</div></div>'+
     '</div>'+
     (e.customer||e.payment ? '<div class="sale-meta">'+(e.customer||'')+(e.customer&&e.customerNumber?' ('+e.customerNumber+')':'')+(e.customer&&e.payment?' - ':'')+(e.payment||'')+' - '+(e.saleDate?formatDateDisplay(e.saleDate):(e.lastUpdated||''))+'</div>' : '')+
     '<div class="card-actions">'+
       '<button data-edit="'+e.id+'">Edit</button>'+
       '<button class="share-btn" data-share="'+e.id+'">Share</button>'+
-      '<button class="del-btn" data-del="'+e.id+'">Delete</button>'+
+      '<button class="del-btn emp-hide" data-del="'+e.id+'">Delete</button>'+
     '</div>'+
   '</div>');
 }
@@ -2346,6 +2350,7 @@ async function shareEntry(id){
 }
 
 function deleteEntry(id){
+  if(isEmployee()){ showToast('Aapko delete karne ki ijazat nahi hai.'); return; }
   if(!confirm('Ye entry delete kar dein?')) return;
   const idx = inventory.findIndex(function(x){return x.id===id;});
   if(idx===-1) return;
@@ -3102,6 +3107,7 @@ function renderDashboard(){
 }
 
 document.getElementById('btnDashboard').onclick = function(){
+  if(isEmployee()){ showToast('Aapko ye dekhne ki ijazat nahi hai.'); return; }
   renderDashboard();
   document.getElementById('dashboardOverlay').classList.remove('hidden');
   pushOverlayHistory('dashboardOverlay');
@@ -3195,6 +3201,7 @@ function renderReports(){
 }
 
 document.getElementById('btnReports').onclick = function(){
+  if(isEmployee()){ showToast('Aapko ye dekhne ki ijazat nahi hai.'); return; }
   document.getElementById('rp-from').value = '';
   document.getElementById('rp-to').value = '';
   document.getElementById('rp-customer').value = '';
@@ -3289,8 +3296,8 @@ document.getElementById('btnReportsPdf').onclick = function(){
 };
 
 
-document.getElementById('btnBackup').onclick = function(){ backupData(false); };
-document.getElementById('btnShareBackup').onclick = function(){ shareBackupFile(); };
+document.getElementById('btnBackup').onclick = function(){ if(isEmployee()){ showToast('Aapko ye ijazat nahi hai.'); return; } backupData(false); };
+document.getElementById('btnShareBackup').onclick = function(){ if(isEmployee()){ showToast('Aapko ye ijazat nahi hai.'); return; } shareBackupFile(); };
 
 // ---------- Menu dropdown ----------
 // Single "☰ Menu" button replaces the wall of buttons that used to sit
@@ -3824,6 +3831,7 @@ document.getElementById('settingsAddBrandBtn').onclick = function(){
 };
 
 document.getElementById('btnSettings').onclick = function(){
+  if(isEmployee()){ showToast('Aapko ye dekhne ki ijazat nahi hai.'); return; }
   const sel = document.getElementById('settings-field-select');
   sel.innerHTML = CUSTOMIZABLE_FIELDS.map(function(f){ return '<option value="'+f.key+'">'+f.label+'</option>'; }).join('');
   renderCardViewModeToggles();
@@ -4005,11 +4013,13 @@ function importExcel(file){
   reader.readAsArrayBuffer(file);
 }
 
-document.getElementById('btnExcelBackup').onclick = function(){ exportExcel(); };
+document.getElementById('btnExcelBackup').onclick = function(){ if(isEmployee()){ showToast('Aapko ye ijazat nahi hai.'); return; } exportExcel(); };
 document.getElementById('btnExcelRestore').onclick = function(){
+  if(isEmployee()){ showToast('Aapko ye ijazat nahi hai.'); return; }
   document.getElementById('excelFile').click();
 };
 document.getElementById('excelFile').onchange = function(){
+  if(isEmployee()) return;
   if(this.files && this.files[0]){
     importExcel(this.files[0]);
     this.value = '';
@@ -4017,6 +4027,7 @@ document.getElementById('excelFile').onchange = function(){
 };
 
 document.getElementById('btnRestore').onclick = function(){
+  if(isEmployee()){ showToast('Aapko ye ijazat nahi hai.'); return; }
   document.getElementById('restoreFile').click();
 };
 document.getElementById('restoreFile').onchange = function(){
@@ -4070,6 +4081,40 @@ try{
   const rawProfile = localStorage.getItem(LS_SHOP_PROFILE_KEY);
   if(rawProfile) shopProfile = Object.assign(shopProfile, JSON.parse(rawProfile));
 }catch(e){}
+
+// Buy prices are kept OUT of the main shop document entirely and synced
+// separately at /shops/{shopId}/private/costs, which Firestore rules only
+// let the owner/admin read. costsMap ({entryId: buyPrice}) is that local
+// cache. For an employee this simply never gets fetched, so reapplyCosts()
+// below leaves every entry's buy price genuinely absent (not just hidden by
+// CSS) — real backend-level protection, not a screen-only trick.
+let costsMap = {};
+let costsUnsub = null;
+const LS_COSTS_KEY = 'mobileLedger_costs';
+try{
+  const rawCosts = localStorage.getItem(LS_COSTS_KEY);
+  if(rawCosts) costsMap = JSON.parse(rawCosts) || {};
+}catch(e){}
+
+// Re-stamps inventory[].buy from the local costsMap cache. Called after
+// every fresh inventory snapshot (which never carries buy) and after every
+// costs snapshot (which may have changed). For employees, costsMap stays
+// {} forever, so this correctly leaves buy null/undefined for them.
+function reapplyCosts(){
+  inventory.forEach(function(e){
+    e.buy = Object.prototype.hasOwnProperty.call(costsMap, e.id) ? costsMap[e.id] : null;
+  });
+}
+
+// Employees see sale price but never buy price/profit, can't delete entries,
+// and don't get Dashboard/Reports/Settings. Owner and Admin both get full
+// access — this single check is all that gates it everywhere in the UI.
+// (Real enforcement for the *data* itself lives in Firestore rules; this
+// only controls what this screen shows/allows.)
+function isEmployee(){ return userRole === 'employee'; }
+function applyRoleUI(){
+  document.body.classList.toggle('role-employee', isEmployee());
+}
 
 function firebaseReady(){
   return typeof firebase !== 'undefined' && firebaseConfig.apiKey && firebaseConfig.apiKey.indexOf('PASTE_') !== 0;
@@ -4228,6 +4273,7 @@ function watchOwnStatusWhilePending(uid){
       updateAccountUI();
       setAuthGateView('unlocked');
       startCloudSync(userShopId);
+      startCostsSync(userShopId);
       if(userRole === 'admin') startEmployeesPanelSync(userShopId);
       showToast('✓ Aapki request accept ho gayi — khush aamdeed!');
     }
@@ -4251,6 +4297,7 @@ function initFirebaseSync(){
     fbAuth.onAuthStateChanged(function(user){
       fbUser = user;
       if(cloudUnsub){ cloudUnsub(); cloudUnsub = null; }
+      if(costsUnsub){ costsUnsub(); costsUnsub = null; }
       if(pendingUserUnsub){ pendingUserUnsub(); pendingUserUnsub = null; }
       if(user){
         resolveUserRoleAndShop(user).then(function(){
@@ -4261,6 +4308,7 @@ function initFirebaseSync(){
           } else {
             setAuthGateView('unlocked');
             startCloudSync(userShopId);
+            startCostsSync(userShopId);
             if(userRole === 'owner' || userRole === 'admin') startEmployeesPanelSync(userShopId);
           }
         });
@@ -4268,6 +4316,8 @@ function initFirebaseSync(){
         userRole = 'owner';
         userShopId = null;
         userStatus = 'active';
+        costsMap = {};
+        try{ localStorage.removeItem(LS_COSTS_KEY); }catch(e){}
         updateAccountUI();
         setAuthGateView('locked');
       }
@@ -4282,6 +4332,7 @@ function accountDisplayId(user){
   return user.email || user.phoneNumber || user.uid;
 }
 function updateAccountUI(){
+  applyRoleUI();
   const label = document.getElementById('accountStatusLabel');
   if(!label) return;
   const loggedOutView = document.getElementById('accountLoggedOutView');
@@ -4322,10 +4373,12 @@ function setAccountSyncStatus(text){
 // Firestore doc shape: everything except photos (photos stay local-only per
 // device — this keeps each sync write small, fast and free-tier-friendly;
 // Firestore documents are capped at 1MB and photos would blow past that
-// fast across dozens of stock entries).
+// fast across dozens of stock entries) AND except buy price, which is
+// synced separately (see costsMap / pushCosts below) so an employee's
+// client never receives it at all, at the Firestore level.
 function buildCloudPayload(){
   return {
-    inventory: inventory.map(function(e){ const c = Object.assign({}, e); delete c.photos; return c; }),
+    inventory: inventory.map(function(e){ const c = Object.assign({}, e); delete c.photos; delete c.buy; return c; }),
     expenses: expenses,
     customModels: customModels,
     customOptionData: customOptionData,
@@ -4335,12 +4388,28 @@ function buildCloudPayload(){
   };
 }
 
+// Buy prices for every entry, keyed by id — written ONLY to the
+// owner/admin-restricted /shops/{shopId}/private/costs doc, never to the
+// main shop doc above.
+function buildCostsPayload(){
+  const buyPrices = {};
+  inventory.forEach(function(e){ if(e.buy != null) buyPrices[e.id] = Number(e.buy); });
+  return { buyPrices: buyPrices, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+}
+
 function schedulePush(){
   if(!fbUser || !userShopId || applyingRemoteUpdate) return;
   clearTimeout(pushDebounceTimer);
   setAccountSyncStatus('save ho raha hai…');
   pushDebounceTimer = setTimeout(function(){
-    fbDb.collection('shops').doc(userShopId).set(buildCloudPayload(), {merge:true})
+    const ops = [ fbDb.collection('shops').doc(userShopId).set(buildCloudPayload(), {merge:true}) ];
+    // Only the owner/admin ever has real buy prices locally to push (an
+    // employee's inventory.buy is always null — see reapplyCosts), and
+    // Firestore rules would reject an employee's write here anyway.
+    if(userRole === 'owner' || userRole === 'admin'){
+      ops.push(fbDb.collection('shops').doc(userShopId).collection('private').doc('costs').set(buildCostsPayload(), {merge:false}));
+    }
+    Promise.all(ops)
       .then(function(){ setAccountSyncStatus('sab devices par sync ho gaya ✓'); })
       .catch(function(err){ console.error('Cloud push failed', err); setAccountSyncStatus('sync fail hua — internet check karein'); });
   }, 1200);
@@ -4383,6 +4452,7 @@ function startCloudSync(uid){
       shopProfile = Object.assign({shopName:"", ownerName:""}, data.shopProfile);
       try{ localStorage.setItem(LS_SHOP_PROFILE_KEY, JSON.stringify(shopProfile)); }catch(err){}
     }
+    reapplyCosts(); // main doc never carries buy — re-stamp from the local costsMap cache
     applyingRemoteUpdate = false;
     render();
     updateAccountUI();
@@ -4391,6 +4461,19 @@ function startCloudSync(uid){
     console.error('Cloud sync listen failed', err);
     setAccountSyncStatus('sync connect nahi ho saka — internet check karein');
   });
+}
+
+// Owner/admin only: buy prices live in this Firestore-rules-restricted doc,
+// separate from the main shop doc, so an employee's client never fetches
+// (and Firestore would refuse to serve) this data at all.
+function startCostsSync(shopId){
+  if(costsUnsub){ costsUnsub(); costsUnsub = null; }
+  if(userRole !== 'owner' && userRole !== 'admin'){ costsMap = {}; try{ localStorage.removeItem(LS_COSTS_KEY); }catch(e){} return; }
+  costsUnsub = fbDb.collection('shops').doc(shopId).collection('private').doc('costs').onSnapshot(function(snap){
+    costsMap = (snap.exists && snap.data().buyPrices) || {};
+    try{ localStorage.setItem(LS_COSTS_KEY, JSON.stringify(costsMap)); }catch(err){}
+    if(!applyingRemoteUpdate){ reapplyCosts(); render(); }
+  }, function(err){ console.error('Costs sync failed', err); });
 }
 
 function showAccountError(msg){
