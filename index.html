@@ -307,6 +307,7 @@
       <div class="menu-divider"></div>
       <div class="menu-section-label">Account (multi-device sync)</div>
       <button class="menu-item" id="btnAccount">👤 <span id="accountStatusLabel">Sign in nahi hai</span></button>
+      <button class="menu-item" id="btnEmployees" style="display:none;">👥 Employees <span id="employeesBadge" style="display:none;background:var(--danger);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;"></span></button>
 
       <div class="menu-divider"></div>
       <div class="menu-section-label">Settings</div>
@@ -650,6 +651,10 @@
           <div class="field"><label>Shop ka naam</label><input type="text" id="acc-shopname" placeholder="jaise: Ali Mobile Center"></div>
           <div class="field"><label>Owner ka naam</label><input type="text" id="acc-ownername" placeholder="jaise: Ali Raza"></div>
         </div>
+        <div id="accJoinOnlyFields" style="display:none;">
+          <div class="field"><label>Shop Code (owner se lein)</label><input type="text" id="acc-shopcode" placeholder="jaise: A1B2C3" style="text-transform:uppercase;" maxlength="8"></div>
+          <div class="settings-note" style="margin-top:0;font-size:11.5px;">Ye code aapke shop owner ke paas hota hai (Menu → Employees mein) — unse WhatsApp par mangwa lein.</div>
+        </div>
 
         <div id="accLoginModeActions" class="sheet-actions" style="position:static;margin-top:12px;">
           <button class="btn-save" id="btnAccountLogin" style="width:100%;">Login karein</button>
@@ -657,9 +662,13 @@
         <div id="accSignupModeActions" class="sheet-actions" style="position:static;margin-top:12px;display:none;">
           <button class="btn-save" id="btnAccountSignup" style="width:100%;">Account banayein</button>
         </div>
+        <div id="accJoinModeActions" class="sheet-actions" style="position:static;margin-top:12px;display:none;">
+          <button class="btn-save" id="btnAccountJoin" style="width:100%;">Request bhejein</button>
+        </div>
 
-        <div style="text-align:center;margin-top:12px;">
-          <a href="javascript:void(0)" id="btnGoToSignupMode" style="color:var(--accent);font-size:13px;text-decoration:none;">Naya account banayein (naye shop ke liye)</a>
+        <div style="text-align:center;margin-top:12px;" id="accModeLinksRow">
+          <a href="javascript:void(0)" id="btnGoToSignupMode" style="color:var(--accent);font-size:13px;text-decoration:none;display:block;">Naya account banayein (naye shop ke liye)</a>
+          <a href="javascript:void(0)" id="btnGoToJoinMode" style="color:var(--accent);font-size:13px;text-decoration:none;display:block;margin-top:8px;">Kisi shop mein employee ke tor par shamil hon</a>
         </div>
         <div style="text-align:center;margin-top:8px;display:none;" id="btnGoToLoginModeRow">
           <a href="javascript:void(0)" id="btnGoToLoginMode" style="color:var(--accent);font-size:13px;text-decoration:none;">Pehle se account hai? Login karein</a>
@@ -684,6 +693,15 @@
       </div>
 
       <div id="accountErrorMsg" style="color:var(--danger);font-size:12.5px;margin-top:10px;display:none;"></div>
+    </div>
+
+    <div id="accountPendingView" style="display:none;padding:10px 2px 4px;">
+      <div style="text-align:center;font-size:38px;margin:8px 0 4px;">⏳</div>
+      <div style="text-align:center;font-size:14.5px;color:var(--text);font-weight:600;">Request bhej di gayi hai</div>
+      <div class="settings-note" style="margin-top:8px;text-align:center;">Aapki request shop owner ke paas pending hai. Jaise hi wo accept karenge, app khud-ba-khud khul jayegi — is screen ko dobara kholne ki zaroorat nahi.</div>
+      <div class="sheet-actions" style="position:static;margin-top:16px;">
+        <button class="btn-cancel" id="btnPendingLogout" style="width:100%;">Logout karein</button>
+      </div>
     </div>
 
     <div id="accountLoggedInView" style="display:none;">
@@ -713,6 +731,32 @@
 
     <div class="sheet-actions" id="accountCloseRow">
       <button class="btn-cancel" id="btnAccountClose">Band karein</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="employeesOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Employees</h2>
+    <div class="settings-note" style="margin-top:0;">Apna Shop Code neeche employees ke sath WhatsApp par share karein — wo isi code se "shop mein shamil hon" request bhejenge, phir yahan aake accept karein.</div>
+
+    <div class="report-summary" style="margin-top:12px;">
+      <span>Aapka Shop Code</span>
+      <span class="v" id="employeesShopCodeLabel" style="font-size:16px;font-weight:700;letter-spacing:1px;color:var(--accent);">——</span>
+    </div>
+    <div class="sheet-actions" style="position:static;margin-top:8px;">
+      <button class="btn-cancel" id="btnCopyShopCode" style="width:100%;">📋 Code copy karein</button>
+    </div>
+
+    <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">Naye requests</div>
+    <div id="employeesPendingList"><div class="settings-note" style="margin-top:0;">Koi pending request nahi hai.</div></div>
+
+    <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">Active employees</div>
+    <div id="employeesActiveList"><div class="settings-note" style="margin-top:0;">Abhi koi employee shamil nahi hua.</div></div>
+
+    <div class="sheet-actions" style="margin-top:20px;">
+      <button class="btn-cancel" id="btnEmployeesClose">Band karein</button>
     </div>
   </div>
 </div>
@@ -4012,6 +4056,10 @@ let shopProfile = {shopName:"", ownerName:""};
 // shop data with restricted permissions, layered in next).
 let userRole = 'owner';
 let userShopId = null;
+let userStatus = 'active'; // 'active' | 'pending' | 'removed'
+let pendingUserUnsub = null; // live-listens to my own users/{uid} doc while status is pending
+let signupIntent = null; // 'owner' | 'join' — set synchronously right before createUserWithEmailAndPassword so the auth-state listener knows which brand-new-account path to take
+let pendingJoinShopCode = null;
 const LS_SHOP_PROFILE_KEY = 'mobileLedger_shopProfile';
 try{
   const rawProfile = localStorage.getItem(LS_SHOP_PROFILE_KEY);
@@ -4026,11 +4074,12 @@ function firebaseReady(){
 // The whole app is behind login now. accountOverlay doubles as the gate:
 // while we don't know/have a signed-in user, it's forced open with no way
 // to close it. Once signed in, it hides and the app becomes usable.
-function setAuthGateView(mode){ // 'checking' | 'locked' | 'unlocked'
+function setAuthGateView(mode){ // 'checking' | 'locked' | 'pending' | 'unlocked'
   const overlay = document.getElementById('accountOverlay');
   const checking = document.getElementById('accountCheckingView');
   const loggedOut = document.getElementById('accountLoggedOutView');
   const loggedIn = document.getElementById('accountLoggedInView');
+  const pendingView = document.getElementById('accountPendingView');
   const closeRow = document.getElementById('accountCloseRow');
   const title = document.getElementById('accountOverlayTitle');
   const note = document.getElementById('accountOverlayNote');
@@ -4041,6 +4090,7 @@ function setAuthGateView(mode){ // 'checking' | 'locked' | 'unlocked'
     checking.style.display = 'block';
     loggedOut.style.display = 'none';
     loggedIn.style.display = 'none';
+    pendingView.style.display = 'none';
     closeRow.style.display = 'none';
     title.textContent = 'Ek second…';
     note.style.display = 'none';
@@ -4051,15 +4101,28 @@ function setAuthGateView(mode){ // 'checking' | 'locked' | 'unlocked'
     checking.style.display = 'none';
     loggedOut.style.display = 'block';
     loggedIn.style.display = 'none';
+    pendingView.style.display = 'none';
     closeRow.style.display = 'none';
     title.textContent = 'Login karein ya account banayein';
     note.style.display = 'block';
-    note.innerHTML = 'Ye app bina login ke use nahi ho sakti. Naya account banayein (aap shop ke <b>owner</b> honge) ya pehle se bane account se login karein.';
+    note.innerHTML = 'Ye app bina login ke use nahi ho sakti. Naya account banayein (aap shop ke <b>owner</b> honge), kisi shop mein employee ke tor par shamil hon, ya pehle se bane account se login karein.';
     if(appEl) appEl.style.visibility = 'hidden';
     if(fab) fab.style.display = 'none';
     setAccEmailMode('login');
+  } else if(mode === 'pending'){
+    overlay.classList.remove('hidden');
+    checking.style.display = 'none';
+    loggedOut.style.display = 'none';
+    loggedIn.style.display = 'none';
+    pendingView.style.display = 'block';
+    closeRow.style.display = 'none';
+    title.textContent = 'Manzoori ka intezar';
+    note.style.display = 'none';
+    if(appEl) appEl.style.visibility = 'hidden';
+    if(fab) fab.style.display = 'none';
   } else { // unlocked
     checking.style.display = 'none';
+    pendingView.style.display = 'none';
     closeRow.style.display = 'flex';
     title.textContent = 'Account — Multi-device sync';
     note.style.display = 'block';
@@ -4070,34 +4133,99 @@ function setAuthGateView(mode){ // 'checking' | 'locked' | 'unlocked'
   }
 }
 
-// Resolves this user's role ('owner' for now — 'employee' lands in the next
-// step) and shopId. Pre-existing accounts (created before this change)
-// won't have a /users/{uid} doc yet, so we create one on first login,
-// treating them as owners of their own existing shop — nothing about their
-// data or access changes.
+// Random, easy-to-read shop code (avoids ambiguous chars like 0/O, 1/I).
+function generateShopCode(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for(let i=0;i<6;i++) code += chars[Math.floor(Math.random()*chars.length)];
+  return code;
+}
+
+// Resolves this user's role ('owner' | 'employee' | 'pending'), shopId and
+// status. Pre-existing accounts (created before this change) won't have a
+// /users/{uid} doc yet, so we create one on first login, treating them as
+// owners of their own existing shop — nothing about their data or access
+// changes for them.
 function resolveUserRoleAndShop(user){
   return fbDb.collection('users').doc(user.uid).get().then(function(snap){
     if(snap.exists){
       const d = snap.data();
       userRole = d.role || 'owner';
-      userShopId = d.shopId || user.uid;
-    } else {
-      userRole = 'owner';
-      userShopId = user.uid;
-      return fbDb.collection('users').doc(user.uid).set({
-        role: 'owner',
-        shopId: user.uid,
-        email: user.email || null,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, {merge:true});
+      userShopId = d.shopId || (userRole === 'owner' ? user.uid : null);
+      userStatus = d.status || (userRole === 'owner' ? 'active' : 'pending');
+      if(userRole === 'owner') return ensureShopCode(user.uid);
+      return;
     }
+    if(signupIntent === 'join'){
+      const code = (pendingJoinShopCode || '').trim().toUpperCase();
+      signupIntent = null;
+      return fbDb.collection('shopCodes').doc(code).get().then(function(codeSnap){
+        if(!codeSnap.exists) return Promise.reject({code:'custom/invalid-shop-code'});
+        const shopId = codeSnap.data().shopId;
+        userRole = 'pending'; userShopId = null; userStatus = 'pending';
+        return fbDb.collection('users').doc(user.uid).set({
+          role: 'pending', shopId: null, status: 'pending', email: user.email || null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, {merge:true}).then(function(){
+          return fbDb.collection('joinRequests').add({
+            uid: user.uid, email: user.email || null, shopId: shopId, status: 'pending',
+            requestedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        });
+      });
+    }
+    // Brand-new owner signup (or a pre-existing account logging in for the
+    // first time since this update — treated the same as before: owner of
+    // their own existing data).
+    signupIntent = null;
+    userRole = 'owner'; userShopId = user.uid; userStatus = 'active';
+    return fbDb.collection('users').doc(user.uid).set({
+      role: 'owner', shopId: user.uid, status: 'active', email: user.email || null,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, {merge:true}).then(function(){ return ensureShopCode(user.uid); });
   }).catch(function(err){
+    if(err && err.code === 'custom/invalid-shop-code'){
+      fbAuth.signOut().then(function(){
+        setAccEmailMode('join');
+        showAccountError('Ye Shop Code sahi nahi hai — owner se dobara confirm karein.');
+      });
+      return;
+    }
     console.error('Could not resolve user role', err);
     // Fail safe: still treat them as owner of their own data rather than
     // locking them out entirely if this lookup has a hiccup.
     userRole = 'owner';
     userShopId = user.uid;
+    userStatus = 'active';
   });
+}
+
+function ensureShopCode(shopId){
+  return fbDb.collection('shops').doc(shopId).get().then(function(snap){
+    if(snap.exists && snap.data().shopCode) return;
+    const code = generateShopCode();
+    return fbDb.collection('shopCodes').doc(code).set({shopId: shopId}).then(function(){
+      return fbDb.collection('shops').doc(shopId).set({shopCode: code}, {merge:true});
+    });
+  }).catch(function(err){ console.error('Could not ensure shop code', err); });
+}
+
+// While this user's own status is 'pending', watch their own doc live so
+// the moment an owner accepts them, the app unlocks with no refresh needed.
+function watchOwnStatusWhilePending(uid){
+  if(pendingUserUnsub){ pendingUserUnsub(); pendingUserUnsub = null; }
+  pendingUserUnsub = fbDb.collection('users').doc(uid).onSnapshot(function(snap){
+    if(!snap.exists) return;
+    const d = snap.data();
+    if(d.status === 'active' && d.role === 'employee'){
+      userRole = 'employee'; userShopId = d.shopId; userStatus = 'active';
+      if(pendingUserUnsub){ pendingUserUnsub(); pendingUserUnsub = null; }
+      updateAccountUI();
+      setAuthGateView('unlocked');
+      startCloudSync(userShopId);
+      showToast('✓ Aapki request accept ho gayi — khush aamdeed!');
+    }
+  }, function(err){ console.error('Pending watch failed', err); });
 }
 
 function initFirebaseSync(){
@@ -4117,15 +4245,23 @@ function initFirebaseSync(){
     fbAuth.onAuthStateChanged(function(user){
       fbUser = user;
       if(cloudUnsub){ cloudUnsub(); cloudUnsub = null; }
+      if(pendingUserUnsub){ pendingUserUnsub(); pendingUserUnsub = null; }
       if(user){
         resolveUserRoleAndShop(user).then(function(){
           updateAccountUI();
-          setAuthGateView('unlocked');
-          startCloudSync(userShopId);
+          if(userStatus === 'pending' || !userShopId){
+            setAuthGateView('pending');
+            watchOwnStatusWhilePending(user.uid);
+          } else {
+            setAuthGateView('unlocked');
+            startCloudSync(userShopId);
+            if(userRole === 'owner') startEmployeesPanelSync(user.uid);
+          }
         });
       } else {
         userRole = 'owner';
         userShopId = null;
+        userStatus = 'active';
         updateAccountUI();
         setAuthGateView('locked');
       }
@@ -4145,26 +4281,30 @@ function updateAccountUI(){
   const loggedOutView = document.getElementById('accountLoggedOutView');
   const loggedInView = document.getElementById('accountLoggedInView');
   const statusLine = document.getElementById('accountStatusLine');
-  if(fbUser){
-    label.textContent = accountDisplayId(fbUser) + ' (sync ON)';
+  const employeesBtn = document.getElementById('btnEmployees');
+  if(fbUser && userStatus === 'active'){
+    const roleTag = userRole === 'owner' ? 'Owner' : 'Employee';
+    label.textContent = accountDisplayId(fbUser) + ' — ' + roleTag + ' (sync ON)';
     if(loggedOutView) loggedOutView.style.display = 'none';
     if(loggedInView) loggedInView.style.display = 'block';
     const emailLabel = document.getElementById('accountEmailLabel');
-    if(emailLabel) emailLabel.textContent = accountDisplayId(fbUser);
+    if(emailLabel) emailLabel.textContent = accountDisplayId(fbUser) + ' (' + roleTag + ')';
     const shopRow = document.getElementById('accountShopRow');
     const shopLabel = document.getElementById('accountShopLabel');
     if(shopLabel) shopLabel.textContent = [shopProfile.shopName, shopProfile.ownerName].filter(Boolean).join(' — ') || 'Set nahi kiya';
     if(shopRow) shopRow.style.display = 'flex';
     if(statusLine){
       const who = shopProfile.shopName || accountDisplayId(fbUser);
-      statusLine.textContent = '✓ Logged in — ' + who + ' (sync ON)';
+      statusLine.textContent = '✓ Logged in — ' + who + ' (' + roleTag + ')';
       statusLine.style.display = 'block';
     }
+    if(employeesBtn) employeesBtn.style.display = userRole === 'owner' ? 'block' : 'none';
   } else {
     label.textContent = firebaseReady() ? 'Sign in nahi hai' : 'Sync set up nahi hai';
     if(loggedOutView) loggedOutView.style.display = 'block';
     if(loggedInView) loggedInView.style.display = 'none';
     if(statusLine) statusLine.style.display = 'none';
+    if(employeesBtn) employeesBtn.style.display = 'none';
   }
 }
 
@@ -4266,17 +4406,19 @@ function friendlyAuthError(err){
   return 'Masla hua: ' + ((err && err.message) || 'dobara try karein.');
 }
 
-// ---------- Login mode vs Signup mode toggle (email flow) ----------
-function setAccEmailMode(mode){ // 'login' | 'signup'
-  const isSignup = mode === 'signup';
-  document.getElementById('accSignupOnlyFields').style.display = isSignup ? 'block' : 'none';
-  document.getElementById('accLoginModeActions').style.display = isSignup ? 'none' : 'flex';
-  document.getElementById('accSignupModeActions').style.display = isSignup ? 'flex' : 'none';
-  document.getElementById('btnGoToSignupMode').parentElement.style.display = isSignup ? 'none' : 'block';
-  document.getElementById('btnGoToLoginModeRow').style.display = isSignup ? 'block' : 'none';
+// ---------- Login / Signup / Join mode toggle (email flow) ----------
+function setAccEmailMode(mode){ // 'login' | 'signup' | 'join'
+  document.getElementById('accSignupOnlyFields').style.display = mode === 'signup' ? 'block' : 'none';
+  document.getElementById('accJoinOnlyFields').style.display = mode === 'join' ? 'block' : 'none';
+  document.getElementById('accLoginModeActions').style.display = mode === 'login' ? 'flex' : 'none';
+  document.getElementById('accSignupModeActions').style.display = mode === 'signup' ? 'flex' : 'none';
+  document.getElementById('accJoinModeActions').style.display = mode === 'join' ? 'flex' : 'none';
+  document.getElementById('accModeLinksRow').style.display = mode === 'login' ? 'block' : 'none';
+  document.getElementById('btnGoToLoginModeRow').style.display = mode !== 'login' ? 'block' : 'none';
   document.getElementById('accountErrorMsg').style.display = 'none';
 }
 document.getElementById('btnGoToSignupMode').onclick = function(){ setAccEmailMode('signup'); };
+document.getElementById('btnGoToJoinMode').onclick = function(){ setAccEmailMode('join'); };
 document.getElementById('btnGoToLoginMode').onclick = function(){ setAccEmailMode('login'); };
 
 document.getElementById('btnAccount').onclick = function(){
@@ -4305,6 +4447,7 @@ document.getElementById('btnAccountSignup').onclick = function(){
   const ownerName = document.getElementById('acc-ownername').value.trim();
   if(!email || !pass){ showAccountError('Email aur password dono likhein.'); return; }
   if(pass.length < 6){ showAccountError('Password kam se kam 6 characters ka ho.'); return; }
+  signupIntent = 'owner';
   fbAuth.createUserWithEmailAndPassword(email, pass)
     .then(function(){
       shopProfile = {shopName:shopName, ownerName:ownerName};
@@ -4313,7 +4456,21 @@ document.getElementById('btnAccountSignup').onclick = function(){
       showToast('✓ Account ban gaya — sync shuru.');
       // schedulePush() fires once userShopId is resolved by onAuthStateChanged
     })
-    .catch(function(err){ showAccountError(friendlyAuthError(err)); });
+    .catch(function(err){ signupIntent = null; showAccountError(friendlyAuthError(err)); });
+};
+document.getElementById('btnAccountJoin').onclick = function(){
+  if(!firebaseReady()){ showAccountError('Sync abhi set up nahi hua (Firebase config missing).'); return; }
+  const email = document.getElementById('acc-email').value.trim();
+  const pass = document.getElementById('acc-password').value;
+  const code = document.getElementById('acc-shopcode').value.trim().toUpperCase();
+  if(!email || !pass){ showAccountError('Email aur password dono likhein.'); return; }
+  if(pass.length < 6){ showAccountError('Password kam se kam 6 characters ka ho.'); return; }
+  if(!code){ showAccountError('Shop Code likhein — ye owner se milega.'); return; }
+  signupIntent = 'join';
+  pendingJoinShopCode = code;
+  fbAuth.createUserWithEmailAndPassword(email, pass)
+    .then(function(){ if(!fbUser) fbUser = fbAuth.currentUser; })
+    .catch(function(err){ signupIntent = null; pendingJoinShopCode = null; showAccountError(friendlyAuthError(err)); });
 };
 document.getElementById('btnAccountForgotPassword').onclick = function(){
   if(!firebaseReady()){ showAccountError('Sync abhi set up nahi hua (Firebase config missing).'); return; }
@@ -4326,6 +4483,10 @@ document.getElementById('btnAccountForgotPassword').onclick = function(){
 };
 document.getElementById('btnAccountLogout').onclick = function(){
   if(!confirm('Is device se logout karna hai? Dobara use karne ke liye login zaroori hoga.')) return;
+  fbAuth.signOut();
+};
+document.getElementById('btnPendingLogout').onclick = function(){
+  if(!confirm('Logout karna hai?')) return;
   fbAuth.signOut();
 };
 document.getElementById('btnEditShopProfile').onclick = function(){
@@ -4407,6 +4568,134 @@ document.getElementById('btnAccountVerifyOtp').onclick = function(){
     .catch(function(err){ showAccountError(friendlyAuthError(err)); });
 };
 
+// ================= Employees panel (owner only) =================
+let employeesPendingUnsub = null, employeesActiveUnsub = null;
+let knownPendingRequestIds = null; // used to detect *new* pending requests for the notification toast
+
+function startEmployeesPanelSync(ownerUid){
+  if(employeesPendingUnsub) employeesPendingUnsub();
+  if(employeesActiveUnsub) employeesActiveUnsub();
+  knownPendingRequestIds = null;
+
+  employeesPendingUnsub = fbDb.collection('joinRequests')
+    .where('shopId', '==', ownerUid).where('status', '==', 'pending')
+    .onSnapshot(function(snap){
+      const docs = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      if(knownPendingRequestIds !== null){
+        docs.forEach(function(r){
+          if(!knownPendingRequestIds.has(r.id)){
+            showToast('👤 Naya employee request: ' + (r.email || 'unknown'));
+          }
+        });
+      }
+      knownPendingRequestIds = new Set(docs.map(function(r){ return r.id; }));
+      renderEmployeesPending(docs);
+      const badge = document.getElementById('employeesBadge');
+      if(badge){
+        if(docs.length){ badge.textContent = String(docs.length); badge.style.display = 'inline-block'; }
+        else { badge.style.display = 'none'; }
+      }
+    }, function(err){ console.error('Pending requests sync failed', err); });
+
+  employeesActiveUnsub = fbDb.collection('users')
+    .where('shopId', '==', ownerUid).where('role', '==', 'employee').where('status', '==', 'active')
+    .onSnapshot(function(snap){
+      const docs = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      renderEmployeesActive(docs);
+    }, function(err){ console.error('Active employees sync failed', err); });
+
+  fbDb.collection('shops').doc(ownerUid).get().then(function(snap){
+    const codeLabel = document.getElementById('employeesShopCodeLabel');
+    if(codeLabel) codeLabel.textContent = (snap.exists && snap.data().shopCode) || '——';
+  });
+}
+
+function renderEmployeesPending(docs){
+  const wrap = document.getElementById('employeesPendingList');
+  if(!wrap) return;
+  if(!docs.length){ wrap.innerHTML = '<div class="settings-note" style="margin-top:0;">Koi pending request nahi hai.</div>'; return; }
+  wrap.innerHTML = docs.map(function(r){
+    return '<div class="report-summary" style="margin-top:8px;flex-wrap:wrap;gap:8px;">' +
+      '<span style="flex:1;min-width:140px;word-break:break-all;">' + escapeHtml(r.email || r.uid) + '</span>' +
+      '<span style="display:flex;gap:6px;">' +
+        '<button type="button" class="sell-btn" data-accept="' + r.id + '">✓ Accept</button>' +
+        '<button type="button" class="btn-cancel" data-reject="' + r.id + '" style="padding:6px 10px;">✕ Reject</button>' +
+      '</span></div>';
+  }).join('');
+  wrap.querySelectorAll('[data-accept]').forEach(function(btn){
+    btn.onclick = function(){ acceptJoinRequest(btn.getAttribute('data-accept')); };
+  });
+  wrap.querySelectorAll('[data-reject]').forEach(function(btn){
+    btn.onclick = function(){ rejectJoinRequest(btn.getAttribute('data-reject')); };
+  });
+}
+
+function renderEmployeesActive(docs){
+  const wrap = document.getElementById('employeesActiveList');
+  if(!wrap) return;
+  if(!docs.length){ wrap.innerHTML = '<div class="settings-note" style="margin-top:0;">Abhi koi employee shamil nahi hua.</div>'; return; }
+  wrap.innerHTML = docs.map(function(e){
+    return '<div class="report-summary" style="margin-top:8px;flex-wrap:wrap;gap:8px;">' +
+      '<span style="flex:1;min-width:140px;word-break:break-all;">' + escapeHtml(e.email || e.id) + '</span>' +
+      '<button type="button" class="btn-cancel" data-remove="' + e.id + '" style="padding:6px 10px;">Hata dein</button>' +
+      '</div>';
+  }).join('');
+  wrap.querySelectorAll('[data-remove]').forEach(function(btn){
+    btn.onclick = function(){ removeEmployee(btn.getAttribute('data-remove')); };
+  });
+}
+
+function escapeHtml(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+function acceptJoinRequest(reqId){
+  if(!fbUser || userRole !== 'owner') return;
+  fbDb.collection('joinRequests').doc(reqId).get().then(function(snap){
+    if(!snap.exists) return;
+    const r = snap.data();
+    if(r.shopId !== fbUser.uid){ return; }
+    const batchOps = [
+      fbDb.collection('users').doc(r.uid).set({role:'employee', shopId: fbUser.uid, status:'active'}, {merge:true}),
+      fbDb.collection('joinRequests').doc(reqId).set({status:'accepted', decidedAt: firebase.firestore.FieldValue.serverTimestamp()}, {merge:true})
+    ];
+    Promise.all(batchOps).then(function(){ showToast('✓ Employee shamil ho gaya.'); })
+      .catch(function(err){ console.error('Accept failed', err); showToast('Masla hua — dobara try karein.'); });
+  });
+}
+
+function rejectJoinRequest(reqId){
+  fbDb.collection('joinRequests').doc(reqId).set({status:'rejected', decidedAt: firebase.firestore.FieldValue.serverTimestamp()}, {merge:true})
+    .then(function(){ showToast('Request reject kar di gayi.'); })
+    .catch(function(err){ console.error('Reject failed', err); });
+}
+
+function removeEmployee(uid){
+  if(!confirm('Is employee ki access hatani hai? Wo dobara login nahi kar sakega jab tak naya request accept na karein.')) return;
+  fbDb.collection('users').doc(uid).set({role:'pending', shopId:null, status:'pending'}, {merge:true})
+    .then(function(){ showToast('✓ Employee hata diya gaya.'); })
+    .catch(function(err){ console.error('Remove failed', err); showToast('Masla hua — dobara try karein.'); });
+}
+
+document.getElementById('btnEmployees').onclick = function(){
+  document.getElementById('employeesOverlay').classList.remove('hidden');
+  document.getElementById('menuDropdown').classList.add('hidden');
+};
+document.getElementById('btnEmployeesClose').onclick = function(){
+  document.getElementById('employeesOverlay').classList.add('hidden');
+};
+document.getElementById('btnCopyShopCode').onclick = function(){
+  const code = document.getElementById('employeesShopCodeLabel').textContent.trim();
+  if(!code || code === '——') return;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(code).then(function(){ showToast('✓ Code copy ho gaya.'); })
+      .catch(function(){ showToast('Copy nahi ho saka — code manually likh lein: ' + code); });
+  } else {
+    showToast('Code: ' + code);
+  }
+};
 
 loadCardDisplaySettings();
 loadCustomOptionData();
