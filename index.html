@@ -270,7 +270,7 @@
 </style>
 </head>
 <body>
-<div class="app">
+<div class="app" style="visibility:hidden;">
   <header style="position:relative;">
     <div class="header-top">
       <div>
@@ -337,7 +337,7 @@
   <div class="list" id="list"></div>
 </div>
 
-<button class="fab" id="fabAdd">+</button>
+<button class="fab" id="fabAdd" style="display:none;">+</button>
 <div class="toast" id="toast"></div>
 <div class="toast undo-toast" id="undoToast">
   <span id="undoToastMsg"></span>
@@ -631,9 +631,11 @@
 
 <div class="overlay hidden" id="accountOverlay">
   <div class="sheet">
-    <div class="sheet-handle"></div>
-    <h2>Account — Multi-device sync</h2>
-    <div class="settings-note" style="margin-top:0;">Isi email/password se dusre kisi bhi phone/computer par login karke wahi stock, sales aur expenses turant nazar aayenge — data khud-ba-khud sync hota rahega. <b>Note:</b> photos har device par alag rehti hain (sync nahi hoti), baqi sab kuch (stock list, prices, condition, expenses, settings) sync hota hai.</div>
+    <div class="sheet-handle" id="accountSheetHandle"></div>
+    <h2 id="accountOverlayTitle">Account — Multi-device sync</h2>
+    <div class="settings-note" style="margin-top:0;" id="accountOverlayNote">Isi email/password se dusre kisi bhi phone/computer par login karke wahi stock, sales aur expenses turant nazar aayenge — data khud-ba-khud sync hota rahega. <b>Note:</b> photos har device par alag rehti hain (sync nahi hoti), baqi sab kuch (stock list, prices, condition, expenses, settings) sync hota hai.</div>
+
+    <div id="accountCheckingView" style="display:none;padding:26px 4px;text-align:center;color:var(--text-dim);font-size:13.5px;">Session check ho raha hai…</div>
 
     <div id="accountLoggedOutView">
       <div class="chip-row" style="margin-top:14px;">
@@ -644,14 +646,23 @@
       <div id="accEmailBlock">
         <div class="field" style="margin-top:12px;"><label>Email</label><input type="email" id="acc-email" placeholder="aap@example.com" autocomplete="username"></div>
         <div class="field"><label>Password</label><input type="password" id="acc-password" placeholder="Kam se kam 6 characters" autocomplete="current-password"></div>
-        <div id="accSignupOnlyFields">
+        <div id="accSignupOnlyFields" style="display:none;">
           <div class="field"><label>Shop ka naam</label><input type="text" id="acc-shopname" placeholder="jaise: Ali Mobile Center"></div>
           <div class="field"><label>Owner ka naam</label><input type="text" id="acc-ownername" placeholder="jaise: Ali Raza"></div>
-          <div class="settings-note" style="margin-top:0;font-size:11.5px;">Ye sirf naya account banate waqt chahiye — login karte waqt khali chhor dein.</div>
         </div>
-        <div class="sheet-actions" style="position:static;margin-top:12px;">
-          <button class="btn-save" id="btnAccountLogin" style="flex:1;">Login karein</button>
-          <button class="btn-save" id="btnAccountSignup" style="flex:1;">Naya account banayein</button>
+
+        <div id="accLoginModeActions" class="sheet-actions" style="position:static;margin-top:12px;">
+          <button class="btn-save" id="btnAccountLogin" style="width:100%;">Login karein</button>
+        </div>
+        <div id="accSignupModeActions" class="sheet-actions" style="position:static;margin-top:12px;display:none;">
+          <button class="btn-save" id="btnAccountSignup" style="width:100%;">Account banayein</button>
+        </div>
+
+        <div style="text-align:center;margin-top:12px;">
+          <a href="javascript:void(0)" id="btnGoToSignupMode" style="color:var(--accent);font-size:13px;text-decoration:none;">Naya account banayein (naye shop ke liye)</a>
+        </div>
+        <div style="text-align:center;margin-top:8px;display:none;" id="btnGoToLoginModeRow">
+          <a href="javascript:void(0)" id="btnGoToLoginMode" style="color:var(--accent);font-size:13px;text-decoration:none;">Pehle se account hai? Login karein</a>
         </div>
         <div style="text-align:center;margin-top:10px;">
           <a href="javascript:void(0)" id="btnAccountForgotPassword" style="color:var(--accent);font-size:13px;text-decoration:none;">Password bhool gaye?</a>
@@ -700,7 +711,7 @@
       </div>
     </div>
 
-    <div class="sheet-actions">
+    <div class="sheet-actions" id="accountCloseRow">
       <button class="btn-cancel" id="btnAccountClose">Band karein</button>
     </div>
   </div>
@@ -3993,6 +4004,14 @@ let cloudUnsub = null;
 let applyingRemoteUpdate = false; // true while a cloud update is being written locally, so we don't immediately re-push it
 let pushDebounceTimer = null;
 let shopProfile = {shopName:"", ownerName:""};
+// Multi-user foundation: every account has a role + a shopId (the Firestore
+// doc under /shops/ that their data lives in). Right now every account is
+// its own 'owner' with shopId === their own uid — this is the base every
+// future Employee account will plug into (an employee's shopId will point
+// at their owner's uid instead of their own, so they read/write the same
+// shop data with restricted permissions, layered in next).
+let userRole = 'owner';
+let userShopId = null;
 const LS_SHOP_PROFILE_KEY = 'mobileLedger_shopProfile';
 try{
   const rawProfile = localStorage.getItem(LS_SHOP_PROFILE_KEY);
@@ -4003,20 +4022,117 @@ function firebaseReady(){
   return typeof firebase !== 'undefined' && firebaseConfig.apiKey && firebaseConfig.apiKey.indexOf('PASTE_') !== 0;
 }
 
+// ---------- Mandatory login gate ----------
+// The whole app is behind login now. accountOverlay doubles as the gate:
+// while we don't know/have a signed-in user, it's forced open with no way
+// to close it. Once signed in, it hides and the app becomes usable.
+function setAuthGateView(mode){ // 'checking' | 'locked' | 'unlocked'
+  const overlay = document.getElementById('accountOverlay');
+  const checking = document.getElementById('accountCheckingView');
+  const loggedOut = document.getElementById('accountLoggedOutView');
+  const loggedIn = document.getElementById('accountLoggedInView');
+  const closeRow = document.getElementById('accountCloseRow');
+  const title = document.getElementById('accountOverlayTitle');
+  const note = document.getElementById('accountOverlayNote');
+  const appEl = document.querySelector('.app');
+  const fab = document.getElementById('fabAdd');
+  if(mode === 'checking'){
+    overlay.classList.remove('hidden');
+    checking.style.display = 'block';
+    loggedOut.style.display = 'none';
+    loggedIn.style.display = 'none';
+    closeRow.style.display = 'none';
+    title.textContent = 'Ek second…';
+    note.style.display = 'none';
+    if(appEl) appEl.style.visibility = 'hidden';
+    if(fab) fab.style.display = 'none';
+  } else if(mode === 'locked'){
+    overlay.classList.remove('hidden');
+    checking.style.display = 'none';
+    loggedOut.style.display = 'block';
+    loggedIn.style.display = 'none';
+    closeRow.style.display = 'none';
+    title.textContent = 'Login karein ya account banayein';
+    note.style.display = 'block';
+    note.innerHTML = 'Ye app bina login ke use nahi ho sakti. Naya account banayein (aap shop ke <b>owner</b> honge) ya pehle se bane account se login karein.';
+    if(appEl) appEl.style.visibility = 'hidden';
+    if(fab) fab.style.display = 'none';
+    setAccEmailMode('login');
+  } else { // unlocked
+    checking.style.display = 'none';
+    closeRow.style.display = 'flex';
+    title.textContent = 'Account — Multi-device sync';
+    note.style.display = 'block';
+    note.innerHTML = 'Isi email/password se dusre kisi bhi phone/computer par login karke wahi stock, sales aur expenses turant nazar aayenge — data khud-ba-khud sync hota rahega. <b>Note:</b> photos har device par alag rehti hain (sync nahi hoti), baqi sab kuch (stock list, prices, condition, expenses, settings) sync hota hai.';
+    overlay.classList.add('hidden');
+    if(appEl) appEl.style.visibility = 'visible';
+    if(fab) fab.style.display = 'flex';
+  }
+}
+
+// Resolves this user's role ('owner' for now — 'employee' lands in the next
+// step) and shopId. Pre-existing accounts (created before this change)
+// won't have a /users/{uid} doc yet, so we create one on first login,
+// treating them as owners of their own existing shop — nothing about their
+// data or access changes.
+function resolveUserRoleAndShop(user){
+  return fbDb.collection('users').doc(user.uid).get().then(function(snap){
+    if(snap.exists){
+      const d = snap.data();
+      userRole = d.role || 'owner';
+      userShopId = d.shopId || user.uid;
+    } else {
+      userRole = 'owner';
+      userShopId = user.uid;
+      return fbDb.collection('users').doc(user.uid).set({
+        role: 'owner',
+        shopId: user.uid,
+        email: user.email || null,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, {merge:true});
+    }
+  }).catch(function(err){
+    console.error('Could not resolve user role', err);
+    // Fail safe: still treat them as owner of their own data rather than
+    // locking them out entirely if this lookup has a hiccup.
+    userRole = 'owner';
+    userShopId = user.uid;
+  });
+}
+
 function initFirebaseSync(){
-  if(!firebaseReady()){ updateAccountUI(); return; }
+  if(!firebaseReady()){
+    // No Firebase project configured at all — there's no way to enforce
+    // login without a backend, so we can't safely gate the app. Show the
+    // (non-functional) locked screen rather than silently letting people in.
+    setAuthGateView('locked');
+    updateAccountUI();
+    return;
+  }
   try{
     firebase.initializeApp(firebaseConfig);
     fbAuth = firebase.auth();
     fbDb = firebase.firestore();
+    setAuthGateView('checking');
     fbAuth.onAuthStateChanged(function(user){
       fbUser = user;
-      updateAccountUI();
       if(cloudUnsub){ cloudUnsub(); cloudUnsub = null; }
-      if(user) startCloudSync(user.uid);
+      if(user){
+        resolveUserRoleAndShop(user).then(function(){
+          updateAccountUI();
+          setAuthGateView('unlocked');
+          startCloudSync(userShopId);
+        });
+      } else {
+        userRole = 'owner';
+        userShopId = null;
+        updateAccountUI();
+        setAuthGateView('locked');
+      }
     });
   }catch(e){
     console.error('Firebase init failed', e);
+    setAuthGateView('locked');
   }
 }
 
@@ -4074,11 +4190,11 @@ function buildCloudPayload(){
 }
 
 function schedulePush(){
-  if(!fbUser || applyingRemoteUpdate) return;
+  if(!fbUser || !userShopId || applyingRemoteUpdate) return;
   clearTimeout(pushDebounceTimer);
   setAccountSyncStatus('save ho raha hai…');
   pushDebounceTimer = setTimeout(function(){
-    fbDb.collection('shops').doc(fbUser.uid).set(buildCloudPayload(), {merge:true})
+    fbDb.collection('shops').doc(userShopId).set(buildCloudPayload(), {merge:true})
       .then(function(){ setAccountSyncStatus('sab devices par sync ho gaya ✓'); })
       .catch(function(err){ console.error('Cloud push failed', err); setAccountSyncStatus('sync fail hua — internet check karein'); });
   }, 1200);
@@ -4150,11 +4266,26 @@ function friendlyAuthError(err){
   return 'Masla hua: ' + ((err && err.message) || 'dobara try karein.');
 }
 
+// ---------- Login mode vs Signup mode toggle (email flow) ----------
+function setAccEmailMode(mode){ // 'login' | 'signup'
+  const isSignup = mode === 'signup';
+  document.getElementById('accSignupOnlyFields').style.display = isSignup ? 'block' : 'none';
+  document.getElementById('accLoginModeActions').style.display = isSignup ? 'none' : 'flex';
+  document.getElementById('accSignupModeActions').style.display = isSignup ? 'flex' : 'none';
+  document.getElementById('btnGoToSignupMode').parentElement.style.display = isSignup ? 'none' : 'block';
+  document.getElementById('btnGoToLoginModeRow').style.display = isSignup ? 'block' : 'none';
+  document.getElementById('accountErrorMsg').style.display = 'none';
+}
+document.getElementById('btnGoToSignupMode').onclick = function(){ setAccEmailMode('signup'); };
+document.getElementById('btnGoToLoginMode').onclick = function(){ setAccEmailMode('login'); };
+
 document.getElementById('btnAccount').onclick = function(){
   document.getElementById('accountErrorMsg').style.display = 'none';
+  if(fbUser) setAuthGateView('unlocked');
   document.getElementById('accountOverlay').classList.remove('hidden');
 };
 document.getElementById('btnAccountClose').onclick = function(){
+  if(!fbUser) return; // gate mode — can't be dismissed without logging in
   document.getElementById('accountOverlay').classList.add('hidden');
 };
 document.getElementById('btnAccountLogin').onclick = function(){
@@ -4163,7 +4294,7 @@ document.getElementById('btnAccountLogin').onclick = function(){
   const pass = document.getElementById('acc-password').value;
   if(!email || !pass){ showAccountError('Email aur password dono likhein.'); return; }
   fbAuth.signInWithEmailAndPassword(email, pass)
-    .then(function(){ document.getElementById('accountOverlay').classList.add('hidden'); showToast('✓ Login ho gaya — sync shuru.'); })
+    .then(function(){ showToast('✓ Login ho gaya — sync shuru.'); })
     .catch(function(err){ showAccountError(friendlyAuthError(err)); });
 };
 document.getElementById('btnAccountSignup').onclick = function(){
@@ -4179,10 +4310,8 @@ document.getElementById('btnAccountSignup').onclick = function(){
       shopProfile = {shopName:shopName, ownerName:ownerName};
       try{ localStorage.setItem(LS_SHOP_PROFILE_KEY, JSON.stringify(shopProfile)); }catch(e){}
       if(!fbUser) fbUser = fbAuth.currentUser;
-      updateAccountUI();
-      schedulePush();
-      document.getElementById('accountOverlay').classList.add('hidden');
       showToast('✓ Account ban gaya — sync shuru.');
+      // schedulePush() fires once userShopId is resolved by onAuthStateChanged
     })
     .catch(function(err){ showAccountError(friendlyAuthError(err)); });
 };
@@ -4196,7 +4325,7 @@ document.getElementById('btnAccountForgotPassword').onclick = function(){
     .catch(function(err){ showAccountError(friendlyAuthError(err)); });
 };
 document.getElementById('btnAccountLogout').onclick = function(){
-  if(!confirm('Is device se logout karna hai? App is device par offline/local mode mein chalti rahegi.')) return;
+  if(!confirm('Is device se logout karna hai? Dobara use karne ke liye login zaroori hoga.')) return;
   fbAuth.signOut();
 };
 document.getElementById('btnEditShopProfile').onclick = function(){
@@ -4273,7 +4402,6 @@ document.getElementById('btnAccountVerifyOtp').onclick = function(){
   if(!code){ showAccountError('SMS mein aya hua code likhein.'); return; }
   phoneConfirmationResult.confirm(code)
     .then(function(){
-      document.getElementById('accountOverlay').classList.add('hidden');
       showToast('✓ Login ho gaya — sync shuru.');
     })
     .catch(function(err){ showAccountError(friendlyAuthError(err)); });
