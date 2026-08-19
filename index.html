@@ -602,6 +602,8 @@
     <h2>Expenses (Kharcha)</h2>
 
     <div class="sec-label" style="margin-top:0;" id="exp-form-title">Naya expense add karein</div>
+    <div class="chip-row" id="expenseTypeChips"></div>
+    <div class="sec-label" style="margin-top:10px;">Category</div>
     <div class="chip-row" id="expenseCategoryChips"></div>
     <div class="field" id="expenseCategoryOtherWrap" style="display:none;margin-top:8px;">
       <input id="exp-category-other" placeholder="Category ka naam likhein">
@@ -990,7 +992,7 @@ const LS_REMINDER_DISMISSED_KEY = 'mobileLedger_reminderDismissedAt';
 const LS_EXPENSES_KEY = 'mobileLedger_expenses';
 
 let expenses = [];
-let expenseFormState = {category:''};
+let expenseFormState = {category:'', type:'expense'};
 let editingExpenseId = null;
 
 async function loadExpenses(){
@@ -1019,12 +1021,20 @@ function tryCommitExpenses(candidateExpenses){
   return true;
 }
 
+// "expense" entries add to total kharcha; "return" entries (paise wapis
+// mile — not tied to a specific earlier expense) subtract from it. Refunded
+// expenses (the old per-entry "Wapis mila" flag) still count as zero.
+function expenseSignedAmount(x){
+  if(x.refunded) return 0;
+  const amt = Number(x.amount)||0;
+  return x.type==='return' ? -amt : amt;
+}
 function totalExpensesAllTime(){
-  return expenses.reduce(function(s,x){ return s + (x.refunded ? 0 : (Number(x.amount)||0)); }, 0);
+  return expenses.reduce(function(s,x){ return s + expenseSignedAmount(x); }, 0);
 }
 function expensesInMonth(monthKey){
   return expenses.filter(function(x){ return x.date && String(x.date).indexOf(monthKey)===0; })
-    .reduce(function(s,x){ return s + (x.refunded ? 0 : (Number(x.amount)||0)); }, 0);
+    .reduce(function(s,x){ return s + expenseSignedAmount(x); }, 0);
 }
 function expensesInRange(from, to){
   return expenses.filter(function(x){
@@ -3190,13 +3200,15 @@ function renderReports(){
   const expEntries = getFilteredReportExpenses();
   let expensesTotal = 0;
   const expRowsHtml = expEntries.map(function(x){
-    if(!x.refunded) expensesTotal += Number(x.amount)||0;
+    expensesTotal += expenseSignedAmount(x);
+    const isReturn = x.type==='return';
     const amountHtml = x.refunded
-      ? '<span class="rr-profit" style="color:var(--text-faint);text-decoration:line-through;">-'+displayProfitHtml(x.amount)+'</span>'
-      : '<span class="rr-profit" style="color:var(--danger);">-'+displayProfitHtml(x.amount)+'</span>';
+      ? '<span class="rr-profit" style="color:var(--text-faint);text-decoration:line-through;">'+(isReturn?'+':'-')+displayProfitHtml(x.amount)+'</span>'
+      : '<span class="rr-profit" style="color:'+(isReturn?'var(--pta)':'var(--danger)')+';">'+(isReturn?'+':'-')+displayProfitHtml(x.amount)+'</span>';
+    const typeBadge = isReturn ? '<span class="badge" style="background:var(--pta-bg);color:var(--pta);margin-left:6px;">Return</span>' : '';
     const refundNote = x.refunded ? (' • ↩ Wapis mil gaya'+(x.refundNote?' ('+x.refundNote+')':'')) : '';
     return '<div class="report-row">'+
-      '<div class="rr-top"><span>'+x.category+'</span>'+amountHtml+'</div>'+
+      '<div class="rr-top"><span>'+x.category+typeBadge+'</span>'+amountHtml+'</div>'+
       '<div class="rr-sub">'+formatDateDisplay(x.date)+(x.notes?' • '+x.notes:'')+refundNote+'</div>'+
     '</div>';
   }).join('');
@@ -3254,13 +3266,14 @@ document.getElementById('btnReportsPdf').onclick = function(){
   }).join('');
   let expensesTotal = 0;
   const expRows = expEntries.map(function(x){
-    if(!x.refunded) expensesTotal += Number(x.amount)||0;
-    const noteText = (x.notes||'') + (x.refunded ? (' [Wapis mil gaya' + (x.refundNote?': '+x.refundNote:'') + ']') : '');
+    expensesTotal += expenseSignedAmount(x);
+    const isReturn = x.type==='return';
+    const noteText = (x.notes||'') + (isReturn ? ' [Return]' : '') + (x.refunded ? (' [Wapis mil gaya' + (x.refundNote?': '+x.refundNote:'') + ']') : '');
     return '<tr'+(x.refunded?' style="color:#888;"':'')+'>'+
       '<td>'+formatDateDisplay(x.date)+'</td>'+
       '<td>'+x.category+'</td>'+
       '<td>'+noteText+'</td>'+
-      '<td style="text-align:right;">'+fmt(x.amount)+'</td>'+
+      '<td style="text-align:right;">'+(isReturn?'-':'')+fmt(x.amount)+'</td>'+
     '</tr>';
   }).join('');
   const netProfit = grossProfit - expensesTotal;
@@ -3333,6 +3346,39 @@ document.addEventListener('click', function(e){
 });
 
 // ---------- Expenses ----------
+// Two entry types sharing the exact same form: "expense" (paise kharcha
+// hue) and "return" (paise wapis mile — e.g. kisi ko diye the, wapis mil
+// gaye). A "return" is its own standalone entry, separate from the older
+// per-entry "Wapis mila" flag on an existing expense.
+function renderExpenseTypeChips(){
+  const box = document.getElementById('expenseTypeChips');
+  if(!box) return;
+  const type = expenseFormState.type || 'expense';
+  box.innerHTML =
+    '<div class="chip-opt '+(type==='expense'?'on':'')+'" data-type="expense">➖ Expense (kharcha)</div>'+
+    '<div class="chip-opt '+(type==='return'?'on':'')+'" data-type="return">➕ Return (wapis mila)</div>';
+  box.querySelectorAll('.chip-opt').forEach(function(c){
+    c.onclick = function(){
+      expenseFormState.type = c.dataset.type;
+      renderExpenseTypeChips();
+      updateExpenseFormLabels();
+    };
+  });
+}
+
+// Keeps the section title / save button text in sync with the chosen type
+// and with add-vs-edit mode.
+function updateExpenseFormLabels(){
+  const isReturn = expenseFormState.type==='return';
+  const wasEditing = !!editingExpenseId;
+  document.getElementById('exp-form-title').textContent = wasEditing
+    ? (isReturn ? 'Return update karein' : 'Expense update karein')
+    : (isReturn ? 'Naya return add karein' : 'Naya expense add karein');
+  document.getElementById('btnAddExpense').textContent = wasEditing
+    ? (isReturn ? '✓ Return update karein' : '✓ Expense update karein')
+    : (isReturn ? '+ Return add karein' : '+ Expense add karein');
+}
+
 function renderExpenseCategoryChips(){
   const opts = getFieldOptions('expenseCategory', EXPENSE_CATEGORY_OPTS);
   const list = opts.indexOf('Other')!==-1 ? opts : opts.concat(['Other']);
@@ -3355,18 +3401,20 @@ function renderExpensesList(){
   const filtered = expensesInRange(from, to).slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
   let total = 0;
   const rowsHtml = filtered.map(function(x){
-    if(!x.refunded) total += Number(x.amount)||0;
+    total += expenseSignedAmount(x);
+    const isReturn = x.type==='return';
     const amountHtml = x.refunded
-      ? '<span class="rr-profit" style="color:var(--text-faint);text-decoration:line-through;">-'+displayProfitHtml(x.amount)+'</span>'
-      : '<span class="rr-profit" style="color:var(--danger);">-'+displayProfitHtml(x.amount)+'</span>';
+      ? '<span class="rr-profit" style="color:var(--text-faint);text-decoration:line-through;">'+(isReturn?'+':'-')+displayProfitHtml(x.amount)+'</span>'
+      : '<span class="rr-profit" style="color:'+(isReturn?'var(--pta)':'var(--danger)')+';">'+(isReturn?'+':'-')+displayProfitHtml(x.amount)+'</span>';
+    const typeBadge = isReturn ? '<span class="badge" style="background:var(--pta-bg);color:var(--pta);margin-left:6px;">Return</span>' : '';
     const refundBadge = x.refunded
       ? '<div class="rr-sub" style="color:var(--pta);">↩ Wapis mil gaya'+(x.refundNote?' &bull; '+x.refundNote:'')+'</div>'
       : '';
-    const refundBtn = x.refunded
+    const refundBtn = isReturn ? '' : (x.refunded
       ? '<button data-exp-unrefund="'+x.id+'">Undo wapis</button>'
-      : '<button data-exp-refund="'+x.id+'">↩ Wapis mila</button>';
+      : '<button data-exp-refund="'+x.id+'">↩ Wapis mila</button>');
     return '<div class="report-row">'+
-      '<div class="rr-top"><span>'+x.category+'</span>'+amountHtml+'</div>'+
+      '<div class="rr-top"><span>'+x.category+typeBadge+'</span>'+amountHtml+'</div>'+
       '<div class="rr-sub">'+formatDateDisplay(x.date)+(x.notes?' &bull; '+x.notes:'')+'</div>'+
       refundBadge+
       '<div class="card-actions" style="margin-top:6px;">'+refundBtn+'<button data-exp-edit="'+x.id+'">Edit</button><button class="del-btn" data-exp-del="'+x.id+'">Delete</button></div>'+
@@ -3437,6 +3485,8 @@ function editExpenseEntry(id){
   const entry = expenses.find(function(x){ return x.id===id; });
   if(!entry) return;
   editingExpenseId = id;
+  expenseFormState.type = entry.type==='return' ? 'return' : 'expense';
+  renderExpenseTypeChips();
   const knownOpts = getFieldOptions('expenseCategory', EXPENSE_CATEGORY_OPTS);
   const isKnown = knownOpts.indexOf(entry.category)!==-1;
   expenseFormState.category = isKnown ? entry.category : 'Other';
@@ -3447,9 +3497,8 @@ function editExpenseEntry(id){
   document.getElementById('exp-amount-hint').textContent = '';
   document.getElementById('exp-date').value = entry.date || '';
   document.getElementById('exp-notes').value = entry.notes || '';
-  document.getElementById('exp-form-title').textContent = 'Expense update karein';
-  document.getElementById('btnAddExpense').textContent = '✓ Expense update karein';
   document.getElementById('expenseCancelEditBtn').style.display = 'block';
+  updateExpenseFormLabels();
   document.getElementById('exp-form-title').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
@@ -3457,7 +3506,8 @@ function editExpenseEntry(id){
 // explicit Cancel-edit button and automatically after a successful save).
 function resetExpenseForm(){
   editingExpenseId = null;
-  expenseFormState = {category: 'Other'};
+  expenseFormState = {category: 'Other', type: 'expense'};
+  renderExpenseTypeChips();
   renderExpenseCategoryChips();
   document.getElementById('expenseCategoryOtherWrap').style.display = 'block';
   document.getElementById('exp-category-other').value = '';
@@ -3465,9 +3515,8 @@ function resetExpenseForm(){
   document.getElementById('exp-amount-hint').textContent = '';
   document.getElementById('exp-notes').value = '';
   document.getElementById('exp-date').value = todayISO();
-  document.getElementById('exp-form-title').textContent = 'Naya expense add karein';
-  document.getElementById('btnAddExpense').textContent = '+ Expense add karein';
   document.getElementById('expenseCancelEditBtn').style.display = 'none';
+  updateExpenseFormLabels();
 }
 
 wireExpenseAmountHint('exp-amount','exp-amount-hint');
@@ -3481,23 +3530,25 @@ document.getElementById('btnAddExpense').onclick = function(){
   if(amount===null){ alert('Amount samajh nahi aaya. "500" (jaisa likha waisa hi), ya "5k" jese likhein.'); return; }
   const date = document.getElementById('exp-date').value || todayISO();
   const notes = document.getElementById('exp-notes').value.trim();
+  const type = expenseFormState.type==='return' ? 'return' : 'expense';
 
   let candidate;
   const wasEditing = !!editingExpenseId;
   if(wasEditing){
     candidate = expenses.map(function(x){
-      return x.id===editingExpenseId ? Object.assign({}, x, {category:category, amount:amount, date:date, notes:notes}) : x;
+      return x.id===editingExpenseId ? Object.assign({}, x, {category:category, amount:amount, date:date, notes:notes, type:type}) : x;
     });
   } else {
-    const entry = {id:'exp_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), category:category, amount:amount, date:date, notes:notes};
+    const entry = {id:'exp_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), category:category, amount:amount, date:date, notes:notes, type:type};
     candidate = [entry].concat(expenses);
   }
   const ok = tryCommitExpenses(candidate);
   if(!ok){ alert(SAVE_FAIL_MSG); return; }
+  const isReturn = type==='return';
   resetExpenseForm();
   renderExpensesList();
   render();
-  showToast(wasEditing ? '✓ Expense update ho gaya' : '✓ Expense add ho gaya');
+  showToast(wasEditing ? (isReturn ? '✓ Return update ho gaya' : '✓ Expense update ho gaya') : (isReturn ? '✓ Return add ho gaya' : '✓ Expense add ho gaya'));
   backupAfterChange();
 };
 
