@@ -2011,6 +2011,17 @@ function displayProfitHtml(amount){
   return fmt(amount);
 }
 
+// Expense list rows: a normal expense (positive amount, money going out) is
+// shown red with a minus. A refund/return (stored as a negative amount,
+// money coming back in) is shown green with a plus — never both signs
+// stacked together.
+function expenseAmountHtml(amount){
+  const n = Number(amount) || 0;
+  const color = n < 0 ? 'var(--pta)' : 'var(--danger)';
+  const text = n < 0 ? ('+' + displayProfitHtml(Math.abs(n))) : ('-' + displayProfitHtml(n));
+  return '<span class="rr-profit" style="color:'+color+';">'+text+'</span>';
+}
+
 function updatePrivacyButtonUI(){
   const btn = document.getElementById('btnPrivacyToggle');
   if(!btn) return;
@@ -3146,7 +3157,7 @@ function renderReports(){
   const expRowsHtml = expEntries.map(function(x){
     expensesTotal += Number(x.amount)||0;
     return '<div class="report-row">'+
-      '<div class="rr-top"><span>'+x.category+'</span><span class="rr-profit" style="color:var(--danger);">-'+displayProfitHtml(x.amount)+'</span></div>'+
+      '<div class="rr-top"><span>'+x.category+'</span>'+expenseAmountHtml(x.amount)+'</div>'+
       '<div class="rr-sub">'+formatDateDisplay(x.date)+(x.notes?' • '+x.notes:'')+'</div>'+
     '</div>';
   }).join('');
@@ -3305,7 +3316,7 @@ function renderExpensesList(){
   const rowsHtml = filtered.map(function(x){
     total += Number(x.amount)||0;
     return '<div class="report-row">'+
-      '<div class="rr-top"><span>'+x.category+'</span><span class="rr-profit" style="color:var(--danger);">-'+displayProfitHtml(x.amount)+'</span></div>'+
+      '<div class="rr-top"><span>'+x.category+'</span>'+expenseAmountHtml(x.amount)+'</div>'+
       '<div class="rr-sub">'+formatDateDisplay(x.date)+(x.notes?' &bull; '+x.notes:'')+'</div>'+
       '<div class="card-actions" style="margin-top:6px;"><button data-exp-edit="'+x.id+'">Edit</button><button class="del-btn" data-exp-del="'+x.id+'">Delete</button></div>'+
     '</div>';
