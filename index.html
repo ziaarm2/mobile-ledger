@@ -4038,6 +4038,20 @@ let fbAuth = null, fbDb = null, fbUser = null;
 let cloudUnsub = null;
 let applyingRemoteUpdate = false; // true while a cloud update is being written locally, so we don't immediately re-push it
 let pushDebounceTimer = null;
+// Guards against the "offline entry disappears" bug: every local save bumps
+// localVersion; a push only advances lastPushedVersion (persisted, so it
+// survives a refresh) once that exact version is confirmed written to the
+// cloud. If localVersion is ahead of lastPushedVersion, there is data on
+// this phone the cloud doesn't have yet — in that case an incoming cloud
+// snapshot must NOT be allowed to overwrite local data, or an entry made
+// while offline (or not yet confirmed) would get silently wiped out.
+const LS_LOCAL_VERSION_KEY = 'mobileLedger_localVersion';
+const LS_LAST_PUSHED_VERSION_KEY = 'mobileLedger_lastPushedVersion';
+let localVersion = 0;
+let lastPushedVersion = 0;
+try{ localVersion = Number(localStorage.getItem(LS_LOCAL_VERSION_KEY)||0) || 0; }catch(e){}
+try{ lastPushedVersion = Number(localStorage.getItem(LS_LAST_PUSHED_VERSION_KEY)||0) || 0; }catch(e){}
+function hasPendingLocalChanges(){ return localVersion > lastPushedVersion; }
 let shopProfile = {shopName:"", ownerName:""};
 // Multi-user foundation: every account has a role + a shopId (the Firestore
 // doc under /shops/ that their data lives in). Right now every account is
@@ -4262,22 +4276,39 @@ function buildCloudPayload(){
   };
 }
 
-function schedulePush(){
+function attemptPush(){
   if(!fbUser || !userShopId || applyingRemoteUpdate) return;
   clearTimeout(pushDebounceTimer);
   setAccountSyncStatus('save ho raha hai…', 'saving');
   pushDebounceTimer = setTimeout(function(){
+    const versionAtSchedule = localVersion;
     fbDb.collection('shops').doc(userShopId).set(buildCloudPayload(), {merge:true})
-      .then(function(){ setAccountSyncStatus('sab devices par sync ho gaya ✓', 'ok'); })
+      .then(function(){
+        if(versionAtSchedule > lastPushedVersion){
+          lastPushedVersion = versionAtSchedule;
+          try{ localStorage.setItem(LS_LAST_PUSHED_VERSION_KEY, String(lastPushedVersion)); }catch(e){}
+        }
+        setAccountSyncStatus('sab devices par sync ho gaya ✓', 'ok');
+      })
       .catch(function(err){ console.error('Cloud push failed', err); setAccountSyncStatus('sync fail hua — internet check karein', 'error'); });
   }, 1200);
+}
+
+function schedulePush(){
+  // Mark that local data now has a change the cloud hasn't confirmed yet.
+  // Persisted immediately, and done unconditionally (even if we can't reach
+  // the cloud right now, or login hasn't finished resolving) so this device
+  // always knows it's "ahead" until a push actually confirms otherwise.
+  localVersion++;
+  try{ localStorage.setItem(LS_LOCAL_VERSION_KEY, String(localVersion)); }catch(e){}
+  attemptPush();
 }
 // If the connection drops mid-save, the entry is already safe on the phone
 // (localStorage) — schedulePush() just couldn't reach the cloud yet. As
 // soon as the browser reports the connection is back, retry immediately
 // instead of waiting for the person to add another entry.
 window.addEventListener('online', function(){
-  if(fbUser) schedulePush();
+  if(fbUser) attemptPush();
 });
 
 function startCloudSync(uid){
@@ -4287,6 +4318,18 @@ function startCloudSync(uid){
       // Brand-new account: seed the cloud with whatever's already on this device.
       setAccountSyncStatus('nayi account — is device ka data upload ho raha hai', 'saving');
       schedulePush();
+      return;
+    }
+    if(hasPendingLocalChanges()){
+      // This device has a local change (e.g. an entry added while offline)
+      // that hasn't been confirmed written to the cloud yet. The snapshot
+      // we just received may be OLDER than that change — applying it now
+      // would silently erase the unconfirmed entry, on this device too.
+      // So: don't touch local data, just keep retrying the push. Once it
+      // succeeds, hasPendingLocalChanges() goes false and the next
+      // snapshot (which will be our own confirmed write) applies normally.
+      setAccountSyncStatus('local entry abhi cloud pe save ho rahi hai…', 'saving');
+      attemptPush();
       return;
     }
     const data = snap.data();
