@@ -4229,9 +4229,21 @@ function updateAccountUI(){
   }
 }
 
-function setAccountSyncStatus(text){
+function setAccountSyncStatus(text, state){
   const el = document.getElementById('accountSyncStatus');
   if(el) el.textContent = 'Sync status: ' + text;
+  // Also mirror this on the main header line so the person can see sync
+  // health at a glance without having to open the Account screen — this is
+  // the thing that actually answers "kya mera data safe hai?" in real time.
+  const line = document.getElementById('accountStatusLine');
+  if(line && fbUser){
+    const who = shopProfile.shopName || accountDisplayId(fbUser);
+    const icon = state==='saving' ? '⏳' : state==='error' ? '⚠️' : '✓';
+    const color = state==='saving' ? 'var(--text-dim)' : state==='error' ? 'var(--danger)' : 'var(--pta)';
+    line.textContent = icon + ' ' + who + ' — ' + text;
+    line.style.color = color;
+    line.style.display = 'block';
+  }
 }
 
 // Firestore doc shape: everything except photos (photos stay local-only per
@@ -4253,11 +4265,11 @@ function buildCloudPayload(){
 function schedulePush(){
   if(!fbUser || !userShopId || applyingRemoteUpdate) return;
   clearTimeout(pushDebounceTimer);
-  setAccountSyncStatus('save ho raha hai…');
+  setAccountSyncStatus('save ho raha hai…', 'saving');
   pushDebounceTimer = setTimeout(function(){
     fbDb.collection('shops').doc(userShopId).set(buildCloudPayload(), {merge:true})
-      .then(function(){ setAccountSyncStatus('sab devices par sync ho gaya ✓'); })
-      .catch(function(err){ console.error('Cloud push failed', err); setAccountSyncStatus('sync fail hua — internet check karein'); });
+      .then(function(){ setAccountSyncStatus('sab devices par sync ho gaya ✓', 'ok'); })
+      .catch(function(err){ console.error('Cloud push failed', err); setAccountSyncStatus('sync fail hua — internet check karein', 'error'); });
   }, 1200);
 }
 // If the connection drops mid-save, the entry is already safe on the phone
@@ -4269,11 +4281,11 @@ window.addEventListener('online', function(){
 });
 
 function startCloudSync(uid){
-  setAccountSyncStatus('data la rahe hain…');
+  setAccountSyncStatus('data la rahe hain…', 'saving');
   cloudUnsub = fbDb.collection('shops').doc(uid).onSnapshot(function(snap){
     if(!snap.exists){
       // Brand-new account: seed the cloud with whatever's already on this device.
-      setAccountSyncStatus('nayi account — is device ka data upload ho raha hai');
+      setAccountSyncStatus('nayi account — is device ka data upload ho raha hai', 'saving');
       schedulePush();
       return;
     }
@@ -4308,10 +4320,10 @@ function startCloudSync(uid){
     applyingRemoteUpdate = false;
     render();
     updateAccountUI();
-    setAccountSyncStatus('sab devices par sync ho gaya ✓');
+    setAccountSyncStatus('sab devices par sync ho gaya ✓', 'ok');
   }, function(err){
     console.error('Cloud sync listen failed', err);
-    setAccountSyncStatus('sync connect nahi ho saka — internet check karein');
+    setAccountSyncStatus('sync connect nahi ho saka — internet check karein', 'error');
   });
 }
 
