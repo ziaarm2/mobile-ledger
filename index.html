@@ -4260,6 +4260,13 @@ function schedulePush(){
       .catch(function(err){ console.error('Cloud push failed', err); setAccountSyncStatus('sync fail hua — internet check karein'); });
   }, 1200);
 }
+// If the connection drops mid-save, the entry is already safe on the phone
+// (localStorage) — schedulePush() just couldn't reach the cloud yet. As
+// soon as the browser reports the connection is back, retry immediately
+// instead of waiting for the person to add another entry.
+window.addEventListener('online', function(){
+  if(fbUser) schedulePush();
+});
 
 function startCloudSync(uid){
   setAccountSyncStatus('data la rahe hain…');
