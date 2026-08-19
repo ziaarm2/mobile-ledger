@@ -4048,6 +4048,10 @@ let shopProfile = {shopName:"", ownerName:""};
 let userRole = 'owner';
 let userShopId = null;
 const LS_SHOP_PROFILE_KEY = 'mobileLedger_shopProfile';
+// Set once a login succeeds on this device — lets us skip the blocking
+// "checking session" screen on future app opens when we already have every
+// reason to expect the same person is still logged in here.
+const LS_WAS_LOGGED_IN_KEY = 'mobileLedger_wasLoggedIn';
 try{
   const rawProfile = localStorage.getItem(LS_SHOP_PROFILE_KEY);
   if(rawProfile) shopProfile = Object.assign(shopProfile, JSON.parse(rawProfile));
@@ -4144,21 +4148,43 @@ function initFirebaseSync(){
     updateAccountUI();
     return;
   }
+  let wasLoggedInBefore = false;
+  try{ wasLoggedInBefore = localStorage.getItem(LS_WAS_LOGGED_IN_KEY) === '1'; }catch(e){}
   try{
     firebase.initializeApp(firebaseConfig);
     fbAuth = firebase.auth();
     fbDb = firebase.firestore();
-    setAuthGateView('checking');
+    if(wasLoggedInBefore){
+      // This device has logged in successfully before — Firebase's own
+      // session persistence means we're almost certainly still logged in,
+      // so open straight into the app with whatever's already cached
+      // locally instead of blocking on a network round-trip every single
+      // time the app is opened. onAuthStateChanged below resolves quietly
+      // in the background and only interrupts if it turns out we really
+      // are logged out (e.g. the person signed out elsewhere).
+      setAuthGateView('unlocked');
+    } else {
+      setAuthGateView('checking');
+      // Safety net: never let the checking screen hang indefinitely (e.g.
+      // a slow/blocked network on first open) — fall through to the login
+      // screen so the person isn't stuck waiting forever.
+      var checkingTimeout = setTimeout(function(){
+        if(!fbUser) setAuthGateView('locked');
+      }, 6000);
+    }
     fbAuth.onAuthStateChanged(function(user){
+      clearTimeout(checkingTimeout);
       fbUser = user;
       if(cloudUnsub){ cloudUnsub(); cloudUnsub = null; }
       if(user){
+        try{ localStorage.setItem(LS_WAS_LOGGED_IN_KEY, '1'); }catch(e){}
         resolveUserRoleAndShop(user).then(function(){
           updateAccountUI();
           setAuthGateView('unlocked');
           startCloudSync(userShopId);
         });
       } else {
+        try{ localStorage.removeItem(LS_WAS_LOGGED_IN_KEY); }catch(e){}
         userRole = 'owner';
         userShopId = null;
         updateAccountUI();
