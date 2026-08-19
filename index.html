@@ -605,6 +605,9 @@
       <div class="field"><label>Amount</label><input id="exp-amount" type="text" inputmode="decimal" placeholder="e.g. 500 ya 5k"><div class="price-hint" id="exp-amount-hint"></div></div>
       <div class="field"><label>Date</label><input id="exp-date" type="date"></div>
     </div>
+    <div class="field">
+      <button type="button" class="chip-opt" id="exp-refund-toggle" style="width:100%;">↩ Refund/Wapasi (amount minus mein record hoga)</button>
+    </div>
     <div class="field"><label>Notes (optional)</label><input id="exp-notes" placeholder="Koi tafseel"></div>
     <div class="sheet-actions" style="position:static;margin-top:6px;">
       <button class="btn-save" id="btnAddExpense" style="flex:none;width:100%;">+ Expense add karein</button>
@@ -797,7 +800,7 @@ let sellingId = null;
 // closes the topmost open overlay instead of leaving the app. If nothing is
 // open, there's nothing pushed, so back behaves normally (exits/leaves as
 // before).
-const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','imeiScanOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','expensesOverlay'];
+const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','imeiScanOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','expensesOverlay','accountOverlay'];
 let overlayHistoryStack = [];
 
 function pushOverlayHistory(id){
@@ -933,6 +936,26 @@ const LS_EXPENSES_KEY = 'mobileLedger_expenses';
 let expenses = [];
 let expenseFormState = {category:''};
 let editingExpenseId = null;
+// When true, the amount typed/edited is stored as a negative expense (money
+// coming back in, e.g. a returned part) instead of a normal positive spend.
+let expenseRefundMode = false;
+function setExpenseRefundMode(on){
+  expenseRefundMode = on;
+  const btn = document.getElementById('exp-refund-toggle');
+  if(btn) btn.classList.toggle('on', on);
+  // Re-run the hint so it reflects the sign immediately.
+  const hint = document.getElementById('exp-amount-hint');
+  const inp = document.getElementById('exp-amount');
+  if(inp && hint){
+    const v = inp.value.trim();
+    if(v===''){ hint.textContent=''; }
+    else{
+      const p = parseExpenseAmount(v);
+      const signed = p===null ? null : (expenseRefundMode ? -Math.abs(p) : Math.abs(p));
+      hint.textContent = (signed===null) ? 'Samajh nahi aya, dobara likhein' : ('= ' + fmt(signed));
+    }
+  }
+}
 
 async function loadExpenses(){
   try{
@@ -1565,13 +1588,15 @@ function parseExpenseAmount(val){
   let s = String(val).trim().toLowerCase();
   if(s==='') return null;
   s = s.replace(/,/g,'').replace(/\s+/g,' ').trim();
-  const m = s.match(/^([\d]*\.?[\d]+)\s*(k|lac|lakh|l)?$/);
+  const m = s.match(/^(-?)([\d]*\.?[\d]+)\s*(k|lac|lakh|l)?$/);
   if(!m) return null;
-  let num = parseFloat(m[1]);
+  let num = parseFloat(m[2]);
   if(isNaN(num)) return null;
-  const suffix = m[2];
+  const sign = m[1];
+  const suffix = m[3];
   if(suffix==='k') num *= 1000;
   else if(suffix==='lac' || suffix==='lakh' || suffix==='l') num *= 100000;
+  if(sign==='-') num = -num;
   return num;
 }
 
@@ -1583,7 +1608,8 @@ function wireExpenseAmountHint(inputId, hintId){
     const v = inp.value.trim();
     if(v===''){ hint.textContent = ''; return; }
     const p = parseExpenseAmount(v);
-    hint.textContent = (p===null) ? 'Samajh nahi aya, dobara likhein' : ('= ' + fmt(p));
+    const signed = p===null ? null : (typeof expenseRefundMode!=='undefined' && expenseRefundMode ? -Math.abs(p) : p);
+    hint.textContent = (signed===null) ? 'Samajh nahi aya, dobara likhein' : ('= ' + fmt(signed));
   });
 }
 
@@ -2902,16 +2928,14 @@ async function shareBackupFile(){
   showToast('Is browser mein direct share support nahi hai — file download ho gayi, isay khud WhatsApp/Drive par bhej dein.');
 }
 
-// Runs after every entry is added/edited so a fresh backup file is always
-// available, without ever blocking or breaking the save itself.
+// Used to run a silent auto-download after every single entry. Now that
+// Firebase cloud sync is the real backup, downloading a fresh .json on every
+// add/edit is just noise — so this no longer force-downloads anything. It's
+// kept as a hook (called from the same places as before) purely so the
+// 24-hour "please back up" reminder banner still stays up to date; the
+// person can still grab a manual copy anytime via the Backup/Share buttons.
 function backupAfterChange(){
-  try{
-    backupData(true);
-  }catch(e){
-    // Browser blocked the auto-download (e.g. no user gesture) — fall back
-    // to the manual reminder banner so the person isn't left without one.
-    checkBackupReminder();
-  }
+  checkBackupReminder();
 }
 
 function restoreData(file){
@@ -2994,21 +3018,12 @@ function checkBackupReminder(){
   }
 }
 
+// Used to silently force-download a backup file once a day. Now that cloud
+// sync (Firebase) keeps the real copy of the data, this no longer downloads
+// anything on its own — it just makes sure the reminder banner is showing
+// if a manual backup genuinely hasn't been taken in a while.
 function autoBackupIfDue(){
-  if(!inventory.length) return;
-  let lastBackup = 0;
-  try{
-    lastBackup = Number(localStorage.getItem(LS_LAST_BACKUP_KEY) || 0);
-  }catch(e){}
-  const now = Date.now();
-  if((now - lastBackup) > BACKUP_INTERVAL){
-    try{
-      backupData(true);
-    }catch(e){
-      // Auto-download blocked by the browser — fall back to the manual reminder banner.
-      checkBackupReminder();
-    }
-  }
+  checkBackupReminder();
 }
 
 // ---------- Dashboard ----------
@@ -3328,8 +3343,9 @@ function editExpenseEntry(id){
   renderExpenseCategoryChips();
   document.getElementById('expenseCategoryOtherWrap').style.display = isKnown ? 'none' : 'block';
   document.getElementById('exp-category-other').value = isKnown ? '' : entry.category;
-  document.getElementById('exp-amount').value = entry.amount;
+  document.getElementById('exp-amount').value = Math.abs(Number(entry.amount)||0);
   document.getElementById('exp-amount-hint').textContent = '';
+  setExpenseRefundMode(Number(entry.amount) < 0);
   document.getElementById('exp-date').value = entry.date || '';
   document.getElementById('exp-notes').value = entry.notes || '';
   document.getElementById('exp-form-title').textContent = 'Expense update karein';
@@ -3348,6 +3364,7 @@ function resetExpenseForm(){
   document.getElementById('exp-category-other').value = '';
   document.getElementById('exp-amount').value = '';
   document.getElementById('exp-amount-hint').textContent = '';
+  setExpenseRefundMode(false);
   document.getElementById('exp-notes').value = '';
   document.getElementById('exp-date').value = todayISO();
   document.getElementById('exp-form-title').textContent = 'Naya expense add karein';
@@ -3357,13 +3374,20 @@ function resetExpenseForm(){
 
 wireExpenseAmountHint('exp-amount','exp-amount-hint');
 
+document.getElementById('exp-refund-toggle').onclick = function(){
+  setExpenseRefundMode(!expenseRefundMode);
+};
+
 document.getElementById('btnAddExpense').onclick = function(){
   const category = expenseFormState.category==='Other' ? document.getElementById('exp-category-other').value.trim() : expenseFormState.category;
   if(!category){ alert('Category chunein ya likhein.'); return; }
   const amountRaw = document.getElementById('exp-amount').value.trim();
   if(amountRaw===''){ alert('Amount likhein.'); return; }
-  const amount = parseExpenseAmount(amountRaw);
+  let amount = parseExpenseAmount(amountRaw);
   if(amount===null){ alert('Amount samajh nahi aaya. "500" (jaisa likha waisa hi), ya "5k" jese likhein.'); return; }
+  // Amount field always holds a plain magnitude — the refund toggle decides
+  // the sign, so a manually-typed "-" (if any) doesn't get double-applied.
+  amount = expenseRefundMode ? -Math.abs(amount) : Math.abs(amount);
   const date = document.getElementById('exp-date').value || todayISO();
   const notes = document.getElementById('exp-notes').value.trim();
 
@@ -4283,10 +4307,11 @@ document.getElementById('btnAccount').onclick = function(){
   document.getElementById('accountErrorMsg').style.display = 'none';
   if(fbUser) setAuthGateView('unlocked');
   document.getElementById('accountOverlay').classList.remove('hidden');
+  pushOverlayHistory('accountOverlay');
 };
 document.getElementById('btnAccountClose').onclick = function(){
   if(!fbUser) return; // gate mode — can't be dismissed without logging in
-  document.getElementById('accountOverlay').classList.add('hidden');
+  requestOverlayClose();
 };
 document.getElementById('btnAccountLogin').onclick = function(){
   if(!firebaseReady()){ showAccountError('Sync abhi set up nahi hua (Firebase config missing).'); return; }
