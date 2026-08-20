@@ -2,7 +2,7 @@
 <html lang="ur-Latn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Ledger</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
@@ -102,7 +102,7 @@
   .card-actions button.sell-btn{color:var(--sale);border-color:var(--sale);}
   .card-actions button.del-btn{color:var(--danger);}
 
-  .fab{position:fixed;bottom:22px;right:50%;transform:translateX(230px);width:56px;height:56px;border-radius:50%;background:var(--accent);color:var(--accent-text);border:none;font-size:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,0.4);z-index:20;}
+  .fab{position:fixed;bottom:calc(46px + env(safe-area-inset-bottom, 0px));right:50%;transform:translateX(230px);width:56px;height:56px;border-radius:50%;background:var(--accent);color:var(--accent-text);border:none;font-size:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,0.4);z-index:20;}
   @media (max-width:520px){ .fab{transform:none;right:20px;} }
 
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:30;display:flex;align-items:flex-end;justify-content:center;}
@@ -173,7 +173,7 @@
   .sheet-actions button{flex:1;padding:13px;border-radius:10px;font-size:14.5px;font-weight:600;border:none;}
   .btn-save{background:var(--accent);color:var(--accent-text);}
   .fab-expense{
-    position:fixed; left:18px; bottom:22px; z-index:20;
+    position:fixed; left:18px; bottom:calc(46px + env(safe-area-inset-bottom, 0px)); z-index:20;
     width:56px; height:56px; border-radius:50%;
     background:var(--danger); color:#fff;
     display:flex; align-items:center; justify-content:center;
@@ -182,7 +182,7 @@
   }
   .fab-expense:active{ transform:scale(0.92); }
   .fab-expense-label{
-    position:fixed; left:18px; bottom:82px; z-index:20;
+    position:fixed; left:18px; bottom:calc(106px + env(safe-area-inset-bottom, 0px)); z-index:20;
     background:var(--surface-2); color:var(--text-dim); font-size:10.5px;
     padding:3px 8px; border-radius:8px; opacity:.85; pointer-events:none;
   }
@@ -4531,6 +4531,32 @@ document.getElementById('btnAccountVerifyOtp').onclick = function(){
     .catch(function(err){ showAccountError(friendlyAuthError(err)); });
 };
 
+
+// ---------- Keyboard-aware scrolling ----------
+// On phones the on-screen keyboard often covers the field the user just
+// tapped (or the next one below it), forcing them to close the keyboard and
+// scroll manually before they can continue typing entries. To fix this, any
+// time a field inside a bottom sheet (stock entry, expense entry, etc.)
+// gets focus, we nudge it into the middle of the visible area — giving the
+// keyboard a moment to finish opening first so the scroll lands correctly.
+document.addEventListener('focusin', function(e){
+  const el = e.target;
+  if(!el || !el.matches || !el.matches('input, select, textarea')) return;
+  if(!el.closest('.sheet')) return;
+  setTimeout(function(){
+    el.scrollIntoView({block:'center', behavior:'smooth'});
+  }, 300);
+});
+// Also re-nudge if the keyboard resizes the visible viewport after opening
+// (common on Android), so the currently-focused field stays visible.
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', function(){
+    const el = document.activeElement;
+    if(el && el.matches && el.matches('input, select, textarea') && el.closest('.sheet')){
+      setTimeout(function(){ el.scrollIntoView({block:'center', behavior:'smooth'}); }, 60);
+    }
+  });
+}
 
 loadCardDisplaySettings();
 loadCustomOptionData();
