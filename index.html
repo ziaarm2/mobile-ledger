@@ -838,6 +838,62 @@ let currentFilter = 'available';
 let currentBrandFilter = 'all';
 let currentSort = 'default';
 let sellingId = null;
+
+// Main-screen UI state is local to this device/browser. Inventory and account
+// data remain separate; this only remembers where the user was looking so a
+// refresh does not unexpectedly reset filters, search, sort, or scroll.
+const LS_UI_STATE_KEY = 'mobileLedger_uiState';
+let restoringUIState = false;
+let uiScrollSaveTimer = null;
+
+function saveUIState(){
+  try{
+    localStorage.setItem(LS_UI_STATE_KEY, JSON.stringify({
+      filter: currentFilter,
+      brandFilter: currentBrandFilter,
+      sort: currentSort,
+      search: document.getElementById('search') ? document.getElementById('search').value : '',
+      scrollY: Math.max(0, window.scrollY || window.pageYOffset || 0)
+    }));
+  }catch(e){}
+}
+
+function loadUIState(){
+  try{
+    const raw = localStorage.getItem(LS_UI_STATE_KEY);
+    if(!raw) return null;
+    const state = JSON.parse(raw);
+    if(!state || typeof state !== 'object') return null;
+    if(typeof state.filter === 'string') currentFilter = state.filter;
+    if(typeof state.brandFilter === 'string') currentBrandFilter = state.brandFilter;
+    if(typeof state.sort === 'string') currentSort = state.sort;
+    if(typeof state.search === 'string' && document.getElementById('search')){
+      document.getElementById('search').value = state.search;
+    }
+    return state;
+  }catch(e){ return null; }
+}
+
+function restoreUIScroll(state){
+  if(!state || !Number.isFinite(Number(state.scrollY))) return;
+  const y = Math.max(0, Number(state.scrollY));
+  restoringUIState = true;
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      window.scrollTo(0, y);
+      setTimeout(function(){ restoringUIState = false; saveUIState(); }, 80);
+    });
+  });
+}
+
+window.addEventListener('scroll', function(){
+  if(restoringUIState) return;
+  clearTimeout(uiScrollSaveTimer);
+  uiScrollSaveTimer = setTimeout(saveUIState, 120);
+}, {passive:true});
+window.addEventListener('pagehide', saveUIState);
+window.addEventListener('beforeunload', saveUIState);
+
 let rangeInputMode = 'auto'; // 'auto' until the user manually edits the sell-range field
 
 // ---------- Back-gesture / browser-back handling ----------
@@ -1972,6 +2028,7 @@ function renderBrandFilter(){
       currentBrandFilter = c.dataset.brand;
       renderBrandFilter();
       renderList();
+      saveUIState();
     };
   });
 }
@@ -1996,6 +2053,7 @@ function renderFilterChips(){
       document.querySelectorAll('#filterChips .chip').forEach(function(x){x.classList.remove('active');});
       c.classList.add('active');
       renderList();
+      saveUIState();
     };
   });
 }
@@ -3116,8 +3174,8 @@ document.getElementById('btnSellConfirm').onclick = confirmSell;
 document.getElementById('sellOverlay').onclick = function(e){ if(e.target.id==='sellOverlay') closeSellSheet(); };
 document.getElementById('s-qty').oninput = updateSellProfitPreview;
 document.getElementById('s-price').oninput = updateSellProfitPreview;
-document.getElementById('search').oninput = renderList;
-document.getElementById('sortSelect').onchange = function(){ currentSort = this.value; renderList(); };
+document.getElementById('search').oninput = function(){ renderList(); saveUIState(); };
+document.getElementById('sortSelect').onchange = function(){ currentSort = this.value; renderList(); saveUIState(); };
 document.getElementById('moreToggle').onclick = function(){
   const sec = document.getElementById('moreSection');
   sec.classList.toggle('show');
@@ -4941,6 +4999,8 @@ if(window.visualViewport){
   });
 }
 
+const savedUIState = loadUIState();
+if(document.getElementById('sortSelect')) document.getElementById('sortSelect').value = currentSort;
 loadCardDisplaySettings();
 loadCustomOptionData();
 loadCustomModels();
@@ -4949,6 +5009,9 @@ loadInventory();
 autoBackupIfDue();
 checkBackupReminder();
 initFirebaseSync();
+
+// Restore the exact main-screen position after inventory has rendered.
+restoreUIScroll(savedUIState);
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
