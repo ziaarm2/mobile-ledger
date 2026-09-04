@@ -65,12 +65,7 @@
   .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;}
   .card.outofstock{opacity:0.55;}
   .card-title{font-size:15px;font-weight:600;}
-  .card-sub{font-size:12px;color:var(--text-dim);margin-top:1px;}   .sell-range-prominent{display:flex;align-items:center;gap:7px;margin-top:7px;margin-bottom:8px;padding:7px 10px;border:1px solid var(--border-strong);border-radius:9px;background:var(--surface-2);font-size:13px;font-weight:800;line-height:1.2;}
-.sell-range-prominent .sell-range-label{font-size:10px;letter-spacing:.5px;font-weight:800;color:var(--sale);white-space:nowrap;}
-.sell-range-prominent .sell-range-value{font-size:14px;font-weight:800;color:var(--text);word-break:break-word;}
-.piece-row .sell-range-prominent{margin-top:7px;margin-bottom:6px;}
-.card.compact .sell-range-prominent{margin-top:6px;margin-bottom:7px;padding:7px 9px;}
-@media (max-width:520px){.sell-range-prominent{font-size:12.5px;padding:7px 9px;}.sell-range-prominent .sell-range-value{font-size:13.5px;}}
+  .card-sub{font-size:12px;color:var(--text-dim);margin-top:1px;}
 
   .card.group-card{padding:12px 14px 6px;}
   .piece-list{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
@@ -272,6 +267,7 @@
   .privacy-masked{filter:blur(6px);user-select:none;}
   #btnPrivacyToggle{position:relative;}
   #btnPrivacyToggle.privacy-on::after{content:'';position:absolute;top:6px;right:8px;width:5px;height:5px;border-radius:50%;background:var(--text-faint);opacity:0.6;}
+.returned-badge{display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:4px 8px;border-radius:7px;border:1px solid var(--border);font-size:11px;font-weight:800;color:var(--text-dim);background:var(--surface-2);}
 </style>
 </head>
 <body>
@@ -2249,7 +2245,7 @@ function renderSingleStockCard(e){
   return (
   '<div class="card '+(outOfStock?'outofstock':'')+(compact?' compact':'')+'">'+
     '<div class="card-title">'+e.brand+' '+e.model+'</div>'+
-    (e.range ? '<div class="sell-range-prominent"><span class="sell-range-label">SELL</span><span class="sell-range-value">'+displaySellRange(e.range)+'</span></div>' : '')+
+    '<div class="card-sub">'+(e.range ? displaySellRange(e.range) : '')+'</div>'+
     cardPhotoHtml(e)+
     '<div class="badges">'+pieceStatusBadges(e, outOfStock)+'</div>'+
     (pieceSpecBadges(e) ? '<div class="badges spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
@@ -2280,9 +2276,8 @@ function renderStockGroup(g){
     '<div class="piece-row '+(outOfStock?'outofstock':'')+(compact?' compact-row':'')+'">'+
       '<div class="piece-row-top">'+pieceStatusBadges(e, outOfStock)+'</div>'+
       (pieceSpecBadges(e) ? '<div class="piece-row-top spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
-      (e.range ? '<div class="sell-range-prominent"><span class="sell-range-label">SELL</span><span class="sell-range-value">'+displaySellRange(e.range)+'</span></div>' : '')+
       cardPhotoHtml(e)+
-      (e.buy!=null ? '<div class="sale-meta">Buy: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span></div>' : '')+
+      (e.buy!=null || e.range ? '<div class="sale-meta">'+(e.buy!=null?'Buy: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span>':'')+(e.buy!=null&&e.range?' &bull; ':'')+(e.range?'Sell range: '+displaySellRange(e.range):'')+'</div>' : '')+
       (e.notes ? '<div class="sale-meta">'+e.notes+'</div>' : '')+
       '<div class="card-actions">'+
         '<button data-edit="'+e.id+'">Edit</button>'+
@@ -2896,6 +2891,76 @@ function updateSellProfitPreview(){
   }
 }
 
+
+function returnSoldItem(soldId){
+  const sold = (typeof inventory !== 'undefined' ? inventory : []).find(x => String(x.id) === String(soldId) && x.sold);
+  if(!sold) return;
+  if(sold.saleStatus === 'returned'){
+    if(typeof toast === 'function') toast('Ye sale already returned hai.');
+    return;
+  }
+
+  const ok = confirm('Ye phone customer se return hua hai. Isay dobara stock mein add kar dein?');
+  if(!ok) return;
+
+  const originalId = sold.originalStockId || sold.stockId || sold.parentStockId || sold.inventoryId;
+  let original = originalId
+    ? inventory.find(x => String(x.id) === String(originalId) && !x.sold)
+    : null;
+
+  // Fallback for older records which do not have an original stock id.
+  if(!original){
+    original = inventory.find(x =>
+      !x.sold &&
+      x.brand === sold.brand &&
+      x.model === sold.model &&
+      String(x.imei || '') === String(sold.imei || '') &&
+      (x.imei || sold.imei) &&
+      String(x.condition || '') === String(sold.condition || '')
+    );
+  }
+
+  // Last fallback: same brand/model, preferring an existing stock record.
+  if(!original){
+    original = inventory.find(x =>
+      !x.sold &&
+      x.brand === sold.brand &&
+      x.model === sold.model
+    );
+  }
+
+  if(original){
+    original.quantity = Number(original.quantity || 0) + Number(sold.quantity || 1);
+  }else{
+    // Only if no matching stock record exists, recreate the returned stock once.
+    const restored = {...sold};
+    delete restored.sold;
+    delete restored.saleStatus;
+    delete restored.sell;
+    delete restored.sellDate;
+    delete restored.customerName;
+    delete restored.customerPhone;
+    delete restored.paymentMethod;
+    restored.id = 'stock_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+    restored.quantity = Number(sold.quantity || 1);
+    inventory.push(restored);
+  }
+
+  sold.saleStatus = 'returned';
+  sold.returnedAt = new Date().toISOString();
+  sold.returnedQuantity = Number(sold.quantity || 1);
+
+  // Re-render/save using the app's existing persistence hooks.
+  if(typeof saveInventory === 'function') saveInventory();
+  if(typeof tryCommitInventory === 'function') tryCommitInventory();
+  if(typeof render === 'function') render();
+  if(typeof renderDashboard === 'function') renderDashboard();
+  if(typeof renderReports === 'function') renderReports();
+  if(typeof renderContacts === 'function') renderContacts();
+
+  if(typeof toast === 'function') toast('↩ Item stock mein wapas add ho gaya.');
+}
+
 function confirmSell(){
   hideSaveError('sellErrorBanner');
   const idx = inventory.findIndex(function(x){return x.id===sellingId;});
@@ -2919,7 +2984,7 @@ function confirmSell(){
   const soldRecord = Object.assign({}, e, {
     id: 'sold_'+Date.now(),
     quantity: qty,
-    sold: true,
+    sold: true, saleStatus:'sold',
     sell: price,
     customer: document.getElementById('s-customer').value.trim(),
     customerNumber: document.getElementById('s-customer-number').value.trim(),
