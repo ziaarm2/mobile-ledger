@@ -740,6 +740,20 @@
     <div class="sec-label" style="margin-top:0;">Card view</div>
     <div class="settings-opts" id="cardViewModeToggles"></div>
 
+    <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">💰 Auto Sell Range</div>
+    <div class="settings-note">Buy price ke hisaab se Sell Range automatically banega. Neeche har price band aur uska markup set karein. Range mein <b>From</b> aur <b>To</b> dono amount Buy price mein add honge.</div>
+    <div id="autoRangeRulesList" class="settings-opts" style="display:block;"></div>
+    <div class="settings-add-row" style="margin-top:8px;">
+      <input type="number" id="autoRangeMinBuy" placeholder="Buy min" min="0">
+      <input type="number" id="autoRangeMaxBuy" placeholder="Buy max" min="0">
+    </div>
+    <div class="settings-add-row" style="margin-top:8px;">
+      <input type="number" id="autoRangeMinMarkup" placeholder="+ From" min="0">
+      <input type="number" id="autoRangeMaxMarkup" placeholder="+ To" min="0">
+      <button type="button" class="sell-btn" id="autoRangeAddBtn">Add</button>
+    </div>
+    <div class="settings-note">Example: 20,000–35,000 +3,000 to +5,000 = 23k–40k. Agar kisi Buy price ke liye koi rule match na kare to Sell Range blank rahega. Existing filled ranges ko automatic overwrite nahi kiya jayega.</div>
+
     <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">Privacy mode</div>
     <div class="settings-opts" id="privacyEnabledToggles"></div>
     <div class="settings-opts" id="privacyProfitToggles" style="margin-top:8px;"></div>
@@ -790,6 +804,7 @@ let currentFilter = 'all';
 let currentBrandFilter = 'all';
 let currentSort = 'default';
 let sellingId = null;
+let rangeInputMode = 'auto'; // 'auto' until the user manually edits the sell-range field
 
 // ---------- Back-gesture / browser-back handling ----------
 // Without this, every overlay (Add entry, Sell, Dashboard, Reports,
@@ -1354,7 +1369,11 @@ async function loadInventory(){
   }catch(e){
     inventory = seed;
   }
-  inventory.forEach(function(e){ if(e.quantity===undefined) e.quantity = 1; });
+  inventory.forEach(function(e){
+    if(e.quantity===undefined) e.quantity = 1;
+    // Existing non-empty ranges are treated as manual to protect old data.
+    if(e.rangeMode!=='auto' && e.rangeMode!=='manual') e.rangeMode = e.range ? 'manual' : 'auto';
+  });
   render();
 }
 
@@ -1566,12 +1585,72 @@ function normalizeRange(val){
   return build(num1, suf1) + '-' + build(num2, suf2);
 }
 
+
+// ---------- Auto sell-range rules ----------
+function normalizeAutoSellRangeRules(rules){
+  if(!Array.isArray(rules)) return [];
+  return rules.map(function(r){
+    return {
+      minBuy: Number(r.minBuy), maxBuy: Number(r.maxBuy),
+      minMarkup: Number(r.minMarkup), maxMarkup: Number(r.maxMarkup)
+    };
+  }).filter(function(r){
+    return [r.minBuy,r.maxBuy,r.minMarkup,r.maxMarkup].every(function(v){ return isFinite(v); }) &&
+      r.minBuy >= 0 && r.maxBuy > r.minBuy && r.minMarkup >= 0 && r.maxMarkup >= r.minMarkup;
+  }).sort(function(a,b){ return a.minBuy-b.minBuy; });
+}
+function exactPriceText(n){
+  const num = Number(n);
+  if(!isFinite(num)) return '';
+  if(num % 1000 === 0) return String(num/1000)+'k';
+  const k = num/1000;
+  return String(k)+'k';
+}
+function autoSellRangeForBuy(buy){
+  const n = Number(buy);
+  if(!isFinite(n)) return '';
+  const rules = normalizeAutoSellRangeRules(cardDisplaySettings.autoSellRangeRules);
+  for(let i=0;i<rules.length;i++){
+    const r = rules[i];
+    const inBand = n >= r.minBuy && (n < r.maxBuy || (i===rules.length-1 && n <= r.maxBuy));
+    if(inBand) return exactPriceText(n+r.minMarkup)+'-'+exactPriceText(n+r.maxMarkup);
+  }
+  return '';
+}
+function maybeAutoFillRange(){
+  const buyRaw = document.getElementById('f-buy').value.trim();
+  const rangeEl = document.getElementById('f-range');
+  if(!rangeEl || rangeInputMode !== 'auto') return;
+  if(buyRaw===''){
+    rangeEl.value = '';
+    document.getElementById('f-range-hint').textContent = '';
+    return;
+  }
+  const buy = parsePrice(buyRaw);
+  const auto = buy===null ? '' : autoSellRangeForBuy(buy);
+  rangeEl.value = auto;
+  document.getElementById('f-range-hint').textContent = auto ? '= '+auto : '';
+}
+function displaySellRange(range){
+  if(!range) return '';
+  if(!isPrivacyOn()) return range;
+  const markup = Number(cardDisplaySettings.privacy.buyMarkupAmount)||0;
+  if(!markup) return range;
+  const raw = String(range).replace(/[–—−]/g,'-').trim();
+  const parts = raw.split('-');
+  if(parts.length!==2) return range;
+  const a = parsePrice(parts[0].trim()), b = parsePrice(parts[1].trim());
+  if(a===null || b===null) return range;
+  return exactPriceText(a+markup)+'-'+exactPriceText(b+markup);
+}
+
 function wireRangeHint(inputId, hintId){
   const inp = document.getElementById(inputId);
   const hint = document.getElementById(hintId);
   if(!inp || !hint) return;
   inp.addEventListener('input', function(){
     const v = inp.value.trim();
+    if(inputId==='f-range') rangeInputMode = (v==='') ? 'auto' : 'manual';
     if(v===''){ hint.textContent=''; return; }
     const norm = normalizeRange(v);
     hint.textContent = (norm && norm!==v) ? ('= ' + norm) : '';
@@ -1625,6 +1704,7 @@ function wirePriceHint(inputId, hintId){
   });
 }
 wirePriceHint('f-buy','f-buy-hint');
+document.getElementById('f-buy').addEventListener('input', maybeAutoFillRange);
 wirePriceHint('f-sellprice','f-sellprice-hint');
 wirePriceHint('f-buy-insale','f-buy-insale-hint');
 wirePriceHint('s-price','s-price-hint');
@@ -1957,6 +2037,10 @@ let cardDisplaySettings = {
   batteryMode: 'always', // 'always' | 'issue-only' | 'never' — legacy default only
   badgeOrder: DEFAULT_BADGE_ORDER.slice(),
   cardViewMode: 'detailed', // 'detailed' | 'compact'
+  autoSellRangeRules: [
+    {minBuy:20000, maxBuy:35000, minMarkup:3000, maxMarkup:5000},
+    {minBuy:35000, maxBuy:50000, minMarkup:5000, maxMarkup:10000}
+  ],
   privacy: {
     enabled: false,        // quick on/off — flip this when someone else is looking at the phone
     hideProfit: true,      // when on, profit numbers everywhere show as •••• instead of the real figure
@@ -1973,6 +2057,7 @@ function loadCardDisplaySettings(){
       if(parsed.showFields) Object.assign(cardDisplaySettings.showFields, parsed.showFields);
       if(parsed.batteryMode) cardDisplaySettings.batteryMode = parsed.batteryMode;
       if(parsed.cardViewMode) cardDisplaySettings.cardViewMode = parsed.cardViewMode;
+      if(Array.isArray(parsed.autoSellRangeRules)) cardDisplaySettings.autoSellRangeRules = parsed.autoSellRangeRules;
       if(parsed.privacy) Object.assign(cardDisplaySettings.privacy, parsed.privacy);
       if(Array.isArray(parsed.badgeOrder) && parsed.badgeOrder.length){
         // Keep any valid known keys from storage, then append any newer
@@ -2146,7 +2231,7 @@ function renderSingleStockCard(e){
   return (
   '<div class="card '+(outOfStock?'outofstock':'')+(compact?' compact':'')+'">'+
     '<div class="card-title">'+e.brand+' '+e.model+'</div>'+
-    '<div class="card-sub">'+(e.range||'')+'</div>'+
+    '<div class="card-sub">'+(e.range ? displaySellRange(e.range) : '')+'</div>'+
     cardPhotoHtml(e)+
     '<div class="badges">'+pieceStatusBadges(e, outOfStock)+'</div>'+
     (pieceSpecBadges(e) ? '<div class="badges spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
@@ -2178,7 +2263,7 @@ function renderStockGroup(g){
       '<div class="piece-row-top">'+pieceStatusBadges(e, outOfStock)+'</div>'+
       (pieceSpecBadges(e) ? '<div class="piece-row-top spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
       cardPhotoHtml(e)+
-      (e.buy!=null || e.range ? '<div class="sale-meta">'+(e.buy!=null?'Buy: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span>':'')+(e.buy!=null&&e.range?' &bull; ':'')+(e.range?'Sell range: '+e.range:'')+'</div>' : '')+
+      (e.buy!=null || e.range ? '<div class="sale-meta">'+(e.buy!=null?'Buy: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span>':'')+(e.buy!=null&&e.range?' &bull; ':'')+(e.range?'Sell range: '+displaySellRange(e.range):'')+'</div>' : '')+
       (e.notes ? '<div class="sale-meta">'+e.notes+'</div>' : '')+
       '<div class="card-actions">'+
         '<button data-edit="'+e.id+'">Edit</button>'+
@@ -2484,6 +2569,7 @@ document.getElementById('f-model-select').addEventListener('change', function(){
 function openAdd(){
   hideSaveError('saveErrorBanner');
   editingId = null;
+  rangeInputMode = 'auto';
   document.getElementById('sheetTitle').textContent = 'Nayi stock entry';
   document.getElementById('qtyLabel').textContent = 'Quantity (kitne piece)';
   formState = {brand:'', status:'JV', ram:'', storage:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'No', packing:'No pack', charger:'Original charger', faceid:'Yes', truetone:'Yes', isSold:false};
@@ -2497,6 +2583,7 @@ function openAdd(){
   document.getElementById('f-buy-hint').textContent = '';
   document.getElementById('f-range').value = '';
   document.getElementById('f-range-hint').textContent = '';
+  if(rangeInputMode==='auto') maybeAutoFillRange();
   document.getElementById('f-buydate').value = todayISO();
   document.getElementById('f-imei').value = '';
   document.getElementById('f-seller-name').value = '';
@@ -2537,6 +2624,7 @@ function openEdit(id){
   const e = inventory.find(function(x){return x.id===id;});
   if(!e) return;
   editingId = id;
+  rangeInputMode = (e.rangeMode==='auto' || e.rangeMode==='manual') ? e.rangeMode : (e.range ? 'manual' : 'auto');
   document.getElementById('sheetTitle').textContent = e.sold ? 'Sale entry edit karein' : 'Stock entry edit karein';
   document.getElementById('qtyLabel').textContent = e.sold ? 'Kitne piece is sale mein' : 'Quantity (kitne piece)';
   const brandKnown = BRANDS.indexOf(e.brand)!==-1;
@@ -2607,9 +2695,14 @@ function saveEntry(){
     return;
   }
   const qty = Math.max(1, Number(document.getElementById('f-qty').value || 1));
+  const buyFieldRaw = document.getElementById('f-buy').value.trim();
+  const parsedBuyForRange = buyFieldRaw==='' ? null : parsePrice(buyFieldRaw);
+  let rangeValue = normalizeRange(document.getElementById('f-range').value.trim());
+  if(rangeInputMode==='auto') rangeValue = parsedBuyForRange===null ? '' : autoSellRangeForBuy(parsedBuyForRange);
   const data = {
     brand: brand, model: model,
-    range: normalizeRange(document.getElementById('f-range').value.trim()),
+    range: rangeValue,
+    rangeMode: rangeInputMode,
     quantity: qty,
     imei: document.getElementById('f-imei').value.trim(),
     buyDate: document.getElementById('f-buydate').value || todayISO(),
@@ -2674,9 +2767,12 @@ function saveEntry(){
       }
       const epState = block._epState || {};
       const rangeRaw = block.querySelector('.extra-range-input').value.trim();
+      const epBuy = buyValRaw === '' ? null : parsePrice(buyValRaw);
+      const epRangeMode = rangeRaw==='' ? 'auto' : 'manual';
       extras.push({
-        buy: buyValRaw === '' ? null : parsePrice(buyValRaw),
-        range: rangeRaw === '' ? '' : normalizeRange(rangeRaw),
+        buy: epBuy,
+        range: rangeRaw === '' ? (epBuy===null ? '' : autoSellRangeForBuy(epBuy)) : normalizeRange(rangeRaw),
+        rangeMode: epRangeMode,
         imei: block.querySelector('.ep-imei').value.trim(),
         status: epState.status || '',
         display: epState.display || '',
@@ -2704,6 +2800,7 @@ function saveEntry(){
         quantity: 1,
         buy: ep.buy,
         range: ep.range !== '' ? ep.range : data.range,
+        rangeMode: ep.rangeMode || data.rangeMode,
         imei: ep.imei || '',
         status: ep.status || data.status,
         display: ep.display !== '' ? ep.display : data.display,
@@ -3557,6 +3654,45 @@ function renderCardViewModeToggles(){
   });
 }
 
+function renderAutoSellRangeSettings(){
+  const list = document.getElementById('autoRangeRulesList');
+  if(!list) return;
+  const rules = normalizeAutoSellRangeRules(cardDisplaySettings.autoSellRangeRules);
+  list.innerHTML = rules.map(function(r,i){
+    return '<div class="settings-opt" style="width:100%;justify-content:space-between;border-radius:10px;margin-bottom:6px;">'+
+      '<span>Buy '+fmt(r.minBuy)+' – '+fmt(r.maxBuy)+' &nbsp; → &nbsp; +'+fmt(r.minMarkup)+' to +'+fmt(r.maxMarkup)+'</span>'+
+      '<button type="button" class="del-btn" data-auto-range-del="'+i+'" style="padding:4px 8px;">×</button>'+
+      '</div>';
+  }).join('') || '<div class="settings-note">Abhi koi auto-range rule nahi hai.</div>';
+  list.querySelectorAll('[data-auto-range-del]').forEach(function(btn){
+    btn.onclick=function(){
+      const idx=Number(btn.dataset.autoRangeDel);
+      const next=normalizeAutoSellRangeRules(cardDisplaySettings.autoSellRangeRules);
+      next.splice(idx,1);
+      cardDisplaySettings.autoSellRangeRules=next;
+      saveCardDisplaySettings();
+      renderAutoSellRangeSettings();
+    };
+  });
+}
+
+function addAutoSellRangeRule(){
+  const min=Number(document.getElementById('autoRangeMinBuy').value);
+  const max=Number(document.getElementById('autoRangeMaxBuy').value);
+  const minM=Number(document.getElementById('autoRangeMinMarkup').value);
+  const maxM=Number(document.getElementById('autoRangeMaxMarkup').value);
+  if(![min,max,minM,maxM].every(function(v){return isFinite(v);}) || min<0 || max<=min || minM<0 || maxM<minM){
+    alert('Price band aur markup sahi tarah enter karein.'); return;
+  }
+  const next=normalizeAutoSellRangeRules(cardDisplaySettings.autoSellRangeRules);
+  next.push({minBuy:min,maxBuy:max,minMarkup:minM,maxMarkup:maxM});
+  cardDisplaySettings.autoSellRangeRules=normalizeAutoSellRangeRules(next);
+  saveCardDisplaySettings();
+  ['autoRangeMinBuy','autoRangeMaxBuy','autoRangeMinMarkup','autoRangeMaxMarkup'].forEach(function(id){document.getElementById(id).value='';});
+  renderAutoSellRangeSettings();
+  render();
+}
+
 function renderPrivacySettings(){
   const onOff = [{key:'on', label:'ON'}, {key:'off', label:'OFF'}];
   const enEl = document.getElementById('privacyEnabledToggles');
@@ -3813,6 +3949,7 @@ document.getElementById('btnSettings').onclick = function(){
   const sel = document.getElementById('settings-field-select');
   sel.innerHTML = CUSTOMIZABLE_FIELDS.map(function(f){ return '<option value="'+f.key+'">'+f.label+'</option>'; }).join('');
   renderCardViewModeToggles();
+  renderAutoSellRangeSettings();
   renderPrivacySettings();
   renderBadgeOrderList();
   renderSettingsFieldOptions();
@@ -3826,6 +3963,8 @@ document.getElementById('btnSettingsClose').onclick = function(){
 document.getElementById('settingsOverlay').onclick = function(e){
   if(e.target.id==='settingsOverlay') requestOverlayClose();
 };
+
+document.getElementById('autoRangeAddBtn').onclick = addAutoSellRangeRule;
 
 document.getElementById('btnPrivacyToggle').onclick = function(){
   cardDisplaySettings.privacy.enabled = !cardDisplaySettings.privacy.enabled;
@@ -3882,6 +4021,10 @@ document.getElementById('btnClearData').onclick = function(){
     batteryMode: 'always',
     badgeOrder: DEFAULT_BADGE_ORDER.slice(),
     cardViewMode: 'detailed',
+    autoSellRangeRules: [
+      {minBuy:20000, maxBuy:35000, minMarkup:3000, maxMarkup:5000},
+      {minBuy:35000, maxBuy:50000, minMarkup:5000, maxMarkup:10000}
+    ],
     privacy: {enabled:false, hideProfit:true, buyMarkupAmount:2000}
   };
   saveCardDisplaySettings();
@@ -3896,7 +4039,7 @@ document.getElementById('btnClearData').onclick = function(){
 // Note: 'customer' (not 'customerName') matches the actual field saved on
 // each entry — using the wrong key here silently exported blank customer
 // names in every previous Excel backup.
-const EXCEL_COLUMNS = ['id','brand','model','status','quantity','sold','display','touch','camera','body','openrepair','battery','ram','storage','network','packing','charger','box','faceid','truetone','buy','sell','range','imei','buyDate','sellerName','sellerNumber','saleDate','customer','customerNumber','payment','notes','lastUpdated'];
+const EXCEL_COLUMNS = ['id','brand','model','status','quantity','sold','display','touch','camera','body','openrepair','battery','ram','storage','network','packing','charger','box','faceid','truetone','buy','sell','range','rangeMode','imei','buyDate','sellerName','sellerNumber','saleDate','customer','customerNumber','payment','notes','lastUpdated'];
 const EXCEL_EXPENSE_COLUMNS = ['id','category','amount','date','notes'];
 
 function exportExcel(){
@@ -3959,6 +4102,7 @@ function importExcel(file){
         e.sold = String(r.sold).toLowerCase()==='yes';
         e.buy = e.buy===null ? null : Number(e.buy);
         e.sell = e.sell===null ? null : Number(e.sell);
+        e.rangeMode = (e.rangeMode==='auto' || e.rangeMode==='manual') ? e.rangeMode : (e.range ? 'manual' : 'auto');
         e.box = e.box || 'No';
         e.charger = e.charger || 'Original charger';
         e.lastUpdated = e.lastUpdated || todayStr();
