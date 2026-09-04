@@ -2463,7 +2463,7 @@ function renderSoldCard(e){
     '</div>'+
     cardPhotoHtml(e)+
     '<div class="price-row">'+
-      '<div class="price-col"><div class="l">Buy</div><div class="v num">'+fmt(e.buy)+'</div></div>'+
+      '<div class="price-col"><div class="l">Buy</div><div class="v num">'+fmt(displayBuyPrice(e.buy))+'</div></div>'+
       '<div class="price-col"><div class="l">Sell</div><div class="v num">'+fmt(e.sell)+'</div></div>'+
       '<div class="price-col"><div class="l">Profit</div><div class="v num '+profitClass+'">'+(profit===null?'-':fmt(profit))+'</div></div>'+
     '</div>'+
@@ -3473,7 +3473,7 @@ document.getElementById('btnReportsPdf').onclick = function(){
       '<td>'+formatDateDisplay(e.saleDate)+'</td>'+
       '<td>'+e.brand+' '+e.model+(e.quantity>1?(' x'+e.quantity):'')+'</td>'+
       '<td>'+(e.customer||'')+(e.customerNumber?'<br>'+e.customerNumber:'')+'</td>'+
-      '<td style="text-align:right;">'+fmt(e.buy)+'</td>'+
+      '<td style="text-align:right;">'+fmt(displayBuyPrice(e.buy))+'</td>'+
       '<td style="text-align:right;">'+fmt(e.sell)+'</td>'+
       '<td style="text-align:right;">'+(profit==null?'-':fmt(profit))+'</td>'+
     '</tr>';
