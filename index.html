@@ -1415,15 +1415,15 @@ async function loadInventory(){
   inventory.forEach(function(e){
     if(e.quantity===undefined) e.quantity = 1;
 
-    // Existing entries: if Sell Range was previously empty, treat it as AUTO
-    // and immediately calculate it from the saved Buy price. Existing non-empty
-    // ranges remain MANUAL so old/custom values are never overwritten.
-    if(e.rangeMode!=='auto' && e.rangeMode!=='manual') e.rangeMode = e.range ? 'manual' : 'auto';
-    if((e.range===null || e.range===undefined || String(e.range).trim()==='') && e.buy!=null){
+    // If rangeMode is explicitly saved, respect it. For older entries that
+    // pre-date rangeMode, treat the saved range as AUTO so current Auto Sell
+    // Range rules can update those existing entries too. Only entries that
+    // explicitly use MANUAL are protected from automatic recalculation.
+    if(e.rangeMode!=='auto' && e.rangeMode!=='manual') e.rangeMode = 'auto';
+    if(e.rangeMode==='auto' && e.buy!=null){
       const autoRange = autoSellRangeForBuy(e.buy);
-      if(autoRange){
+      if(e.range !== autoRange){
         e.range = autoRange;
-        e.rangeMode = 'auto';
         migratedAutoRanges = true;
       }
     }
