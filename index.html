@@ -2137,6 +2137,31 @@ function saveCardDisplaySettings(){
   schedulePush();
 }
 
+// Recalculate auto sell ranges for existing stock whenever the rules change.
+// Manual ranges are never overwritten. Older entries without rangeMode are
+// treated as auto so the new rules also work for entries saved in older versions.
+function applyAutoSellRangesToExistingEntries(){
+  if(!Array.isArray(inventory)) return;
+  let changed = false;
+  inventory.forEach(function(e){
+    if(!e || e.sold) return;
+    if(e.rangeMode === 'manual') return;
+    const buy = e.buy == null ? null : Number(e.buy);
+    if(buy === null || !isFinite(buy)) return;
+    const nextRange = autoSellRangeForBuy(buy);
+    if(e.range !== nextRange || e.rangeMode !== 'auto'){
+      e.range = nextRange;
+      e.rangeMode = 'auto';
+      changed = true;
+    }
+  });
+  if(changed){
+    saveInventory();
+    render();
+    schedulePush();
+  }
+}
+
 // ---------- Privacy mode ----------
 // Quick-flip protection for when someone else picks up the phone in the shop.
 // It never lies about your data — it only changes what's shown on screen.
@@ -3857,6 +3882,7 @@ function renderAutoSellRangeSettings(){
       next[idx]={minBuy:min,maxBuy:max,minMarkup:minM,maxMarkup:maxM};
       cardDisplaySettings.autoSellRangeRules=normalizeAutoSellRangeRules(next);
       saveCardDisplaySettings();
+      applyAutoSellRangesToExistingEntries();
       editingAutoRangeIndex=-1;
       renderAutoSellRangeSettings();
       render();
@@ -3889,6 +3915,7 @@ function addAutoSellRangeRule(){
   next.push({minBuy:min,maxBuy:max,minMarkup:minM,maxMarkup:maxM});
   cardDisplaySettings.autoSellRangeRules=normalizeAutoSellRangeRules(next);
   saveCardDisplaySettings();
+  applyAutoSellRangesToExistingEntries();
   ['autoRangeMinBuy','autoRangeMaxBuy','autoRangeMinMarkup','autoRangeMaxMarkup'].forEach(function(id){document.getElementById(id).value='';});
   renderAutoSellRangeSettings();
   render();
