@@ -267,7 +267,12 @@
   .privacy-masked{filter:blur(6px);user-select:none;}
   #btnPrivacyToggle{position:relative;}
   #btnPrivacyToggle.privacy-on::after{content:'';position:absolute;top:6px;right:8px;width:5px;height:5px;border-radius:50%;background:var(--text-faint);opacity:0.6;}
-.returned-badge{display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:4px 8px;border-radius:7px;border:1px solid var(--border);font-size:11px;font-weight:800;color:var(--text-dim);background:var(--surface-2);}
+
+/* Phase 4 - Return system */
+.returned-badge{display:inline-flex;align-items:center;gap:5px;font-weight:800;border:1px solid currentColor;}
+.return-btn{border:1px solid #d97706 !important;color:#92400e !important;background:#fff7ed !important;}
+.return-btn:hover{background:#ffedd5 !important;}
+.card.returned-card{opacity:.92;}
 </style>
 </head>
 <body>
@@ -1295,6 +1300,14 @@ async function openImeiScan(targetInput){
 // Delegated click so this works for the main IMEI field AND every
 // dynamically-added "extra piece" IMEI field without wiring each one by hand.
 document.addEventListener('click', function(e){
+  const returnBtn=e.target.closest && e.target.closest('[data-return]');
+  if(returnBtn){
+    e.preventDefault();
+    e.stopPropagation();
+    returnSoldItem(returnBtn.getAttribute('data-return'));
+    return;
+  }
+
   const btn = e.target.closest ? e.target.closest('.imei-scan-btn') : null;
   if(!btn) return;
   let targetInput = null;
@@ -2298,15 +2311,93 @@ function renderStockGroup(g){
   );
 }
 
+
+/* =========================
+   Phase 4: Sale Return System
+   ========================= */
+function isReturnedSale(e){
+  return !!e && (e.saleStatus === 'returned' || e.returned === true);
+}
+function findOriginalStockForReturn(sale){
+  if(!sale) return null;
+  const ids=[];
+  if(sale.stockId!=null) ids.push(String(sale.stockId));
+  if(sale.originalStockId!=null) ids.push(String(sale.originalStockId));
+  if(sale.inventoryId!=null) ids.push(String(sale.inventoryId));
+  if(sale.sourceStockId!=null) ids.push(String(sale.sourceStockId));
+  for(const id of ids){
+    const found=inventory.find(x=>String(x.id)===id);
+    if(found) return found;
+  }
+  const saleImei=sale.imei||sale.IMEI||sale.imei1||'';
+  if(saleImei){
+    const found=inventory.find(x=>String(x.imei||x.IMEI||x.imei1||'')===String(saleImei));
+    if(found) return found;
+  }
+  return inventory.find(x=>
+    x.brand===sale.brand && x.model===sale.model &&
+    (sale.storage==null || x.storage==null || String(x.storage)===String(sale.storage)) &&
+    (sale.ram==null || x.ram==null || String(x.ram)===String(sale.ram))
+  )||null;
+}
+function returnSoldItem(soldId){
+  const sale=inventory.find(x=>String(x.id)===String(soldId));
+  if(!sale || !sale.sold){ alert('Sale record nahi mila.'); return; }
+  if(isReturnedSale(sale)){ alert('Ye sale pehle hi returned hai.'); return; }
+
+  const qty=Math.max(1,Number(sale.quantity)||1);
+  const original=findOriginalStockForReturn(sale);
+
+  if(!confirm('Kya aap "'+(sale.brand||'')+' '+(sale.model||'')+
+    '" ki sale return karna chahte hain?\n\nQuantity: '+qty+
+    '\nMobile stock mein wapas aa jayega aur sale Returned mark ho jayegi.')) return;
+
+  if(original){
+    original.quantity=(Number(original.quantity)||0)+qty;
+    original.sold=false;
+    original.saleStatus='available';
+    original.lastUpdated=new Date().toISOString();
+  }else{
+    const restored=Object.assign({},sale);
+    delete restored.customer; delete restored.customerNumber; delete restored.payment;
+    delete restored.sell; delete restored.saleDate; delete restored.sold;
+    delete restored.saleStatus; delete restored.returned; delete restored.returnedAt;
+    delete restored.returnOf;
+    restored.quantity=qty;
+    restored.lastUpdated=new Date().toISOString();
+    inventory.push(restored);
+  }
+
+  sale.sold=true;
+  sale.saleStatus='returned';
+  sale.returned=true;
+  sale.returnedAt=new Date().toISOString();
+  sale.returnOf=original?String(original.id):String(soldId);
+
+  try{
+    localStorage.setItem(LS_INVENTORY_KEY,JSON.stringify(inventory));
+    schedulePush();
+  }catch(err){
+    console.error(err);
+    alert('Return save nahi ho saka. Data save karte waqt error aaya.');
+    return;
+  }
+  render();
+  alert('✅ Return complete! Mobile stock mein wapas aa gaya.');
+}
+
 function renderSoldCard(e){
-  const profit = (e.buy!=null && e.sell!=null) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : null;
-  const profitClass = profit===null ? 'dim' : (profit>=0 ? 'profit-pos' : 'profit-neg');
+  const returned=isReturnedSale(e);
+  const profit=(!returned && e.buy!=null && e.sell!=null)
+    ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : null;
+  const profitClass=profit===null?'dim':(profit>=0?'profit-pos':'profit-neg');
   return (
-  '<div class="card">'+
+  '<div class="card '+(returned?'returned-card':'')+'">'+
     '<div class="card-title">'+e.brand+' '+e.model+'</div>'+
     '<div class="badges">'+
       '<span class="badge '+statusBadgeClass(e.status)+'">'+e.status+'</span>'+
       '<span class="badge sold-badge">Sold'+(e.quantity>1?(' x'+e.quantity):'')+'</span>'+
+      (returned?'<span class="badge returned-badge">↩ Returned</span>':'')+
     '</div>'+
     cardPhotoHtml(e)+
     '<div class="price-row">'+
@@ -2314,10 +2405,12 @@ function renderSoldCard(e){
       '<div class="price-col"><div class="l">Sell</div><div class="v num">'+fmt(e.sell)+'</div></div>'+
       '<div class="price-col"><div class="l">Profit</div><div class="v num '+profitClass+'">'+(profit===null?'-':fmt(profit))+'</div></div>'+
     '</div>'+
-    (e.customer||e.payment ? '<div class="sale-meta">'+(e.customer||'')+(e.customer&&e.customerNumber?' ('+e.customerNumber+')':'')+(e.customer&&e.payment?' - ':'')+(e.payment||'')+' - '+(e.saleDate?formatDateDisplay(e.saleDate):(e.lastUpdated||''))+'</div>' : '')+
+    (e.customer||e.payment?'<div class="sale-meta">'+(e.customer||'')+(e.customer&&e.customerNumber?' ('+e.customerNumber+')':'')+(e.customer&&e.payment?' - ':'')+(e.payment||'')+' - '+(e.saleDate?formatDateDisplay(e.saleDate):(e.lastUpdated||''))+'</div>':'')+
+    (returned&&e.returnedAt?'<div class="sale-meta">Returned: '+formatDateDisplay(e.returnedAt)+'</div>':'')+
     '<div class="card-actions">'+
       '<button data-edit="'+e.id+'">Edit</button>'+
       '<button class="share-btn" data-share="'+e.id+'">Share</button>'+
+      (returned?'':'<button class="return-btn" data-return="'+e.id+'">↩ Return</button>')+
       '<button class="del-btn" data-del="'+e.id+'">Delete</button>'+
     '</div>'+
   '</div>');
@@ -2360,7 +2453,7 @@ function buildShareText(e){
   if(e.range){
     lines.push('Price: '+upperPriceFromRange(e.range));
   }
-  if(e.sold && e.sell!=null) lines.push('Sale price: '+fmt(e.sell));
+  if(e.sold && !isReturnedSale(e) && e.sell!=null) lines.push('Sale price: '+fmt(e.sell));
 
   if(e.ram) lines.push('RAM: '+e.ram);
   if(e.storage) lines.push('Storage: '+e.storage);
@@ -2891,76 +2984,6 @@ function updateSellProfitPreview(){
   }
 }
 
-
-function returnSoldItem(soldId){
-  const sold = (typeof inventory !== 'undefined' ? inventory : []).find(x => String(x.id) === String(soldId) && x.sold);
-  if(!sold) return;
-  if(sold.saleStatus === 'returned'){
-    if(typeof toast === 'function') toast('Ye sale already returned hai.');
-    return;
-  }
-
-  const ok = confirm('Ye phone customer se return hua hai. Isay dobara stock mein add kar dein?');
-  if(!ok) return;
-
-  const originalId = sold.originalStockId || sold.stockId || sold.parentStockId || sold.inventoryId;
-  let original = originalId
-    ? inventory.find(x => String(x.id) === String(originalId) && !x.sold)
-    : null;
-
-  // Fallback for older records which do not have an original stock id.
-  if(!original){
-    original = inventory.find(x =>
-      !x.sold &&
-      x.brand === sold.brand &&
-      x.model === sold.model &&
-      String(x.imei || '') === String(sold.imei || '') &&
-      (x.imei || sold.imei) &&
-      String(x.condition || '') === String(sold.condition || '')
-    );
-  }
-
-  // Last fallback: same brand/model, preferring an existing stock record.
-  if(!original){
-    original = inventory.find(x =>
-      !x.sold &&
-      x.brand === sold.brand &&
-      x.model === sold.model
-    );
-  }
-
-  if(original){
-    original.quantity = Number(original.quantity || 0) + Number(sold.quantity || 1);
-  }else{
-    // Only if no matching stock record exists, recreate the returned stock once.
-    const restored = {...sold};
-    delete restored.sold;
-    delete restored.saleStatus;
-    delete restored.sell;
-    delete restored.sellDate;
-    delete restored.customerName;
-    delete restored.customerPhone;
-    delete restored.paymentMethod;
-    restored.id = 'stock_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
-    restored.quantity = Number(sold.quantity || 1);
-    inventory.push(restored);
-  }
-
-  sold.saleStatus = 'returned';
-  sold.returnedAt = new Date().toISOString();
-  sold.returnedQuantity = Number(sold.quantity || 1);
-
-  // Re-render/save using the app's existing persistence hooks.
-  if(typeof saveInventory === 'function') saveInventory();
-  if(typeof tryCommitInventory === 'function') tryCommitInventory();
-  if(typeof render === 'function') render();
-  if(typeof renderDashboard === 'function') renderDashboard();
-  if(typeof renderReports === 'function') renderReports();
-  if(typeof renderContacts === 'function') renderContacts();
-
-  if(typeof toast === 'function') toast('↩ Item stock mein wapas add ho gaya.');
-}
-
 function confirmSell(){
   hideSaveError('sellErrorBanner');
   const idx = inventory.findIndex(function(x){return x.id===sellingId;});
@@ -2984,7 +3007,7 @@ function confirmSell(){
   const soldRecord = Object.assign({}, e, {
     id: 'sold_'+Date.now(),
     quantity: qty,
-    sold: true, saleStatus:'sold',
+    sold: true, saleStatus: 'sold',
     sell: price,
     customer: document.getElementById('s-customer').value.trim(),
     customerNumber: document.getElementById('s-customer-number').value.trim(),
