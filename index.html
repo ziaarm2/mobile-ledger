@@ -1369,11 +1369,24 @@ async function loadInventory(){
   }catch(e){
     inventory = seed;
   }
+  let migratedAutoRanges = false;
   inventory.forEach(function(e){
     if(e.quantity===undefined) e.quantity = 1;
-    // Existing non-empty ranges are treated as manual to protect old data.
+
+    // Existing entries: if Sell Range was previously empty, treat it as AUTO
+    // and immediately calculate it from the saved Buy price. Existing non-empty
+    // ranges remain MANUAL so old/custom values are never overwritten.
     if(e.rangeMode!=='auto' && e.rangeMode!=='manual') e.rangeMode = e.range ? 'manual' : 'auto';
+    if((e.range===null || e.range===undefined || String(e.range).trim()==='') && e.buy!=null){
+      const autoRange = autoSellRangeForBuy(e.buy);
+      if(autoRange){
+        e.range = autoRange;
+        e.rangeMode = 'auto';
+        migratedAutoRanges = true;
+      }
+    }
   });
+  if(migratedAutoRanges) tryCommitInventory(inventory);
   render();
 }
 
