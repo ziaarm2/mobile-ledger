@@ -2184,6 +2184,17 @@ function displayProfitHtml(amount){
   return fmt(amount);
 }
 
+// Sold-entry profit shown on screen must use the same privacy-adjusted Buy
+// price that the user sees. The stored/original profit calculation remains
+// untouched; this is display-only. Quantity is included because the privacy
+// markup applies to each piece.
+function displaySaleProfit(e){
+  if(!e || e.buy==null || e.sell==null) return null;
+  const qty = Math.max(1, Number(e.quantity)||1);
+  const shownBuy = Number(displayBuyPrice(e.buy));
+  return (Number(e.sell) - shownBuy) * qty;
+}
+
 // Expense list rows: a normal expense (positive amount, money going out) is
 // shown red with a minus. A refund/return (stored as a negative amount,
 // money coming back in) is shown green with a plus — never both signs
@@ -2451,7 +2462,7 @@ function returnSoldItem(soldId){
 function renderSoldCard(e){
   const returned=isReturnedSale(e);
   const profit=(!returned && e.buy!=null && e.sell!=null)
-    ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : null;
+    ? displaySaleProfit(e) : null;
   const profitClass=profit===null?'dim':(profit>=0?'profit-pos':'profit-neg');
   return (
   '<div class="card '+(returned?'returned-card':'')+'">'+
