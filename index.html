@@ -65,7 +65,12 @@
   .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;}
   .card.outofstock{opacity:0.55;}
   .card-title{font-size:15px;font-weight:600;}
-  .card-sub{font-size:12px;color:var(--text-dim);margin-top:1px;}
+  .card-sub{font-size:12px;color:var(--text-dim);margin-top:1px;}   .sell-range-prominent{display:flex;align-items:center;gap:7px;margin-top:7px;margin-bottom:8px;padding:7px 10px;border:1px solid var(--border-strong);border-radius:9px;background:var(--surface-2);font-size:13px;font-weight:800;line-height:1.2;}
+.sell-range-prominent .sell-range-label{font-size:10px;letter-spacing:.5px;font-weight:800;color:var(--sale);white-space:nowrap;}
+.sell-range-prominent .sell-range-value{font-size:14px;font-weight:800;color:var(--text);word-break:break-word;}
+.piece-row .sell-range-prominent{margin-top:7px;margin-bottom:6px;}
+.card.compact .sell-range-prominent{margin-top:6px;margin-bottom:7px;padding:7px 9px;}
+@media (max-width:520px){.sell-range-prominent{font-size:12.5px;padding:7px 9px;}.sell-range-prominent .sell-range-value{font-size:13.5px;}}
 
   .card.group-card{padding:12px 14px 6px;}
   .piece-list{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
@@ -2244,7 +2249,7 @@ function renderSingleStockCard(e){
   return (
   '<div class="card '+(outOfStock?'outofstock':'')+(compact?' compact':'')+'">'+
     '<div class="card-title">'+e.brand+' '+e.model+'</div>'+
-    '<div class="card-sub">'+(e.range ? displaySellRange(e.range) : '')+'</div>'+
+    (e.range ? '<div class="sell-range-prominent"><span class="sell-range-label">SELL</span><span class="sell-range-value">'+displaySellRange(e.range)+'</span></div>' : '')+
     cardPhotoHtml(e)+
     '<div class="badges">'+pieceStatusBadges(e, outOfStock)+'</div>'+
     (pieceSpecBadges(e) ? '<div class="badges spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
@@ -2275,8 +2280,9 @@ function renderStockGroup(g){
     '<div class="piece-row '+(outOfStock?'outofstock':'')+(compact?' compact-row':'')+'">'+
       '<div class="piece-row-top">'+pieceStatusBadges(e, outOfStock)+'</div>'+
       (pieceSpecBadges(e) ? '<div class="piece-row-top spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
+      (e.range ? '<div class="sell-range-prominent"><span class="sell-range-label">SELL</span><span class="sell-range-value">'+displaySellRange(e.range)+'</span></div>' : '')+
       cardPhotoHtml(e)+
-      (e.buy!=null || e.range ? '<div class="sale-meta">'+(e.buy!=null?'Buy: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span>':'')+(e.buy!=null&&e.range?' &bull; ':'')+(e.range?'Sell range: '+displaySellRange(e.range):'')+'</div>' : '')+
+      (e.buy!=null ? '<div class="sale-meta">Buy: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span></div>' : '')+
       (e.notes ? '<div class="sale-meta">'+e.notes+'</div>' : '')+
       '<div class="card-actions">'+
         '<button data-edit="'+e.id+'">Edit</button>'+
