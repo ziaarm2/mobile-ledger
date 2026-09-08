@@ -96,6 +96,34 @@
   .price-col .v.profit-neg{color:var(--danger);}
   .price-col .v.dim{color:var(--text-faint);font-weight:400;}
   .sale-meta{font-size:12px;color:var(--text-dim);margin-top:6px;}
+  .sell-range-prominent{
+    margin-top:4px;
+    padding:4px 0 2px;
+    display:flex;
+    align-items:baseline;
+    gap:6px;
+  }
+  .sell-range-prominent .range-label{
+    font-size:10px;
+    color:var(--text-dim);
+    font-weight:600;
+    white-space:nowrap;
+  }
+  .sell-range-prominent .range-value{
+    font-size:14px;
+    line-height:1.2;
+    color:var(--pta);
+    font-weight:750;
+    letter-spacing:.1px;
+  }
+  .sell-range-prominent .range-value .rs{
+    font-size:11px;
+    margin-right:2px;
+    font-weight:700;
+  }
+  .piece-row .sell-range-prominent{
+    margin-top:3px;
+  }
 
   .card-actions{display:flex;gap:8px;margin-top:10px;}
   .card-actions button{flex:1;padding:7px;border-radius:8px;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);font-size:12.5px;}
@@ -265,8 +293,23 @@
   .badge.spec-prominent{font-size:14px;font-weight:800;padding:7px 14px;border-width:2px;box-shadow:0 0 0 3px rgba(255,193,7,0.15);}
   .settings-opts .card-vis-toggle.is-prominent{background:#ffc107;color:#1a1400;font-weight:800;}
   .privacy-masked{filter:blur(6px);user-select:none;}
+  .activity-filter-row{display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:6px;padding:8px 16px 0;}
+  .activity-filter-row select,.activity-filter-row input{min-width:0;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 8px;color:var(--text);font-size:11.5px;}
+  .activity-filter-row button{grid-column:1/-1;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:8px;padding:6px;font-size:11px;}
+  .phone-expense-list{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
+  .phone-expense-row{background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:9px;}
+  .phone-expense-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:7px;}
+  .phone-expense-row input{width:100%;background:var(--surface-3);border:1px solid var(--border);border-radius:7px;padding:8px;color:var(--text);font-size:12.5px;}
+  .phone-expense-row .phone-expense-note{margin-top:7px;}
+  .phone-expense-row .phone-expense-remove{margin-top:7px;width:100%;padding:6px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--danger);font-size:11px;}
   #btnPrivacyToggle{position:relative;}
   #btnPrivacyToggle.privacy-on::after{content:'';position:absolute;top:6px;right:8px;width:5px;height:5px;border-radius:50%;background:var(--text-faint);opacity:0.6;}
+
+/* Phase 4 - Return system */
+.returned-badge{display:inline-flex;align-items:center;gap:5px;font-weight:800;border:1px solid currentColor;}
+.return-btn{border:1px solid #d97706 !important;color:#92400e !important;background:#fff7ed !important;}
+.return-btn:hover{background:#ffedd5 !important;}
+.card.returned-card{opacity:.92;}
 </style>
 </head>
 <body>
@@ -334,6 +377,17 @@
   </div>
   <div class="chips-scroll" id="brandFilterChips"></div>
   <div class="chips-scroll" id="filterChips"></div>
+  <div class="activity-filter-row">
+    <select id="activityTypeFilter" title="Activity filter">
+      <option value="all">Har activity</option>
+      <option value="purchased">Khareedy</option>
+      <option value="sold">Bechy</option>
+      <option value="returned">Return</option>
+    </select>
+    <input type="date" id="activityFrom" title="Se">
+    <input type="date" id="activityTo" title="Tak">
+    <button type="button" id="clearActivityFilter">Date filter clear karein</button>
+  </div>
   <div class="list" id="list"></div>
 </div>
 
@@ -405,6 +459,11 @@
 
     <div id="extraBuyList" class="extra-buy-list"></div>
     <div class="add-extra-buy" id="addExtraBuyBtn">+ Isi model ka aur piece, alag price/condition par, add karein</div>
+
+    <div class="sec-label" style="margin-top:14px;">📱 Is mobile par hua extra kharcha</div>
+    <div class="settings-note" style="margin-top:0;">Jelly/protector, repair ya koi bhi phone-specific kharcha yahan add karein. Ye isi mobile ke profit se minus hoga.</div>
+    <div id="f-phone-expenses" class="phone-expense-list"></div>
+    <button type="button" class="add-extra-buy" id="addPhoneExpenseBtn">+ Phone ka expense add karein</button>
 
     <div class="more-section" id="saleFieldsWrap">
       <div class="two-col big-input">
@@ -495,12 +554,13 @@
       <div class="field"><label>Sale date</label><input id="s-saledate" type="date"></div>
       <div class="field"><label>Payment method</label><input id="s-payment" placeholder="Cash / Easypaisa"></div>
     </div>
-    <div class="field" style="margin-top:10px;">
-      <button type="button" class="chip-opt" id="s-add-expense-btn" style="width:100%;">+ Is sale ka expense add karein</button>
-      <div id="s-expense-summary" class="price-hint" style="margin-top:6px;"></div>
-    </div>
+    <div class="sec-label" style="margin-top:14px;">🎁 Sale ke sath hua extra kharcha</div>
+    <div class="settings-note" style="margin-top:0;">Customer ko jelly/protector ya koi aur cheez dene ka kharcha yahan add karein. Ye is sale ke profit se minus hoga.</div>
+    <div id="s-phone-expenses" class="phone-expense-list"></div>
+    <button type="button" class="add-extra-buy" id="addSalePhoneExpenseBtn">+ Sale ka expense add karein</button>
+
     <div class="profit-preview">
-      <span>Net profit (is sale par)</span>
+      <span>Profit (is sale par)</span>
       <span class="v" id="sellProfitPreview">0</span>
     </div>
 
@@ -573,7 +633,7 @@
       <div class="field"><label>Customer (naam ya number)</label><input type="text" id="rp-customer" placeholder="Search karein"></div>
     </div>
     <div class="report-summary">
-      <span>Sales profit (entry expenses ke baad)</span>
+      <span>Sales profit (gross)</span>
       <span class="v" id="rp-gross-profit" style="color:var(--pta);">0</span>
     </div>
     <div class="report-summary" style="margin-top:8px;">
@@ -591,24 +651,6 @@
     <div class="sheet-actions">
       <button class="btn-cancel" id="btnReportsClose">Band karein</button>
       <button class="btn-save" id="btnReportsPdf">PDF banayein</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay hidden" id="entryExpenseOverlay">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <h2 id="entryExpenseTitle">Entry expense</h2>
-    <div class="sheet-item-name" id="entryExpenseItemName"></div>
-    <div class="chip-row" id="entryExpenseCategoryChips"></div>
-    <div class="field" style="margin-top:10px;"><label>Amount</label><input id="entry-exp-amount" type="text" inputmode="decimal" placeholder="e.g. 500 ya 5k"></div>
-    <div class="field"><label>Date</label><input id="entry-exp-date" type="date"></div>
-    <div class="field"><label>Notes</label><input id="entry-exp-notes" placeholder="e.g. jelly protector / repair"></div>
-    <div class="report-list" id="entryExpenseList"></div>
-    <div class="report-summary"><span>Is entry ka total expense</span><span class="v" id="entry-exp-total">0</span></div>
-    <div class="sheet-actions">
-      <button class="btn-cancel" id="entryExpenseClose">Band karein</button>
-      <button class="btn-save" id="entryExpenseSave">+ Expense add karein</button>
     </div>
   </div>
 </div>
@@ -822,10 +864,66 @@
 <script>
 let inventory = [];
 let editingId = null;
-let currentFilter = 'all';
+let currentFilter = 'available';
 let currentBrandFilter = 'all';
 let currentSort = 'default';
 let sellingId = null;
+
+// Main-screen UI state is local to this device/browser. Inventory and account
+// data remain separate; this only remembers where the user was looking so a
+// refresh does not unexpectedly reset filters, search, sort, or scroll.
+const LS_UI_STATE_KEY = 'mobileLedger_uiState';
+let restoringUIState = false;
+let uiScrollSaveTimer = null;
+
+function saveUIState(){
+  try{
+    localStorage.setItem(LS_UI_STATE_KEY, JSON.stringify({
+      filter: currentFilter,
+      brandFilter: currentBrandFilter,
+      sort: currentSort,
+      search: document.getElementById('search') ? document.getElementById('search').value : '',
+      scrollY: Math.max(0, window.scrollY || window.pageYOffset || 0)
+    }));
+  }catch(e){}
+}
+
+function loadUIState(){
+  try{
+    const raw = localStorage.getItem(LS_UI_STATE_KEY);
+    if(!raw) return null;
+    const state = JSON.parse(raw);
+    if(!state || typeof state !== 'object') return null;
+    if(typeof state.filter === 'string') currentFilter = state.filter;
+    if(typeof state.brandFilter === 'string') currentBrandFilter = state.brandFilter;
+    if(typeof state.sort === 'string') currentSort = state.sort;
+    if(typeof state.search === 'string' && document.getElementById('search')){
+      document.getElementById('search').value = state.search;
+    }
+    return state;
+  }catch(e){ return null; }
+}
+
+function restoreUIScroll(state){
+  if(!state || !Number.isFinite(Number(state.scrollY))) return;
+  const y = Math.max(0, Number(state.scrollY));
+  restoringUIState = true;
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      window.scrollTo(0, y);
+      setTimeout(function(){ restoringUIState = false; saveUIState(); }, 80);
+    });
+  });
+}
+
+window.addEventListener('scroll', function(){
+  if(restoringUIState) return;
+  clearTimeout(uiScrollSaveTimer);
+  uiScrollSaveTimer = setTimeout(saveUIState, 120);
+}, {passive:true});
+window.addEventListener('pagehide', saveUIState);
+window.addEventListener('beforeunload', saveUIState);
+
 let rangeInputMode = 'auto'; // 'auto' until the user manually edits the sell-range field
 
 // ---------- Back-gesture / browser-back handling ----------
@@ -837,7 +935,7 @@ let rangeInputMode = 'auto'; // 'auto' until the user manually edits the sell-ra
 // closes the topmost open overlay instead of leaving the app. If nothing is
 // open, there's nothing pushed, so back behaves normally (exits/leaves as
 // before).
-const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','imeiScanOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','expensesOverlay','entryExpenseOverlay','accountOverlay'];
+const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','imeiScanOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','expensesOverlay','accountOverlay'];
 let overlayHistoryStack = [];
 
 function pushOverlayHistory(id){
@@ -859,7 +957,7 @@ window.addEventListener('popstate', function(){
   const id = overlayHistoryStack.pop();
   const el = document.getElementById(id);
   if(el) el.classList.add('hidden');
-  if(id==='sellOverlay'){ sellingId = null; entryExpenseTemporarySale = null; }
+  if(id==='sellOverlay') sellingId = null;
   if(id==='cropOverlay'){
     document.getElementById('cropImg').src = '';
     // If more photos were queued to crop (multi-photo select), keep going.
@@ -1316,6 +1414,14 @@ async function openImeiScan(targetInput){
 // Delegated click so this works for the main IMEI field AND every
 // dynamically-added "extra piece" IMEI field without wiring each one by hand.
 document.addEventListener('click', function(e){
+  const returnBtn=e.target.closest && e.target.closest('[data-return]');
+  if(returnBtn){
+    e.preventDefault();
+    e.stopPropagation();
+    returnSoldItem(returnBtn.getAttribute('data-return'));
+    return;
+  }
+
   const btn = e.target.closest ? e.target.closest('.imei-scan-btn') : null;
   if(!btn) return;
   let targetInput = null;
@@ -1394,22 +1500,18 @@ async function loadInventory(){
   let migratedAutoRanges = false;
   inventory.forEach(function(e){
     if(e.quantity===undefined) e.quantity = 1;
-    // Per-entry expenses are kept with the phone entry. Older entries simply
-    // start with an empty list. availableDate means the date this stock
-    // became available (buy date initially, return date after a sale return).
-    if(!Array.isArray(e.stockExpenses)) e.stockExpenses = [];
-    if(!Array.isArray(e.saleExpenses)) e.saleExpenses = [];
-    if(!e.availableDate) e.availableDate = e.buyDate || todayISO();
+    if(!Array.isArray(e.phoneExpenses)) e.phoneExpenses = [];
+    if(!e.availableDate && !e.sold) e.availableDate = dateOnly(e.buyDate) || todayISO();
 
-    // Existing entries: if Sell Range was previously empty, treat it as AUTO
-    // and immediately calculate it from the saved Buy price. Existing non-empty
-    // ranges remain MANUAL so old/custom values are never overwritten.
-    if(e.rangeMode!=='auto' && e.rangeMode!=='manual') e.rangeMode = e.range ? 'manual' : 'auto';
-    if((e.range===null || e.range===undefined || String(e.range).trim()==='') && e.buy!=null){
+    // If rangeMode is explicitly saved, respect it. For older entries that
+    // pre-date rangeMode, treat the saved range as AUTO so current Auto Sell
+    // Range rules can update those existing entries too. Only entries that
+    // explicitly use MANUAL are protected from automatic recalculation.
+    if(e.rangeMode!=='auto' && e.rangeMode!=='manual') e.rangeMode = 'auto';
+    if(e.rangeMode==='auto' && e.buy!=null){
       const autoRange = autoSellRangeForBuy(e.buy);
-      if(autoRange){
+      if(e.range !== autoRange){
         e.range = autoRange;
-        e.rangeMode = 'auto';
         migratedAutoRanges = true;
       }
     }
@@ -1672,6 +1774,14 @@ function maybeAutoFillRange(){
   rangeEl.value = auto;
   document.getElementById('f-range-hint').textContent = auto ? '= '+auto : '';
 }
+function prominentSellRangeHtml(range){
+  if(!range) return '';
+  return '<div class="sell-range-prominent">'+
+    '<span class="range-label">Sell Range</span>'+
+    '<span class="range-value"><span class="rs">Rs.</span>'+displaySellRange(range)+'</span>'+
+  '</div>';
+}
+
 function displaySellRange(range){
   if(!range) return '';
   if(!isPrivacyOn()) return range;
@@ -1862,6 +1972,7 @@ function todayISO(){
 
 function formatDateDisplay(iso){
   if(!iso) return '';
+  iso=dateOnly(iso);
   const parts = String(iso).split('-');
   if(parts.length!==3) return iso;
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -1870,36 +1981,160 @@ function formatDateDisplay(iso){
   return String(d).padStart(2,'0')+'-'+months[m]+'-'+y;
 }
 
-function entryExpenseTotal(list){
-  return (Array.isArray(list) ? list : []).reduce(function(s,x){ return s + (Number(x.amount)||0); }, 0);
+function normalizeInventoryHistory(){
+  let changed=false;
+  inventory.forEach(function(e){
+    if(!Array.isArray(e.phoneExpenses)){ e.phoneExpenses=[]; changed=true; }
+    if(!e.availableDate && !e.sold){ e.availableDate=dateOnly(e.buyDate)||todayISO(); changed=true; }
+  });
+  if(changed){
+    try{ localStorage.setItem(LS_INVENTORY_KEY,JSON.stringify(inventory)); }catch(err){}
+    schedulePush();
+  }
 }
-
-function entryGrossProfit(e){
-  if(!e || e.buy==null || e.sell==null) return 0;
-  const qty = e.quantity || 1;
-  const margin = (Number(e.sell)-Number(e.buy))*qty;
-  return margin - entryExpenseTotal(e.stockExpenses) - entryExpenseTotal(e.saleExpenses);
+function dateOnly(value){
+  if(!value) return '';
+  const s=String(value);
+  const m=s.match(/^(\d{4}-\d{2}-\d{2})/);
+  return m ? m[1] : s;
 }
-
-function entryAllExpenses(e){
-  return entryExpenseTotal(e && e.stockExpenses) + entryExpenseTotal(e && e.saleExpenses);
+function formatDateTimeDisplay(value){
+  const d=dateOnly(value);
+  return d ? formatDateDisplay(d) : '';
 }
-
-function entryExpenseSummary(e){
-  const n = entryAllExpenses(e);
-  return n ? (' • Entry expense: '+fmt(n)) : '';
+function phoneExpensesTotal(e){
+  if(!e || !Array.isArray(e.phoneExpenses)) return 0;
+  return e.phoneExpenses.reduce(function(s,x){ return s + Math.abs(Number(x.amount)||0); }, 0);
 }
-
+function saleBaseProfit(e){
+  if(!e || e.buy==null || e.sell==null || isReturnedSale(e)) return 0;
+  return (Number(e.sell)-Number(e.buy))*(Math.max(1,Number(e.quantity)||1));
+}
+function saleNetProfit(e){
+  if(!e || e.buy==null || e.sell==null) return null;
+  if(isReturnedSale(e)) return 0;
+  return saleBaseProfit(e)-phoneExpensesTotal(e);
+}
+function activityDateMatches(e, type, from, to){
+  function inRange(d){
+    d=dateOnly(d);
+    if(!d) return false;
+    if(from && d<from) return false;
+    if(to && d>to) return false;
+    return true;
+  }
+  if(type==='purchased') return inRange(e.buyDate);
+  if(type==='sold') return !!e.sold && !isReturnedSale(e) && inRange(e.saleDate);
+  if(type==='returned') return isReturnedSale(e) && inRange(e.returnedAt);
+  if(type==='all'){
+    if(!from && !to) return true;
+    return inRange(e.buyDate) || inRange(e.saleDate) || inRange(e.returnedAt);
+  }
+  return true;
+}
+function activityDateHtml(e){
+  if(isReturnedSale(e)){
+    return '<div class="sale-meta">Sold: '+formatDateDisplay(dateOnly(e.saleDate))+' • Returned: '+formatDateTimeDisplay(e.returnedAt)+'</div>';
+  }
+  if(e.sold){
+    return '<div class="sale-meta">Sold: '+formatDateDisplay(dateOnly(e.saleDate))+'</div>';
+  }
+  return '<div class="sale-meta">Available: '+formatDateDisplay(dateOnly(e.availableDate || e.buyDate))+'</div>';
+}
+function renderPhoneExpenseRows(containerId, items){
+  const el=document.getElementById(containerId);
+  if(!el) return;
+  const rows=Array.isArray(items)?items:[];
+  el.innerHTML=rows.map(function(x){
+    return '<div class="phone-expense-row">'+
+      '<div class="phone-expense-grid">'+
+        '<input class="pe-category" placeholder="Jelly/Protector, Repair..." value="'+String(x.category||'').replace(/"/g,'&quot;')+'">'+
+        '<input class="pe-amount" type="text" inputmode="decimal" placeholder="Amount" value="'+(x.amount!=null?Math.abs(Number(x.amount)||0):'')+'">'+
+      '</div>'+
+      '<input class="pe-date" type="date" style="margin-top:7px;" value="'+(dateOnly(x.date)||todayISO())+'">'+
+      '<input class="pe-note phone-expense-note" placeholder="Tafseel (optional)" value="'+String(x.notes||'').replace(/"/g,'&quot;')+'">'+
+      '<button type="button" class="phone-expense-remove">✕ Ye expense hata dein</button>'+
+    '</div>';
+  }).join('');
+  el.querySelectorAll('.phone-expense-remove').forEach(function(btn){
+    btn.onclick=function(){ btn.parentElement.remove(); updateSellProfitPreview(); };
+  });
+}
+function addPhoneExpenseRow(containerId){
+  const el=document.getElementById(containerId);
+  if(!el) return;
+  const wrapper=document.createElement('div');
+  wrapper.className='phone-expense-row';
+  wrapper.innerHTML=
+    '<div class="phone-expense-grid">'+
+      '<input class="pe-category" placeholder="Jelly/Protector, Repair...">'+
+      '<input class="pe-amount" type="text" inputmode="decimal" placeholder="Amount">'+
+    '</div>'+
+    '<input class="pe-date" type="date" style="margin-top:7px;" value="'+todayISO()+'">'+
+    '<input class="pe-note phone-expense-note" placeholder="Tafseel (optional)">'+
+    '<button type="button" class="phone-expense-remove">✕ Ye expense hata dein</button>';
+  wrapper.querySelector('.phone-expense-remove').onclick=function(){ wrapper.remove(); updateSellProfitPreview(); };
+  el.appendChild(wrapper);
+}
+function readPhoneExpenseRows(containerId){
+  const el=document.getElementById(containerId);
+  if(!el) return [];
+  const out=[];
+  el.querySelectorAll('.phone-expense-row').forEach(function(row){
+    const category=row.querySelector('.pe-category').value.trim();
+    const amountRaw=row.querySelector('.pe-amount').value.trim();
+    if(!category && !amountRaw) return;
+    const amount=parseExpenseAmount(amountRaw);
+    if(!category) throw new Error('Phone expense ki category likhein.');
+    if(amount===null || amount<=0) throw new Error('Phone expense ka valid amount likhein.');
+    out.push({
+      id:'pe_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+      category:category, amount:amount,
+      date:row.querySelector('.pe-date').value || todayISO(),
+      notes:row.querySelector('.pe-note').value.trim()
+    });
+  });
+  return out;
+}
+function allPhoneExpenseEntries(){
+  const out=[];
+  inventory.forEach(function(e){
+    (Array.isArray(e.phoneExpenses)?e.phoneExpenses:[]).forEach(function(x){
+      out.push(Object.assign({},x,{phoneId:e.id,brand:e.brand,model:e.model,customer:e.customer||'',sold:e.sold===true,returned:isReturnedSale(e)}));
+    });
+  });
+  return out;
+}
+function getAllReportExpenses(from,to,brand,customerQ){
+  const out=[];
+  expensesInRange(from,to).forEach(function(x){ out.push(Object.assign({},x,{source:'shop'})); });
+  allPhoneExpenseEntries().forEach(function(x){
+    const d=dateOnly(x.date);
+    if(from && (!d || d<from)) return;
+    if(to && (!d || d>to)) return;
+    if(brand!=='all' && x.brand!==brand) return;
+    if(customerQ && String(x.customer||'').toLowerCase().indexOf(customerQ)===-1) return;
+    out.push(Object.assign({},x,{source:'phone',category:x.category+' — '+x.brand+' '+x.model}));
+  });
+  return out.sort(function(a,b){ return dateOnly(b.date).localeCompare(dateOnly(a.date)); });
+}
+function totalPhoneExpensesAllTime(){
+  return allPhoneExpenseEntries().reduce(function(s,x){ return s+(Number(x.amount)||0); },0);
+}
+function phoneExpensesInMonth(monthKey){
+  return allPhoneExpenseEntries().filter(function(x){
+    return x.date && String(x.date).indexOf(monthKey)===0;
+  }).reduce(function(s,x){ return s+(Number(x.amount)||0); },0);
+}
 function renderStats(){
   const availableUnits = inventory.filter(function(e){return !e.sold;})
     .reduce(function(s,e){return s+(e.quantity||0);},0);
-  const soldUnits = inventory.filter(function(e){return e.sold;})
+  const soldUnits = inventory.filter(function(e){return e.sold && !isReturnedSale(e);})
     .reduce(function(s,e){return s+(e.quantity||0);},0);
-  const grossProfit = inventory.filter(function(e){return e.sold && e.buy!=null && e.sell!=null;})
-    .reduce(function(s,e){return s + entryGrossProfit(e);},0);
-  // Net profit = sales profit minus all recorded expenses (rent, repair,
-  // refreshment, protectors, etc.) — so this figure is the real bottom line.
-  const totalProfit = grossProfit - totalExpensesAllTime();
+  const grossProfit = inventory.filter(function(e){return e.sold && !isReturnedSale(e) && e.buy!=null && e.sell!=null;})
+    .reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0);
+  // Net profit = sale margins minus all shop expenses and phone-specific expenses.
+  const totalProfit = grossProfit - totalExpensesAllTime() - totalPhoneExpensesAllTime();
   const netProfitColor = totalProfit >= 0 ? 'var(--pta)' : 'var(--danger)';
   document.getElementById('stats').innerHTML =
     '<div class="stat"><div class="v num">'+availableUnits+'</div><div class="l">Stock mein</div></div>'+
@@ -1970,6 +2205,7 @@ function renderBrandFilter(){
       currentBrandFilter = c.dataset.brand;
       renderBrandFilter();
       renderList();
+      saveUIState();
     };
   });
 }
@@ -1979,6 +2215,7 @@ function renderFilterChips(){
     {key:'all',label:'Sab'},
     {key:'available',label:'Available'},
     {key:'sold',label:'Sold'},
+    {key:'returned',label:'↩ Returned'},
     {key:'PTA',label:'PTA'},
     {key:'Non-PTA',label:'Non-PTA'},
     {key:'CPID',label:'CPID'},
@@ -1994,6 +2231,7 @@ function renderFilterChips(){
       document.querySelectorAll('#filterChips .chip').forEach(function(x){x.classList.remove('active');});
       c.classList.add('active');
       renderList();
+      saveUIState();
     };
   });
 }
@@ -2008,15 +2246,20 @@ function statusBadgeClass(s){
 
 function renderList(){
   const searchVal = document.getElementById('search').value.trim().toLowerCase();
+  const activityType = document.getElementById('activityTypeFilter').value;
+  const activityFrom = document.getElementById('activityFrom').value;
+  const activityTo = document.getElementById('activityTo').value;
   let items = inventory.filter(function(e){
     if(currentFilter==='available' && (e.sold || e.quantity<=0)) return false;
-    if(currentFilter==='sold' && !e.sold) return false;
+    if(currentFilter==='sold' && (!e.sold || isReturnedSale(e))) return false;
+    if(currentFilter==='returned' && !isReturnedSale(e)) return false;
     if(['PTA','Non-PTA','CPID','JV','Bypass/MDM'].indexOf(currentFilter)!==-1 && e.status!==currentFilter) return false;
     if(currentBrandFilter!=='all' && e.brand!==currentBrandFilter) return false;
     if(searchVal){
       const hay = (e.brand+' '+e.model+' '+(e.customer||'')+' '+(e.customerNumber||'')+' '+(e.imei||'')+' '+(e.sellerName||'')+' '+(e.sellerNumber||'')+' '+(e.notes||'')).toLowerCase();
       if(hay.indexOf(searchVal)===-1) return false;
     }
+    if((activityFrom || activityTo || activityType!=='all') && !activityDateMatches(e, activityType, activityFrom, activityTo)) return false;
     return true;
   });
 
@@ -2050,8 +2293,6 @@ function renderList(){
   listEl.querySelectorAll('[data-edit]').forEach(function(b){b.onclick=function(){openEdit(b.dataset.edit);};});
   listEl.querySelectorAll('[data-del]').forEach(function(b){b.onclick=function(){deleteEntry(b.dataset.del);};});
   listEl.querySelectorAll('[data-sell]').forEach(function(b){b.onclick=function(){openSell(b.dataset.sell);};});
-  listEl.querySelectorAll('[data-return]').forEach(function(b){b.onclick=function(){returnSoldEntry(b.dataset.return);};});
-  listEl.querySelectorAll('[data-entry-expense]').forEach(function(b){b.onclick=function(){openEntryExpense(b.dataset.entryExpense);};});
   listEl.querySelectorAll('[data-split]').forEach(function(b){b.onclick=function(){splitEntry(b.dataset.split);};});
   listEl.querySelectorAll('[data-share]').forEach(function(b){b.onclick=function(){shareEntry(b.dataset.share);};});
   listEl.querySelectorAll('[data-piece-brand]').forEach(function(b){
@@ -2137,6 +2378,31 @@ function saveCardDisplaySettings(){
   schedulePush();
 }
 
+// Recalculate auto sell ranges for existing stock whenever the rules change.
+// Manual ranges are never overwritten. Older entries without rangeMode are
+// treated as auto so the new rules also work for entries saved in older versions.
+function applyAutoSellRangesToExistingEntries(){
+  if(!Array.isArray(inventory)) return;
+  let changed = false;
+  inventory.forEach(function(e){
+    if(!e || e.sold) return;
+    if(e.rangeMode === 'manual') return;
+    const buy = e.buy == null ? null : Number(e.buy);
+    if(buy === null || !isFinite(buy)) return;
+    const nextRange = autoSellRangeForBuy(buy);
+    if(e.range !== nextRange || e.rangeMode !== 'auto'){
+      e.range = nextRange;
+      e.rangeMode = 'auto';
+      changed = true;
+    }
+  });
+  if(changed){
+    saveInventory();
+    render();
+    schedulePush();
+  }
+}
+
 // ---------- Privacy mode ----------
 // Quick-flip protection for when someone else picks up the phone in the shop.
 // It never lies about your data — it only changes what's shown on screen.
@@ -2157,6 +2423,17 @@ function displayBuyPrice(buy){
 function displayProfitHtml(amount){
   if(isPrivacyOn() && cardDisplaySettings.privacy.hideProfit) return '••••';
   return fmt(amount);
+}
+
+// Sold-entry profit shown on screen must use the same privacy-adjusted Buy
+// price that the user sees. The stored/original profit calculation remains
+// untouched; this is display-only. Quantity is included because the privacy
+// markup applies to each piece.
+function displaySaleProfit(e){
+  if(!e || e.buy==null || e.sell==null) return null;
+  const qty = Math.max(1, Number(e.quantity)||1);
+  const shownBuy = Number(displayBuyPrice(e.buy));
+  return (Number(e.sell) - shownBuy) * qty;
 }
 
 // Expense list rows: a normal expense (positive amount, money going out) is
@@ -2294,17 +2571,17 @@ function renderSingleStockCard(e){
   return (
   '<div class="card '+(outOfStock?'outofstock':'')+(compact?' compact':'')+'">'+
     '<div class="card-title">'+e.brand+' '+e.model+'</div>'+
-    '<div class="card-sub">'+(e.range ? displaySellRange(e.range)+' • ' : '')+'Available: '+formatDateDisplay(e.availableDate || e.buyDate || '')+'</div>'+
+    prominentSellRangeHtml(e.range)+
     cardPhotoHtml(e)+
     '<div class="badges">'+pieceStatusBadges(e, outOfStock)+'</div>'+
     (pieceSpecBadges(e) ? '<div class="badges spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
     (e.buy!=null ? '<div class="sale-meta">Buy price: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span></div>' : '')+
+    activityDateHtml(e)+
+    (phoneExpensesTotal(e)>0 ? '<div class="sale-meta" style="color:var(--danger);">Phone expense: -'+displayProfitHtml(phoneExpensesTotal(e))+'</div>' : '')+
     (e.notes ? '<div class="sale-meta">'+e.notes+'</div>' : '')+
-    (entryAllExpenses(e) ? '<div class="sale-meta">Entry expense: <span class="num">'+fmt(entryAllExpenses(e))+'</span></div>' : '')+
     (canSplit ? '<div class="sale-meta">Ye '+e.quantity+' pieces ek sath ek hi price/condition ke sath saved hain. Agar inki price/condition alag karni hai to Split dabayein.</div>' : '')+
     '<div class="card-actions">'+
       '<button data-edit="'+e.id+'">Edit</button>'+
-      '<button data-entry-expense="'+e.id+'">Expense</button>'+
       (outOfStock ? '' : '<button class="sell-btn" data-sell="'+e.id+'">Sell</button>')+
       (canSplit ? '<button data-split="'+e.id+'">Split</button>' : '')+
       '<button class="share-btn" data-share="'+e.id+'">Share</button>'+
@@ -2328,12 +2605,13 @@ function renderStockGroup(g){
       '<div class="piece-row-top">'+pieceStatusBadges(e, outOfStock)+'</div>'+
       (pieceSpecBadges(e) ? '<div class="piece-row-top spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
       cardPhotoHtml(e)+
-      '<div class="sale-meta">Available: '+formatDateDisplay(e.availableDate || e.buyDate || '')+(entryAllExpenses(e)?' • Entry expense: <span class="num">'+fmt(entryAllExpenses(e))+'</span>':'')+'</div>'+
-      (e.buy!=null || e.range ? '<div class="sale-meta">'+(e.buy!=null?'Buy: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span>':'')+(e.buy!=null&&e.range?' &bull; ':'')+(e.range?'Sell range: '+displaySellRange(e.range):'')+'</div>' : '')+
+      prominentSellRangeHtml(e.range)+
+      (e.buy!=null ? '<div class="sale-meta">Buy: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span></div>' : '')+
+      activityDateHtml(e)+
+      (phoneExpensesTotal(e)>0 ? '<div class="sale-meta" style="color:var(--danger);">Phone expense: -'+displayProfitHtml(phoneExpensesTotal(e))+'</div>' : '')+
       (e.notes ? '<div class="sale-meta">'+e.notes+'</div>' : '')+
       '<div class="card-actions">'+
         '<button data-edit="'+e.id+'">Edit</button>'+
-        '<button data-entry-expense="'+e.id+'">Expense</button>'+
         (outOfStock ? '' : '<button class="sell-btn" data-sell="'+e.id+'">Sell</button>')+
         (canSplit ? '<button data-split="'+e.id+'">Split</button>' : '')+
         '<button class="share-btn" data-share="'+e.id+'">Share</button>'+
@@ -2351,29 +2629,114 @@ function renderStockGroup(g){
   );
 }
 
+
+/* =========================
+   Phase 4: Sale Return System
+   ========================= */
+function isReturnedSale(e){
+  return !!e && (e.saleStatus === 'returned' || e.returned === true);
+}
+function findOriginalStockForReturn(sale){
+  if(!sale) return null;
+  const ids=[];
+  if(sale.stockId!=null) ids.push(String(sale.stockId));
+  if(sale.originalStockId!=null) ids.push(String(sale.originalStockId));
+  if(sale.inventoryId!=null) ids.push(String(sale.inventoryId));
+  if(sale.sourceStockId!=null) ids.push(String(sale.sourceStockId));
+  for(const id of ids){
+    const found=inventory.find(x=>String(x.id)===id);
+    if(found) return found;
+  }
+  const saleImei=sale.imei||sale.IMEI||sale.imei1||'';
+  if(saleImei){
+    const found=inventory.find(x=>String(x.imei||x.IMEI||x.imei1||'')===String(saleImei));
+    if(found) return found;
+  }
+  return inventory.find(x=>
+    x.brand===sale.brand && x.model===sale.model &&
+    (sale.storage==null || x.storage==null || String(x.storage)===String(sale.storage)) &&
+    (sale.ram==null || x.ram==null || String(x.ram)===String(sale.ram))
+  )||null;
+}
+function returnSoldItem(soldId){
+  const sale=inventory.find(x=>String(x.id)===String(soldId));
+  if(!sale || !sale.sold){ alert('Sale record nahi mila.'); return; }
+  if(isReturnedSale(sale)){ alert('Ye sale pehle hi returned hai.'); return; }
+
+  const qty=Math.max(1,Number(sale.quantity)||1);
+  const original=findOriginalStockForReturn(sale);
+
+  if(!confirm('Kya aap "'+(sale.brand||'')+' '+(sale.model||'')+
+    '" ki sale return karna chahte hain?\n\nQuantity: '+qty+
+    '\nMobile stock mein wapas aa jayega aur sale Returned mark ho jayegi.')) return;
+
+  const returnDate=new Date().toISOString();
+  if(original){
+    original.quantity=(Number(original.quantity)||0)+qty;
+    original.sold=false;
+    original.saleStatus='available';
+    original.returned=false;
+    original.returnedAt=null;
+    original.availableDate=dateOnly(returnDate);
+    original.lastUpdated=returnDate;
+  }else{
+    const restored=Object.assign({},sale);
+    delete restored.customer; delete restored.customerNumber; delete restored.payment;
+    delete restored.sell; delete restored.saleDate; delete restored.sold;
+    delete restored.saleStatus; delete restored.returned; delete restored.returnedAt;
+    delete restored.returnOf;
+    restored.quantity=qty;
+    restored.sold=false;
+    restored.saleStatus='available';
+    restored.returned=false;
+    restored.availableDate=dateOnly(returnDate);
+    restored.lastUpdated=returnDate;
+    inventory.push(restored);
+  }
+
+  sale.sold=true;
+  sale.saleStatus='returned';
+  sale.returned=true;
+  sale.returnedAt=returnDate;
+  sale.returnOf=original?String(original.id):String(soldId);
+
+  try{
+    localStorage.setItem(LS_INVENTORY_KEY,JSON.stringify(inventory));
+    schedulePush();
+  }catch(err){
+    console.error(err);
+    alert('Return save nahi ho saka. Data save karte waqt error aaya.');
+    return;
+  }
+  render();
+  alert('✅ Return complete! Mobile stock mein wapas aa gaya.');
+}
+
 function renderSoldCard(e){
-  const profit = (e.buy!=null && e.sell!=null) ? entryGrossProfit(e) : null;
-  const profitClass = profit===null ? 'dim' : (profit>=0 ? 'profit-pos' : 'profit-neg');
+  const returned=isReturnedSale(e);
+  const profit=returned ? 0 : saleNetProfit(e);
+  const profitClass=profit===null?'dim':(profit>=0?'profit-pos':'profit-neg');
   return (
-  '<div class="card">'+
+  '<div class="card '+(returned?'returned-card':'')+'">'+
     '<div class="card-title">'+e.brand+' '+e.model+'</div>'+
     '<div class="badges">'+
       '<span class="badge '+statusBadgeClass(e.status)+'">'+e.status+'</span>'+
       '<span class="badge sold-badge">Sold'+(e.quantity>1?(' x'+e.quantity):'')+'</span>'+
+      (returned?'<span class="badge returned-badge">↩ Returned</span>':'')+
     '</div>'+
     cardPhotoHtml(e)+
     '<div class="price-row">'+
-      '<div class="price-col"><div class="l">Buy</div><div class="v num">'+fmt(e.buy)+'</div></div>'+
+      '<div class="price-col"><div class="l">Buy</div><div class="v num">'+fmt(displayBuyPrice(e.buy))+'</div></div>'+
       '<div class="price-col"><div class="l">Sell</div><div class="v num">'+fmt(e.sell)+'</div></div>'+
       '<div class="price-col"><div class="l">Profit</div><div class="v num '+profitClass+'">'+(profit===null?'-':fmt(profit))+'</div></div>'+
     '</div>'+
-    '<div class="sale-meta">Sold: '+formatDateDisplay(e.saleDate || e.lastUpdated || '')+(entryAllExpenses(e)?' • Entry expense: <span class="num">'+fmt(entryAllExpenses(e))+'</span>':'')+'</div>'+
-    (e.customer||e.payment ? '<div class="sale-meta">'+(e.customer||'')+(e.customer&&e.customerNumber?' ('+e.customerNumber+')':'')+(e.customer&&e.payment?' - ':'')+(e.payment||'')+'</div>' : '')+
+    (e.customer||e.payment?'<div class="sale-meta">'+(e.customer||'')+(e.customer&&e.customerNumber?' ('+e.customerNumber+')':'')+(e.customer&&e.payment?' - ':'')+(e.payment||'')+'</div>':'')+
+    activityDateHtml(e)+
+    (phoneExpensesTotal(e)>0?'<div class="sale-meta" style="color:var(--danger);">Phone expense: -'+displayProfitHtml(phoneExpensesTotal(e))+'</div>':'')+
     '<div class="card-actions">'+
       '<button data-edit="'+e.id+'">Edit</button>'+
-      '<button data-entry-expense="'+e.id+'">Expense</button>'+
-      '<button class="return-btn" data-return="'+e.id+'">Return</button>'+
       '<button class="share-btn" data-share="'+e.id+'">Share</button>'+
+      (returned?'':'<button class="return-btn" data-return="'+e.id+'">↩ Return</button>')+
       '<button class="del-btn" data-del="'+e.id+'">Delete</button>'+
     '</div>'+
   '</div>');
@@ -2416,7 +2779,7 @@ function buildShareText(e){
   if(e.range){
     lines.push('Price: '+upperPriceFromRange(e.range));
   }
-  if(e.sold && e.sell!=null) lines.push('Sale price: '+fmt(e.sell));
+  if(e.sold && !isReturnedSale(e) && e.sell!=null) lines.push('Sale price: '+fmt(e.sell));
 
   if(e.ram) lines.push('RAM: '+e.ram);
   if(e.storage) lines.push('Storage: '+e.storage);
@@ -2642,7 +3005,7 @@ function openAdd(){
   rangeInputMode = 'auto';
   document.getElementById('sheetTitle').textContent = 'Nayi stock entry';
   document.getElementById('qtyLabel').textContent = 'Quantity (kitne piece)';
-  formState = {brand:'', status:'JV', ram:'', storage:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'No', packing:'No pack', charger:'Original charger', faceid:'Yes', truetone:'Yes', isSold:false};
+  formState = {brand:'', status:'PTA', ram:'', storage:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'No', packing:'No pack', charger:'Original charger', faceid:'Yes', truetone:'Yes', isSold:false};
   formPhotos = [];
   renderPhotoStrip();
   document.getElementById('f-brand-other').value = '';
@@ -2669,6 +3032,7 @@ function openAdd(){
   document.getElementById('modelDropdownBtn').classList.remove('on');
   document.getElementById('modelSuggestions').innerHTML = '';
   document.getElementById('extraBuyList').innerHTML = '';
+  renderPhoneExpenseRows('f-phone-expenses', []);
   extraPieceCount = 0;
   document.getElementById('addExtraBuyBtn').style.display = 'block';
   renderAllChips();
@@ -2724,6 +3088,7 @@ function openEdit(id){
   document.getElementById('f-seller-name').value = e.sellerName || '';
   document.getElementById('f-seller-number').value = e.sellerNumber || '';
   document.getElementById('f-notes').value = e.notes || '';
+  renderPhoneExpenseRows('f-phone-expenses', e.phoneExpenses || []);
 
   if(e.sold){
     document.getElementById('saleFieldsWrap').classList.add('show');
@@ -2795,9 +3160,8 @@ function saveEntry(){
     truetone: formState.truetone || 'No',
     notes: document.getElementById('f-notes').value.trim(),
     photos: formPhotos.slice(),
-    stockExpenses: (editingId && inventory.find(function(x){return x.id===editingId;}) && Array.isArray(inventory.find(function(x){return x.id===editingId;}).stockExpenses)) ? inventory.find(function(x){return x.id===editingId;}).stockExpenses.slice() : [],
-    saleExpenses: (editingId && inventory.find(function(x){return x.id===editingId;}) && Array.isArray(inventory.find(function(x){return x.id===editingId;}).saleExpenses)) ? inventory.find(function(x){return x.id===editingId;}).saleExpenses.slice() : [],
-    availableDate: (editingId && inventory.find(function(x){return x.id===editingId;}) && inventory.find(function(x){return x.id===editingId;}).availableDate) ? inventory.find(function(x){return x.id===editingId;}).availableDate : (document.getElementById('f-buydate').value || todayISO()),
+    phoneExpenses: [],
+    availableDate: editingId ? ((inventory.find(function(x){return x.id===editingId;})||{}).availableDate || (document.getElementById('f-buydate').value || todayISO())) : (document.getElementById('f-buydate').value || todayISO()),
     lastUpdated: todayStr()
   };
 
@@ -2817,6 +3181,13 @@ function saveEntry(){
     const buyVal = document.getElementById('f-buy').value.trim();
     if(buyVal !== '' && parsePrice(buyVal)===null){ alert('Buy price samajh nahi aaya. "40000" ya "40k" jese likhein.'); return; }
     data.buy = buyVal === '' ? null : parsePrice(buyVal);
+  }
+
+  try{
+    data.phoneExpenses = readPhoneExpenseRows('f-phone-expenses');
+  }catch(err){
+    alert(err.message || 'Phone expense check karein.');
+    return;
   }
 
   // Build the candidate array WITHOUT touching the real `inventory` yet —
@@ -2915,7 +3286,6 @@ function openSell(id){
   const e = inventory.find(function(x){return x.id===id;});
   if(!e) return;
   sellingId = id;
-  entryExpenseTemporarySale = [];
   document.getElementById('sellItemName').textContent = e.brand+' '+e.model+' - '+e.status+' ('+e.quantity+' available)';
   document.getElementById('sellQtyLabel').textContent = 'Kitne piece beche (max '+e.quantity+')';
   document.getElementById('s-qty').value = 1;
@@ -2926,6 +3296,7 @@ function openSell(id){
   document.getElementById('s-customer-number').value = '';
   document.getElementById('s-payment').value = '';
   document.getElementById('s-saledate').value = todayISO();
+  renderPhoneExpenseRows('s-phone-expenses', []);
   updateSellProfitPreview();
   document.getElementById('sellOverlay').classList.remove('hidden');
   pushOverlayHistory('sellOverlay');
@@ -2942,7 +3313,9 @@ function updateSellProfitPreview(){
   const price = priceVal==='' ? 0 : (parsePrice(priceVal) || 0);
   const el = document.getElementById('sellProfitPreview');
   if(e && e.buy!=null){
-    const profit = (price - Number(e.buy)) * qty - entryExpenseTotal(e.stockExpenses) - entryExpenseTotal(e.saleExpenses);
+    let extra=0;
+    try{ extra=readPhoneExpenseRows('s-phone-expenses').reduce(function(s,x){return s+Number(x.amount||0);},0); }catch(err){}
+    const profit = (price - Number(e.buy)) * qty - extra;
     el.textContent = fmt(profit);
     el.style.color = profit>=0 ? 'var(--pta)' : 'var(--danger)';
   } else {
@@ -2967,6 +3340,13 @@ function confirmSell(){
     alert('Sale price samajh nahi aaya. "45000" ya "45k" jese likhein.');
     return;
   }
+  let salePhoneExpenses=[];
+  try{
+    salePhoneExpenses = readPhoneExpenseRows('s-phone-expenses');
+  }catch(err){
+    alert(err.message || 'Sale expense check karein.');
+    return;
+  }
   if(qty > e.quantity){
     alert('Itne piece stock mein nahi hain');
     return;
@@ -2974,13 +3354,14 @@ function confirmSell(){
   const soldRecord = Object.assign({}, e, {
     id: 'sold_'+Date.now(),
     quantity: qty,
-    sold: true,
+    sold: true, saleStatus: 'sold',
+    stockId: String(e.id),
     sell: price,
+    phoneExpenses: (Array.isArray(e.phoneExpenses)?e.phoneExpenses:[]).concat(salePhoneExpenses),
     customer: document.getElementById('s-customer').value.trim(),
     customerNumber: document.getElementById('s-customer-number').value.trim(),
     payment: document.getElementById('s-payment').value.trim(),
     saleDate: document.getElementById('s-saledate').value || todayISO(),
-    saleExpenses: (entryExpenseTemporarySale && entryExpenseTemporarySale.length) ? entryExpenseTemporarySale.slice() : (Array.isArray(e.saleExpenses) ? e.saleExpenses.slice() : []),
     lastUpdated: todayStr()
   });
   const updatedStockItem = Object.assign({}, e, {quantity: e.quantity - qty, lastUpdated: todayStr()});
@@ -2995,7 +3376,6 @@ function confirmSell(){
     return; // sell sheet stays open, nothing was changed, retry after freeing space
   }
 
-  entryExpenseTemporarySale = null;
   closeSellSheet();
   currentFilter = 'all';
   render();
@@ -3004,20 +3384,28 @@ function confirmSell(){
 
 document.getElementById('fabAdd').onclick = openAdd;
 document.getElementById('addExtraBuyBtn').onclick = addExtraBuyRow;
+document.getElementById('addPhoneExpenseBtn').onclick = function(){ addPhoneExpenseRow('f-phone-expenses'); };
+document.getElementById('addSalePhoneExpenseBtn').onclick = function(){ addPhoneExpenseRow('s-phone-expenses'); updateSellProfitPreview(); };
 document.getElementById('btnCancel').onclick = closeSheet;
 document.getElementById('btnSave').onclick = saveEntry;
 document.getElementById('overlay').onclick = function(e){ if(e.target.id==='overlay') closeSheet(); };
 document.getElementById('btnSellCancel').onclick = closeSellSheet;
 document.getElementById('btnSellConfirm').onclick = confirmSell;
-document.getElementById('s-add-expense-btn').onclick = addSaleExpenseFromSell;
-document.getElementById('entryExpenseClose').onclick = closeEntryExpense;
-document.getElementById('entryExpenseOverlay').onclick = function(e){ if(e.target.id==='entryExpenseOverlay') closeEntryExpense(); };
-document.getElementById('entryExpenseSave').onclick = saveEntryExpense;
 document.getElementById('sellOverlay').onclick = function(e){ if(e.target.id==='sellOverlay') closeSellSheet(); };
 document.getElementById('s-qty').oninput = updateSellProfitPreview;
 document.getElementById('s-price').oninput = updateSellProfitPreview;
-document.getElementById('search').oninput = renderList;
-document.getElementById('sortSelect').onchange = function(){ currentSort = this.value; renderList(); };
+document.getElementById('search').oninput = function(){ renderList(); saveUIState(); };
+document.getElementById('sortSelect').onchange = function(){ currentSort = this.value; renderList(); saveUIState(); };
+document.getElementById('activityTypeFilter').onchange = function(){ renderList(); saveUIState(); };
+document.getElementById('activityFrom').onchange = function(){ renderList(); saveUIState(); };
+document.getElementById('activityTo').onchange = function(){ renderList(); saveUIState(); };
+document.getElementById('clearActivityFilter').onclick = function(){
+  document.getElementById('activityTypeFilter').value='all';
+  document.getElementById('activityFrom').value='';
+  document.getElementById('activityTo').value='';
+  renderList();
+  saveUIState();
+};
 document.getElementById('moreToggle').onclick = function(){
   const sec = document.getElementById('moreSection');
   sec.classList.toggle('show');
@@ -3219,7 +3607,7 @@ function renderDashboard(){
   const now = new Date();
   const curMonthKey = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
   const stockItems = inventory.filter(function(e){ return !e.sold; });
-  const soldItems = inventory.filter(function(e){ return e.sold; });
+  const soldItems = inventory.filter(function(e){ return e.sold && !isReturnedSale(e); });
 
   const totalStockValue = stockItems.reduce(function(s,e){ return s + ((e.buy!=null?Number(e.buy):0) * (e.quantity||0)); }, 0);
   const pendingUnits = stockItems.reduce(function(s,e){ return s + (e.quantity||0); }, 0);
@@ -3230,13 +3618,13 @@ function renderDashboard(){
   });
   const unitsSoldThisMonth = soldThisMonth.reduce(function(s,e){ return s + (e.quantity||0); }, 0);
   const profitThisMonth = soldThisMonth.filter(function(e){ return e.buy!=null && e.sell!=null; })
-    .reduce(function(s,e){ return s + entryGrossProfit(e); }, 0);
+    .reduce(function(s,e){ return s + ((Number(e.sell)-Number(e.buy))*(e.quantity||1)); }, 0);
 
   const allTimeProfit = soldItems.filter(function(e){ return e.buy!=null && e.sell!=null; })
-    .reduce(function(s,e){ return s + entryGrossProfit(e); }, 0);
+    .reduce(function(s,e){ return s + ((Number(e.sell)-Number(e.buy))*(e.quantity||1)); }, 0);
 
-  const expensesThisMonth = expensesInMonth(curMonthKey);
-  const totalExpensesAll = totalExpensesAllTime();
+  const expensesThisMonth = expensesInMonth(curMonthKey) + phoneExpensesInMonth(curMonthKey);
+  const totalExpensesAll = totalExpensesAllTime() + totalPhoneExpensesAllTime();
   const netProfitThisMonth = profitThisMonth - expensesThisMonth;
   const netProfitAllTime = allTimeProfit - totalExpensesAll;
 
@@ -3290,27 +3678,26 @@ function getFilteredSoldEntries(){
 
   return inventory.filter(function(e){
     if(!e.sold) return false;
-    const d = e.saleDate || '';
-    if(from && d && d < from) return false;
-    if(to && d && d > to) return false;
+    const d=dateOnly(e.saleDate || e.lastUpdated);
+    if(from && (!d || d<from)) return false;
+    if(to && (!d || d>to)) return false;
     if(brand!=='all' && e.brand!==brand) return false;
     if(customerQ){
-      const hay = ((e.customer||'')+' '+(e.customerNumber||'')).toLowerCase();
+      const hay=((e.customer||'')+' '+(e.customerNumber||'')).toLowerCase();
       if(hay.indexOf(customerQ)===-1) return false;
     }
     return true;
   }).sort(function(a,b){
-    return (b.saleDate||'').localeCompare(a.saleDate||'');
+    return dateOnly(b.saleDate||b.lastUpdated).localeCompare(dateOnly(a.saleDate||a.lastUpdated));
   });
 }
 
-// Same date range as the sales filter above. Brand/customer filters don't
-// apply to expenses (an expense isn't tied to a phone brand or a customer),
-// so only "Se"/"Tak" narrows this list.
 function getFilteredReportExpenses(){
   const from = document.getElementById('rp-from').value;
   const to = document.getElementById('rp-to').value;
-  return expensesInRange(from, to).slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+  const brand = document.getElementById('rp-brand').value;
+  const customerQ = document.getElementById('rp-customer').value.trim().toLowerCase();
+  return getAllReportExpenses(from,to,brand,customerQ);
 }
 
 function renderReports(){
@@ -3318,12 +3705,15 @@ function renderReports(){
   const entries = getFilteredSoldEntries();
   let grossProfit = 0;
   const rowsHtml = entries.map(function(e){
-    const profit = (e.buy!=null && e.sell!=null) ? entryGrossProfit(e) : null;
-    if(profit!=null) grossProfit += profit;
-    const profitColor = profit==null ? 'var(--text-faint)' : (profit>=0 ? 'var(--pta)' : 'var(--danger)');
+    const baseProfit = (e.buy!=null && e.sell!=null && !isReturnedSale(e)) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : 0;
+    if(baseProfit) grossProfit += baseProfit;
+    const netSale = isReturnedSale(e) ? 0 : saleNetProfit(e);
+    const profitColor = netSale>=0 ? 'var(--pta)' : 'var(--danger)';
     return '<div class="report-row">'+
-      '<div class="rr-top"><span>'+e.brand+' '+e.model+'</span><span class="rr-profit" style="color:'+profitColor+'">'+(profit==null?'-':displayProfitHtml(profit))+'</span></div>'+
-      '<div class="rr-sub">'+formatDateDisplay(e.saleDate)+' • Buy: '+fmt(displayBuyPrice(e.buy))+' • Sell: '+fmt(e.sell)+(e.quantity>1?(' • x'+e.quantity):'')+'</div>'+
+      '<div class="rr-top"><span>'+e.brand+' '+e.model+(isReturnedSale(e)?' ↩ Returned':'')+'</span><span class="rr-profit" style="color:'+profitColor+'">'+displayProfitHtml(netSale==null?0:netSale)+'</span></div>'+
+      '<div class="rr-sub">'+(isReturnedSale(e)?'Sold: ':'Sale: ')+formatDateDisplay(dateOnly(e.saleDate))+' • Buy: '+fmt(displayBuyPrice(e.buy))+' • Sell: '+fmt(e.sell)+(e.quantity>1?(' • x'+e.quantity):'')+'</div>'+
+      (isReturnedSale(e)?'<div class="rr-sub">Returned: '+formatDateTimeDisplay(e.returnedAt)+'</div>':'')+
+      (phoneExpensesTotal(e)>0?'<div class="rr-sub" style="color:var(--danger);">Phone expenses: -'+displayProfitHtml(phoneExpensesTotal(e))+'</div>':'')+
       (e.customer || e.customerNumber ? '<div class="rr-sub">'+(e.customer||'')+(e.customerNumber?' - '+e.customerNumber:'')+'</div>' : '')+
     '</div>';
   }).join('');
@@ -3335,7 +3725,7 @@ function renderReports(){
     expensesTotal += Number(x.amount)||0;
     return '<div class="report-row">'+
       '<div class="rr-top"><span>'+x.category+'</span>'+expenseAmountHtml(x.amount)+'</div>'+
-      '<div class="rr-sub">'+formatDateDisplay(x.date)+(x.notes?' • '+x.notes:'')+'</div>'+
+      '<div class="rr-sub">'+formatDateDisplay(dateOnly(x.date))+(x.source==='phone'?' • Phone expense':'')+(x.notes?' • '+x.notes:'')+'</div>'+
     '</div>';
   }).join('');
   document.getElementById('rp-expense-list').innerHTML = expRowsHtml || '<div class="rr-sub" style="text-align:center;padding:20px 0;">Is date range mein koi expense nahi mila.</div>';
@@ -3378,23 +3768,23 @@ document.getElementById('btnReportsPdf').onclick = function(){
   const brand = document.getElementById('rp-brand').value;
   let grossProfit = 0;
   const rows = entries.map(function(e){
-    const profit = (e.buy!=null && e.sell!=null) ? entryGrossProfit(e) : null;
-    if(profit!=null) grossProfit += profit;
+    const profit = isReturnedSale(e) ? 0 : ((e.buy!=null && e.sell!=null) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : 0);
+    if(!isReturnedSale(e) && e.buy!=null && e.sell!=null) grossProfit += profit;
     return '<tr>'+
-      '<td>'+formatDateDisplay(e.saleDate)+'</td>'+
-      '<td>'+e.brand+' '+e.model+(e.quantity>1?(' x'+e.quantity):'')+'</td>'+
+      '<td>'+formatDateDisplay(dateOnly(e.saleDate))+(isReturnedSale(e)?'<br>Returned: '+formatDateTimeDisplay(e.returnedAt):'')+'</td>'+
+      '<td>'+e.brand+' '+e.model+(e.quantity>1?(' x'+e.quantity):'')+(isReturnedSale(e)?' (RETURNED)':'')+'</td>'+
       '<td>'+(e.customer||'')+(e.customerNumber?'<br>'+e.customerNumber:'')+'</td>'+
-      '<td style="text-align:right;">'+fmt(e.buy)+'</td>'+
+      '<td style="text-align:right;">'+fmt(displayBuyPrice(e.buy))+'</td>'+
       '<td style="text-align:right;">'+fmt(e.sell)+'</td>'+
-      '<td style="text-align:right;">'+(profit==null?'-':fmt(profit))+'</td>'+
+      '<td style="text-align:right;">'+fmt(profit-phoneExpensesTotal(e))+'</td>'+
     '</tr>';
   }).join('');
   let expensesTotal = 0;
   const expRows = expEntries.map(function(x){
     expensesTotal += Number(x.amount)||0;
     return '<tr>'+
-      '<td>'+formatDateDisplay(x.date)+'</td>'+
-      '<td>'+x.category+'</td>'+
+      '<td>'+formatDateDisplay(dateOnly(x.date))+'</td>'+
+      '<td>'+x.category+(x.source==='phone'?' (Phone)':'')+'</td>'+
       '<td>'+(x.notes||'')+'</td>'+
       '<td style="text-align:right;">'+fmt(x.amount)+'</td>'+
     '</tr>';
@@ -3421,7 +3811,7 @@ document.getElementById('btnReportsPdf').onclick = function(){
     '<h2>Sales</h2>'+
     '<table><thead><tr><th>Date</th><th>Item</th><th>Customer</th><th>Buy</th><th>Sell</th><th>Profit</th></tr></thead><tbody>'+
     (rows || '<tr><td colspan="6" style="text-align:center;">Koi entry nahi mili</td></tr>')+
-    '<tr class="total-row"><td colspan="5" style="text-align:right;">Sales profit (entry expenses ke baad)</td><td style="text-align:right;">'+fmt(grossProfit)+'</td></tr>'+
+    '<tr class="total-row"><td colspan="5" style="text-align:right;">Sales profit (gross)</td><td style="text-align:right;">'+fmt(grossProfit)+'</td></tr>'+
     '</tbody></table>'+
     '<h2>Expenses</h2>'+
     '<table><thead><tr><th>Date</th><th>Category</th><th>Notes</th><th>Amount</th></tr></thead><tbody>'+
@@ -3429,7 +3819,7 @@ document.getElementById('btnReportsPdf').onclick = function(){
     '<tr class="total-row"><td colspan="3" style="text-align:right;">Total expenses</td><td style="text-align:right;">'+fmt(expensesTotal)+'</td></tr>'+
     '</tbody></table>'+
     '<table class="summary-table">'+
-    '<tr><td>Sales profit (entry expenses ke baad)</td><td style="text-align:right;">'+fmt(grossProfit)+'</td></tr>'+
+    '<tr><td>Sales profit (gross)</td><td style="text-align:right;">'+fmt(grossProfit)+'</td></tr>'+
     '<tr><td>Total expenses</td><td style="text-align:right;">-'+fmt(expensesTotal)+'</td></tr>'+
     '<tr class="net"><td>Net profit</td><td style="text-align:right;">'+fmt(netProfit)+'</td></tr>'+
     '</table>'+
@@ -3467,131 +3857,6 @@ document.addEventListener('click', function(e){
     menu.classList.add('hidden');
   }
 });
-
-// ---------- Per-entry phone expenses ----------
-let entryExpenseId = null;
-let entryExpensePhase = 'stock'; // stock expense or sale expense
-let entryExpenseCategory = 'Repair';
-let entryExpenseTemporarySale = null;
-let entryExpenseEditMode = 'inventory';
-
-function renderEntryExpenseCategories(){
-  const opts = getFieldOptions('expenseCategory', EXPENSE_CATEGORY_OPTS);
-  const box = document.getElementById('entryExpenseCategoryChips');
-  box.innerHTML = opts.map(function(o){ return '<div class="chip-opt '+(entryExpenseCategory===o?'on':'')+'" data-entry-exp-cat="'+o+'">'+o+'</div>'; }).join('');
-  box.querySelectorAll('[data-entry-exp-cat]').forEach(function(b){ b.onclick=function(){ entryExpenseCategory=b.dataset.entryExpCat; renderEntryExpenseCategories(); }; });
-}
-
-function renderEntryExpenseList(){
-  const e = inventory.find(function(x){return x.id===entryExpenseId;});
-  if(!e) return;
-  let all = [];
-  if(entryExpenseEditMode==='temporarySale') all = (entryExpenseTemporarySale||[]).map(function(x){return Object.assign({phase:'sale'},x);});
-  else all = (Array.isArray(e.stockExpenses)?e.stockExpenses:[]).map(function(x){return Object.assign({phase:'stock'},x);})
-    .concat((Array.isArray(e.saleExpenses)?e.saleExpenses:[]).map(function(x){return Object.assign({phase:'sale'},x); }));
-  let total=0;
-  document.getElementById('entryExpenseList').innerHTML = all.slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'');}).map(function(x){
-    total += Number(x.amount)||0;
-    return '<div class="report-row"><div class="rr-top"><span>'+x.category+' <small style="opacity:.65">('+x.phase+')</small></span><span>'+fmt(x.amount)+'</span></div><div class="rr-sub">'+formatDateDisplay(x.date)+(x.notes?' • '+x.notes:'')+'</div></div>';
-  }).join('') || '<div class="rr-sub" style="text-align:center;padding:14px 0;">Abhi koi expense nahi.</div>';
-  document.getElementById('entry-exp-total').textContent = fmt(total);
-  updateSellProfitPreview();
-  const s=document.getElementById('s-expense-summary');
-  if(s){
-    if(entryExpenseEditMode==='temporarySale') s.textContent = total ? ('Pending sale expenses: '+fmt(total)) : 'Abhi koi sale expense nahi.';
-    else s.textContent = entryAllExpenses(e) ? ('Total entry expenses: '+fmt(entryAllExpenses(e))) : 'Abhi koi entry expense nahi.';
-  }
-}
-
-function openEntryExpense(id, phase){
-  const e=inventory.find(function(x){return x.id===id;});
-  if(!e) return;
-  entryExpenseId=id;
-  entryExpensePhase=phase || (e.sold?'sale':'stock');
-  entryExpenseEditMode = (entryExpensePhase==='sale' && sellingId===id && !e.sold) ? 'temporarySale' : 'inventory';
-  entryExpenseCategory='Repair';
-  document.getElementById('entryExpenseItemName').textContent=e.brand+' '+e.model+' — '+(entryExpensePhase==='sale'?'Sale expense':'Stock expense');
-  document.getElementById('entry-exp-amount').value='';
-  document.getElementById('entry-exp-date').value=todayISO();
-  document.getElementById('entry-exp-notes').value='';
-  renderEntryExpenseCategories();
-  renderEntryExpenseList();
-  document.getElementById('entryExpenseOverlay').classList.remove('hidden');
-  pushOverlayHistory('entryExpenseOverlay');
-}
-
-function closeEntryExpense(){ requestOverlayClose(); }
-
-function saveEntryExpense(){
-  const e=inventory.find(function(x){return x.id===entryExpenseId;});
-  if(!e) return;
-  const raw=document.getElementById('entry-exp-amount').value.trim();
-  const amount=parseExpenseAmount(raw);
-  if(amount===null || amount<=0){ alert('Expense amount sahi likhein.'); return; }
-  const item={id:'ee_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),category:entryExpenseCategory,amount:Math.abs(amount),date:document.getElementById('entry-exp-date').value||todayISO(),notes:document.getElementById('entry-exp-notes').value.trim()};
-
-  if(entryExpenseEditMode==='temporarySale'){
-    entryExpenseTemporarySale = (entryExpenseTemporarySale||[]).concat([item]);
-    renderEntryExpenseList();
-    document.getElementById('entry-exp-amount').value='';
-    document.getElementById('entry-exp-notes').value='';
-    return;
-  }
-
-  const candidate=inventory.map(function(x){
-    if(x.id!==entryExpenseId) return x;
-    const c=Object.assign({},x);
-    c.stockExpenses=Array.isArray(c.stockExpenses)?c.stockExpenses.slice():[];
-    c.saleExpenses=Array.isArray(c.saleExpenses)?c.saleExpenses.slice():[];
-    (entryExpensePhase==='sale'?c.saleExpenses:c.stockExpenses).push(item);
-    c.lastUpdated=todayStr();
-    return c;
-  });
-  if(!tryCommitInventory(candidate)){ alert(SAVE_FAIL_MSG); return; }
-  renderEntryExpenseList();
-  render();
-  backupAfterChange();
-  showToast('✓ Entry expense add ho gaya');
-  document.getElementById('entry-exp-amount').value='';
-  document.getElementById('entry-exp-notes').value='';
-}
-
-function addSaleExpenseFromSell(){
-  if(!sellingId) return;
-  openEntryExpense(sellingId,'sale');
-}
-
-function returnSoldEntry(id){
-  const idx=inventory.findIndex(function(x){return x.id===id;});
-  if(idx===-1) return;
-  const sold=inventory[idx];
-  if(!sold.sold) return;
-  if(!confirm('Is sale ko Return karne se sale record sold list se hat jayega, stock wapas available ho jayega aur sale profit dobara count nahi hoga. Sale-time expenses actual shop expense ke taur par Expenses mein transfer honge. Return karein?')) return;
-  const restored=Object.assign({},sold,{
-    id:'e_'+Date.now()+'_ret',
-    sold:false,
-    sell:null,
-    customer:'', customerNumber:'', payment:'', saleDate:'',
-    availableDate:todayISO(),
-    saleExpenses:[],
-    lastUpdated:todayStr()
-  });
-  // Sale-only expenses are real money already spent, so keep them in the
-  // global expense ledger rather than letting a return erase that cost.
-  const saleExps=Array.isArray(sold.saleExpenses)?sold.saleExpenses:[];
-  const converted=saleExps.map(function(x){
-    return Object.assign({},x,{id:'exp_return_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),notes:'Returned sale: '+sold.brand+' '+sold.model+(x.notes?' — '+x.notes:'')});
-  });
-  const candidate=inventory.slice();
-  candidate.splice(idx,1,restored);
-  if(!tryCommitInventory(candidate)){ alert(SAVE_FAIL_MSG); return; }
-  if(converted.length){
-    if(!tryCommitExpenses(converted.concat(expenses))){ alert('Phone return ho gaya lekin sale expense ledger save nahi ho saka. Backup check karein.'); }
-  }
-  render();
-  showToast('✓ Sale return ho gayi — mobile dobara Available mein aa gaya.');
-  backupAfterChange();
-}
 
 // ---------- Expenses ----------
 function renderExpenseCategoryChips(){
@@ -3859,24 +4124,82 @@ function renderCardViewModeToggles(){
   });
 }
 
+let editingAutoRangeIndex = -1;
+
 function renderAutoSellRangeSettings(){
   const list = document.getElementById('autoRangeRulesList');
   if(!list) return;
   const rules = normalizeAutoSellRangeRules(cardDisplaySettings.autoSellRangeRules);
   list.innerHTML = rules.map(function(r,i){
-    return '<div class="settings-opt" style="width:100%;justify-content:space-between;border-radius:10px;margin-bottom:6px;">'+
-      '<span>Buy '+fmt(r.minBuy)+' – '+fmt(r.maxBuy)+' &nbsp; → &nbsp; +'+fmt(r.minMarkup)+' to +'+fmt(r.maxMarkup)+'</span>'+
-      '<button type="button" class="del-btn" data-auto-range-del="'+i+'" style="padding:4px 8px;">×</button>'+
+    if(editingAutoRangeIndex===i){
+      return '<div class="settings-opt" style="width:100%;display:block;border-radius:10px;margin-bottom:8px;padding:10px;">'+
+        '<div style="font-size:12px;font-weight:700;margin-bottom:8px;">Range #'+(i+1)+' edit karein</div>'+
+        '<div class="settings-add-row" style="margin:0 0 7px 0;">'+
+          '<input type="number" id="editAutoRangeMinBuy_'+i+'" value="'+r.minBuy+'" placeholder="Buy min" min="0">'+
+          '<input type="number" id="editAutoRangeMaxBuy_'+i+'" value="'+r.maxBuy+'" placeholder="Buy max" min="0">'+
+        '</div>'+
+        '<div class="settings-add-row" style="margin:0;">'+
+          '<input type="number" id="editAutoRangeMinMarkup_'+i+'" value="'+r.minMarkup+'" placeholder="+ From" min="0">'+
+          '<input type="number" id="editAutoRangeMaxMarkup_'+i+'" value="'+r.maxMarkup+'" placeholder="+ To" min="0">'+
+          '<button type="button" class="sell-btn" data-auto-range-save="'+i+'">Save</button>'+
+          '<button type="button" class="btn-cancel" data-auto-range-cancel="'+i+'" style="padding:9px 12px;">Cancel</button>'+
+        '</div>'+
+      '</div>';
+    }
+    return '<div class="settings-opt" style="width:100%;justify-content:space-between;border-radius:10px;margin-bottom:6px;gap:8px;">'+
+      '<span style="flex:1;">Buy '+fmt(r.minBuy)+' – '+fmt(r.maxBuy)+' &nbsp; → &nbsp; +'+fmt(r.minMarkup)+' to +'+fmt(r.maxMarkup)+'</span>'+
+      '<span style="display:flex;gap:5px;flex-shrink:0;">'+
+        '<button type="button" class="sell-btn" data-auto-range-edit="'+i+'" style="padding:4px 8px;">Edit</button>'+
+        '<button type="button" class="del-btn" data-auto-range-del="'+i+'" style="padding:4px 8px;">×</button>'+
+      '</span>'+
       '</div>';
   }).join('') || '<div class="settings-note">Abhi koi auto-range rule nahi hai.</div>';
+
+  list.querySelectorAll('[data-auto-range-edit]').forEach(function(btn){
+    btn.onclick=function(){
+      editingAutoRangeIndex=Number(btn.dataset.autoRangeEdit);
+      renderAutoSellRangeSettings();
+    };
+  });
+  list.querySelectorAll('[data-auto-range-cancel]').forEach(function(btn){
+    btn.onclick=function(){
+      editingAutoRangeIndex=-1;
+      renderAutoSellRangeSettings();
+    };
+  });
+  list.querySelectorAll('[data-auto-range-save]').forEach(function(btn){
+    btn.onclick=function(){
+      const idx=Number(btn.dataset.autoRangeSave);
+      const min=Number(document.getElementById('editAutoRangeMinBuy_'+idx).value);
+      const max=Number(document.getElementById('editAutoRangeMaxBuy_'+idx).value);
+      const minM=Number(document.getElementById('editAutoRangeMinMarkup_'+idx).value);
+      const maxM=Number(document.getElementById('editAutoRangeMaxMarkup_'+idx).value);
+      if(![min,max,minM,maxM].every(function(v){return isFinite(v);}) || min<0 || max<=min || minM<0 || maxM<minM){
+        alert('Price band aur markup sahi tarah enter karein.');
+        return;
+      }
+      const next=normalizeAutoSellRangeRules(cardDisplaySettings.autoSellRangeRules);
+      if(!next[idx]) return;
+      next[idx]={minBuy:min,maxBuy:max,minMarkup:minM,maxMarkup:maxM};
+      cardDisplaySettings.autoSellRangeRules=normalizeAutoSellRangeRules(next);
+      saveCardDisplaySettings();
+      applyAutoSellRangesToExistingEntries();
+      editingAutoRangeIndex=-1;
+      renderAutoSellRangeSettings();
+      render();
+    };
+  });
   list.querySelectorAll('[data-auto-range-del]').forEach(function(btn){
     btn.onclick=function(){
       const idx=Number(btn.dataset.autoRangeDel);
       const next=normalizeAutoSellRangeRules(cardDisplaySettings.autoSellRangeRules);
       next.splice(idx,1);
       cardDisplaySettings.autoSellRangeRules=next;
+      if(editingAutoRangeIndex===idx) editingAutoRangeIndex=-1;
+      else if(editingAutoRangeIndex>idx) editingAutoRangeIndex--;
       saveCardDisplaySettings();
       renderAutoSellRangeSettings();
+      render();
     };
   });
 }
@@ -3893,6 +4216,7 @@ function addAutoSellRangeRule(){
   next.push({minBuy:min,maxBuy:max,minMarkup:minM,maxMarkup:maxM});
   cardDisplaySettings.autoSellRangeRules=normalizeAutoSellRangeRules(next);
   saveCardDisplaySettings();
+  applyAutoSellRangesToExistingEntries();
   ['autoRangeMinBuy','autoRangeMaxBuy','autoRangeMinMarkup','autoRangeMaxMarkup'].forEach(function(id){document.getElementById(id).value='';});
   renderAutoSellRangeSettings();
   render();
@@ -4244,7 +4568,7 @@ document.getElementById('btnClearData').onclick = function(){
 // Note: 'customer' (not 'customerName') matches the actual field saved on
 // each entry — using the wrong key here silently exported blank customer
 // names in every previous Excel backup.
-const EXCEL_COLUMNS = ['id','stockExpenses','saleExpenses','availableDate','brand','model','status','quantity','sold','display','touch','camera','body','openrepair','battery','ram','storage','network','packing','charger','box','faceid','truetone','buy','sell','range','rangeMode','imei','buyDate','sellerName','sellerNumber','saleDate','customer','customerNumber','payment','notes','lastUpdated'];
+const EXCEL_COLUMNS = ['id','brand','model','status','quantity','sold','display','touch','camera','body','openrepair','battery','ram','storage','network','packing','charger','box','faceid','truetone','buy','sell','range','rangeMode','imei','buyDate','sellerName','sellerNumber','saleDate','customer','customerNumber','payment','notes','lastUpdated'];
 const EXCEL_EXPENSE_COLUMNS = ['id','category','amount','date','notes'];
 
 function exportExcel(){
@@ -4907,6 +5231,8 @@ if(window.visualViewport){
   });
 }
 
+const savedUIState = loadUIState();
+if(document.getElementById('sortSelect')) document.getElementById('sortSelect').value = currentSort;
 loadCardDisplaySettings();
 loadCustomOptionData();
 loadCustomModels();
@@ -4915,6 +5241,9 @@ loadInventory();
 autoBackupIfDue();
 checkBackupReminder();
 initFirebaseSync();
+
+// Restore the exact main-screen position after inventory has rendered.
+restoreUIScroll(savedUIState);
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
