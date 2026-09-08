@@ -2007,12 +2007,14 @@ function phoneExpensesTotal(e){
   return e.phoneExpenses.reduce(function(s,x){ return s + Math.abs(Number(x.amount)||0); }, 0);
 }
 function saleBaseProfit(e){
-  if(!e || e.buy==null || e.sell==null || isReturnedSale(e)) return 0;
+  if(!e || e.buy==null || e.sell==null) return 0;
   return (Number(e.sell)-Number(e.buy))*(Math.max(1,Number(e.quantity)||1));
 }
 function saleNetProfit(e){
   if(!e || e.buy==null || e.sell==null) return null;
-  if(isReturnedSale(e)) return 0;
+  // A returned sale reverses the original sale profit. Phone-specific
+  // expenses remain separate expenses, so they are not deducted twice here.
+  if(isReturnedSale(e)) return -saleBaseProfit(e);
   return saleBaseProfit(e)-phoneExpensesTotal(e);
 }
 function activityDateMatches(e, type, from, to){
@@ -2131,9 +2133,12 @@ function renderStats(){
     .reduce(function(s,e){return s+(e.quantity||0);},0);
   const soldUnits = inventory.filter(function(e){return e.sold && !isReturnedSale(e);})
     .reduce(function(s,e){return s+(e.quantity||0);},0);
-  const grossProfit = inventory.filter(function(e){return e.sold && !isReturnedSale(e) && e.buy!=null && e.sell!=null;})
-    .reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0);
-  // Net profit = sale margins minus all shop expenses and phone-specific expenses.
+  const grossProfit = inventory.filter(function(e){return e.sold && e.buy!=null && e.sell!=null;})
+    .reduce(function(s,e){
+      const p=(Number(e.sell)-Number(e.buy))*(e.quantity||1);
+      return s + (isReturnedSale(e) ? -p : p);
+    },0);
+  // Net profit = active sale profit + negative return adjustments - all expenses.
   const totalProfit = grossProfit - totalExpensesAllTime() - totalPhoneExpensesAllTime();
   const netProfitColor = totalProfit >= 0 ? 'var(--pta)' : 'var(--danger)';
   document.getElementById('stats').innerHTML =
@@ -2714,7 +2719,7 @@ function returnSoldItem(soldId){
 
 function renderSoldCard(e){
   const returned=isReturnedSale(e);
-  const profit=returned ? 0 : saleNetProfit(e);
+  const profit=returned ? -saleBaseProfit(e) : saleNetProfit(e);
   const profitClass=profit===null?'dim':(profit>=0?'profit-pos':'profit-neg');
   return (
   '<div class="card '+(returned?'returned-card':'')+'">'+
@@ -3620,12 +3625,20 @@ function renderDashboard(){
   const profitThisMonth = soldThisMonth.filter(function(e){ return e.buy!=null && e.sell!=null; })
     .reduce(function(s,e){ return s + ((Number(e.sell)-Number(e.buy))*(e.quantity||1)); }, 0);
 
+  // Returned sales create a negative profit adjustment on the month they were returned.
+  const returnedThisMonthProfit = inventory.filter(function(e){
+    return e.sold && isReturnedSale(e) && e.buy!=null && e.sell!=null &&
+      String(e.returnedAt||'').indexOf(curMonthKey)===0;
+  }).reduce(function(s,e){ return s - ((Number(e.sell)-Number(e.buy))*(e.quantity||1)); },0);
+
   const allTimeProfit = soldItems.filter(function(e){ return e.buy!=null && e.sell!=null; })
-    .reduce(function(s,e){ return s + ((Number(e.sell)-Number(e.buy))*(e.quantity||1)); }, 0);
+    .reduce(function(s,e){ return s + ((Number(e.sell)-Number(e.buy))*(e.quantity||1)); }, 0)
+    + inventory.filter(function(e){ return e.sold && isReturnedSale(e) && e.buy!=null && e.sell!=null; })
+      .reduce(function(s,e){ return s - ((Number(e.sell)-Number(e.buy))*(e.quantity||1)); }, 0);
 
   const expensesThisMonth = expensesInMonth(curMonthKey) + phoneExpensesInMonth(curMonthKey);
   const totalExpensesAll = totalExpensesAllTime() + totalPhoneExpensesAllTime();
-  const netProfitThisMonth = profitThisMonth - expensesThisMonth;
+  const netProfitThisMonth = profitThisMonth + returnedThisMonthProfit - expensesThisMonth;
   const netProfitAllTime = allTimeProfit - totalExpensesAll;
 
   const cards = [
@@ -3705,9 +3718,9 @@ function renderReports(){
   const entries = getFilteredSoldEntries();
   let grossProfit = 0;
   const rowsHtml = entries.map(function(e){
-    const baseProfit = (e.buy!=null && e.sell!=null && !isReturnedSale(e)) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : 0;
-    if(baseProfit) grossProfit += baseProfit;
-    const netSale = isReturnedSale(e) ? 0 : saleNetProfit(e);
+    const baseProfit = (e.buy!=null && e.sell!=null) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : 0;
+    const netSale = isReturnedSale(e) ? -baseProfit : saleNetProfit(e);
+    grossProfit += netSale || 0;
     const profitColor = netSale>=0 ? 'var(--pta)' : 'var(--danger)';
     return '<div class="report-row">'+
       '<div class="rr-top"><span>'+e.brand+' '+e.model+(isReturnedSale(e)?' ↩ Returned':'')+'</span><span class="rr-profit" style="color:'+profitColor+'">'+displayProfitHtml(netSale==null?0:netSale)+'</span></div>'+
@@ -3768,15 +3781,16 @@ document.getElementById('btnReportsPdf').onclick = function(){
   const brand = document.getElementById('rp-brand').value;
   let grossProfit = 0;
   const rows = entries.map(function(e){
-    const profit = isReturnedSale(e) ? 0 : ((e.buy!=null && e.sell!=null) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : 0);
-    if(!isReturnedSale(e) && e.buy!=null && e.sell!=null) grossProfit += profit;
+    const baseProfit = (e.buy!=null && e.sell!=null) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : 0;
+    const profit = isReturnedSale(e) ? -baseProfit : baseProfit;
+    grossProfit += profit;
     return '<tr>'+
       '<td>'+formatDateDisplay(dateOnly(e.saleDate))+(isReturnedSale(e)?'<br>Returned: '+formatDateTimeDisplay(e.returnedAt):'')+'</td>'+
       '<td>'+e.brand+' '+e.model+(e.quantity>1?(' x'+e.quantity):'')+(isReturnedSale(e)?' (RETURNED)':'')+'</td>'+
       '<td>'+(e.customer||'')+(e.customerNumber?'<br>'+e.customerNumber:'')+'</td>'+
       '<td style="text-align:right;">'+fmt(displayBuyPrice(e.buy))+'</td>'+
       '<td style="text-align:right;">'+fmt(e.sell)+'</td>'+
-      '<td style="text-align:right;">'+fmt(profit-phoneExpensesTotal(e))+'</td>'+
+      '<td style="text-align:right;">'+fmt(isReturnedSale(e) ? profit : (profit-phoneExpensesTotal(e)))+'</td>'+
     '</tr>';
   }).join('');
   let expensesTotal = 0;
