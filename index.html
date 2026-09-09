@@ -305,7 +305,26 @@
   #btnPrivacyToggle{position:relative;}
   #btnPrivacyToggle.privacy-on::after{content:'';position:absolute;top:6px;right:8px;width:5px;height:5px;border-radius:50%;background:var(--text-faint);opacity:0.6;}
 
-/* Phase 4 - Return system */
+  /* Rate Book */
+  .rate-book-actions{display:flex;gap:8px;margin-top:10px;}
+  .rate-book-actions button{width:100%;padding:10px;border-radius:9px;border:none;font-size:13px;font-weight:600;}
+  .rate-book-list{display:flex;flex-direction:column;gap:9px;margin-top:12px;max-height:55vh;overflow-y:auto;}
+  .rate-book-card{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 12px;}
+  .rate-book-card-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;}
+  .rate-book-title{font-size:14px;font-weight:700;}
+  .rate-book-sub{font-size:11.5px;color:var(--text-dim);margin-top:2px;}
+  .rate-book-current{font-size:17px;font-weight:750;color:var(--pta);white-space:nowrap;}
+  .rate-book-stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .rate-book-stat{font-size:10.5px;color:var(--text-dim);background:var(--surface-3);padding:4px 7px;border-radius:7px;}
+  .rate-book-history{display:none;margin-top:9px;padding-top:8px;border-top:1px dashed var(--border);}
+  .rate-book-history.show{display:block;}
+  .rate-book-history-row{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;padding:5px 0;color:var(--text-dim);}
+  .rate-book-history-row .rate{color:var(--text);font-weight:650;}
+  .rate-book-card-actions{display:flex;gap:7px;margin-top:8px;}
+  .rate-book-card-actions button{flex:1;padding:6px;border-radius:7px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text-dim);font-size:11px;}
+  .rate-book-card-actions button.danger{color:var(--danger);}
+
+  /* Phase 4 - Return system */
 .returned-badge{display:inline-flex;align-items:center;gap:5px;font-weight:800;border:1px solid currentColor;}
 .return-btn{border:1px solid #d97706 !important;color:#92400e !important;background:#fff7ed !important;}
 .return-btn:hover{background:#ffedd5 !important;}
@@ -336,6 +355,7 @@
       <button class="menu-item" id="btnReports">📄 Reports</button>
       <button class="menu-item" id="btnExpenses">💵 Expenses (kharcha)</button>
       <button class="menu-item" id="btnContacts">👥 Contacts</button>
+      <button class="menu-item" id="btnRateBook">📋 Rate Book</button>
 
       <div class="menu-divider"></div>
       <div class="menu-section-label">Backup &amp; Restore</div>
@@ -796,6 +816,37 @@
   </div>
 </div>
 
+<div class="overlay hidden" id="rateBookOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>📋 Rate Book</h2>
+    <div class="settings-note" style="margin-top:0;">Jab bhi naya mobile purchase/save hoga, uska Buy Rate yahan automatically history mein save ho jayega. Aap manually bhi rate add kar sakte hain.</div>
+    <div class="search-row" style="padding:10px 0 0;">
+      <input type="text" id="rateBookSearch" placeholder="Model / brand se search karein">
+      <select id="rateBookStatusFilter" style="max-width:125px;">
+        <option value="all">All status</option><option value="PTA">PTA</option><option value="Non-PTA">Non-PTA</option><option value="JV">JV</option><option value="CPID">CPID</option><option value="Patch">Patch</option><option value="MDM">MDM</option><option value="Bypass/MDM">Bypass/MDM</option>
+      </select>
+    </div>
+    <div class="rate-book-actions"><button type="button" class="btn-save" id="btnRateBookAdd">+ Add Rate</button></div>
+    <div id="rateBookList" class="rate-book-list"></div>
+    <div class="sheet-actions"><button class="btn-cancel" id="btnRateBookClose">Band karein</button></div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="rateAddOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>+ Rate add karein</h2>
+    <div class="field"><label>Brand</label><input id="rb-brand" placeholder="Apple / Samsung..."></div>
+    <div class="field"><label>Model</label><input id="rb-model" placeholder="iPhone 13"></div>
+    <div class="two-col"><div class="field"><label>Variant / Storage</label><input id="rb-variant" placeholder="128GB"></div><div class="field"><label>Status</label><select id="rb-status"></select></div></div>
+    <div class="two-col"><div class="field big-input"><label>Buy Rate</label><input id="rb-rate" type="text" inputmode="decimal" placeholder="e.g. 125k"><div class="price-hint" id="rb-rate-hint"></div></div><div class="field"><label>Date</label><input id="rb-date" type="date"></div></div>
+    <div class="field"><label>Seller / Dealer (optional)</label><input id="rb-seller" placeholder="Naam"></div>
+    <div class="field"><label>Notes (optional)</label><input id="rb-notes" placeholder="Condition ya koi khaas baat"></div>
+    <div class="sheet-actions"><button class="btn-cancel" id="btnRateAddCancel">Cancel</button><button class="btn-save" id="btnRateAddSave">Save rate</button></div>
+  </div>
+</div>
+
 <div class="overlay hidden" id="settingsOverlay">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -1067,7 +1118,9 @@ const LS_CUSTOM_MODELS_KEY = 'mobileLedger_customModels';
 const LS_LAST_BACKUP_KEY = 'mobileLedger_lastBackup';
 const LS_REMINDER_DISMISSED_KEY = 'mobileLedger_reminderDismissedAt';
 const LS_EXPENSES_KEY = 'mobileLedger_expenses';
+const LS_RATE_BOOK_KEY = 'mobileLedger_rateBook';
 
+let rateBook = [];
 let expenses = [];
 let expenseFormState = {category:''};
 let editingExpenseId = null;
@@ -1478,6 +1531,48 @@ const seed = [
   };
 });
 
+function escapeHtml(v){
+  return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function rateBookStatusOptions(){ return ['PTA','Non-PTA','JV','CPID','Patch','MDM','Bypass/MDM']; }
+function loadRateBook(){
+  try{ const raw=localStorage.getItem(LS_RATE_BOOK_KEY); rateBook=raw?JSON.parse(raw):[]; if(!Array.isArray(rateBook)) rateBook=[]; }
+  catch(e){ rateBook=[]; }
+}
+function saveRateBook(){
+  try{ localStorage.setItem(LS_RATE_BOOK_KEY, JSON.stringify(rateBook)); }
+  catch(e){ console.error('Rate Book storage error',e); return false; }
+  schedulePush(); return true;
+}
+function rateBookKey(x){ return String(x.brand||'').trim().toLowerCase()+'|||'+String(x.model||'').trim().toLowerCase()+'|||'+String(x.variant||'').trim().toLowerCase()+'|||'+String(x.status||'').trim().toLowerCase(); }
+function addRateBookEntry(entry, silent){
+  const rate=Number(entry.rate); if(!isFinite(rate)||rate<=0) return false;
+  const item={id:entry.id||('rb_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7)),sourceInventoryId:entry.sourceInventoryId||'',brand:String(entry.brand||'').trim(),model:String(entry.model||'').trim(),variant:String(entry.variant||'').trim(),status:String(entry.status||'').trim(),rate:rate,quantity:Math.max(1,Number(entry.quantity)||1),date:entry.date||todayISO(),seller:String(entry.seller||'').trim(),notes:String(entry.notes||'').trim(),source:entry.source||'manual'};
+  if(!item.brand||!item.model) return false;
+  rateBook.unshift(item); const ok=saveRateBook(); if(!ok){rateBook.shift();return false;} if(!silent) renderRateBook(); return true;
+}
+function migrateInventoryToRateBook(){
+  if(!Array.isArray(inventory)||!inventory.length) return;
+  const existing={}; rateBook.forEach(function(r){existing[String(r.sourceInventoryId||'')+'|'+String(r.rate)+'|'+String(r.date)]=true;}); let changed=false;
+  inventory.forEach(function(e){ if(e.buy==null||Number(e.buy)<=0||!e.brand||!e.model)return; const sig=String(e.id)+'|'+String(Number(e.buy))+'|'+String(e.buyDate||todayISO()); if(existing[sig])return; rateBook.push({id:'rb_m_'+String(e.id),sourceInventoryId:e.id,brand:e.brand,model:e.model,variant:e.storage||'',status:e.status||'',rate:Number(e.buy),quantity:Math.max(1,Number(e.quantity)||1),date:e.buyDate||todayISO(),seller:e.sellerName||'',notes:e.notes||'',source:'stock-migration'}); changed=true; });
+  if(changed){try{localStorage.setItem(LS_RATE_BOOK_KEY,JSON.stringify(rateBook));}catch(e){}}
+}
+function renderRateBook(){
+  const list=document.getElementById('rateBookList'); if(!list)return;
+  const q=(document.getElementById('rateBookSearch').value||'').trim().toLowerCase(); const status=document.getElementById('rateBookStatusFilter').value; const groups={};
+  rateBook.forEach(function(r){ if(status!=='all'&&r.status!==status)return; const hay=(r.brand+' '+r.model+' '+(r.variant||'')+' '+(r.status||'')+' '+(r.seller||'')+' '+(r.notes||'')).toLowerCase(); if(q&&hay.indexOf(q)===-1)return; const key=rateBookKey(r); if(!groups[key])groups[key]={brand:r.brand,model:r.model,variant:r.variant,status:r.status,history:[]}; groups[key].history.push(r); });
+  const cards=Object.keys(groups).map(function(k){return groups[k];}); cards.forEach(function(g){g.history.sort(function(a,b){return String(b.date).localeCompare(String(a.date));});});
+  cards.sort(function(a,b){return String(a.brand+' '+a.model+' '+a.variant).localeCompare(String(b.brand+' '+b.model+' '+b.variant),undefined,{numeric:true,sensitivity:'base'});});
+  if(!cards.length){list.innerHTML='<div class="empty" style="padding:35px 10px;">Koi rate nahi mila. + Add Rate se manually rate save karein.</div>';return;}
+  list.innerHTML=cards.map(function(g,gi){ const h=g.history, latest=h[0], nums=h.map(function(x){return Number(x.rate)||0;}), low=Math.min.apply(Math,nums), high=Math.max.apply(Math,nums), avg=nums.reduce(function(a,b){return a+b;},0)/nums.length; const rows=h.map(function(x){return '<div class="rate-book-history-row"><span>'+escapeHtml(x.date)+(x.quantity>1?' · x'+x.quantity:'')+(x.seller?' · '+escapeHtml(x.seller):'')+'</span><span class="rate">Rs '+fmt(x.rate)+'</span></div>';}).join(''); return '<div class="rate-book-card"><div class="rate-book-card-head"><div><div class="rate-book-title">'+escapeHtml(g.brand+' '+g.model+(g.variant?' '+g.variant:''))+'</div><div class="rate-book-sub">'+escapeHtml(g.status||'No status')+' · Last: '+escapeHtml(latest.date)+'</div></div><div class="rate-book-current">Rs '+fmt(latest.rate)+'</div></div><div class="rate-book-stats"><span class="rate-book-stat">Lowest: Rs '+fmt(low)+'</span><span class="rate-book-stat">Highest: Rs '+fmt(high)+'</span><span class="rate-book-stat">Average: Rs '+fmt(avg)+'</span></div><div class="rate-book-card-actions"><button type="button" data-rate-history="'+gi+'">'+(h.length>1?'View '+h.length+' rates':'View history')+'</button><button type="button" class="danger" data-rate-delete-group="'+gi+'">Delete history</button></div><div class="rate-book-history" id="rateHistory_'+gi+'">'+rows+'</div></div>'; }).join('');
+  list.querySelectorAll('[data-rate-history]').forEach(function(btn){btn.onclick=function(){const el=document.getElementById('rateHistory_'+btn.dataset.rateHistory);if(el)el.classList.toggle('show');};});
+  list.querySelectorAll('[data-rate-delete-group]').forEach(function(btn){btn.onclick=function(){const g=cards[Number(btn.dataset.rateDeleteGroup)];if(!g)return;if(!confirm('Is mobile ki puri rate history delete karni hai?'))return;const key=rateBookKey(g);rateBook=rateBook.filter(function(r){return rateBookKey(r)!==key;});saveRateBook();renderRateBook();};});
+}
+function openRateBook(){ document.getElementById('rateBookSearch').value='';document.getElementById('rateBookStatusFilter').value='all';renderRateBook();document.getElementById('rateBookOverlay').classList.remove('hidden');pushOverlayHistory('rateBookOverlay'); }
+function openRateAdd(){ document.getElementById('rb-brand').value='';document.getElementById('rb-model').value='';document.getElementById('rb-variant').value='';document.getElementById('rb-rate').value='';document.getElementById('rb-rate-hint').textContent='';document.getElementById('rb-date').value=todayISO();document.getElementById('rb-seller').value='';document.getElementById('rb-notes').value='';const sel=document.getElementById('rb-status');sel.innerHTML=rateBookStatusOptions().map(function(x){return '<option value="'+x+'">'+x+'</option>';}).join('');sel.value='PTA';document.getElementById('rateAddOverlay').classList.remove('hidden');pushOverlayHistory('rateAddOverlay'); }
+function saveManualRate(){ const brand=document.getElementById('rb-brand').value.trim(),model=document.getElementById('rb-model').value.trim(),raw=document.getElementById('rb-rate').value.trim(),rate=raw===''?null:parsePrice(raw);if(!brand||!model){alert('Brand aur model zaroori hai.');return;}if(rate===null||rate<=0){alert('Buy Rate sahi likhein, jaise 125000 ya 125k.');return;}const ok=addRateBookEntry({brand:brand,model:model,variant:document.getElementById('rb-variant').value.trim(),status:document.getElementById('rb-status').value,rate:rate,date:document.getElementById('rb-date').value||todayISO(),seller:document.getElementById('rb-seller').value.trim(),notes:document.getElementById('rb-notes').value.trim(),source:'manual'});if(!ok){alert('Rate save nahi ho saka.');return;}requestOverlayClose();renderRateBook();showToast('✓ Rate Book mein save ho gaya'); }
+
 async function loadInventory(){
   try{
     const raw = localStorage.getItem(LS_INVENTORY_KEY);
@@ -1517,6 +1612,7 @@ async function loadInventory(){
     }
   });
   if(migratedAutoRanges) tryCommitInventory(inventory);
+  migrateInventoryToRateBook();
   render();
 }
 
@@ -3274,6 +3370,16 @@ function saveEntry(){
     return; // sheet stays open, form data untouched, nothing was lost
   }
 
+  // Only brand-new stock saves create Rate Book history rows. Editing an existing
+  // stock entry never creates a duplicate rate record.
+  if(!editingId){
+    const newCount = 1 + document.querySelectorAll('#extraBuyList .extra-piece-block').length;
+    candidate.slice(0,newCount).forEach(function(x){
+      if(!x || x.buy==null || Number(x.buy)<=0) return;
+      addRateBookEntry({sourceInventoryId:x.id,brand:x.brand||brand,model:x.model||model,variant:x.storage||'',status:x.status||data.status||'',rate:x.buy,quantity:Math.max(1,Number(x.quantity)||1),date:x.buyDate||data.buyDate||todayISO(),seller:x.sellerName||data.sellerName||'',notes:x.notes||data.notes||'',source:'stock'},true);
+    });
+  }
+
   addCustomModelIfNew(brand, model);
   closeSheet();
   render();
@@ -3441,7 +3547,8 @@ function backupData(silent){
     expenses: expenses,
     customModels: customModels,
     customOptionData: customOptionData,
-    cardDisplaySettings: cardDisplaySettings
+    cardDisplaySettings: cardDisplaySettings,
+    rateBook: rateBook
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
@@ -3480,7 +3587,8 @@ async function shareBackupFile(){
     expenses: expenses,
     customModels: customModels,
     customOptionData: customOptionData,
-    cardDisplaySettings: cardDisplaySettings
+    cardDisplaySettings: cardDisplaySettings,
+    rateBook: rateBook
   };
   const json = JSON.stringify(payload, null, 2);
   const stamp = todayStr().replace(/-/g,'');
@@ -3531,6 +3639,8 @@ function restoreData(file){
         alert('Restore save nahi ho saka — phone ki storage full hai. Purana data abhi bhi jaisa tha waisa hi hai, kuch nahi badla.');
         return;
       }
+      if(Array.isArray(parsed.rateBook)){ rateBook=parsed.rateBook; try{localStorage.setItem(LS_RATE_BOOK_KEY,JSON.stringify(rateBook));}catch(e){} }
+      else { loadRateBook(); migrateInventoryToRateBook(); }
       customModels = parsed.customModels && typeof parsed.customModels === 'object' ? parsed.customModels : {};
       saveCustomModels();
       if(Array.isArray(parsed.expenses)){
@@ -3845,6 +3955,16 @@ document.getElementById('btnMenu').onclick = function(e){
   e.stopPropagation();
   document.getElementById('menuDropdown').classList.toggle('hidden');
 };
+document.getElementById('btnRateBook').onclick = function(){ openRateBook(); };
+document.getElementById('btnRateBookClose').onclick = function(){ requestOverlayClose(); };
+document.getElementById('rateBookOverlay').onclick = function(e){ if(e.target.id==='rateBookOverlay') requestOverlayClose(); };
+document.getElementById('btnRateBookAdd').onclick = function(){ openRateAdd(); };
+document.getElementById('btnRateAddCancel').onclick = function(){ requestOverlayClose(); };
+document.getElementById('btnRateAddSave').onclick = function(){ saveManualRate(); };
+document.getElementById('rateAddOverlay').onclick = function(e){ if(e.target.id==='rateAddOverlay') requestOverlayClose(); };
+document.getElementById('rateBookSearch').addEventListener('input', renderRateBook);
+document.getElementById('rateBookStatusFilter').addEventListener('change', renderRateBook);
+
 document.getElementById('menuDropdown').addEventListener('click', function(e){
   if(e.target.tagName === 'BUTTON'){
     document.getElementById('menuDropdown').classList.add('hidden');
@@ -4541,6 +4661,9 @@ document.getElementById('btnClearData').onclick = function(){
   const ok = tryCommitInventory([]);
   if(!ok){ alert('Clear nahi ho saka — storage mein masla hua, dobara try karein.'); return; }
   tryCommitExpenses([]);
+  rateBook=[];
+  try{localStorage.setItem(LS_RATE_BOOK_KEY,'[]');}catch(e){}
+  schedulePush();
   customModels = {};
   saveCustomModels();
   customOptionData = {extra:{}, hidden:{}, issueOverrides:{}, cardVisibility:{}, badgeColor:{}, badgeProminent:{}};
@@ -4945,6 +5068,7 @@ function buildCloudPayload(){
     customOptionData: customOptionData,
     cardDisplaySettings: cardDisplaySettings,
     shopProfile: shopProfile,
+    rateBook: rateBook,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 }
@@ -5028,6 +5152,10 @@ function startCloudSync(uid){
     if(data.cardDisplaySettings){
       Object.assign(cardDisplaySettings, data.cardDisplaySettings);
       try{ localStorage.setItem(LS_CARD_DISPLAY_KEY, JSON.stringify(cardDisplaySettings)); }catch(err){}
+    }
+    if(Array.isArray(data.rateBook)){
+      rateBook=data.rateBook;
+      try{localStorage.setItem(LS_RATE_BOOK_KEY,JSON.stringify(rateBook));}catch(err){}
     }
     if(data.shopProfile){
       shopProfile = Object.assign({shopName:"", ownerName:""}, data.shopProfile);
@@ -5237,6 +5365,7 @@ loadCardDisplaySettings();
 loadCustomOptionData();
 loadCustomModels();
 loadExpenses();
+loadRateBook();
 loadInventory();
 autoBackupIfDue();
 checkBackupReminder();
