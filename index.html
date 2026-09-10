@@ -305,6 +305,27 @@
   #btnPrivacyToggle{position:relative;}
   #btnPrivacyToggle.privacy-on::after{content:'';position:absolute;top:6px;right:8px;width:5px;height:5px;border-radius:50%;background:var(--text-faint);opacity:0.6;}
 
+  /* Admin Shop Context */
+  #adminShopContextBanner{display:none;align-items:center;justify-content:space-between;gap:8px;background:var(--jv-bg);border:1px solid var(--jv);color:var(--jv);border-radius:10px;padding:9px 11px;margin:8px 16px 0;font-size:12px;}
+  #adminShopContextBanner.show{display:flex;}
+  #adminShopContextBanner .ctx-name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  #adminShopContextBanner button{flex-shrink:0;background:transparent;color:var(--jv);border:1px solid var(--jv);border-radius:7px;padding:5px 9px;font-size:11px;font-weight:700;}
+  .app.admin-view .storage-bar-wrap{display:none;}
+  .app.admin-view .card-actions [data-edit],
+  .app.admin-view .card-actions [data-del],
+  .app.admin-view .card-actions [data-sell],
+  .app.admin-view .card-actions [data-split],
+  .app.admin-view .card-actions [data-return],
+  .app.admin-view [data-piece-brand],
+  .app.admin-view .add-piece-btn{display:none !important;}
+  body.admin-view-active #btnQuickExpense,
+  body.admin-view-active #fabAdd{display:none !important;}
+  body.admin-view-active #btnShareBackup,
+  body.admin-view-active #btnBackup,
+  body.admin-view-active #btnRestore,
+  body.admin-view-active #btnExcelBackup,
+  body.admin-view-active #btnExcelRestore,
+  body.admin-view-active #btnClearData{display:none !important;}
   /* Admin Shops */
   #adminShopsList .admin-shop-card{border:1px solid var(--border);border-radius:14px;padding:12px;margin:9px 0;background:var(--surface-2,transparent);}
   #adminShopsList .admin-shop-title{font-weight:800;font-size:15px;}
@@ -368,6 +389,7 @@
     <div class="menu-dropdown hidden" id="menuDropdown">
       <div class="menu-section-label">Overview</div>
       <button class="menu-item" id="btnAdminShops" style="display:none;">🏢 All Shops (Admin)</button>
+      <button class="menu-item" id="btnExitAdminShop" style="display:none;">↩ Apni Shop par wapas</button>
       <button class="menu-item" id="btnDashboard">📊 Dashboard</button>
       <button class="menu-item" id="btnReports">📄 Reports</button>
       <button class="menu-item" id="btnExpenses">💵 Expenses (kharcha)</button>
@@ -399,6 +421,10 @@
     <div class="storage-bar-wrap">
       <div class="storage-bar-track"><div class="storage-bar-fill" id="storageBarFill"></div></div>
       <div class="storage-bar-label" id="storageBarLabel">Storage: 0% used</div>
+    </div>
+    <div id="adminShopContextBanner">
+      <span>👁️ Admin mode: <span class="ctx-name" id="adminShopContextName"></span></span>
+      <button type="button" id="adminShopContextExit">Exit</button>
     </div>
   </header>
   <div class="search-row">
@@ -1106,6 +1132,7 @@ function loadCustomOptionData(){
 }
 
 function saveCustomOptionData(){
+  if(isAdminShopView()) return;
   try{ localStorage.setItem(LS_CUSTOM_OPTIONS_KEY, JSON.stringify(customOptionData)); }catch(err){}
   schedulePush();
 }
@@ -1185,6 +1212,7 @@ async function loadExpenses(){
 // Same read-back-to-confirm safety pattern as tryCommitInventory — if the
 // write fails, nothing changes and the add-expense form keeps its data.
 function tryCommitExpenses(candidateExpenses){
+  if(isAdminShopView()) return false;
   const json = JSON.stringify(candidateExpenses);
   try{
     localStorage.setItem(LS_EXPENSES_KEY, json);
@@ -1224,6 +1252,7 @@ async function loadCustomModels(){
 }
 
 async function saveCustomModels(){
+  if(isAdminShopView()) return;
   try{
     localStorage.setItem(LS_CUSTOM_MODELS_KEY, JSON.stringify(customModels));
   }catch(e){
@@ -1569,6 +1598,7 @@ function loadRateBook(){
   catch(e){ rateBook=[]; }
 }
 function saveRateBook(){
+  if(isAdminShopView()) return false;
   try{ localStorage.setItem(LS_RATE_BOOK_KEY, JSON.stringify(rateBook)); }
   catch(e){ console.error('Rate Book storage error',e); return false; }
   schedulePush(); return true;
@@ -1595,11 +1625,12 @@ function renderRateBook(){
   if(!cards.length){list.innerHTML='<div class="empty" style="padding:35px 10px;">Koi rate nahi mila. + Add Rate se manually rate save karein.</div>';return;}
   list.innerHTML=cards.map(function(g,gi){ const h=g.history, latest=h[0], nums=h.map(function(x){return Number(x.rate)||0;}), low=Math.min.apply(Math,nums), high=Math.max.apply(Math,nums), avg=nums.reduce(function(a,b){return a+b;},0)/nums.length; const rows=h.map(function(x){return '<div class="rate-book-history-row"><span>'+escapeHtml(x.date)+(x.quantity>1?' · x'+x.quantity:'')+(x.seller?' · '+escapeHtml(x.seller):'')+'</span><span class="rate">Rs '+fmt(x.rate)+'</span></div>';}).join(''); return '<div class="rate-book-card"><div class="rate-book-card-head"><div><div class="rate-book-title">'+escapeHtml(g.brand+' '+g.model+(g.variant?' '+g.variant:''))+'</div><div class="rate-book-sub">'+escapeHtml(g.status||'No status')+' · Last: '+escapeHtml(latest.date)+'</div></div><div class="rate-book-current">Rs '+fmt(latest.rate)+'</div></div><div class="rate-book-stats"><span class="rate-book-stat">Lowest: Rs '+fmt(low)+'</span><span class="rate-book-stat">Highest: Rs '+fmt(high)+'</span><span class="rate-book-stat">Average: Rs '+fmt(avg)+'</span></div><div class="rate-book-card-actions"><button type="button" data-rate-history="'+gi+'">'+(h.length>1?'View '+h.length+' rates':'View history')+'</button><button type="button" class="danger" data-rate-delete-group="'+gi+'">Delete history</button></div><div class="rate-book-history" id="rateHistory_'+gi+'">'+rows+'</div></div>'; }).join('');
   list.querySelectorAll('[data-rate-history]').forEach(function(btn){btn.onclick=function(){const el=document.getElementById('rateHistory_'+btn.dataset.rateHistory);if(el)el.classList.toggle('show');};});
-  list.querySelectorAll('[data-rate-delete-group]').forEach(function(btn){btn.onclick=function(){const g=cards[Number(btn.dataset.rateDeleteGroup)];if(!g)return;if(!confirm('Is mobile ki puri rate history delete karni hai?'))return;const key=rateBookKey(g);rateBook=rateBook.filter(function(r){return rateBookKey(r)!==key;});saveRateBook();renderRateBook();};});
+  list.querySelectorAll('[data-rate-delete-group]').forEach(function(btn){btn.onclick=function(){if(isAdminShopView()){alert('Admin Shop view read-only hai — Rate Book change nahi ki ja sakti.');return;}const g=cards[Number(btn.dataset.rateDeleteGroup)];if(!g)return;if(!confirm('Is mobile ki puri rate history delete karni hai?'))return;const key=rateBookKey(g);rateBook=rateBook.filter(function(r){return rateBookKey(r)!==key;});saveRateBook();renderRateBook();};});
 }
 function openRateBook(){ document.getElementById('rateBookSearch').value='';document.getElementById('rateBookStatusFilter').value='all';renderRateBook();document.getElementById('rateBookOverlay').classList.remove('hidden');pushOverlayHistory('rateBookOverlay'); }
 function openRateAdd(){ document.getElementById('rb-brand').value='';document.getElementById('rb-model').value='';document.getElementById('rb-variant').value='';document.getElementById('rb-rate').value='';document.getElementById('rb-rate-hint').textContent='';document.getElementById('rb-date').value=todayISO();document.getElementById('rb-seller').value='';document.getElementById('rb-notes').value='';const sel=document.getElementById('rb-status');sel.innerHTML=rateBookStatusOptions().map(function(x){return '<option value="'+x+'">'+x+'</option>';}).join('');sel.value='PTA';document.getElementById('rateAddOverlay').classList.remove('hidden');pushOverlayHistory('rateAddOverlay'); }
-function saveManualRate(){ const brand=document.getElementById('rb-brand').value.trim(),model=document.getElementById('rb-model').value.trim(),raw=document.getElementById('rb-rate').value.trim(),rate=raw===''?null:parsePrice(raw);if(!brand||!model){alert('Brand aur model zaroori hai.');return;}if(rate===null||rate<=0){alert('Buy Rate sahi likhein, jaise 125000 ya 125k.');return;}const ok=addRateBookEntry({brand:brand,model:model,variant:document.getElementById('rb-variant').value.trim(),status:document.getElementById('rb-status').value,rate:rate,date:document.getElementById('rb-date').value||todayISO(),seller:document.getElementById('rb-seller').value.trim(),notes:document.getElementById('rb-notes').value.trim(),source:'manual'});if(!ok){alert('Rate save nahi ho saka.');return;}requestOverlayClose();renderRateBook();showToast('✓ Rate Book mein save ho gaya'); }
+function saveManualRate(){
+  if(isAdminShopView()){ alert('Admin Shop view read-only hai — Rate Book mein change nahi ki ja sakti.'); return; } const brand=document.getElementById('rb-brand').value.trim(),model=document.getElementById('rb-model').value.trim(),raw=document.getElementById('rb-rate').value.trim(),rate=raw===''?null:parsePrice(raw);if(!brand||!model){alert('Brand aur model zaroori hai.');return;}if(rate===null||rate<=0){alert('Buy Rate sahi likhein, jaise 125000 ya 125k.');return;}const ok=addRateBookEntry({brand:brand,model:model,variant:document.getElementById('rb-variant').value.trim(),status:document.getElementById('rb-status').value,rate:rate,date:document.getElementById('rb-date').value||todayISO(),seller:document.getElementById('rb-seller').value.trim(),notes:document.getElementById('rb-notes').value.trim(),source:'manual'});if(!ok){alert('Rate save nahi ho saka.');return;}requestOverlayClose();renderRateBook();showToast('✓ Rate Book mein save ho gaya'); }
 
 async function loadInventory(){
   try{
@@ -1650,6 +1681,7 @@ async function loadInventory(){
 // core guarantee: if this returns false, nothing on disk or in memory changed,
 // so the form still has the person's typed data and nothing is silently lost.
 function tryCommitInventory(candidateInventory){
+  if(isAdminShopView()) return false;
   const json = JSON.stringify(candidateInventory);
   try{
     localStorage.setItem(LS_INVENTORY_KEY, json);
@@ -1671,6 +1703,7 @@ function tryCommitInventory(candidateInventory){
 // Kept for the few callers (custom models, restore) that don't need the
 // read-before-write safety of tryCommitInventory.
 async function saveInventory(){
+  if(isAdminShopView()) return;
   try{
     localStorage.setItem(LS_INVENTORY_KEY, JSON.stringify(inventory));
   }catch(e){
@@ -2498,6 +2531,7 @@ function loadCardDisplaySettings(){
   }catch(err){}
 }
 function saveCardDisplaySettings(){
+  if(isAdminShopView()) return;
   try{ localStorage.setItem(LS_CARD_DISPLAY_KEY, JSON.stringify(cardDisplaySettings)); }catch(err){}
   schedulePush();
 }
@@ -2783,6 +2817,7 @@ function findOriginalStockForReturn(sale){
   )||null;
 }
 function returnSoldItem(soldId){
+  if(isAdminShopView()){ alert('Admin Shop view read-only hai — return nahi kiya ja sakta.'); return; }
   const sale=inventory.find(x=>String(x.id)===String(soldId));
   if(!sale || !sale.sold){ alert('Sale record nahi mila.'); return; }
   if(isReturnedSale(sale)){ alert('Ye sale pehle hi returned hai.'); return; }
@@ -2976,6 +3011,7 @@ async function shareEntry(id){
 }
 
 function deleteEntry(id){
+  if(isAdminShopView()){ alert('Admin Shop view read-only hai — delete nahi kiya ja sakta.'); return; }
   if(!confirm('Ye entry delete kar dein?')) return;
   const idx = inventory.findIndex(function(x){return x.id===id;});
   if(idx===-1) return;
@@ -3001,6 +3037,7 @@ function deleteEntry(id){
 }
 
 function splitEntry(id){
+  if(isAdminShopView()){ alert('Admin Shop view read-only hai — split nahi kiya ja sakta.'); return; }
   const idx = inventory.findIndex(function(x){return x.id===id;});
   if(idx===-1) return;
   const e = inventory[idx];
@@ -3124,6 +3161,7 @@ document.getElementById('f-model-select').addEventListener('change', function(){
 });
 
 function openAdd(){
+  if(isAdminShopView()){ alert('Admin Shop view read-only hai — nayi entry add nahi ki ja sakti.'); return; }
   hideSaveError('saveErrorBanner');
   editingId = null;
   rangeInputMode = 'auto';
@@ -3165,6 +3203,7 @@ function openAdd(){
 }
 
 function openAddPiece(brand, model){
+  if(isAdminShopView()){ alert('Admin Shop view read-only hai — naya piece add nahi kiya ja sakta.'); return; }
   openAdd();
   const brandKnown = BRANDS.indexOf(brand)!==-1;
   formState.brand = brandKnown ? brand : 'Other';
@@ -3178,6 +3217,7 @@ function openAddPiece(brand, model){
 }
 
 function openEdit(id){
+  if(isAdminShopView()){ alert('Admin Shop view read-only hai — edit nahi kiya ja sakta.'); return; }
   hideSaveError('saveErrorBanner');
   const e = inventory.find(function(x){return x.id===id;});
   if(!e) return;
@@ -3416,6 +3456,7 @@ function saveEntry(){
 }
 
 function openSell(id){
+  if(isAdminShopView()){ alert('Admin Shop view read-only hai — sale change nahi ki ja sakti.'); return; }
   hideSaveError('sellErrorBanner');
   const e = inventory.find(function(x){return x.id===id;});
   if(!e) return;
@@ -3651,6 +3692,7 @@ function backupAfterChange(){
 }
 
 function restoreData(file){
+  if(isAdminShopView()){ alert('Admin Shop view read-only hai — restore nahi kiya ja sakta.'); return; }
   const reader = new FileReader();
   reader.onload = function(){
     try{
@@ -4050,6 +4092,7 @@ function renderExpensesList(){
 }
 
 function deleteExpenseEntry(id){
+  if(isAdminShopView()){ alert('Admin Shop view read-only hai — expense delete nahi kiya ja sakta.'); return; }
   if(!confirm('Ye expense delete kar dein?')) return;
   const candidate = expenses.filter(function(x){ return x.id!==id; });
   const ok = tryCommitExpenses(candidate);
@@ -4063,6 +4106,7 @@ function deleteExpenseEntry(id){
 // Fills the same add-form with an existing expense's data and flips it into
 // "update" mode, instead of needing a separate edit screen.
 function editExpenseEntry(id){
+  if(isAdminShopView()){ alert('Admin Shop view read-only hai — expense edit nahi kiya ja sakta.'); return; }
   const entry = expenses.find(function(x){ return x.id===id; });
   if(!entry) return;
   editingExpenseId = id;
@@ -4108,6 +4152,7 @@ document.getElementById('exp-refund-toggle').onclick = function(){
 };
 
 document.getElementById('btnAddExpense').onclick = function(){
+  if(isAdminShopView()){ alert('Admin Shop view read-only hai — expense change nahi kiya ja sakta.'); return; }
   const category = expenseFormState.category==='Other' ? document.getElementById('exp-category-other').value.trim() : expenseFormState.category;
   if(!category){ alert('Category chunein ya likhein.'); return; }
   const amountRaw = document.getElementById('exp-amount').value.trim();
@@ -4675,6 +4720,7 @@ document.getElementById('clearPasswordSaveBtn').onclick = function(){
 };
 
 document.getElementById('btnClearData').onclick = function(){
+  if(isAdminShopView()){ alert('Admin Shop view read-only hai — data clear nahi kiya ja sakta.'); return; }
   let storedHash = null;
   try{ storedHash = localStorage.getItem(LS_CLEAR_PASSWORD_KEY); }catch(e){}
   if(!storedHash){
@@ -4888,6 +4934,13 @@ let shopProfile = {shopName:"", ownerName:""};
 // shop data with restricted permissions, layered in next).
 let userRole = 'owner';
 let userShopId = null;
+
+// Admin Shop Context: temporarily renders a selected shop using the exact same
+// main-screen data variables, without logging into or changing that owner's account.
+// The selected shop is strictly read-only from this UI.
+let adminViewActive = false;
+let adminViewShopId = null;
+let adminViewSnapshot = null;
 const LS_SHOP_PROFILE_KEY = 'mobileLedger_shopProfile';
 // Set once a login succeeds on this device — lets us skip the blocking
 // "checking session" screen on future app opens when we already have every
@@ -5020,11 +5073,11 @@ function renderAdminShops(){
       '<div class="admin-stat">Stock value <b>'+adminMoney(d.stockValue)+'</b></div>'+
       '<div class="admin-stat">Sales <b>'+adminMoney(d.salesValue)+'</b></div>'+
       '<div class="admin-stat">Net profit <b>'+adminMoney(d.netProfit)+'</b></div>'+
-      '</div><div class="admin-shop-actions"><button type="button" data-admin-view="'+i+'">Record dekhein</button></div></div>';
+      '</div><div class="admin-shop-actions"><button type="button" data-admin-view="'+i+'">Open Shop</button></div></div>';
   }).join('');
   ids.forEach(function(id,i){ adminShopCache['_order_'+i]=id; });
   list.querySelectorAll('[data-admin-view]').forEach(function(btn){
-    btn.onclick=function(){ const id=adminShopCache['_order_'+btn.dataset.adminView]; if(id) renderAdminShopDetail(id); };
+    btn.onclick=function(){ const id=adminShopCache['_order_'+btn.dataset.adminView]; if(id) enterAdminShop(id); };
   });
   status.textContent=ids.length+' shop'+(ids.length===1?'':'s')+' · read-only admin view';
 }
@@ -5080,6 +5133,97 @@ function openAdminShops(){
   loadAdminShops();
 }
 
+function cloneAdminData(v){
+  try{return JSON.parse(JSON.stringify(v));}catch(e){return v;}
+}
+
+function isAdminShopView(){ return userRole==='admin' && adminViewActive; }
+
+function updateAdminShopContextUI(){
+  const app=document.querySelector('.app');
+  const banner=document.getElementById('adminShopContextBanner');
+  const nameEl=document.getElementById('adminShopContextName');
+  const exitBtn=document.getElementById('btnExitAdminShop');
+  if(app) app.classList.toggle('admin-view', isAdminShopView());
+  document.body.classList.toggle('admin-view-active', isAdminShopView());
+  const titleEl=document.querySelector('.header-top h1');
+  if(titleEl) titleEl.textContent = isAdminShopView() ? ('🏪 '+(shopProfile.shopName || adminViewShopId || 'Selected Shop')) : 'Mobile Ledger';
+  if(banner) banner.classList.toggle('show', isAdminShopView());
+  if(nameEl) nameEl.textContent = isAdminShopView() ? (shopProfile.shopName || adminViewShopId || 'Selected shop') : '';
+  if(exitBtn) exitBtn.style.display = isAdminShopView() ? 'block' : 'none';
+  if(isAdminShopView()) document.getElementById('btnAdminShops').style.display='block';
+}
+
+function enterAdminShop(shopId){
+  if(userRole!=='admin'){alert('Ye section sirf Admin account ke liye hai.');return;}
+  const x=adminShopCache[shopId];
+  if(!x || !x.data){alert('Is shop ka data available nahi hai.');return;}
+
+  if(!adminViewSnapshot){
+    adminViewSnapshot={
+      inventory:cloneAdminData(inventory),
+      expenses:cloneAdminData(expenses),
+      customModels:cloneAdminData(customModels),
+      customOptionData:cloneAdminData(customOptionData),
+      cardDisplaySettings:cloneAdminData(cardDisplaySettings),
+      shopProfile:cloneAdminData(shopProfile),
+      rateBook:cloneAdminData(rateBook),
+      currentFilter:currentFilter,
+      currentBrandFilter:currentBrandFilter,
+      currentSort:currentSort,
+      search:document.getElementById('search') ? document.getElementById('search').value : ''
+    };
+  }
+
+  const d=x.data||{};
+  adminViewActive=true;
+  adminViewShopId=shopId;
+  inventory=cloneAdminData(Array.isArray(d.inventory)?d.inventory:[]);
+  expenses=cloneAdminData(Array.isArray(d.expenses)?d.expenses:[]);
+  customModels=cloneAdminData(d.customModels||{});
+  customOptionData=cloneAdminData(d.customOptionData||{});
+  cardDisplaySettings=Object.assign({}, cloneAdminData(cardDisplaySettings), cloneAdminData(d.cardDisplaySettings||{}));
+  shopProfile=Object.assign({shopName:'',ownerName:''}, cloneAdminData(d.shopProfile||{}));
+  rateBook=cloneAdminData(Array.isArray(d.rateBook)?d.rateBook:[]);
+  currentFilter='available';
+  currentBrandFilter='all';
+  currentSort='default';
+  if(document.getElementById('search')) document.getElementById('search').value='';
+
+  document.getElementById('adminShopsOverlay').classList.add('hidden');
+  updateAdminShopContextUI();
+  updateAccountUI();
+  render();
+  window.scrollTo(0,0);
+  showToast('✓ '+(shopProfile.shopName||'Shop')+' Open Shop mode mein hai (read-only)');
+}
+
+function exitAdminShop(){
+  if(!adminViewSnapshot) return;
+  const s=adminViewSnapshot;
+  adminViewActive=false;
+  adminViewShopId=null;
+  inventory=s.inventory;
+  expenses=s.expenses;
+  customModels=s.customModels;
+  customOptionData=s.customOptionData;
+  cardDisplaySettings=s.cardDisplaySettings;
+  shopProfile=s.shopProfile;
+  rateBook=s.rateBook;
+  currentFilter=s.currentFilter;
+  currentBrandFilter=s.currentBrandFilter;
+  currentSort=s.currentSort;
+  if(document.getElementById('search')) document.getElementById('search').value=s.search||'';
+  adminViewSnapshot=null;
+  updateAdminShopContextUI();
+  updateAccountUI();
+  render();
+  showToast('✓ Apni Admin screen par wapas aa gaye');
+}
+
+document.getElementById('btnExitAdminShop').onclick=function(){ exitAdminShop(); };
+document.getElementById('adminShopContextExit').onclick=function(){ exitAdminShop(); };
+
 function initFirebaseSync(){
   if(!firebaseReady()){
     // No Firebase project configured at all — there's no way to enforce
@@ -5122,7 +5266,12 @@ function initFirebaseSync(){
         resolveUserRoleAndShop(user).then(function(){
           updateAccountUI();
           setAuthGateView('unlocked');
-          startCloudSync(userShopId);
+          if(userRole==='admin'){
+            updateAdminShopContextUI();
+            setTimeout(function(){ openAdminShops(); }, 0);
+          }else{
+            startCloudSync(userShopId);
+          }
         });
       } else {
         try{ localStorage.removeItem(LS_WAS_LOGGED_IN_KEY); }catch(e){}
@@ -5149,6 +5298,7 @@ function updateAccountUI(){
   const statusLine = document.getElementById('accountStatusLine');
   const adminBtn = document.getElementById('btnAdminShops');
   if(adminBtn) adminBtn.style.display = (fbUser && userRole==='admin') ? 'block' : 'none';
+  updateAdminShopContextUI();
   if(fbUser){
     label.textContent = accountDisplayId(fbUser) + ' (sync ON)';
     if(loggedOutView) loggedOutView.style.display = 'none';
@@ -5225,6 +5375,7 @@ function attemptPush(){
 }
 
 function schedulePush(){
+  if(isAdminShopView()) return;
   // Mark that local data now has a change the cloud hasn't confirmed yet.
   // Persisted immediately, and done unconditionally (even if we can't reach
   // the cloud right now, or login hasn't finished resolving) so this device
@@ -5242,6 +5393,12 @@ window.addEventListener('online', function(){
 });
 
 function startCloudSync(uid){
+  if(userRole==='admin'){
+    // Admin must never attach the normal owner listener or push data into an
+    // admin shop document. Admin reads selected shop documents explicitly.
+    setAccountSyncStatus('Admin mode — shop data read-only', 'ok');
+    return;
+  }
   setAccountSyncStatus('data la rahe hain…', 'saving');
   cloudUnsub = fbDb.collection('shops').doc(uid).onSnapshot(function(snap){
     if(!snap.exists){
@@ -5395,6 +5552,7 @@ document.getElementById('btnCancelShopProfile').onclick = function(){
   document.getElementById('editShopProfileBlock').style.display = 'none';
 };
 document.getElementById('btnSaveShopProfile').onclick = function(){
+  if(isAdminShopView()){ alert('Admin Shop view read-only hai — shop profile change nahi ki ja sakti.'); return; }
   shopProfile = {
     shopName: document.getElementById('edit-shopname').value.trim(),
     ownerName: document.getElementById('edit-ownername').value.trim()
