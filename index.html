@@ -305,6 +305,22 @@
   #btnPrivacyToggle{position:relative;}
   #btnPrivacyToggle.privacy-on::after{content:'';position:absolute;top:6px;right:8px;width:5px;height:5px;border-radius:50%;background:var(--text-faint);opacity:0.6;}
 
+  /* Admin Shops */
+  #adminShopsList .admin-shop-card{border:1px solid var(--border);border-radius:14px;padding:12px;margin:9px 0;background:var(--surface-2,transparent);}
+  #adminShopsList .admin-shop-title{font-weight:800;font-size:15px;}
+  #adminShopsList .admin-shop-meta{color:var(--text-dim);font-size:12px;margin-top:3px;}
+  #adminShopsList .admin-shop-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:9px;}
+  #adminShopsList .admin-stat{border:1px solid var(--border);border-radius:10px;padding:8px;font-size:12px;}
+  #adminShopsList .admin-stat b{display:block;font-size:14px;margin-top:2px;}
+  #adminShopsList .admin-shop-actions{display:flex;gap:7px;margin-top:9px;}
+  #adminShopDetail{border-top:1px solid var(--border);padding-top:12px;}
+  #adminShopDetail .admin-detail-row{padding:9px 0;border-bottom:1px solid var(--border);font-size:12px;}
+  #adminShopDetail .admin-detail-head{font-weight:800;font-size:15px;margin-bottom:8px;}
+  #adminShopDetail .admin-table-wrap{overflow:auto;border:1px solid var(--border);border-radius:10px;}
+  #adminShopDetail table{width:100%;border-collapse:collapse;font-size:11px;min-width:620px;}
+  #adminShopDetail th,#adminShopDetail td{padding:7px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top;}
+  #adminShopDetail th{font-weight:800;}
+
   /* Rate Book */
   .rate-book-actions{display:flex;gap:8px;margin-top:10px;}
   .rate-book-actions button{width:100%;padding:10px;border-radius:9px;border:none;font-size:13px;font-weight:600;}
@@ -351,6 +367,7 @@
 
     <div class="menu-dropdown hidden" id="menuDropdown">
       <div class="menu-section-label">Overview</div>
+      <button class="menu-item" id="btnAdminShops" style="display:none;">🏢 All Shops (Admin)</button>
       <button class="menu-item" id="btnDashboard">📊 Dashboard</button>
       <button class="menu-item" id="btnReports">📄 Reports</button>
       <button class="menu-item" id="btnExpenses">💵 Expenses (kharcha)</button>
@@ -626,6 +643,17 @@
     <div class="sheet-actions">
       <button class="btn-cancel" id="btnImeiScanCancel">Cancel</button>
     </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="adminShopsOverlay">
+  <div class="sheet" style="max-height:92vh;overflow:auto;">
+    <div class="sheet-handle"></div>
+    <h2>🏢 All Shops — Admin</h2>
+    <div id="adminShopsStatus" class="rr-sub" style="margin-bottom:10px;">Data load ho raha hai…</div>
+    <div id="adminShopsList"></div>
+    <div id="adminShopDetail" style="display:none;margin-top:12px;"></div>
+    <div class="sheet-actions"><button class="btn-cancel" id="btnAdminShopsClose">Band karein</button></div>
   </div>
 </div>
 
@@ -986,7 +1014,7 @@ let rangeInputMode = 'auto'; // 'auto' until the user manually edits the sell-ra
 // closes the topmost open overlay instead of leaving the app. If nothing is
 // open, there's nothing pushed, so back behaves normally (exits/leaves as
 // before).
-const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','imeiScanOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','expensesOverlay','accountOverlay'];
+const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','imeiScanOverlay','adminShopsOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','expensesOverlay','accountOverlay'];
 let overlayHistoryStack = [];
 
 function pushOverlayHistory(id){
@@ -3958,6 +3986,9 @@ document.getElementById('btnMenu').onclick = function(e){
 document.getElementById('btnRateBook').onclick = function(){ openRateBook(); };
 document.getElementById('btnRateBookClose').onclick = function(){ requestOverlayClose(); };
 document.getElementById('rateBookOverlay').onclick = function(e){ if(e.target.id==='rateBookOverlay') requestOverlayClose(); };
+document.getElementById('adminShopsOverlay').onclick = function(e){ if(e.target.id==='adminShopsOverlay') requestOverlayClose(); };
+document.getElementById('btnAdminShopsClose').onclick = function(){ requestOverlayClose(); };
+document.getElementById('btnAdminShops').onclick = function(){ openAdminShops(); };
 document.getElementById('btnRateBookAdd').onclick = function(){ openRateAdd(); };
 document.getElementById('btnRateAddCancel').onclick = function(){ requestOverlayClose(); };
 document.getElementById('btnRateAddSave').onclick = function(){ saveManualRate(); };
@@ -4949,6 +4980,106 @@ function resolveUserRoleAndShop(user){
   });
 }
 
+
+// ---------- Admin / multi-shop dashboard ----------
+// Admin access is intentionally read-only from this UI. A shop owner can
+// only reach their own /shops/{shopId}; Firebase Security Rules must enforce
+// that boundary on the server as well. This dashboard never replaces the
+// current shop's local inventory, so opening another shop cannot corrupt the
+// owner's data on this device.
+let adminShopCache = {};
+
+function adminMoney(n){ return 'Rs '+fmt(Number(n)||0); }
+function adminShopSummary(data){
+  const inv=Array.isArray(data.inventory)?data.inventory:[];
+  const exp=Array.isArray(data.expenses)?data.expenses:[];
+  const active=inv.filter(function(e){return !e.sold;});
+  const sold=inv.filter(function(e){return e.sold && !isReturnedSale(e);});
+  const stockUnits=active.reduce(function(s,e){return s+(Math.max(1,Number(e.quantity)||1));},0);
+  const stockValue=active.reduce(function(s,e){return s+((Number(e.buy)||0)*(Math.max(1,Number(e.quantity)||1)));},0);
+  const salesValue=sold.reduce(function(s,e){return s+((Number(e.sell)||0)*(Math.max(1,Number(e.quantity)||1)));},0);
+  const grossProfit=sold.reduce(function(s,e){return s+saleBaseProfit(e);},0);
+  const phoneExp=inv.reduce(function(s,e){return s+phoneExpensesTotal(e);},0);
+  const expenses=exp.reduce(function(s,e){return s+Math.abs(Number(e.amount)||0);},0)+phoneExp;
+  return {inv:inv,exp:exp,active:active,sold:sold,stockUnits:stockUnits,stockValue:stockValue,salesValue:salesValue,grossProfit:grossProfit,expenses:expenses,netProfit:grossProfit-expenses};
+}
+function adminEscape(v){ return escapeHtml(v==null?'':String(v)); }
+function renderAdminShops(){
+  const list=document.getElementById('adminShopsList');
+  const status=document.getElementById('adminShopsStatus');
+  const ids=Object.keys(adminShopCache);
+  if(!ids.length){list.innerHTML='<div class="empty" style="padding:30px 10px;text-align:center;">Koi shop record nahi mila.</div>'; status.textContent='0 shops'; return;}
+  ids.sort(function(a,b){return String(adminShopCache[a].shopName||a).localeCompare(String(adminShopCache[b].shopName||b),undefined,{sensitivity:'base'});});
+  list.innerHTML=ids.map(function(id,i){
+    const x=adminShopCache[id], d=x.summary||adminShopSummary(x.data||{});
+    return '<div class="admin-shop-card">'+
+      '<div class="admin-shop-title">'+adminEscape(x.shopName||'Unnamed Shop')+'</div>'+
+      '<div class="admin-shop-meta">'+adminEscape(x.ownerEmail||'Owner email unavailable')+' · Shop ID: '+adminEscape(id)+'</div>'+
+      '<div class="admin-shop-stats">'+
+      '<div class="admin-stat">Stock <b>'+d.stockUnits+' units</b></div>'+
+      '<div class="admin-stat">Stock value <b>'+adminMoney(d.stockValue)+'</b></div>'+
+      '<div class="admin-stat">Sales <b>'+adminMoney(d.salesValue)+'</b></div>'+
+      '<div class="admin-stat">Net profit <b>'+adminMoney(d.netProfit)+'</b></div>'+
+      '</div><div class="admin-shop-actions"><button type="button" data-admin-view="'+i+'">Record dekhein</button></div></div>';
+  }).join('');
+  ids.forEach(function(id,i){ adminShopCache['_order_'+i]=id; });
+  list.querySelectorAll('[data-admin-view]').forEach(function(btn){
+    btn.onclick=function(){ const id=adminShopCache['_order_'+btn.dataset.adminView]; if(id) renderAdminShopDetail(id); };
+  });
+  status.textContent=ids.length+' shop'+(ids.length===1?'':'s')+' · read-only admin view';
+}
+function renderAdminShopDetail(id){
+  const x=adminShopCache[id]; if(!x) return;
+  const d=x.summary||adminShopSummary(x.data||{});
+  const detail=document.getElementById('adminShopDetail');
+  const inv=d.inv.slice().sort(function(a,b){return String(b.saleDate||b.buyDate||b.lastUpdated||'').localeCompare(String(a.saleDate||a.buyDate||a.lastUpdated||''));});
+  const ex=d.exp.slice().sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''));});
+  const invRows=inv.map(function(e){
+    const state=isReturnedSale(e)?'Returned':(e.sold?'Sold':'Available');
+    const amount=e.sold?e.sell:e.buy;
+    return '<tr><td>'+adminEscape(e.brand)+' '+adminEscape(e.model)+'</td><td>'+adminEscape(e.storage||'')+'</td><td>'+adminEscape(e.status||'')+'</td><td>'+state+'</td><td>'+adminEscape(e.saleDate||e.buyDate||e.lastUpdated||'')+'</td><td>'+adminMoney(amount)+'</td></tr>';
+  }).join('');
+  const expRows=ex.map(function(e){return '<tr><td>'+adminEscape(e.date||'')+'</td><td>'+adminEscape(e.category||'Other')+'</td><td>'+adminMoney(e.amount)+'</td><td>'+adminEscape(e.notes||'')+'</td></tr>';}).join('');
+  detail.style.display='block';
+  detail.innerHTML='<div class="admin-detail-head">'+adminEscape(x.shopName||'Unnamed Shop')+'</div>'+
+    '<div class="admin-detail-row">Owner: <b>'+adminEscape(x.ownerEmail||'-')+'</b><br>Shop ID: '+adminEscape(id)+'</div>'+
+    '<div class="admin-detail-row">Stock: <b>'+d.stockUnits+' units</b> · Stock value: <b>'+adminMoney(d.stockValue)+'</b><br>Sales: <b>'+adminMoney(d.salesValue)+'</b> · Gross profit: <b>'+adminMoney(d.grossProfit)+'</b><br>Expenses: <b>'+adminMoney(d.expenses)+'</b> · Net profit: <b>'+adminMoney(d.netProfit)+'</b></div>'+
+    '<h3 style="margin:14px 0 7px;font-size:14px;">Stock / Sales records ('+inv.length+')</h3>'+
+    '<div class="admin-table-wrap"><table><thead><tr><th>Mobile</th><th>Variant</th><th>Status</th><th>State</th><th>Date</th><th>Amount</th></tr></thead><tbody>'+(invRows||'<tr><td colspan="6">No records</td></tr>')+'</tbody></table></div>'+
+    '<h3 style="margin:14px 0 7px;font-size:14px;">Expenses ('+ex.length+')</h3>'+
+    '<div class="admin-table-wrap"><table><thead><tr><th>Date</th><th>Category</th><th>Amount</th><th>Notes</th></tr></thead><tbody>'+(expRows||'<tr><td colspan="4">No expenses</td></tr>')+'</tbody></table></div>';
+  detail.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+async function loadAdminShops(){
+  if(userRole!=='admin' || !fbUser || !fbDb){ alert('Admin access nahi hai.'); return; }
+  const status=document.getElementById('adminShopsStatus');
+  const list=document.getElementById('adminShopsList');
+  const detail=document.getElementById('adminShopDetail');
+  status.textContent='Sab shops ka data load ho raha hai…'; list.innerHTML=''; detail.style.display='none'; detail.innerHTML='';
+  adminShopCache={};
+  try{
+    const [usersSnap, shopsSnap]=await Promise.all([fbDb.collection('users').get(), fbDb.collection('shops').get()]);
+    const ownersByShop={};
+    usersSnap.forEach(function(doc){const u=doc.data()||{}; if(u.shopId && u.role!=='admin' && !ownersByShop[u.shopId]) ownersByShop[u.shopId]=u;});
+    shopsSnap.forEach(function(doc){
+      const data=doc.data()||{}, owner=ownersByShop[doc.id]||{};
+      adminShopCache[doc.id]={shopName:(data.shopProfile&&data.shopProfile.shopName)||owner.shopName||doc.id,ownerEmail:owner.email||'',data:data};
+      adminShopCache[doc.id].summary=adminShopSummary(data);
+    });
+    renderAdminShops();
+  }catch(err){
+    console.error('Admin shops load failed',err);
+    status.textContent='Shops load nahi ho sakin: '+(err.message||'permission/network error');
+    list.innerHTML='<div class="empty" style="padding:25px 10px;text-align:center;">Firebase Security Rules / internet check karein.</div>';
+  }
+}
+function openAdminShops(){
+  if(userRole!=='admin'){alert('Ye section sirf Admin account ke liye hai.');return;}
+  document.getElementById('adminShopsOverlay').classList.remove('hidden');
+  pushOverlayHistory('adminShopsOverlay');
+  loadAdminShops();
+}
+
 function initFirebaseSync(){
   if(!firebaseReady()){
     // No Firebase project configured at all — there's no way to enforce
@@ -5016,6 +5147,8 @@ function updateAccountUI(){
   const loggedOutView = document.getElementById('accountLoggedOutView');
   const loggedInView = document.getElementById('accountLoggedInView');
   const statusLine = document.getElementById('accountStatusLine');
+  const adminBtn = document.getElementById('btnAdminShops');
+  if(adminBtn) adminBtn.style.display = (fbUser && userRole==='admin') ? 'block' : 'none';
   if(fbUser){
     label.textContent = accountDisplayId(fbUser) + ' (sync ON)';
     if(loggedOutView) loggedOutView.style.display = 'none';
