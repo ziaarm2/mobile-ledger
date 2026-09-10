@@ -388,8 +388,8 @@
 
     <div class="menu-dropdown hidden" id="menuDropdown">
       <div class="menu-section-label">Overview</div>
-      <button class="menu-item" id="btnAdminShops" style="display:none;">🏢 All Shops (Admin)</button>
-      <button class="menu-item" id="btnExitAdminShop" style="display:none;">↩ Apni Shop par wapas</button>
+      <button class="menu-item" id="btnAdminShops" style="display:none !important;">🏢 All Shops (Admin)</button>
+      <button class="menu-item" id="btnExitAdminShop" style="display:none !important;">↩ Apni Shop par wapas</button>
       <button class="menu-item" id="btnDashboard">📊 Dashboard</button>
       <button class="menu-item" id="btnReports">📄 Reports</button>
       <button class="menu-item" id="btnExpenses">💵 Expenses (kharcha)</button>
@@ -1043,6 +1043,15 @@ let rangeInputMode = 'auto'; // 'auto' until the user manually edits the sell-ra
 const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','imeiScanOverlay','adminShopsOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','expensesOverlay','accountOverlay'];
 let overlayHistoryStack = [];
 
+// Keep the app on its main route when the phone/browser Back gesture is used.
+// Overlay history still works normally above this guard.
+let mainHistoryGuardActive = false;
+try{
+  history.replaceState({mlMain:true}, '', location.href);
+  history.pushState({mlMainGuard:true}, '', location.href);
+  mainHistoryGuardActive = true;
+}catch(e){}
+
 function pushOverlayHistory(id){
   overlayHistoryStack.push(id);
   try{ history.pushState({mlOverlay:id}, '', location.href); }catch(e){}
@@ -1058,7 +1067,13 @@ function requestOverlayClose(){
 }
 
 window.addEventListener('popstate', function(){
-  if(!overlayHistoryStack.length) return; // nothing of ours open — let real back/exit happen
+  if(!overlayHistoryStack.length){
+    // No sheet/page is open: consume the Back gesture and keep the app open.
+    if(mainHistoryGuardActive){
+      try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){}
+    }
+    return;
+  }
   const id = overlayHistoryStack.pop();
   const el = document.getElementById(id);
   if(el) el.classList.add('hidden');
@@ -4025,6 +4040,39 @@ document.getElementById('btnMenu').onclick = function(e){
   e.stopPropagation();
   document.getElementById('menuDropdown').classList.toggle('hidden');
 };
+
+// ---------- Hidden Admin Access ----------
+// Admins can reach All Shops without exposing an Admin label/button to shop owners.
+// Long-press the existing "Mobile Ledger" title for ~1.5 seconds.
+(function(){
+  const target=document.querySelector('.header-top h1');
+  if(!target) return;
+  let timer=null;
+  let longPressFired=false;
+  const clear=function(){ if(timer){ clearTimeout(timer); timer=null; } };
+  target.style.userSelect='none';
+  target.style.webkitUserSelect='none';
+  target.addEventListener('pointerdown', function(e){
+    if(e.pointerType==='mouse' && e.button!==0) return;
+    longPressFired=false;
+    clear();
+    timer=setTimeout(function(){
+      timer=null;
+      if(userRole!=='admin') return;
+      longPressFired=true;
+      try{ if(navigator.vibrate) navigator.vibrate(25); }catch(err){}
+      if(isAdminShopView()){
+        exitAdminShop();
+      }else{
+        openAdminShops();
+      }
+    },1500);
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(function(ev){ target.addEventListener(ev, clear); });
+  target.addEventListener('contextmenu', function(e){
+    if(userRole==='admin') e.preventDefault();
+  });
+})();
 document.getElementById('btnRateBook').onclick = function(){ openRateBook(); };
 document.getElementById('btnRateBookClose').onclick = function(){ requestOverlayClose(); };
 document.getElementById('rateBookOverlay').onclick = function(e){ if(e.target.id==='rateBookOverlay') requestOverlayClose(); };
@@ -5146,12 +5194,15 @@ function updateAdminShopContextUI(){
   const exitBtn=document.getElementById('btnExitAdminShop');
   if(app) app.classList.toggle('admin-view', isAdminShopView());
   document.body.classList.toggle('admin-view-active', isAdminShopView());
+  // Admin access is intentionally invisible in the normal UI. The selected
+  // shop is rendered using the same main-screen layout as an owner sees.
   const titleEl=document.querySelector('.header-top h1');
-  if(titleEl) titleEl.textContent = isAdminShopView() ? ('🏪 '+(shopProfile.shopName || adminViewShopId || 'Selected Shop')) : 'Mobile Ledger';
-  if(banner) banner.classList.toggle('show', isAdminShopView());
-  if(nameEl) nameEl.textContent = isAdminShopView() ? (shopProfile.shopName || adminViewShopId || 'Selected shop') : '';
-  if(exitBtn) exitBtn.style.display = isAdminShopView() ? 'block' : 'none';
-  if(isAdminShopView()) document.getElementById('btnAdminShops').style.display='block';
+  if(titleEl) titleEl.textContent = 'Mobile Ledger';
+  if(banner) banner.classList.remove('show');
+  if(nameEl) nameEl.textContent = '';
+  if(exitBtn) exitBtn.style.display = 'none';
+  const adminBtn=document.getElementById('btnAdminShops');
+  if(adminBtn) adminBtn.style.display='none';
 }
 
 function enterAdminShop(shopId){
@@ -5267,8 +5318,10 @@ function initFirebaseSync(){
           updateAccountUI();
           setAuthGateView('unlocked');
           if(userRole==='admin'){
+            // Admin opens the same normal-looking app as every shop owner.
+            // All Shops is available only through the hidden admin gesture.
             updateAdminShopContextUI();
-            setTimeout(function(){ openAdminShops(); }, 0);
+            startCloudSync(userShopId);
           }else{
             startCloudSync(userShopId);
           }
@@ -5297,7 +5350,7 @@ function updateAccountUI(){
   const loggedInView = document.getElementById('accountLoggedInView');
   const statusLine = document.getElementById('accountStatusLine');
   const adminBtn = document.getElementById('btnAdminShops');
-  if(adminBtn) adminBtn.style.display = (fbUser && userRole==='admin') ? 'block' : 'none';
+  if(adminBtn) adminBtn.style.display = 'none';
   updateAdminShopContextUI();
   if(fbUser){
     label.textContent = accountDisplayId(fbUser) + ' (sync ON)';
@@ -5396,7 +5449,7 @@ function startCloudSync(uid){
   if(userRole==='admin'){
     // Admin must never attach the normal owner listener or push data into an
     // admin shop document. Admin reads selected shop documents explicitly.
-    setAccountSyncStatus('Admin mode — shop data read-only', 'ok');
+    setAccountSyncStatus('sync ON', 'ok');
     return;
   }
   setAccountSyncStatus('data la rahe hain…', 'saving');
