@@ -995,14 +995,20 @@
     <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">Badges kis tarteeb mein dikhein (drag kar ke order set karein)</div>
     <div class="badge-order-list" id="badgeOrderList"></div>
 
-    <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">Chip options aur "Main screen ke card pe kya dikhe" customize karein</div>
+    <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">📱 Entry options — Android / iPhone alag customize karein</div>
+    <div class="settings-note" style="margin-top:0;">Yahan se entry banate waqt aane wale chip options ko control karein. Android aur iPhone ki lists <b>alag</b> hongi. Naya option add/hide karein aur har field ka <b>default selected option</b> bhi set karein.</div>
+    <div class="chip-row" id="settingsPlatformToggles" style="margin-top:9px;"></div>
     <select class="settings-field-select" id="settings-field-select"></select>
+    <div class="settings-default-row" style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+      <span style="font-size:12px;color:var(--text-dim);white-space:nowrap;">Default:</span>
+      <select class="settings-field-select" id="settings-default-select" style="margin:0;flex:1;"></select>
+    </div>
     <div class="settings-opts" id="settingsOptsList"></div>
     <div class="settings-add-row">
       <input type="text" id="settingsNewOption" placeholder="Naya option likhein">
       <button type="button" class="sell-btn" id="settingsAddBtn">Add karein</button>
     </div>
-    <div class="settings-note" id="settingsIssueNote">Kisi option pe × dabane se wo list se hat jayega (delete nahi hoga, sirf chupega — dobara zaroorat pare to hum yahin se wapas la sakte hain). "Normal/⚠ Issue" us value ke color/warning ke liye hai. <b>"Card pe / Hidden / ⭐ Prominent"</b> button pe baar baar tap karein — pehli tap se card pe dikhna shuru hoga, dusri tap se wo <b>bara/bold (prominent)</b> ho jayega aur baqi badges se pehle dikhega, teesri tap se dobara chup jayega. Rangeen dot dabakar us value ka apna badge color bhi set kar sakte hain. Naya option likh kar "Add karein" dabayein.</div>
+    <div class="settings-note" id="settingsIssueNote">× se option is platform ki entry list se hide hoga. Naya option add kar sakte hain. "Normal/⚠ Issue" condition ki warning classification control karta hai aur card visibility/color settings bhi yahin se control hoti hain.</div>
 
     <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">Brands customize karein</div>
     <div class="settings-opts" id="settingsBrandsList"></div>
@@ -1093,7 +1099,7 @@ let rangeInputMode = 'auto'; // 'auto' until the user manually edits the sell-ra
 // closes the topmost open overlay instead of leaving the app. If nothing is
 // open, there's nothing pushed, so back behaves normally (exits/leaves as
 // before).
-const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','imeiScanOverlay','adminShopsOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','expensesOverlay','accountOverlay'];
+const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','imeiScanOverlay','adminShopsOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','expensesOverlay','accountOverlay','rateBookOverlay','rateAddOverlay'];
 let overlayHistoryStack = [];
 
 // Keep the app on its main route when the phone/browser Back gesture is used.
@@ -1120,23 +1126,42 @@ function requestOverlayClose(){
 }
 
 window.addEventListener('popstate', function(){
-  if(!overlayHistoryStack.length){
-    // No sheet/page is open: consume the Back gesture and keep the app open.
+  // Back priority follows the way normal Android apps behave:
+  // 1) close the top-most sheet, 2) exit multi-selection, 3) close the menu,
+  // 4) otherwise stay on the app's main screen.
+  if(overlayHistoryStack.length){
+    const id = overlayHistoryStack.pop();
+    const el = document.getElementById(id);
+    if(el) el.classList.add('hidden');
+    if(id==='sellOverlay') sellingId = null;
+    if(id==='cropOverlay'){
+      document.getElementById('cropImg').src = '';
+      processNextCropFile();
+    }
+    if(id==='imeiScanOverlay') stopImeiScan();
     if(mainHistoryGuardActive){
       try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){}
     }
     return;
   }
-  const id = overlayHistoryStack.pop();
-  const el = document.getElementById(id);
-  if(el) el.classList.add('hidden');
-  if(id==='sellOverlay') sellingId = null;
-  if(id==='cropOverlay'){
-    document.getElementById('cropImg').src = '';
-    // If more photos were queued to crop (multi-photo select), keep going.
-    processNextCropFile();
+  if(typeof shareSelectMode!=='undefined' && shareSelectMode){
+    setShareSelectMode(false);
+    if(mainHistoryGuardActive){
+      try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){}
+    }
+    return;
   }
-  if(id==='imeiScanOverlay') stopImeiScan();
+  const menu = document.getElementById('menuDropdown');
+  if(menu && !menu.classList.contains('hidden')){
+    menu.classList.add('hidden');
+    if(mainHistoryGuardActive){
+      try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){}
+    }
+    return;
+  }
+  if(mainHistoryGuardActive){
+    try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){}
+  }
 });
 
 const BRANDS = ['Samsung','Google','iPhone','OnePlus','Vivo','Oppo','Realme','Infinix','Tecno','Xiaomi','Motorola','Other'];
@@ -1186,17 +1211,44 @@ const DEFAULT_BADGE_ORDER = ['display','battery','touch','camera','body','openre
 let customOptionData = {extra:{}, hidden:{}};
 const LS_CUSTOM_OPTIONS_KEY = 'mobileLedger_customOptions';
 
+function emptyPlatformOptionData(){
+  return {extra:{}, hidden:{}, defaults:{}};
+}
+function cloneOptionMap(obj){
+  const out={};
+  Object.keys(obj||{}).forEach(function(k){ out[k]=Array.isArray(obj[k]) ? obj[k].slice() : Object.assign({}, obj[k]||{}); });
+  return out;
+}
+function ensurePlatformOptionData(platform){
+  if(!customOptionData.platforms) customOptionData.platforms={};
+  if(!customOptionData.platforms[platform]){
+    customOptionData.platforms[platform]=emptyPlatformOptionData();
+    // First-time migration: each platform starts from the user's existing
+    // global customization, so old settings are not lost.
+    customOptionData.platforms[platform].extra=cloneOptionMap(customOptionData.extra||{});
+    customOptionData.platforms[platform].hidden=cloneOptionMap(customOptionData.hidden||{});
+  }
+  const p=customOptionData.platforms[platform];
+  if(!p.extra) p.extra={};
+  if(!p.hidden) p.hidden={};
+  if(!p.defaults) p.defaults={};
+  const fallback={status:'PTA',ram:'',storage:'',network:'',display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',battery:'Perfect',box:'No',packing:'No pack',charger:'Original charger',faceid:platform==='iphone'?'Yes':'No',truetone:platform==='iphone'?'Yes':'No'};
+  Object.keys(fallback).forEach(function(k){ if(!Object.prototype.hasOwnProperty.call(p.defaults,k)) p.defaults[k]=fallback[k]; });
+  return p;
+}
+
 function loadCustomOptionData(){
   try{
     const raw = localStorage.getItem(LS_CUSTOM_OPTIONS_KEY);
     customOptionData = raw ? JSON.parse(raw) : {extra:{}, hidden:{}, issueOverrides:{}, cardVisibility:{}, badgeColor:{}, badgeProminent:{}};
-  }catch(err){ customOptionData = {extra:{}, hidden:{}, issueOverrides:{}, cardVisibility:{}, badgeColor:{}, badgeProminent:{}}; }
+  }catch(err){ customOptionData = {extra:{}, hidden:{}, issueOverrides:{}, cardVisibility:{}, badgeColor:{}, badgeProminent:{}, platforms:{}}; }
   if(!customOptionData.extra) customOptionData.extra = {};
   if(!customOptionData.hidden) customOptionData.hidden = {};
   if(!customOptionData.issueOverrides) customOptionData.issueOverrides = {};
   if(!customOptionData.cardVisibility) customOptionData.cardVisibility = {};
   if(!customOptionData.badgeColor) customOptionData.badgeColor = {};
   if(!customOptionData.badgeProminent) customOptionData.badgeProminent = {};
+  if(!customOptionData.platforms) customOptionData.platforms={};
 }
 
 function saveCustomOptionData(){
@@ -1205,12 +1257,51 @@ function saveCustomOptionData(){
   schedulePush();
 }
 
-// Returns the live option list for a field: built-in defaults minus anything
-// the user hid, plus any custom ones they added.
+function getEntryPlatform(brand){ return String(brand||'').trim()==='iPhone' ? 'iphone' : 'android'; }
+function platformLabel(platform){ return platform==='iphone' ? '🍎 iPhone' : '🤖 Android'; }
+
+function getPlatformFieldOptions(platform, fieldKey, baseOptions){
+  const p=ensurePlatformOptionData(platform);
+  const hidden=p.hidden[fieldKey] || [];
+  const extra=p.extra[fieldKey] || [];
+  return baseOptions.filter(function(o){ return hidden.indexOf(o)===-1; }).concat(extra);
+}
+
+// Returns the live option list for a field. Non-entry/global uses stay exactly
+// as before; stock-entry chip fields use the platform-specific lists.
 function getFieldOptions(fieldKey, baseOptions){
   const hidden = customOptionData.hidden[fieldKey] || [];
   const extra = customOptionData.extra[fieldKey] || [];
   return baseOptions.filter(function(o){ return hidden.indexOf(o)===-1; }).concat(extra);
+}
+
+function getEntryFieldOptions(fieldKey, baseOptions){
+  return getPlatformFieldOptions(getEntryPlatform(formState && formState.brand), fieldKey, baseOptions);
+}
+
+function getPlatformDefault(platform, fieldKey, fallback){
+  const p=ensurePlatformOptionData(platform);
+  return Object.prototype.hasOwnProperty.call(p.defaults, fieldKey) ? p.defaults[fieldKey] : fallback;
+}
+
+function setPlatformDefault(platform, fieldKey, value){
+  const p=ensurePlatformOptionData(platform);
+  p.defaults[fieldKey]=value;
+  saveCustomOptionData();
+}
+
+function applyPlatformDefaultsToForm(platform){
+  const defs={status:'PTA',ram:'',storage:'',network:'',display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',battery:'Perfect',box:'No',packing:'No pack',charger:'Original charger',faceid:platform==='iphone'?'Yes':'No',truetone:platform==='iphone'?'Yes':'No'};
+  Object.keys(defs).forEach(function(k){
+    const d=getPlatformDefault(platform,k,defs[k]);
+    const opts=getEntryFieldOptionsForPlatform(platform,k);
+    formState[k]=(d && opts.indexOf(d)!==-1) ? d : '';
+  });
+  formState.__platform=platform;
+}
+function getEntryFieldOptionsForPlatform(platform, fieldKey){
+  const baseMap={status:STATUS_OPTS,ram:RAM_OPTS,storage:STORAGE_OPTS,network:NETWORK_OPTS,display:DISPLAY_OPTS,touch:TOUCH_OPTS,camera:CAMERA_OPTS,body:BODY_OPTS,openrepair:OPEN_REPAIR_OPTS,battery:BATTERY_OPTS,box:['No','Yes'],packing:PACKING_OPTS,charger:CHARGER_OPTS,faceid:['No','Yes'],truetone:['No','Yes']};
+  return getPlatformFieldOptions(platform,fieldKey,baseMap[fieldKey]||[]);
 }
 
 const MODEL_CATALOG = {
@@ -2116,7 +2207,7 @@ const EP_FIELD_DEFS = [
 ];
 
 function epChipRowHtml(field, selected){
-  const liveOptions = getFieldOptions(field.key, field.options);
+  const liveOptions = getEntryFieldOptions(field.key, field.options);
   const opts = [''].concat(liveOptions);
   return '<div class="sec-label" style="margin-top:10px;">'+field.label+'</div>'+
     '<div class="chip-row ep-chip-row" data-field="'+field.key+'">'+
@@ -3345,6 +3436,8 @@ function renderChipGroup(containerId, options, groupKey, extraClass){
       if(groupKey==='brand'){
         document.getElementById('brandOtherWrap').style.display = (c.dataset.val==='Other') ? 'block' : 'none';
         updateModelField(c.dataset.val);
+        const platform=getEntryPlatform(c.dataset.val);
+        if(formState.__platform!==platform) applyPlatformDefaultsToForm(platform);
       }
       renderAllChips();
     };
@@ -3353,21 +3446,21 @@ function renderChipGroup(containerId, options, groupKey, extraClass){
 
 function renderAllChips(){
   renderChipGroup('brandChips', getLiveBrands(), 'brand');
-  renderChipGroup('statusChips', getFieldOptions('status', STATUS_OPTS), 'status', 'status-opt');
-  renderChipGroup('ramChips', getFieldOptions('ram', RAM_OPTS), 'ram');
-  renderChipGroup('storageChips', getFieldOptions('storage', STORAGE_OPTS), 'storage');
-  renderChipGroup('networkChips', getFieldOptions('network', NETWORK_OPTS), 'network');
-  renderChipGroup('displayChips', getFieldOptions('display', DISPLAY_OPTS), 'display');
-  renderChipGroup('touchChips', getFieldOptions('touch', TOUCH_OPTS), 'touch');
-  renderChipGroup('cameraChips', getFieldOptions('camera', CAMERA_OPTS), 'camera');
-  renderChipGroup('bodyChips', getFieldOptions('body', BODY_OPTS), 'body');
-  renderChipGroup('openRepairChips', getFieldOptions('openrepair', OPEN_REPAIR_OPTS), 'openrepair');
-  renderChipGroup('batteryChips', getFieldOptions('battery', BATTERY_OPTS), 'battery');
-  renderChipGroup('boxChips', getFieldOptions('box', ['No','Yes']), 'box');
-  renderChipGroup('packingChips', getFieldOptions('packing', PACKING_OPTS), 'packing');
-  renderChipGroup('chargerChips', getFieldOptions('charger', CHARGER_OPTS), 'charger');
-  renderChipGroup('faceidChips', getFieldOptions('faceid', ['No','Yes']), 'faceid');
-  renderChipGroup('truetoneChips', getFieldOptions('truetone', ['No','Yes']), 'truetone');
+  renderChipGroup('statusChips', getEntryFieldOptions('status', STATUS_OPTS), 'status', 'status-opt');
+  renderChipGroup('ramChips', getEntryFieldOptions('ram', RAM_OPTS), 'ram');
+  renderChipGroup('storageChips', getEntryFieldOptions('storage', STORAGE_OPTS), 'storage');
+  renderChipGroup('networkChips', getEntryFieldOptions('network', NETWORK_OPTS), 'network');
+  renderChipGroup('displayChips', getEntryFieldOptions('display', DISPLAY_OPTS), 'display');
+  renderChipGroup('touchChips', getEntryFieldOptions('touch', TOUCH_OPTS), 'touch');
+  renderChipGroup('cameraChips', getEntryFieldOptions('camera', CAMERA_OPTS), 'camera');
+  renderChipGroup('bodyChips', getEntryFieldOptions('body', BODY_OPTS), 'body');
+  renderChipGroup('openRepairChips', getEntryFieldOptions('openrepair', OPEN_REPAIR_OPTS), 'openrepair');
+  renderChipGroup('batteryChips', getEntryFieldOptions('battery', BATTERY_OPTS), 'battery');
+  renderChipGroup('boxChips', getEntryFieldOptions('box', ['No','Yes']), 'box');
+  renderChipGroup('packingChips', getEntryFieldOptions('packing', PACKING_OPTS), 'packing');
+  renderChipGroup('chargerChips', getEntryFieldOptions('charger', CHARGER_OPTS), 'charger');
+  renderChipGroup('faceidChips', getEntryFieldOptions('faceid', ['No','Yes']), 'faceid');
+  renderChipGroup('truetoneChips', getEntryFieldOptions('truetone', ['No','Yes']), 'truetone');
 }
 
 function updateModelField(brand){
@@ -3440,7 +3533,8 @@ function openAdd(){
   rangeInputMode = 'auto';
   document.getElementById('sheetTitle').textContent = 'Nayi stock entry';
   document.getElementById('qtyLabel').textContent = 'Quantity (kitne piece)';
-  formState = {brand:'', status:'PTA', ram:'', storage:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'No', packing:'No pack', charger:'Original charger', faceid:'Yes', truetone:'Yes', isSold:false};
+  formState = {brand:'', status:'PTA', ram:'', storage:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'No', packing:'No pack', charger:'Original charger', faceid:'No', truetone:'No', isSold:false, __platform:'android'};
+  applyPlatformDefaultsToForm('android');
   formPhotos = [];
   renderPhotoStrip();
   document.getElementById('f-brand-other').value = '';
@@ -3996,7 +4090,8 @@ function restoreData(file){
           issueOverrides: parsed.customOptionData.issueOverrides || {},
           cardVisibility: parsed.customOptionData.cardVisibility || {},
           badgeColor: parsed.customOptionData.badgeColor || {},
-          badgeProminent: parsed.customOptionData.badgeProminent || {}
+          badgeProminent: parsed.customOptionData.badgeProminent || {},
+          platforms: parsed.customOptionData.platforms || {}
         };
         saveCustomOptionData();
         renderAllChips();
@@ -4789,12 +4884,35 @@ function renderBadgeOrderList(){
   });
 }
 
+let settingsPlatform='android';
+function renderSettingsPlatformToggles(){
+  const box=document.getElementById('settingsPlatformToggles');
+  if(!box) return;
+  box.innerHTML=['android','iphone'].map(function(p){ return '<div class="settings-toggle-chip'+(settingsPlatform===p?' on':'')+'" data-platform="'+p+'"><span class="dot"></span>'+platformLabel(p)+'</div>'; }).join('');
+  box.querySelectorAll('.settings-toggle-chip').forEach(function(ch){ ch.onclick=function(){ settingsPlatform=ch.dataset.platform; renderSettingsPlatformToggles(); renderSettingsFieldOptions(); }; });
+}
+
 function renderSettingsFieldOptions(){
   const fieldKey = document.getElementById('settings-field-select').value;
   const fieldDef = CUSTOMIZABLE_FIELDS.filter(function(f){ return f.key===fieldKey; })[0];
   if(!fieldDef) return;
-  const hidden = customOptionData.hidden[fieldKey] || [];
-  const extra = customOptionData.extra[fieldKey] || [];
+  const p=ensurePlatformOptionData(settingsPlatform);
+  const hidden = p.hidden[fieldKey] || [];
+  const extra = p.extra[fieldKey] || [];
+  const options = fieldDef.base.filter(function(o){return hidden.indexOf(o)===-1;}).concat(extra);
+  const defaultSelect=document.getElementById('settings-default-select');
+  if(defaultSelect){
+    const current=Object.prototype.hasOwnProperty.call(p.defaults,fieldKey)?p.defaults[fieldKey]:'';
+    defaultSelect.innerHTML='<option value="">— Koi default nahi —</option>'+options.map(function(o){return '<option value="'+o.replace(/"/g,'&quot;')+'">'+o+'</option>';}).join('');
+    defaultSelect.value=current;
+    defaultSelect.onchange=function(){
+      const val=defaultSelect.value;
+      p.defaults[fieldKey]=val;
+      saveCustomOptionData();
+      renderSettingsFieldOptions();
+      renderAllChips();
+    };
+  }
   const canHaveIssue = !!GOOD_CONDITION_VALUES[fieldKey];
   const isCardBadgeField = DEFAULT_BADGE_ORDER.indexOf(fieldKey) !== -1;
   document.getElementById('settingsIssueNote').style.display = 'block';
@@ -4883,14 +5001,14 @@ function renderSettingsFieldOptions(){
       const kind = parent.dataset.kind;
       const action = btn.dataset.action;
       if(kind==='base'){
-        if(!customOptionData.hidden[fieldKey]) customOptionData.hidden[fieldKey] = [];
+        if(!p.hidden[fieldKey]) p.hidden[fieldKey] = [];
         if(action==='hide'){
-          if(customOptionData.hidden[fieldKey].indexOf(val)===-1) customOptionData.hidden[fieldKey].push(val);
+          if(p.hidden[fieldKey].indexOf(val)===-1) p.hidden[fieldKey].push(val);
         } else {
-          customOptionData.hidden[fieldKey] = customOptionData.hidden[fieldKey].filter(function(x){ return x!==val; });
+          p.hidden[fieldKey] = p.hidden[fieldKey].filter(function(x){ return x!==val; });
         }
       } else {
-        customOptionData.extra[fieldKey] = (customOptionData.extra[fieldKey]||[]).filter(function(x){ return x!==val; });
+        p.extra[fieldKey] = (p.extra[fieldKey]||[]).filter(function(x){ return x!==val; });
       }
       saveCustomOptionData();
       renderSettingsFieldOptions();
@@ -4905,10 +5023,11 @@ document.getElementById('settingsAddBtn').onclick = function(){
   const val = input.value.trim();
   if(!val) return;
   const fieldDef = CUSTOMIZABLE_FIELDS.filter(function(f){ return f.key===fieldKey; })[0];
-  if(!customOptionData.extra[fieldKey]) customOptionData.extra[fieldKey] = [];
-  const already = fieldDef.base.indexOf(val)!==-1 || customOptionData.extra[fieldKey].indexOf(val)!==-1;
-  if(already){ alert('Ye option pehle se maujood hai.'); return; }
-  customOptionData.extra[fieldKey].push(val);
+  const p=ensurePlatformOptionData(settingsPlatform);
+  if(!p.extra[fieldKey]) p.extra[fieldKey] = [];
+  const already = fieldDef.base.indexOf(val)!==-1 || p.extra[fieldKey].indexOf(val)!==-1;
+  if(already){ alert('Ye option is platform par pehle se maujood hai.'); return; }
+  p.extra[fieldKey].push(val);
   saveCustomOptionData();
   input.value = '';
   renderSettingsFieldOptions();
@@ -4983,6 +5102,7 @@ document.getElementById('btnSettings').onclick = function(){
   renderAutoSellRangeSettings();
   renderPrivacySettings();
   renderBadgeOrderList();
+  renderSettingsPlatformToggles();
   renderSettingsFieldOptions();
   renderSettingsBrands();
   renderWaMessageEditor();
