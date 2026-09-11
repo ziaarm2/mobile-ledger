@@ -3607,6 +3607,9 @@ function deleteEntry(id){
   const idx = inventory.findIndex(function(x){return x.id===id;});
   if(idx===-1) return;
   const removedItem = inventory[idx];
+  // Capture the exact pre-delete state here. This guarantees both the
+  // permanent Activity History and the top Undo button can restore a delete.
+  activityBeforeFromCurrentMutation();
   const candidate = inventory.slice(0,idx).concat(inventory.slice(idx+1));
   const ok = tryCommitInventory(candidate);
   if(!ok){
@@ -4281,15 +4284,37 @@ function applyAppState(st){
     return true;
   }catch(e){console.error(e);return false;}finally{historyApplying=false;updateHistoryButtons();}
 }
+let globalHistoryBusy=false;
 function globalUndo(){
-  if(!undoStack.length){showToast('Undo ke liye koi change nahi hai.');return;}
-  const current=appStateSnapshot();
-  const item=undoStack.pop();
-  redoStack.push({label:item.label,state:current,time:Date.now()});
-  if(!applyAppState(item.state)){redoStack.pop();undoStack.push(item);return;}
-  persistHistory(); showToast('↶ '+item.label+' undo ho gaya.');
+  if(globalHistoryBusy)return;
+  if(undoStack.length){
+    const current=appStateSnapshot();
+    const item=undoStack.pop();
+    redoStack.push({label:item.label,state:current,time:Date.now()});
+    if(!applyAppState(item.state)){redoStack.pop();undoStack.push(item);return;}
+    persistHistory(); showToast('↶ '+item.label+' undo ho gaya.');
+    return;
+  }
+  // Fallback: if the snapshot stack could not be kept in localStorage
+  // (commonly because inventory contains large photo data), use the most
+  // recent Activity History transaction. Its exact before-state is stored
+  // in IndexedDB and therefore does not depend on the short-lived toast.
+  const arr=readActivityList();
+  const latest=arr&&arr[0];
+  if(!latest||!latest.hasState){showToast('Undo ke liye koi saved change nahi mila.');return;}
+  globalHistoryBusy=true;
+  getActivityState(latest.id).then(function(st){
+    if(!st||!st.before){showToast('Is latest change ka Undo state available nahi hai.');return;}
+    const current=appStateSnapshot();
+    if(applyAppState(st.before)){
+      redoStack.push({label:latest.title,state:current,time:Date.now()});
+      persistHistory();
+      showToast('↶ '+latest.title+' undo ho gaya.');
+    }
+  }).catch(function(){showToast('Undo state load nahi ho saki.');}).finally(function(){globalHistoryBusy=false;updateHistoryButtons();});
 }
 function globalRedo(){
+  if(globalHistoryBusy)return;
   if(!redoStack.length){showToast('Redo ke liye koi change nahi hai.');return;}
   const current=appStateSnapshot();
   const item=redoStack.pop();
