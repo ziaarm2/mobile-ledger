@@ -74,7 +74,23 @@
   .piece-row-top{display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
   .piece-row-top.spec-badges{margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);}
   .piece-row .sale-meta{margin-top:6px;}
-  .piece-row .card-actions{margin-top:8px;}
+  .piece-row .multi-share-bar{position:sticky;top:0;z-index:8;background:var(--surface);border:1px solid var(--border-strong);border-radius:12px;padding:9px 10px;margin:8px 0;display:flex;align-items:center;justify-content:space-between;gap:8px;box-shadow:0 4px 14px rgba(0,0,0,.18);}
+  .multi-share-bar.hidden{display:none;}
+  .multi-share-actions{display:flex;gap:6px;align-items:center;}
+  .multi-share-actions button{padding:7px 9px;border-radius:9px;border:1px solid var(--border);font-size:11.5px;font-weight:600;background:var(--surface-2);color:var(--text);}
+  .multi-share-actions .sell-btn{border:none;background:var(--accent);color:var(--accent-text);}
+  .select-phone-wrap{display:flex;align-items:center;gap:6px;margin-bottom:5px;font-size:11px;color:var(--text-dim);}
+  .select-phone-wrap input{width:18px;height:18px;accent-color:var(--accent);}
+  .piece-select{margin-right:6px;width:17px;height:17px;accent-color:var(--accent);}
+  .share-template-list{display:flex;flex-direction:column;gap:7px;margin-top:10px;}
+  .share-template-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .share-template-item.active{border-color:var(--accent);}
+  .share-template-item .template-actions{display:flex;gap:5px;}
+  .share-template-item button{padding:5px 8px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:11px;}
+  #shareTemplateEditText{width:100%;margin-top:8px;min-height:150px;resize:vertical;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
+  .share-variable-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .share-variable-grid button{padding:5px 7px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-dim);font-size:10.5px;}
+  .card-actions{margin-top:8px;}
   .badges{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;}
   .badges.spec-badges{margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);}
   .badge{font-size:10.5px;padding:2px 8px;border-radius:999px;font-weight:600;}
@@ -388,8 +404,8 @@
 
     <div class="menu-dropdown hidden" id="menuDropdown">
       <div class="menu-section-label">Overview</div>
-      <button class="menu-item" id="btnAdminShops" style="display:none !important;">🏢 All Shops (Admin)</button>
-      <button class="menu-item" id="btnExitAdminShop" style="display:none !important;">↩ Apni Shop par wapas</button>
+      <button class="menu-item" id="btnAdminShops" style="display:none;">🏢 All Shops (Admin)</button>
+      <button class="menu-item" id="btnExitAdminShop" style="display:none;">↩ Apni Shop par wapas</button>
       <button class="menu-item" id="btnDashboard">📊 Dashboard</button>
       <button class="menu-item" id="btnReports">📄 Reports</button>
       <button class="menu-item" id="btnExpenses">💵 Expenses (kharcha)</button>
@@ -450,6 +466,14 @@
     <input type="date" id="activityFrom" title="Se">
     <input type="date" id="activityTo" title="Tak">
     <button type="button" id="clearActivityFilter">Date filter clear karein</button>
+  </div>
+  <div id="multiShareBar" class="multi-share-bar hidden">
+    <div><b id="multiShareCount">0</b> mobiles selected</div>
+    <div class="multi-share-actions">
+      <button type="button" id="multiShareTemplateBtn">📋 Template</button>
+      <button type="button" class="sell-btn" id="multiShareBtn">📤 Share selected</button>
+      <button type="button" class="btn-cancel" id="multiShareClearBtn">Clear</button>
+    </div>
   </div>
   <div class="list" id="list"></div>
 </div>
@@ -932,6 +956,23 @@
     </div>
     <div class="settings-note">Jab Privacy mode ON ho, to Total profit har jagah •••• dikhega, aur Buy price jahan bhi screen par ho (card, dashboard, reports) aslee amount na dikha kar upar diye gaye fixed Rs jama karke dikhaya jayega — misaal: agar aap 40,000 enter karein aur yahan 2000 likha ho, to screen par 42,000 dikhega. Yaad rahe: 🙈 button header mein tap karke isay kabhi bhi turant on/off kar sakte hain — settings mein aana zaroori nahi.</div>
 
+    <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">📤 Share Message Templates</div>
+    <div class="settings-note">Apna WhatsApp/share message template banayein. Neeche diye variables message mein automatic mobile ki information se replace ho jayenge.</div>
+    <div id="shareTemplatesList" class="share-template-list"></div>
+    <div class="settings-add-row">
+      <input type="text" id="shareTemplateName" placeholder="Template name, e.g. Customer">
+      <button type="button" class="sell-btn" id="shareTemplateNewBtn">+ New</button>
+    </div>
+    <div id="shareTemplateEditor" style="display:none;margin-top:10px;">
+      <input type="text" id="shareTemplateEditName" placeholder="Template name" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;">
+      <textarea id="shareTemplateEditText" rows="9" placeholder="Message template..."></textarea>
+      <div class="share-variable-grid" id="shareVariableButtons"></div>
+      <div class="sheet-actions" style="position:static;margin-top:8px;">
+        <button type="button" class="btn-cancel" id="shareTemplateCancelBtn">Cancel</button>
+        <button type="button" class="btn-save" id="shareTemplateSaveBtn">Save template</button>
+      </div>
+    </div>
+
     <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">🗑️ Clear data password</div>
     <div class="settings-add-row">
       <input type="password" id="clearPasswordInput" placeholder="Naya password set karein" autocomplete="new-password">
@@ -973,6 +1014,7 @@ let currentFilter = 'available';
 let currentBrandFilter = 'all';
 let currentSort = 'default';
 let sellingId = null;
+let selectedShareIds = new Set();
 
 // Main-screen UI state is local to this device/browser. Inventory and account
 // data remain separate; this only remembers where the user was looking so a
@@ -1043,15 +1085,6 @@ let rangeInputMode = 'auto'; // 'auto' until the user manually edits the sell-ra
 const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','imeiScanOverlay','adminShopsOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','expensesOverlay','accountOverlay'];
 let overlayHistoryStack = [];
 
-// Keep the app on its main route when the phone/browser Back gesture is used.
-// Overlay history still works normally above this guard.
-let mainHistoryGuardActive = false;
-try{
-  history.replaceState({mlMain:true}, '', location.href);
-  history.pushState({mlMainGuard:true}, '', location.href);
-  mainHistoryGuardActive = true;
-}catch(e){}
-
 function pushOverlayHistory(id){
   overlayHistoryStack.push(id);
   try{ history.pushState({mlOverlay:id}, '', location.href); }catch(e){}
@@ -1067,13 +1100,7 @@ function requestOverlayClose(){
 }
 
 window.addEventListener('popstate', function(){
-  if(!overlayHistoryStack.length){
-    // No sheet/page is open: consume the Back gesture and keep the app open.
-    if(mainHistoryGuardActive){
-      try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){}
-    }
-    return;
-  }
+  if(!overlayHistoryStack.length) return; // nothing of ours open — let real back/exit happen
   const id = overlayHistoryStack.pop();
   const el = document.getElementById(id);
   if(el) el.classList.add('hidden');
@@ -2470,6 +2497,8 @@ function renderList(){
   listEl.querySelectorAll('[data-piece-brand]').forEach(function(b){
     b.onclick = function(){ openAddPiece(decodeURIComponent(b.dataset.pieceBrand), decodeURIComponent(b.dataset.pieceModel)); };
   });
+  bindShareSelectionEvents();
+  refreshMultiShareBar();
 }
 
 function pieceStatusBadges(e, outOfStock){
@@ -2518,10 +2547,13 @@ let cardDisplaySettings = {
     {minBuy:35000, maxBuy:50000, minMarkup:5000, maxMarkup:10000}
   ],
   privacy: {
-    enabled: false,        // quick on/off — flip this when someone else is looking at the phone
-    hideProfit: true,      // when on, profit numbers everywhere show as •••• instead of the real figure
-    buyMarkupAmount: 2000   // when on, this fixed amount is added to any buy/purchase price shown on screen so the real cost stays private
-  }
+    enabled: false,
+    hideProfit: true,
+    buyMarkupAmount: 2000
+  },
+  shareTemplates: [
+    {id:'default', name:'Customer WhatsApp', text:'📱 *{brand} {model}*\nStatus: {status}\nPrice: {price}\n{ramLine}{storageLine}{batteryLine}{conditionLine}{chargerLine}{boxLine}\n{warranty}'}
+  ]
 };
 const LS_CARD_DISPLAY_KEY = 'mobileLedger_cardDisplaySettings';
 
@@ -2535,6 +2567,7 @@ function loadCardDisplaySettings(){
       if(parsed.cardViewMode) cardDisplaySettings.cardViewMode = parsed.cardViewMode;
       if(Array.isArray(parsed.autoSellRangeRules)) cardDisplaySettings.autoSellRangeRules = parsed.autoSellRangeRules;
       if(parsed.privacy) Object.assign(cardDisplaySettings.privacy, parsed.privacy);
+      if(Array.isArray(parsed.shareTemplates) && parsed.shareTemplates.length){ cardDisplaySettings.shareTemplates = parsed.shareTemplates; }
       if(Array.isArray(parsed.badgeOrder) && parsed.badgeOrder.length){
         // Keep any valid known keys from storage, then append any newer
         // fields (e.g. added in an update) that aren't in the saved order yet.
@@ -2743,6 +2776,7 @@ function renderSingleStockCard(e){
   const compact = cardDisplaySettings.cardViewMode === 'compact';
   return (
   '<div class="card '+(outOfStock?'outofstock':'')+(compact?' compact':'')+'">'+
+    (!outOfStock ? '<div class="select-phone-wrap"><input type="checkbox" class="piece-select" data-select-phone="'+e.id+'" '+(selectedShareIds.has(String(e.id))?'checked':'')+'><span>Select for sharing</span></div>' : '')+
     '<div class="card-title">'+e.brand+' '+e.model+'</div>'+
     prominentSellRangeHtml(e.range)+
     cardPhotoHtml(e)+
@@ -2775,7 +2809,7 @@ function renderStockGroup(g){
     const canSplit = !outOfStock && (e.quantity||1) > 1;
     return (
     '<div class="piece-row '+(outOfStock?'outofstock':'')+(compact?' compact-row':'')+'">'+
-      '<div class="piece-row-top">'+pieceStatusBadges(e, outOfStock)+'</div>'+
+      '<div class="piece-row-top">'+(!outOfStock ? '<input type="checkbox" class="piece-select" data-select-phone="'+e.id+'" '+(selectedShareIds.has(String(e.id))?'checked':'')+'>' : '')+pieceStatusBadges(e, outOfStock)+'</div>'+
       (pieceSpecBadges(e) ? '<div class="piece-row-top spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
       cardPhotoHtml(e)+
       prominentSellRangeHtml(e.range)+
@@ -2942,50 +2976,54 @@ function chargerShareLine(e){
   return 'Charger: ' + c;
 }
 
-function buildShareText(e){
-  const lines = [];
-
-  if(e.network==='5G') lines.push('📶 5G');
-
-  lines.push('*'+e.brand+' '+e.model+'*');
-  lines.push('Status: '+e.status);
-
-  if(e.range){
-    lines.push('Price: '+upperPriceFromRange(e.range));
+const DEFAULT_SHARE_TEMPLATE_TEXT = '📱 *{brand} {model}*\nStatus: {status}\nPrice: {price}\n{ramLine}{storageLine}{batteryLine}{conditionLine}{chargerLine}{boxLine}\n{warranty}';
+let activeShareTemplateId = 'default';
+let editingShareTemplateId = null;
+function escapeHtml(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function getShareTemplates(){
+  if(!Array.isArray(cardDisplaySettings.shareTemplates) || !cardDisplaySettings.shareTemplates.length){
+    cardDisplaySettings.shareTemplates=[{id:'default',name:'Customer WhatsApp',text:DEFAULT_SHARE_TEMPLATE_TEXT}];
   }
-  if(e.sold && !isReturnedSale(e) && e.sell!=null) lines.push('Sale price: '+fmt(e.sell));
-
-  if(e.ram) lines.push('RAM: '+e.ram);
-  if(e.storage) lines.push('Storage: '+e.storage);
-
-  if(e.battery) lines.push('Battery: '+e.battery);
-
-  const shareIssues = [];
-  if(isConditionIssue('display', e.display)) shareIssues.push('Panel: '+e.display);
-  if(isConditionIssue('touch', e.touch)) shareIssues.push('Touch: '+e.touch);
-  if(isConditionIssue('camera', e.camera)) shareIssues.push('Camera: '+e.camera);
-  if(isConditionIssue('body', e.body)) shareIssues.push('Body: '+e.body);
-  if(isConditionIssue('openrepair', e.openrepair)) shareIssues.push('Repair: '+e.openrepair);
-  if(shareIssues.length){
-    shareIssues.forEach(function(i){ lines.push('⚠ '+i); });
-  } else {
-    lines.push('No any issue');
-  }
-
-  const chargerLine = chargerShareLine(e);
-  if(chargerLine) lines.push(chargerLine);
-
-  if(e.box==='Yes') lines.push('Box: Available');
-  if(e.packing && e.packing!=='No pack') lines.push('Packing: '+e.packing);
-  if(e.brand==='iPhone' && e.faceid==='Yes') lines.push('Face ID: Working');
-  if(e.brand==='iPhone' && e.truetone==='Yes') lines.push('True Tone: Working');
-  if(e.notes) lines.push('Notes: '+e.notes);
-
-  lines.push('');
-  lines.push('✅ 3 days check warranty');
-
-  return lines.join('\n');
+  return cardDisplaySettings.shareTemplates;
 }
+function getShareTemplate(){const list=getShareTemplates();return list.find(function(t){return t.id===activeShareTemplateId;})||list[0];}
+function shareTemplateValue(e,key){
+  const issues=[];
+  if(isConditionIssue('display',e.display)) issues.push('Panel: '+e.display);
+  if(isConditionIssue('touch',e.touch)) issues.push('Touch: '+e.touch);
+  if(isConditionIssue('camera',e.camera)) issues.push('Camera: '+e.camera);
+  if(isConditionIssue('body',e.body)) issues.push('Body: '+e.body);
+  if(isConditionIssue('openrepair',e.openrepair)) issues.push('Repair: '+e.openrepair);
+  const condition=issues.length?issues.map(function(x){return '⚠ '+x;}).join('\n'):'No any issue';
+  const charger=chargerShareLine(e).replace(/^Charger:\s*/,'');
+  const map={brand:e.brand||'',model:e.model||'',title:((e.brand||'')+' '+(e.model||'')).trim(),status:e.status||'',price:e.range?upperPriceFromRange(e.range):(e.sell!=null?fmt(e.sell):''),sellPrice:e.sell!=null?fmt(e.sell):'',ram:e.ram||'',storage:e.storage||'',network:e.network||'',battery:e.battery||'',panel:e.display||'',touch:e.touch||'',camera:e.camera||'',body:e.body||'',repair:e.openrepair||'',condition:condition,charger:charger,box:e.box==='Yes'?'Available':'',packing:e.packing&&e.packing!=='No pack'?e.packing:'',faceId:(e.brand==='iPhone'&&e.faceid==='Yes')?'Working':'',trueTone:(e.brand==='iPhone'&&e.truetone==='Yes')?'Working':'',notes:e.notes||'',imei:e.imei||'',quantity:e.quantity||1,warranty:'✅ 3 days check warranty',shop:(shopProfile&&shopProfile.shopName)||'',date:formatDateDisplay(todayISO())};
+  if(key==='ramLine') return map.ram?'RAM: '+map.ram+'\n':'';
+  if(key==='storageLine') return map.storage?'Storage: '+map.storage+'\n':'';
+  if(key==='batteryLine') return map.battery?'Battery: '+map.battery+'\n':'';
+  if(key==='conditionLine') return map.condition?map.condition+'\n':'';
+  if(key==='chargerLine') return map.charger?'Charger: '+map.charger+'\n':'';
+  if(key==='boxLine') return map.box?'Box: '+map.box+'\n':'';
+  return map[key]==null?'':String(map[key]);
+}
+function renderShareTemplateText(e,text){return String(text||'').replace(/\{([A-Za-z0-9_]+)\}/g,function(_,key){return shareTemplateValue(e,key);}).split('\n').filter(function(line,idx,arr){return !(line.trim()===''&&idx>0&&arr[idx-1].trim()==='');}).join('\n').trim();}
+function buildShareText(e){const t=getShareTemplate();return renderShareTemplateText(e,t?t.text:DEFAULT_SHARE_TEMPLATE_TEXT);}
+function renderShareTemplateSettings(){
+  const list=document.getElementById('shareTemplatesList');if(!list)return;const templates=getShareTemplates();
+  list.innerHTML=templates.map(function(t){const active=t.id===activeShareTemplateId;return '<div class="share-template-item '+(active?'active':'')+'"><div><b>'+escapeHtml(t.name||'Untitled')+'</b>'+(active?' <span style="color:var(--accent);font-size:10px;">Active</span>':'')+'</div><div class="template-actions"><button type="button" data-st-use="'+t.id+'">Use</button><button type="button" data-st-edit="'+t.id+'">Edit</button>'+(templates.length>1?'<button type="button" data-st-del="'+t.id+'">×</button>':'')+'</div></div>';}).join('');
+  list.querySelectorAll('[data-st-use]').forEach(function(b){b.onclick=function(){activeShareTemplateId=b.dataset.stUse;saveCardDisplaySettings();renderShareTemplateSettings();};});
+  list.querySelectorAll('[data-st-edit]').forEach(function(b){b.onclick=function(){startShareTemplateEdit(b.dataset.stEdit);};});
+  list.querySelectorAll('[data-st-del]').forEach(function(b){b.onclick=function(){deleteShareTemplate(b.dataset.stDel);};});
+}
+function startShareTemplateEdit(id){const t=getShareTemplates().find(function(x){return x.id===id;});if(!t)return;editingShareTemplateId=id;document.getElementById('shareTemplateEditName').value=t.name||'';document.getElementById('shareTemplateEditText').value=t.text||'';document.getElementById('shareTemplateEditor').style.display='block';}
+function cancelShareTemplateEdit(){editingShareTemplateId=null;const el=document.getElementById('shareTemplateEditor');if(el)el.style.display='none';}
+function saveShareTemplate(){const name=document.getElementById('shareTemplateEditName').value.trim()||'My Template';const text=document.getElementById('shareTemplateEditText').value;if(!text.trim()){alert('Template message khali nahi ho sakta.');return;}const list=getShareTemplates();const i=list.findIndex(function(t){return t.id===editingShareTemplateId;});if(i<0){alert('Template nahi mila.');return;}list[i].name=name;list[i].text=text;activeShareTemplateId=list[i].id;saveCardDisplaySettings();renderShareTemplateSettings();cancelShareTemplateEdit();showToast('✓ Share template save ho gaya.');}
+function createShareTemplate(){const name=document.getElementById('shareTemplateName').value.trim()||'New Template';const id='st_'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);getShareTemplates().push({id:id,name:name,text:DEFAULT_SHARE_TEMPLATE_TEXT});activeShareTemplateId=id;saveCardDisplaySettings();document.getElementById('shareTemplateName').value='';renderShareTemplateSettings();startShareTemplateEdit(id);}
+function deleteShareTemplate(id){const list=getShareTemplates();if(list.length<=1)return;if(!confirm('Ye share template delete kar dein?'))return;const i=list.findIndex(function(t){return t.id===id;});if(i<0)return;list.splice(i,1);if(activeShareTemplateId===id)activeShareTemplateId=list[0].id;saveCardDisplaySettings();renderShareTemplateSettings();}
+function insertShareVariable(v){const ta=document.getElementById('shareTemplateEditText');if(!ta)return;const token='{'+v+'}',start=ta.selectionStart,end=ta.selectionEnd;ta.value=ta.value.slice(0,start)+token+ta.value.slice(end);ta.focus();ta.selectionStart=ta.selectionEnd=start+token.length;}
+function setupShareVariableButtons(){const el=document.getElementById('shareVariableButtons');if(!el)return;const vars=['brand','model','status','price','sellPrice','ram','storage','network','battery','condition','panel','touch','camera','body','repair','charger','box','packing','faceId','trueTone','notes','imei','quantity','warranty','shop','date'];el.innerHTML=vars.map(function(v){return '<button type="button" data-share-var="'+v+'">{'+v+'}</button>';}).join('');el.querySelectorAll('[data-share-var]').forEach(function(b){b.onclick=function(){insertShareVariable(b.dataset.shareVar);};});}
+function refreshMultiShareBar(){const bar=document.getElementById('multiShareBar'),count=document.getElementById('multiShareCount');if(!bar||!count)return;count.textContent=selectedShareIds.size;bar.classList.toggle('hidden',selectedShareIds.size===0);}
+function bindShareSelectionEvents(){const list=document.getElementById('list');if(!list)return;list.querySelectorAll('[data-select-phone]').forEach(function(cb){cb.onchange=function(){const id=String(cb.dataset.selectPhone);if(cb.checked)selectedShareIds.add(id);else selectedShareIds.delete(id);refreshMultiShareBar();};});}
+async function shareSelectedEntries(){const entries=inventory.filter(function(e){return selectedShareIds.has(String(e.id))&&!e.sold&&(e.quantity||0)>0;});if(!entries.length){alert('Share karne ke liye stock mein mobile select karein.');return;}const text=entries.map(function(e,i){return (i+1)+'. '+renderShareTemplateText(e,getShareTemplate().text);}).join('\n\n');const files=[];for(const e of entries){if(e.photos&&e.photos.length){for(let i=0;i<e.photos.length;i++){try{const res=await fetch(e.photos[i]),blob=await res.blob();files.push(new File([blob],((e.brand+' '+e.model).trim()+'-'+(i+1)+'.jpg').replace(/\s+/g,'_'),{type:blob.type||'image/jpeg'}));}catch(err){}}}}if(navigator.share){try{if(files.length&&navigator.canShare&&navigator.canShare({files:files}))await navigator.share({title:entries.length+' mobiles',text:text,files:files});else await navigator.share({title:entries.length+' mobiles',text:text});return;}catch(err){if(err&&err.name==='AbortError')return;}}try{await navigator.clipboard.writeText(text);showToast('Direct share support nahi hai — combined message copy kar diya gaya hai.');}catch(err){alert(text);}}
 
 async function shareEntry(id){
   const e = inventory.find(function(x){return x.id===id;});
@@ -4040,39 +4078,6 @@ document.getElementById('btnMenu').onclick = function(e){
   e.stopPropagation();
   document.getElementById('menuDropdown').classList.toggle('hidden');
 };
-
-// ---------- Hidden Admin Access ----------
-// Admins can reach All Shops without exposing an Admin label/button to shop owners.
-// Long-press the existing "Mobile Ledger" title for ~1.5 seconds.
-(function(){
-  const target=document.querySelector('.header-top h1');
-  if(!target) return;
-  let timer=null;
-  let longPressFired=false;
-  const clear=function(){ if(timer){ clearTimeout(timer); timer=null; } };
-  target.style.userSelect='none';
-  target.style.webkitUserSelect='none';
-  target.addEventListener('pointerdown', function(e){
-    if(e.pointerType==='mouse' && e.button!==0) return;
-    longPressFired=false;
-    clear();
-    timer=setTimeout(function(){
-      timer=null;
-      if(userRole!=='admin') return;
-      longPressFired=true;
-      try{ if(navigator.vibrate) navigator.vibrate(25); }catch(err){}
-      if(isAdminShopView()){
-        exitAdminShop();
-      }else{
-        openAdminShops();
-      }
-    },1500);
-  });
-  ['pointerup','pointercancel','pointerleave'].forEach(function(ev){ target.addEventListener(ev, clear); });
-  target.addEventListener('contextmenu', function(e){
-    if(userRole==='admin') e.preventDefault();
-  });
-})();
 document.getElementById('btnRateBook').onclick = function(){ openRateBook(); };
 document.getElementById('btnRateBookClose').onclick = function(){ requestOverlayClose(); };
 document.getElementById('rateBookOverlay').onclick = function(e){ if(e.target.id==='rateBookOverlay') requestOverlayClose(); };
@@ -4724,6 +4729,9 @@ document.getElementById('btnSettings').onclick = function(){
   renderCardViewModeToggles();
   renderAutoSellRangeSettings();
   renderPrivacySettings();
+  renderShareTemplateSettings();
+  setupShareVariableButtons();
+  cancelShareTemplateEdit();
   renderBadgeOrderList();
   renderSettingsFieldOptions();
   renderSettingsBrands();
@@ -4736,6 +4744,12 @@ document.getElementById('btnSettingsClose').onclick = function(){
 document.getElementById('settingsOverlay').onclick = function(e){
   if(e.target.id==='settingsOverlay') requestOverlayClose();
 };
+document.getElementById('shareTemplateNewBtn').onclick=createShareTemplate;
+document.getElementById('shareTemplateSaveBtn').onclick=saveShareTemplate;
+document.getElementById('shareTemplateCancelBtn').onclick=cancelShareTemplateEdit;
+document.getElementById('multiShareBtn').onclick=shareSelectedEntries;
+document.getElementById('multiShareClearBtn').onclick=function(){selectedShareIds.clear();render();};
+document.getElementById('multiShareTemplateBtn').onclick=function(){document.getElementById('btnSettings').click();setTimeout(function(){const el=document.getElementById('shareTemplatesList');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},60);};
 
 document.getElementById('autoRangeAddBtn').onclick = addAutoSellRangeRule;
 
@@ -4802,7 +4816,8 @@ document.getElementById('btnClearData').onclick = function(){
       {minBuy:20000, maxBuy:35000, minMarkup:3000, maxMarkup:5000},
       {minBuy:35000, maxBuy:50000, minMarkup:5000, maxMarkup:10000}
     ],
-    privacy: {enabled:false, hideProfit:true, buyMarkupAmount:2000}
+    privacy: {enabled:false, hideProfit:true, buyMarkupAmount:2000},
+    shareTemplates: [{id:'default', name:'Customer WhatsApp', text:'📱 *{brand} {model}*\nStatus: {status}\nPrice: {price}\n{ramLine}{storageLine}{batteryLine}{conditionLine}{chargerLine}{boxLine}\n{warranty}'}]
   };
   saveCardDisplaySettings();
   renderAllChips();
@@ -5194,15 +5209,12 @@ function updateAdminShopContextUI(){
   const exitBtn=document.getElementById('btnExitAdminShop');
   if(app) app.classList.toggle('admin-view', isAdminShopView());
   document.body.classList.toggle('admin-view-active', isAdminShopView());
-  // Admin access is intentionally invisible in the normal UI. The selected
-  // shop is rendered using the same main-screen layout as an owner sees.
   const titleEl=document.querySelector('.header-top h1');
-  if(titleEl) titleEl.textContent = 'Mobile Ledger';
-  if(banner) banner.classList.remove('show');
-  if(nameEl) nameEl.textContent = '';
-  if(exitBtn) exitBtn.style.display = 'none';
-  const adminBtn=document.getElementById('btnAdminShops');
-  if(adminBtn) adminBtn.style.display='none';
+  if(titleEl) titleEl.textContent = isAdminShopView() ? ('🏪 '+(shopProfile.shopName || adminViewShopId || 'Selected Shop')) : 'Mobile Ledger';
+  if(banner) banner.classList.toggle('show', isAdminShopView());
+  if(nameEl) nameEl.textContent = isAdminShopView() ? (shopProfile.shopName || adminViewShopId || 'Selected shop') : '';
+  if(exitBtn) exitBtn.style.display = isAdminShopView() ? 'block' : 'none';
+  if(isAdminShopView()) document.getElementById('btnAdminShops').style.display='block';
 }
 
 function enterAdminShop(shopId){
@@ -5318,10 +5330,8 @@ function initFirebaseSync(){
           updateAccountUI();
           setAuthGateView('unlocked');
           if(userRole==='admin'){
-            // Admin opens the same normal-looking app as every shop owner.
-            // All Shops is available only through the hidden admin gesture.
             updateAdminShopContextUI();
-            startCloudSync(userShopId);
+            setTimeout(function(){ openAdminShops(); }, 0);
           }else{
             startCloudSync(userShopId);
           }
@@ -5350,7 +5360,7 @@ function updateAccountUI(){
   const loggedInView = document.getElementById('accountLoggedInView');
   const statusLine = document.getElementById('accountStatusLine');
   const adminBtn = document.getElementById('btnAdminShops');
-  if(adminBtn) adminBtn.style.display = 'none';
+  if(adminBtn) adminBtn.style.display = (fbUser && userRole==='admin') ? 'block' : 'none';
   updateAdminShopContextUI();
   if(fbUser){
     label.textContent = accountDisplayId(fbUser) + ' (sync ON)';
@@ -5449,7 +5459,7 @@ function startCloudSync(uid){
   if(userRole==='admin'){
     // Admin must never attach the normal owner listener or push data into an
     // admin shop document. Admin reads selected shop documents explicitly.
-    setAccountSyncStatus('sync ON', 'ok');
+    setAccountSyncStatus('Admin mode — shop data read-only', 'ok');
     return;
   }
   setAccountSyncStatus('data la rahe hain…', 'saving');
