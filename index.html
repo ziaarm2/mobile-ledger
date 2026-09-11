@@ -1015,6 +1015,7 @@ let currentBrandFilter = 'all';
 let currentSort = 'default';
 let sellingId = null;
 let selectedShareIds = new Set();
+let shareSelectionMode = false;
 
 // Main-screen UI state is local to this device/browser. Inventory and account
 // data remain separate; this only remembers where the user was looking so a
@@ -1084,6 +1085,12 @@ let rangeInputMode = 'auto'; // 'auto' until the user manually edits the sell-ra
 // before).
 const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','imeiScanOverlay','adminShopsOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','expensesOverlay','accountOverlay'];
 let overlayHistoryStack = [];
+let mainHistoryGuardActive = false;
+try{
+  history.replaceState({mlMain:true}, '', location.href);
+  history.pushState({mlMainGuard:true}, '', location.href);
+  mainHistoryGuardActive = true;
+}catch(e){}
 
 function pushOverlayHistory(id){
   overlayHistoryStack.push(id);
@@ -1100,7 +1107,12 @@ function requestOverlayClose(){
 }
 
 window.addEventListener('popstate', function(){
-  if(!overlayHistoryStack.length) return; // nothing of ours open — let real back/exit happen
+  if(!overlayHistoryStack.length){
+    if(mainHistoryGuardActive){
+      try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){}
+    }
+    return;
+  }
   const id = overlayHistoryStack.pop();
   const el = document.getElementById(id);
   if(el) el.classList.add('hidden');
@@ -2493,7 +2505,7 @@ function renderList(){
   listEl.querySelectorAll('[data-del]').forEach(function(b){b.onclick=function(){deleteEntry(b.dataset.del);};});
   listEl.querySelectorAll('[data-sell]').forEach(function(b){b.onclick=function(){openSell(b.dataset.sell);};});
   listEl.querySelectorAll('[data-split]').forEach(function(b){b.onclick=function(){splitEntry(b.dataset.split);};});
-  listEl.querySelectorAll('[data-share]').forEach(function(b){b.onclick=function(){shareEntry(b.dataset.share);};});
+  listEl.querySelectorAll('[data-share]').forEach(function(b){b.onclick=function(){startShareSelection(b.dataset.share);};});
   listEl.querySelectorAll('[data-piece-brand]').forEach(function(b){
     b.onclick = function(){ openAddPiece(decodeURIComponent(b.dataset.pieceBrand), decodeURIComponent(b.dataset.pieceModel)); };
   });
@@ -2776,7 +2788,7 @@ function renderSingleStockCard(e){
   const compact = cardDisplaySettings.cardViewMode === 'compact';
   return (
   '<div class="card '+(outOfStock?'outofstock':'')+(compact?' compact':'')+'">'+
-    (!outOfStock ? '<div class="select-phone-wrap"><input type="checkbox" class="piece-select" data-select-phone="'+e.id+'" '+(selectedShareIds.has(String(e.id))?'checked':'')+'><span>Select for sharing</span></div>' : '')+
+    (shareSelectionMode&&!outOfStock ? '<div class="select-phone-wrap"><input type="checkbox" class="piece-select" data-select-phone="'+e.id+'" '+(selectedShareIds.has(String(e.id))?'checked':'')+'><span>Select for sharing</span></div>' : '')+
     '<div class="card-title">'+e.brand+' '+e.model+'</div>'+
     prominentSellRangeHtml(e.range)+
     cardPhotoHtml(e)+
@@ -2809,7 +2821,7 @@ function renderStockGroup(g){
     const canSplit = !outOfStock && (e.quantity||1) > 1;
     return (
     '<div class="piece-row '+(outOfStock?'outofstock':'')+(compact?' compact-row':'')+'">'+
-      '<div class="piece-row-top">'+(!outOfStock ? '<input type="checkbox" class="piece-select" data-select-phone="'+e.id+'" '+(selectedShareIds.has(String(e.id))?'checked':'')+'>' : '')+pieceStatusBadges(e, outOfStock)+'</div>'+
+      '<div class="piece-row-top">'+(shareSelectionMode&&!outOfStock ? '<input type="checkbox" class="piece-select" data-select-phone="'+e.id+'" '+(selectedShareIds.has(String(e.id))?'checked':'')+'>' : '')+pieceStatusBadges(e, outOfStock)+'</div>'+
       (pieceSpecBadges(e) ? '<div class="piece-row-top spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
       cardPhotoHtml(e)+
       prominentSellRangeHtml(e.range)+
@@ -3021,9 +3033,19 @@ function createShareTemplate(){const name=document.getElementById('shareTemplate
 function deleteShareTemplate(id){const list=getShareTemplates();if(list.length<=1)return;if(!confirm('Ye share template delete kar dein?'))return;const i=list.findIndex(function(t){return t.id===id;});if(i<0)return;list.splice(i,1);if(activeShareTemplateId===id)activeShareTemplateId=list[0].id;saveCardDisplaySettings();renderShareTemplateSettings();}
 function insertShareVariable(v){const ta=document.getElementById('shareTemplateEditText');if(!ta)return;const token='{'+v+'}',start=ta.selectionStart,end=ta.selectionEnd;ta.value=ta.value.slice(0,start)+token+ta.value.slice(end);ta.focus();ta.selectionStart=ta.selectionEnd=start+token.length;}
 function setupShareVariableButtons(){const el=document.getElementById('shareVariableButtons');if(!el)return;const vars=['brand','model','status','price','sellPrice','ram','storage','network','battery','condition','panel','touch','camera','body','repair','charger','box','packing','faceId','trueTone','notes','imei','quantity','warranty','shop','date'];el.innerHTML=vars.map(function(v){return '<button type="button" data-share-var="'+v+'">{'+v+'}</button>';}).join('');el.querySelectorAll('[data-share-var]').forEach(function(b){b.onclick=function(){insertShareVariable(b.dataset.shareVar);};});}
-function refreshMultiShareBar(){const bar=document.getElementById('multiShareBar'),count=document.getElementById('multiShareCount');if(!bar||!count)return;count.textContent=selectedShareIds.size;bar.classList.toggle('hidden',selectedShareIds.size===0);}
+function refreshMultiShareBar(){const bar=document.getElementById('multiShareBar'),count=document.getElementById('multiShareCount');if(!bar||!count)return;count.textContent=selectedShareIds.size;bar.classList.toggle('hidden',!shareSelectionMode);}
+function startShareSelection(id){
+  shareSelectionMode=true;
+  selectedShareIds.clear();
+  selectedShareIds.add(String(id));
+  render();
+  setTimeout(function(){
+    const bar=document.getElementById('multiShareBar');
+    if(bar) bar.scrollIntoView({behavior:'smooth',block:'nearest'});
+  },40);
+}
 function bindShareSelectionEvents(){const list=document.getElementById('list');if(!list)return;list.querySelectorAll('[data-select-phone]').forEach(function(cb){cb.onchange=function(){const id=String(cb.dataset.selectPhone);if(cb.checked)selectedShareIds.add(id);else selectedShareIds.delete(id);refreshMultiShareBar();};});}
-async function shareSelectedEntries(){const entries=inventory.filter(function(e){return selectedShareIds.has(String(e.id))&&!e.sold&&(e.quantity||0)>0;});if(!entries.length){alert('Share karne ke liye stock mein mobile select karein.');return;}const text=entries.map(function(e,i){return (i+1)+'. '+renderShareTemplateText(e,getShareTemplate().text);}).join('\n\n');const files=[];for(const e of entries){if(e.photos&&e.photos.length){for(let i=0;i<e.photos.length;i++){try{const res=await fetch(e.photos[i]),blob=await res.blob();files.push(new File([blob],((e.brand+' '+e.model).trim()+'-'+(i+1)+'.jpg').replace(/\s+/g,'_'),{type:blob.type||'image/jpeg'}));}catch(err){}}}}if(navigator.share){try{if(files.length&&navigator.canShare&&navigator.canShare({files:files}))await navigator.share({title:entries.length+' mobiles',text:text,files:files});else await navigator.share({title:entries.length+' mobiles',text:text});return;}catch(err){if(err&&err.name==='AbortError')return;}}try{await navigator.clipboard.writeText(text);showToast('Direct share support nahi hai — combined message copy kar diya gaya hai.');}catch(err){alert(text);}}
+async function shareSelectedEntries(){const entries=inventory.filter(function(e){return selectedShareIds.has(String(e.id))&&!e.sold&&(e.quantity||0)>0;});if(!entries.length){alert('Share karne ke liye stock mein mobile select karein.');return;}const text=entries.map(function(e,i){return (i+1)+'. '+renderShareTemplateText(e,getShareTemplate().text);}).join('\n\n');const files=[];for(const e of entries){if(e.photos&&e.photos.length){for(let i=0;i<e.photos.length;i++){try{const res=await fetch(e.photos[i]),blob=await res.blob();files.push(new File([blob],((e.brand+' '+e.model).trim()+'-'+(i+1)+'.jpg').replace(/\s+/g,'_'),{type:blob.type||'image/jpeg'}));}catch(err){}}}}if(navigator.share){try{if(files.length&&navigator.canShare&&navigator.canShare({files:files}))await navigator.share({title:entries.length+' mobiles',text:text,files:files});else await navigator.share({title:entries.length+' mobiles',text:text});selectedShareIds.clear();shareSelectionMode=false;render();return;}catch(err){if(err&&err.name==='AbortError')return;}}try{await navigator.clipboard.writeText(text);shareSelectionMode=false;selectedShareIds.clear();render();showToast('Direct share support nahi hai — combined message copy kar diya gaya hai.');}catch(err){alert(text);}}
 
 async function shareEntry(id){
   const e = inventory.find(function(x){return x.id===id;});
@@ -4748,7 +4770,7 @@ document.getElementById('shareTemplateNewBtn').onclick=createShareTemplate;
 document.getElementById('shareTemplateSaveBtn').onclick=saveShareTemplate;
 document.getElementById('shareTemplateCancelBtn').onclick=cancelShareTemplateEdit;
 document.getElementById('multiShareBtn').onclick=shareSelectedEntries;
-document.getElementById('multiShareClearBtn').onclick=function(){selectedShareIds.clear();render();};
+document.getElementById('multiShareClearBtn').onclick=function(){selectedShareIds.clear();shareSelectionMode=false;render();};
 document.getElementById('multiShareTemplateBtn').onclick=function(){document.getElementById('btnSettings').click();setTimeout(function(){const el=document.getElementById('shareTemplatesList');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},60);};
 
 document.getElementById('autoRangeAddBtn').onclick = addAutoSellRangeRule;
@@ -5331,7 +5353,7 @@ function initFirebaseSync(){
           setAuthGateView('unlocked');
           if(userRole==='admin'){
             updateAdminShopContextUI();
-            setTimeout(function(){ openAdminShops(); }, 0);
+            startCloudSync(userShopId);
           }else{
             startCloudSync(userShopId);
           }
