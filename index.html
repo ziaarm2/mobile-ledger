@@ -5002,7 +5002,7 @@ function renderSettingsFieldOptions(){
   if(actionBox){
     actionBox.innerHTML=isCustom
       ? '<div style="display:flex;gap:7px;flex-wrap:wrap;"><button type="button" class="btn-cancel" id="settingsDeleteFieldBtn" style="flex:1;min-width:140px;">🗑️ Field delete</button><button type="button" class="btn-save" id="settingsApplyExistingBtn" style="flex:1;min-width:180px;">↻ Existing entries par apply</button></div>'
-      : '<div class="settings-note" style="margin:0;">Built-in field hai — isay delete nahi kiya ja sakta, sirf options hide/add aur default set kar sakte hain.</div>';
+      : '<div style="display:flex;gap:7px;flex-wrap:wrap;"><div class="settings-note" style="margin:0;flex:1;min-width:180px;">Built-in field — options hide/add aur default set kar sakte hain.</div><button type="button" class="btn-save" id="settingsApplyExistingBtn" style="flex:1;min-width:180px;">↻ Existing entries par apply</button></div>';
     const del=document.getElementById('settingsDeleteFieldBtn');
     if(del) del.onclick=function(){
       if(!confirm('"'+fieldDef.label+'" field aur is ke options ko '+platformLabel(settingsPlatform)+' se delete kar dein?')) return;
@@ -5022,8 +5022,12 @@ function renderSettingsFieldOptions(){
       if(!targets.length){ alert('Is platform ki koi existing entry nahi mili.'); return; }
       if(!confirm(platformLabel(settingsPlatform)+' ki '+targets.length+' existing entries par \"'+fieldDef.label+' = '+value+'\" apply kar dein?')) return;
       targets.forEach(function(e){
-        if(!e.customFields) e.customFields={};
-        e.customFields[fieldKey]=value;
+        if(isCustom){
+          if(!e.customFields) e.customFields={};
+          e.customFields[fieldKey]=value;
+        } else {
+          e[fieldKey]=value;
+        }
         e.lastUpdated=todayStr();
       });
       saveInventory();
