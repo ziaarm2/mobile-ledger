@@ -399,6 +399,16 @@
 .return-btn{border:1px solid #d97706 !important;color:#92400e !important;background:#fff7ed !important;}
 .return-btn:hover{background:#ffedd5 !important;}
 .card.returned-card{opacity:.92;}
+
+.offline-banner{}
+.activity-history-row{padding:11px 10px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;}
+.activity-history-icon{font-size:18px;line-height:1.2;}
+.activity-history-main{flex:1;min-width:0;}
+.activity-history-title{font-size:12.5px;font-weight:650;}
+.activity-history-meta{font-size:10.5px;color:var(--text-dim);margin-top:3px;}
+.dead-stock-card{border:1px solid #6b4a1f;background:#211b13;border-radius:10px;padding:10px;margin-top:10px;}
+.dead-stock-title{font-size:12px;font-weight:700;margin-bottom:7px;}
+.dead-stock-row{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid rgba(255,255,255,.06);font-size:11.5px;}
 </style>
 </head>
 <body>
@@ -411,6 +421,7 @@
       </div>
       <button class="menu-btn" id="btnMenu">☰ Menu</button>
     </div>
+    <div id="offlineBanner" style="display:none;background:#3a2610;border:1px solid #6b4a1f;color:#ffdca8;border-radius:10px;padding:9px 11px;font-size:11.5px;margin:0 0 9px;">📴 Offline mode — data phone mein save ho raha hai. Internet wapas aayega to sync ho jayega.</div>
     <div class="backup-reminder" id="backupReminder">
       <span>24 ghante se zyada ho gaye, backup nahi ho saka — abhi le lein.</span>
       <span style="display:flex;">
@@ -428,6 +439,7 @@
       <button class="menu-item" id="btnExpenses">💵 Expenses (kharcha)</button>
       <button class="menu-item" id="btnContacts">👥 Contacts</button>
       <button class="menu-item" id="btnRateBook">📋 Rate Book</button>
+      <button class="menu-item" id="btnActivityHistory">🕘 Activity History</button>
 
       <div class="menu-divider"></div>
       <div class="menu-section-label">Backup &amp; Restore</div>
@@ -465,7 +477,6 @@
     <select id="sortSelect">
       <option value="newest">Naye pehle (Latest)</option>
       <option value="brand-qty-desc">Model (zyada quantity wala upar)</option>
-      <option value="newest">Naye pehle</option>
       <option value="oldest">Purane pehle</option>
       <option value="qty-desc">Zyada quantity pehle</option>
       <option value="qty-asc">Kam quantity pehle</option>
@@ -486,6 +497,12 @@
     <button type="button" id="clearActivityFilter">Date filter clear karein</button>
   </div>
   <div class="list" id="list"></div>
+</div>
+<div class="overlay hidden" id="activityHistoryOverlay">
+  <div class="sheet" style="max-height:88vh;">
+    <div class="sheet-head"><h3>🕘 Activity History</h3><button class="icon-btn" id="btnActivityHistoryClose">×</button></div>
+    <div id="activityHistoryList" style="padding:0 2px 20px;"></div>
+  </div>
 </div>
 <div class="multi-share-bar" id="multiShareBar">
   <div class="multi-share-count" id="multiShareCount">0 selected</div>
@@ -1286,6 +1303,7 @@ function loadCustomOptionData(){
 
 function saveCustomOptionData(){
   if(isAdminShopView()) return;
+  makeUndoSnapshot('Entry options');
   try{ localStorage.setItem(LS_CUSTOM_OPTIONS_KEY, JSON.stringify(customOptionData)); }catch(err){}
   schedulePush();
 }
@@ -2768,6 +2786,7 @@ function loadCardDisplaySettings(){
 }
 function saveCardDisplaySettings(){
   if(isAdminShopView()) return;
+  makeUndoSnapshot('Card settings');
   try{ localStorage.setItem(LS_CARD_DISPLAY_KEY, JSON.stringify(cardDisplaySettings)); }catch(err){}
   schedulePush();
 }
@@ -3112,6 +3131,7 @@ function returnSoldItem(soldId){
   }
   render();
   alert('✅ Return complete! Mobile stock mein wapas aa gaya.');
+  logActivity('return','Sale return: '+(sale.brand||'')+' '+(sale.model||''),'Quantity: '+qty);
 }
 
 function renderSoldCard(e){
@@ -3214,7 +3234,9 @@ function bindLongPressSelection(){
 async function shareSelectedEntries(){
   const entries=selectedShareIds.map(function(id){return inventory.find(function(x){return String(x.id)===String(id);});}).filter(Boolean);
   if(!entries.length){alert('Pehle kam az kam 1 mobile select karein.');return;}
-  const text=entries.map(function(e){return buildShareTextFromTemplate(e,getWaMessageTemplate());}).filter(Boolean).join('\n\n──────────\n\n');
+  const text=entries.map(function(e,i){const body=buildShareTextFromTemplate(e,getWaMessageTemplate()); return body ? ((i+1)+'. '+body) : '';}).filter(Boolean).join('\n\n──────────\n\n');
+  if(!window.confirm('📤 WhatsApp Preview\n\n'+text+'\n\n'+entries.length+' mobiles share honge. Continue?')) return;
+  logActivity('share',entries.length+' mobiles WhatsApp share','');
   const files=[];
   for(let j=0;j<entries.length;j++){
     const e=entries[j], title=(e.brand||'Mobile')+' '+(e.model||'');
@@ -3442,6 +3464,8 @@ async function shareEntry(id){
   if(!e) return;
   const text = buildShareTextFromTemplate(e, getWaMessageTemplate());
   const title = e.brand+' '+e.model;
+  if(!window.confirm('📤 WhatsApp Preview\n\n'+text+'\n\nShare karna hai?')) return;
+  logActivity('share','WhatsApp share: '+title,'');
 
   const files = [];
   if(e.photos && e.photos.length){
@@ -3476,6 +3500,7 @@ async function shareEntry(id){
 }
 
 function deleteEntry(id){
+  makeUndoSnapshot('Delete entry');
   if(isAdminShopView()){ alert('Admin Shop view read-only hai — delete nahi kiya ja sakta.'); return; }
   if(!confirm('Ye entry delete kar dein?')) return;
   const idx = inventory.findIndex(function(x){return x.id===id;});
@@ -3488,6 +3513,7 @@ function deleteEntry(id){
     return;
   }
   render();
+  logActivity('delete','Entry delete ki: '+(removedItem.brand||'')+' '+(removedItem.model||''),'');
   showUndoToast('Entry delete ho gayi.', function(){
     const restored = inventory.slice(0,idx).concat([removedItem], inventory.slice(idx));
     const ok2 = tryCommitInventory(restored);
@@ -3775,6 +3801,25 @@ function closeSheet(){
   requestOverlayClose();
 }
 
+function duplicateImeiMessage(candidate, ignoreId){
+  const seen={};
+  for(let i=0;i<candidate.length;i++){
+    const im=String(candidate[i].imei||'').trim();
+    if(!im) continue;
+    const key=im.toLowerCase();
+    if(seen[key] && String(seen[key])!==String(candidate[i].id)) return 'IMEI '+im+' do entries mein already maujood hai.';
+    seen[key]=candidate[i].id;
+  }
+  const existing={};
+  inventory.forEach(function(e){const im=String(e.imei||'').trim(); if(im && String(e.id)!==String(ignoreId)) existing[im.toLowerCase()]=e;});
+  for(let i=0;i<candidate.length;i++){
+    const im=String(candidate[i].imei||'').trim(); if(!im) continue;
+    const hit=existing[im.toLowerCase()];
+    if(hit && String(hit.id)!==String(candidate[i].id)) return 'IMEI '+im+' pehle se '+(hit.brand||'')+' '+(hit.model||'')+' mein saved hai.';
+  }
+  return '';
+}
+
 function saveEntry(){
   hideSaveError('saveErrorBanner');
   const brand = formState.brand==='Other' ? document.getElementById('f-brand-other').value.trim() : formState.brand;
@@ -3923,6 +3968,8 @@ function saveEntry(){
     });
   }
 
+  const imeiError=duplicateImeiMessage(candidate, editingId);
+  if(imeiError){ showSaveError('saveErrorBanner','⚠️ '+imeiError); return; }
   const ok = tryCommitInventory(candidate);
   if(!ok){
     showSaveError('saveErrorBanner', SAVE_FAIL_MSG);
@@ -3943,6 +3990,7 @@ function saveEntry(){
   closeSheet();
   render();
   showToast('✓ Save ho gaya');
+  logActivity(editingId?'edit':'add',(editingId?'Entry update ki: ':'Nayi entry: ')+(brand+' '+model), 'Status: '+(data.status||''));
   backupAfterChange();
 }
 
@@ -4077,6 +4125,54 @@ document.getElementById('moreToggle').onclick = function(){
   sec.classList.toggle('show');
   document.getElementById('moreToggle').textContent = sec.classList.contains('show') ? '- Details chupayein' : '+ Zyada details add karein';
 };
+
+// ---------- Safety / Undo / Activity ----------
+let lastUndoSnapshot = null;
+function makeUndoSnapshot(label){
+  try{
+    lastUndoSnapshot={label:label,inventory:JSON.stringify(inventory),expenses:JSON.stringify(expenses),customOptionData:JSON.stringify(customOptionData),cardDisplaySettings:JSON.stringify(cardDisplaySettings),waTemplate:localStorage.getItem(LS_WA_TEMPLATE_KEY)||''};
+  }catch(e){ lastUndoSnapshot=null; }
+}
+function restoreUndoSnapshot(){
+  if(!lastUndoSnapshot) return;
+  try{
+    inventory=JSON.parse(lastUndoSnapshot.inventory||'[]');
+    expenses=JSON.parse(lastUndoSnapshot.expenses||'[]');
+    customOptionData=JSON.parse(lastUndoSnapshot.customOptionData||'{}');
+    cardDisplaySettings=JSON.parse(lastUndoSnapshot.cardDisplaySettings||'{}');
+    localStorage.setItem(LS_INVENTORY_KEY,JSON.stringify(inventory));
+    localStorage.setItem(LS_EXPENSES_KEY,JSON.stringify(expenses));
+    localStorage.setItem(LS_CUSTOM_OPTIONS_KEY,JSON.stringify(customOptionData));
+    localStorage.setItem(LS_CARD_DISPLAY_KEY,JSON.stringify(cardDisplaySettings));
+    localStorage.setItem(LS_WA_TEMPLATE_KEY,lastUndoSnapshot.waTemplate||'');
+    schedulePush(); render(); renderAllChips(); renderWaMessageEditor();
+    showToast('✓ Pichla change undo ho gaya.');
+    lastUndoSnapshot=null;
+  }catch(e){ alert('Undo nahi ho saka.'); }
+}
+function offerGlobalUndo(msg){
+  if(!lastUndoSnapshot) return;
+  showUndoToast(msg,function(){ restoreUndoSnapshot(); });
+}
+const LS_ACTIVITY_KEY='mobileLedger_activityHistory';
+function logActivity(type,title,detail){
+  if(isAdminShopView()) return;
+  try{
+    const arr=JSON.parse(localStorage.getItem(LS_ACTIVITY_KEY)||'[]');
+    arr.unshift({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),time:new Date().toISOString(),type:type||'info',title:title||'',detail:detail||''});
+    localStorage.setItem(LS_ACTIVITY_KEY,JSON.stringify(arr.slice(0,200)));
+  }catch(e){}
+}
+function renderActivityHistory(){
+  const el=document.getElementById('activityHistoryList'); if(!el)return;
+  let arr=[]; try{arr=JSON.parse(localStorage.getItem(LS_ACTIVITY_KEY)||'[]');}catch(e){}
+  if(!arr.length){el.innerHTML='<div class="empty">Abhi koi activity history nahi hai.</div>';return;}
+  const icons={add:'➕',edit:'✏️',sell:'💰',return:'↩️',delete:'🗑️',expense:'💵',settings:'⚙️',share:'📤',restore:'↩️',info:'ℹ️'};
+  el.innerHTML=arr.map(function(a){
+    const d=new Date(a.time); const dt=isNaN(d.getTime())?'':d.toLocaleString('en-PK',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    return '<div class="activity-history-row"><div class="activity-history-icon">'+(icons[a.type]||'ℹ️')+'</div><div class="activity-history-main"><div class="activity-history-title">'+escapeHtml(a.title)+'</div><div class="activity-history-meta">'+escapeHtml(a.detail||'')+(dt?' · '+escapeHtml(dt):'')+'</div></div></div>';
+  }).join('');
+}
 
 function showToast(msg){
   const t = document.getElementById('toast');
@@ -4311,9 +4407,22 @@ function renderDashboard(){
     {v: displayProfitHtml(totalExpensesAll), l:'Total kharcha (ab tak)'},
     {v: soldItems.reduce(function(s,e){return s+(e.quantity||0);},0), l:'Total sold (ab tak)'}
   ];
+  const dead=stockItems.filter(function(e){
+    const d=e.buyDate||e.availableDate||e.lastUpdated;
+    if(!d) return false;
+    const days=(Date.now()-new Date(d).getTime())/86400000;
+    return days>=30;
+  }).sort(function(a,b){return new Date(a.buyDate||a.availableDate||a.lastUpdated)-new Date(b.buyDate||b.availableDate||b.lastUpdated);}).slice(0,8);
+  let deadHtml='';
+  if(dead.length){
+    deadHtml='<div class="dead-stock-card"><div class="dead-stock-title">⚠️ Dead Stock — 30+ din se unsold</div>'+dead.map(function(e){
+      const d=e.buyDate||e.availableDate||e.lastUpdated; const days=Math.max(0,Math.floor((Date.now()-new Date(d).getTime())/86400000));
+      return '<div class="dead-stock-row"><span>'+escapeHtml((e.brand||'')+' '+(e.model||''))+'<br><span style="color:var(--text-dim)">'+days+' din · '+(e.quantity||0)+' pcs</span></span><span class="num">'+(e.buy!=null?fmt(e.buy):'-')+'</span></div>';
+    }).join('')+'</div>';
+  }
   document.getElementById('dashboardGrid').innerHTML = cards.map(function(c){
     return '<div class="stat-card"><div class="v num">'+c.v+'</div><div class="l">'+c.l+'</div></div>';
-  }).join('');
+  }).join('') + deadHtml;
 }
 
 document.getElementById('btnDashboard').onclick = function(){
@@ -4825,6 +4934,11 @@ document.getElementById('contactsOverlay').onclick = function(e){
   if(e.target.id==='contactsOverlay') requestOverlayClose();
 };
 document.getElementById('contactsSearch').oninput = renderContacts;
+
+// ---------- Activity History ----------
+document.getElementById('btnActivityHistory').onclick=function(){renderActivityHistory();document.getElementById('activityHistoryOverlay').classList.remove('hidden');pushOverlayHistory('activityHistoryOverlay');};
+document.getElementById('btnActivityHistoryClose').onclick=function(){requestOverlayClose();};
+document.getElementById('activityHistoryOverlay').onclick=function(e){if(e.target.id==='activityHistoryOverlay')requestOverlayClose();};
 
 // ---------- Settings (customize options without coding) ----------
 const CARD_FIELD_LABELS = Object.assign({}, CONDITION_FIELD_LABELS, PLAIN_FIELD_LABELS, {ram:'RAM', storage:'Storage', network:'Network'});
@@ -6264,6 +6378,11 @@ if(window.visualViewport){
     }
   });
 }
+
+function updateOfflineBanner(){ const el=document.getElementById('offlineBanner'); if(el) el.style.display=navigator.onLine?'none':'block'; }
+window.addEventListener('online',function(){updateOfflineBanner();showToast('🟢 Internet wapas aa gaya — sync dobara try hoga.');schedulePush();});
+window.addEventListener('offline',function(){updateOfflineBanner();showToast('📴 Offline mode — local save jari rahega.');});
+updateOfflineBanner();
 
 const savedUIState = loadUIState();
 if(document.getElementById('sortSelect')) document.getElementById('sortSelect').value = currentSort;
