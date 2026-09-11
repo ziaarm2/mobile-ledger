@@ -284,6 +284,18 @@
   .settings-opt .card-vis-toggle{font-size:10.5px;padding:2px 8px;border-radius:999px;cursor:pointer;background:var(--surface-3);color:var(--text-faint);margin-left:2px;white-space:nowrap;}
   .settings-opt .card-vis-toggle.is-visible{background:var(--pta-bg);color:var(--pta);font-weight:700;}
   .settings-opt .badge-color-input{width:20px;height:20px;padding:0;border:1px solid var(--border);border-radius:6px;background:none;cursor:pointer;margin-left:2px;}
+  .wa-template-fields{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;}
+  .wa-template-add{display:flex;align-items:center;justify-content:center;gap:6px;background:var(--surface);border:1px dashed var(--border-strong);border-radius:999px;padding:8px 11px;color:var(--text);font-size:12.5px;cursor:pointer;user-select:none;}
+  .wa-template-add:hover{border-color:var(--accent);color:var(--accent);}
+  .wa-template-list{display:flex;flex-direction:column;gap:7px;margin-top:12px;}
+  .wa-template-item{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 10px;cursor:grab;}
+  .wa-template-item.dragging{opacity:.4;}
+  .wa-template-item .handle{color:var(--text-faint);font-size:15px;flex-shrink:0;}
+  .wa-template-item .label{flex:1;font-size:13px;min-width:0;}
+  .wa-template-item .remove{color:var(--danger);font-weight:800;font-size:16px;padding:2px 5px;cursor:pointer;}
+  .wa-template-preview{white-space:pre-wrap;background:#0b0d10;border:1px solid var(--border);border-radius:10px;padding:11px 12px;margin-top:10px;font-size:12.5px;line-height:1.55;color:var(--text);max-height:230px;overflow:auto;}
+  .wa-template-custom-row{display:flex;gap:7px;margin-top:8px;}
+  .wa-template-custom-row input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 11px;color:var(--text);font-size:13px;}
   .badge-order-list{display:flex;flex-direction:column;gap:6px;margin-top:14px;}
   .badge-order-item{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;cursor:grab;}
   .badge-order-item.dragging{opacity:0.4;}
@@ -922,6 +934,21 @@
       <button type="button" class="sell-btn" id="autoRangeAddBtn">Add</button>
     </div>
     <div class="settings-note">Example: 20,000–35,000 +3,000 to +5,000 = 23k–40k. Agar kisi Buy price ke liye koi rule match na kare to Sell Range blank rahega. Existing filled ranges ko automatic overwrite nahi kiya jayega.</div>
+
+    <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">📤 WhatsApp message customize karein</div>
+    <div class="settings-note" style="margin-top:0;">Jo information customer ko WhatsApp par bhejni hai, neeche se add karein. Phir items ko <b>drag karke order</b> badlein. Kisi coding ya special code ki zaroorat nahi.</div>
+    <div class="wa-template-fields" id="waTemplateAddFields"></div>
+    <div class="wa-template-custom-row">
+      <input type="text" id="waTemplateCustomText" placeholder="Apna text likhein, e.g. 🔥 Limited stock">
+      <button type="button" class="sell-btn" id="waTemplateCustomAdd">Add text</button>
+    </div>
+    <div class="wa-template-list" id="waTemplateList"></div>
+    <div class="sec-label" style="margin-top:12px;">👁 Preview</div>
+    <div class="wa-template-preview" id="waTemplatePreview"></div>
+    <div class="settings-add-row" style="margin-top:9px;">
+      <button type="button" class="btn-cancel" id="waTemplateReset" style="width:100%;">↩️ Default template restore karein</button>
+    </div>
+    <div class="settings-note">Tip: Kisi field ki value mobile mein available na ho to uski line automatically hide ho jayegi. Preview sirf example hai; actual Share mein selected mobile ki asli information use hogi.</div>
 
     <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">Privacy mode</div>
     <div class="settings-opts" id="privacyEnabledToggles"></div>
@@ -2942,49 +2969,183 @@ function chargerShareLine(e){
   return 'Charger: ' + c;
 }
 
+const WA_SHARE_FIELD_DEFS = [
+  {key:'network', label:'📶 Network'},
+  {key:'model', label:'📱 Brand & Model'},
+  {key:'status', label:'🏷️ Status'},
+  {key:'price', label:'💰 Price'},
+  {key:'salePrice', label:'💵 Sale Price'},
+  {key:'ram', label:'🧠 RAM'},
+  {key:'storage', label:'💾 Storage'},
+  {key:'battery', label:'🔋 Battery'},
+  {key:'issues', label:'⚠️ Condition / Issues'},
+  {key:'charger', label:'🔌 Charger'},
+  {key:'box', label:'📦 Box'},
+  {key:'packing', label:'🎁 Packing'},
+  {key:'faceid', label:'🔐 Face ID'},
+  {key:'truetone', label:'🎨 True Tone'},
+  {key:'notes', label:'📝 Notes'},
+  {key:'warranty', label:'🛡️ Warranty'}
+];
+
+const DEFAULT_WA_SHARE_TEMPLATE = WA_SHARE_FIELD_DEFS.map(function(f){ return {type:'field', key:f.key}; });
+let waTemplateDragIndex = -1;
+
+function normalizeWaShareTemplate(){
+  const saved = cardDisplaySettings.whatsappShareTemplate;
+  if(!Array.isArray(saved)) return DEFAULT_WA_SHARE_TEMPLATE.map(function(x){return Object.assign({},x);});
+  return saved.filter(function(x){
+    return x && ((x.type==='field' && WA_SHARE_FIELD_DEFS.some(function(f){return f.key===x.key;})) || (x.type==='text' && typeof x.text==='string' && x.text.trim()));
+  }).map(function(x){
+    return x.type==='text' ? {type:'text', text:String(x.text)} : {type:'field', key:x.key};
+  });
+}
+
+function saveWaShareTemplate(){
+  if(isAdminShopView()) return;
+  cardDisplaySettings.whatsappShareTemplate = normalizeWaShareTemplate();
+  saveCardDisplaySettings();
+}
+
+function waShareFieldLabel(key){
+  const f=WA_SHARE_FIELD_DEFS.find(function(x){return x.key===key;});
+  return f ? f.label : key;
+}
+
+function buildShareFieldLine(e,key){
+  if(!e) return '';
+  if(key==='network') return e.network==='5G' ? '📶 5G' : '';
+  if(key==='model') return e.brand || e.model ? '*'+(e.brand||'')+' '+(e.model||'')+'*' : '';
+  if(key==='status') return e.status ? 'Status: '+e.status : '';
+  if(key==='price') return e.range ? 'Price: '+upperPriceFromRange(e.range) : '';
+  if(key==='salePrice') return e.sold && !isReturnedSale(e) && e.sell!=null ? 'Sale price: '+fmt(e.sell) : '';
+  if(key==='ram') return e.ram ? 'RAM: '+e.ram : '';
+  if(key==='storage') return e.storage ? 'Storage: '+e.storage : '';
+  if(key==='battery') return e.battery ? 'Battery: '+e.battery : '';
+  if(key==='issues'){
+    const issues=[];
+    if(isConditionIssue('display', e.display)) issues.push('⚠ Panel: '+e.display);
+    if(isConditionIssue('touch', e.touch)) issues.push('⚠ Touch: '+e.touch);
+    if(isConditionIssue('camera', e.camera)) issues.push('⚠ Camera: '+e.camera);
+    if(isConditionIssue('body', e.body)) issues.push('⚠ Body: '+e.body);
+    if(isConditionIssue('openrepair', e.openrepair)) issues.push('⚠ Repair: '+e.openrepair);
+    return issues.length ? issues.join('\n') : 'No any issue';
+  }
+  if(key==='charger') return chargerShareLine(e);
+  if(key==='box') return e.box==='Yes' ? 'Box: Available' : '';
+  if(key==='packing') return e.packing && e.packing!=='No pack' ? 'Packing: '+e.packing : '';
+  if(key==='faceid') return e.brand==='iPhone' && e.faceid==='Yes' ? 'Face ID: Working' : '';
+  if(key==='truetone') return e.brand==='iPhone' && e.truetone==='Yes' ? 'True Tone: Working' : '';
+  if(key==='notes') return e.notes ? 'Notes: '+e.notes : '';
+  if(key==='warranty') return '✅ 3 days check warranty';
+  return '';
+}
+
 function buildShareText(e){
-  const lines = [];
-
-  if(e.network==='5G') lines.push('📶 5G');
-
-  lines.push('*'+e.brand+' '+e.model+'*');
-  lines.push('Status: '+e.status);
-
-  if(e.range){
-    lines.push('Price: '+upperPriceFromRange(e.range));
-  }
-  if(e.sold && !isReturnedSale(e) && e.sell!=null) lines.push('Sale price: '+fmt(e.sell));
-
-  if(e.ram) lines.push('RAM: '+e.ram);
-  if(e.storage) lines.push('Storage: '+e.storage);
-
-  if(e.battery) lines.push('Battery: '+e.battery);
-
-  const shareIssues = [];
-  if(isConditionIssue('display', e.display)) shareIssues.push('Panel: '+e.display);
-  if(isConditionIssue('touch', e.touch)) shareIssues.push('Touch: '+e.touch);
-  if(isConditionIssue('camera', e.camera)) shareIssues.push('Camera: '+e.camera);
-  if(isConditionIssue('body', e.body)) shareIssues.push('Body: '+e.body);
-  if(isConditionIssue('openrepair', e.openrepair)) shareIssues.push('Repair: '+e.openrepair);
-  if(shareIssues.length){
-    shareIssues.forEach(function(i){ lines.push('⚠ '+i); });
-  } else {
-    lines.push('No any issue');
-  }
-
-  const chargerLine = chargerShareLine(e);
-  if(chargerLine) lines.push(chargerLine);
-
-  if(e.box==='Yes') lines.push('Box: Available');
-  if(e.packing && e.packing!=='No pack') lines.push('Packing: '+e.packing);
-  if(e.brand==='iPhone' && e.faceid==='Yes') lines.push('Face ID: Working');
-  if(e.brand==='iPhone' && e.truetone==='Yes') lines.push('True Tone: Working');
-  if(e.notes) lines.push('Notes: '+e.notes);
-
-  lines.push('');
-  lines.push('✅ 3 days check warranty');
-
+  const template=normalizeWaShareTemplate();
+  const lines=[];
+  template.forEach(function(item){
+    if(item.type==='text'){
+      if(item.text && item.text.trim()) lines.push(item.text.trim());
+      return;
+    }
+    const line=buildShareFieldLine(e,item.key);
+    if(line) lines.push(line);
+  });
   return lines.join('\n');
+}
+
+function renderWaTemplateEditor(){
+  const addEl=document.getElementById('waTemplateAddFields');
+  const listEl=document.getElementById('waTemplateList');
+  const previewEl=document.getElementById('waTemplatePreview');
+  if(!addEl || !listEl || !previewEl) return;
+  const template=normalizeWaShareTemplate();
+  cardDisplaySettings.whatsappShareTemplate=template;
+
+  addEl.innerHTML=WA_SHARE_FIELD_DEFS.map(function(f){
+    return '<div class="wa-template-add" data-wa-add-field="'+f.key+'">'+f.label+'</div>';
+  }).join('');
+
+  listEl.innerHTML=template.map(function(item,i){
+    const label=item.type==='text' ? '✏️ '+item.text : waShareFieldLabel(item.key);
+    return '<div class="wa-template-item" draggable="true" data-wa-index="'+i+'">'+
+      '<span class="handle">⠿</span>'+
+      '<span class="label">'+escapeHtml(label)+'</span>'+
+      '<span class="remove" data-wa-remove="'+i+'">×</span>'+
+      '</div>';
+  }).join('') || '<div class="settings-note">Abhi koi field nahi hai. Upar se information add karein.</div>';
+
+  listEl.querySelectorAll('[data-wa-remove]').forEach(function(btn){
+    btn.onclick=function(e){
+      e.stopPropagation();
+      const idx=Number(btn.dataset.waRemove);
+      const next=normalizeWaShareTemplate();
+      next.splice(idx,1);
+      cardDisplaySettings.whatsappShareTemplate=next;
+      saveWaShareTemplate();
+      renderWaTemplateEditor();
+    };
+  });
+
+  listEl.querySelectorAll('.wa-template-item').forEach(function(item){
+    item.ondragstart=function(){ waTemplateDragIndex=Number(item.dataset.waIndex); item.classList.add('dragging'); };
+    item.ondragend=function(){ waTemplateDragIndex=-1; item.classList.remove('dragging'); };
+    item.ondragover=function(e){ e.preventDefault(); };
+    item.ondrop=function(e){
+      e.preventDefault();
+      const to=Number(item.dataset.waIndex), from=waTemplateDragIndex;
+      if(from<0 || from===to) return;
+      const next=normalizeWaShareTemplate();
+      const moved=next.splice(from,1)[0];
+      next.splice(to,0,moved);
+      cardDisplaySettings.whatsappShareTemplate=next;
+      saveWaShareTemplate();
+      renderWaTemplateEditor();
+    };
+  });
+
+  addEl.querySelectorAll('[data-wa-add-field]').forEach(function(btn){
+    btn.onclick=function(){
+      const key=btn.dataset.waAddField;
+      const next=normalizeWaShareTemplate();
+      next.push({type:'field',key:key});
+      cardDisplaySettings.whatsappShareTemplate=next;
+      saveWaShareTemplate();
+      renderWaTemplateEditor();
+    };
+  });
+
+  const previewEntry=inventory.find(function(x){return !x.sold && Number(x.quantity)>0;}) || inventory[0] || {
+    brand:'iPhone',model:'13 Pro',network:'5G',status:'PTA',range:'145000-150000',ram:'6GB',storage:'256GB',battery:'88%',
+    display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',charger:'Yes',box:'Yes',packing:'Box pack',faceid:'Yes',truetone:'Yes',notes:''
+  };
+  previewEl.textContent=buildShareText(previewEntry) || 'Preview yahan nazar aayega.';
+}
+
+function initWaTemplateEditor(){
+  const customInput=document.getElementById('waTemplateCustomText');
+  const customBtn=document.getElementById('waTemplateCustomAdd');
+  const resetBtn=document.getElementById('waTemplateReset');
+  if(!customInput || !customBtn || !resetBtn) return;
+  customBtn.onclick=function(){
+    const text=customInput.value.trim();
+    if(!text) return;
+    const next=normalizeWaShareTemplate();
+    next.push({type:'text',text:text});
+    cardDisplaySettings.whatsappShareTemplate=next;
+    saveWaShareTemplate();
+    customInput.value='';
+    renderWaTemplateEditor();
+  };
+  customInput.onkeydown=function(e){ if(e.key==='Enter'){ e.preventDefault(); customBtn.click(); } };
+  resetBtn.onclick=function(){
+    if(!confirm('WhatsApp message ko default template par wapas le aayein?')) return;
+    cardDisplaySettings.whatsappShareTemplate=DEFAULT_WA_SHARE_TEMPLATE.map(function(x){return Object.assign({},x);});
+    saveWaShareTemplate();
+    renderWaTemplateEditor();
+    showToast('✓ Default WhatsApp template restore ho gaya.');
+  };
 }
 
 async function shareEntry(id){
@@ -4727,6 +4888,7 @@ document.getElementById('btnSettings').onclick = function(){
   renderBadgeOrderList();
   renderSettingsFieldOptions();
   renderSettingsBrands();
+  renderWaTemplateEditor();
   document.getElementById('settingsOverlay').classList.remove('hidden');
   pushOverlayHistory('settingsOverlay');
 };
@@ -4738,6 +4900,8 @@ document.getElementById('settingsOverlay').onclick = function(e){
 };
 
 document.getElementById('autoRangeAddBtn').onclick = addAutoSellRangeRule;
+
+initWaTemplateEditor();
 
 document.getElementById('btnPrivacyToggle').onclick = function(){
   cardDisplaySettings.privacy.enabled = !cardDisplaySettings.privacy.enabled;
