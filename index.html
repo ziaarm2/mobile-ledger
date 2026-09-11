@@ -296,6 +296,23 @@
   .wa-template-preview{white-space:pre-wrap;background:#0b0d10;border:1px solid var(--border);border-radius:10px;padding:11px 12px;margin-top:10px;font-size:12.5px;line-height:1.55;color:var(--text);max-height:230px;overflow:auto;}
   .wa-template-custom-row{display:flex;gap:7px;margin-top:8px;}
   .wa-template-custom-row input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 11px;color:var(--text);font-size:13px;}
+  .wa-message-editor{width:100%;min-height:280px;resize:vertical;background:#0b0d10;border:1px solid var(--border-strong);border-radius:12px;padding:12px;color:var(--text);font-size:13px;line-height:1.6;font-family:inherit;outline:none;}
+  .wa-message-editor:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(45,212,191,.12);}
+  .wa-field-toolbar{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .wa-field-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:999px;padding:7px 9px;font-size:11.5px;cursor:pointer;}
+  .wa-field-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .wa-editor-actions{display:flex;gap:7px;margin-top:8px;}
+  .wa-editor-actions button{flex:1;}
+  .multi-share-bar{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);width:min(448px,calc(100% - 20px));z-index:80;background:var(--surface-2);border:1px solid var(--border-strong);box-shadow:0 10px 35px rgba(0,0,0,.45);border-radius:14px;padding:9px;display:none;gap:7px;align-items:center;}
+  .multi-share-bar.show{display:flex;}
+  .multi-share-count{font-size:12px;font-weight:800;flex:1;}
+  .multi-share-bar button{padding:9px 11px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;font-weight:700;}
+  .multi-share-bar .primary{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
+  .share-select-check{display:none;align-items:center;gap:7px;margin-bottom:8px;font-size:12px;color:var(--text-dim);}
+  body.share-select-mode .share-select-check{display:flex;}
+  .share-select-check input{width:18px;height:18px;accent-color:var(--accent);}
+  body.share-select-mode .card-actions [data-share], body.share-select-mode .card-actions .share-btn{display:none;}
+  body.share-select-mode .card-actions [data-edit], body.share-select-mode .card-actions [data-sell], body.share-select-mode .card-actions [data-split], body.share-select-mode .card-actions [data-del], body.share-select-mode .card-actions [data-return]{display:none;}
   .badge-order-list{display:flex;flex-direction:column;gap:6px;margin-top:14px;}
   .badge-order-item{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;cursor:grab;}
   .badge-order-item.dragging{opacity:0.4;}
@@ -450,6 +467,9 @@
       <option value="qty-asc">Kam quantity pehle</option>
     </select>
   </div>
+  <div style="padding:7px 16px 0;">
+    <button type="button" class="btn-cancel" id="btnMultiShare" style="width:100%;">📤 Multiple mobiles select karke Share karein</button>
+  </div>
   <div class="chips-scroll" id="brandFilterChips"></div>
   <div class="chips-scroll" id="filterChips"></div>
   <div class="activity-filter-row">
@@ -464,6 +484,11 @@
     <button type="button" id="clearActivityFilter">Date filter clear karein</button>
   </div>
   <div class="list" id="list"></div>
+</div>
+<div class="multi-share-bar" id="multiShareBar">
+  <div class="multi-share-count" id="multiShareCount">0 mobile selected</div>
+  <button type="button" id="multiShareCancel">Cancel</button>
+  <button type="button" class="primary" id="multiShareSend">📤 WhatsApp Share</button>
 </div>
 
 <button class="fab" id="fabAdd" style="display:none;">+</button>
@@ -936,19 +961,17 @@
     <div class="settings-note">Example: 20,000–35,000 +3,000 to +5,000 = 23k–40k. Agar kisi Buy price ke liye koi rule match na kare to Sell Range blank rahega. Existing filled ranges ko automatic overwrite nahi kiya jayega.</div>
 
     <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">📤 WhatsApp message customize karein</div>
-    <div class="settings-note" style="margin-top:0;">Jo information customer ko WhatsApp par bhejni hai, neeche se add karein. Phir items ko <b>drag karke order</b> badlein. Kisi coding ya special code ki zaroorat nahi.</div>
-    <div class="wa-template-fields" id="waTemplateAddFields"></div>
-    <div class="wa-template-custom-row">
-      <input type="text" id="waTemplateCustomText" placeholder="Apna text likhein, e.g. 🔥 Limited stock">
-      <button type="button" class="sell-btn" id="waTemplateCustomAdd">Add text</button>
+    <div class="settings-note" style="margin-top:0;">Bilkul WhatsApp message ki tarah neeche message likhein/edit karein. Jahan mobile ki automatic information chahiye ho, neeche diye buttons se add karein. Kisi coding ya special code ki zaroorat nahi.</div>
+    <textarea id="waMessageEditor" class="wa-message-editor" spellcheck="false"></textarea>
+    <div class="sec-label" style="margin-top:12px;font-size:11.5px;">➕ Mobile ki information add karein</div>
+    <div class="wa-field-toolbar" id="waFieldToolbar"></div>
+    <div class="wa-editor-actions">
+      <button type="button" class="btn-cancel" id="waTemplateReset">↩️ Default message</button>
+      <button type="button" class="btn-save" id="waTemplateSave">✓ Save message</button>
     </div>
-    <div class="wa-template-list" id="waTemplateList"></div>
     <div class="sec-label" style="margin-top:12px;">👁 Preview</div>
     <div class="wa-template-preview" id="waTemplatePreview"></div>
-    <div class="settings-add-row" style="margin-top:9px;">
-      <button type="button" class="btn-cancel" id="waTemplateReset" style="width:100%;">↩️ Default template restore karein</button>
-    </div>
-    <div class="settings-note">Tip: Kisi field ki value mobile mein available na ho to uski line automatically hide ho jayegi. Preview sirf example hai; actual Share mein selected mobile ki asli information use hogi.</div>
+    <div class="settings-note">Example: aap apni marzi se line delete, edit, emoji add aur order change kar sakte hain. <b>[Model]</b>, <b>[Price]</b> jaisi values sirf buttons se insert karein; actual WhatsApp share mein ye automatically mobile ki asli information ban jayengi.</div>
 
     <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">Privacy mode</div>
     <div class="settings-opts" id="privacyEnabledToggles"></div>
@@ -2497,6 +2520,7 @@ function renderList(){
   listEl.querySelectorAll('[data-piece-brand]').forEach(function(b){
     b.onclick = function(){ openAddPiece(decodeURIComponent(b.dataset.pieceBrand), decodeURIComponent(b.dataset.pieceModel)); };
   });
+  syncShareCheckboxes();
 }
 
 function pieceStatusBadges(e, outOfStock){
@@ -2943,6 +2967,68 @@ function renderSoldCard(e){
   '</div>');
 }
 
+
+let shareSelectMode=false;
+let selectedShareIds=[];
+function updateMultiShareBar(){
+  const bar=document.getElementById('multiShareBar');
+  const count=document.getElementById('multiShareCount');
+  if(!bar || !count) return;
+  count.textContent=selectedShareIds.length+' mobile'+(selectedShareIds.length===1?'':'s')+' selected';
+  bar.classList.toggle('show',shareSelectMode);
+}
+function syncShareCheckboxes(){
+  document.querySelectorAll('[data-share-select]').forEach(function(cb){
+    cb.checked=selectedShareIds.indexOf(String(cb.dataset.shareSelect))!==-1;
+    cb.onchange=function(){
+      const id=String(cb.dataset.shareSelect);
+      if(cb.checked){ if(selectedShareIds.indexOf(id)===-1) selectedShareIds.push(id); }
+      else selectedShareIds=selectedShareIds.filter(function(x){return x!==id;});
+      updateMultiShareBar();
+    };
+  });
+}
+function setShareSelectMode(on){
+  shareSelectMode=!!on;
+  document.body.classList.toggle('share-select-mode',shareSelectMode);
+  if(!shareSelectMode) selectedShareIds=[];
+  const btn=document.getElementById('btnMultiShare');
+  if(btn) btn.textContent=shareSelectMode ? '✕ Multiple Share mode band karein' : '📤 Multiple mobiles select karke Share karein';
+  updateMultiShareBar();
+  renderList();
+  syncShareCheckboxes();
+}
+async function shareSelectedEntries(){
+  const entries=selectedShareIds.map(function(id){return inventory.find(function(x){return String(x.id)===String(id);});}).filter(Boolean);
+  if(!entries.length){ alert('Pehle kam az kam 1 mobile select karein.'); return; }
+  const text=entries.map(function(e){return buildShareTextFromTemplate(e,getWaMessageTemplate());}).filter(Boolean).join('\n\n──────────\n\n');
+  const files=[];
+  for(let j=0;j<entries.length;j++){
+    const e=entries[j], title=(e.brand||'Mobile')+' '+(e.model||'');
+    if(e.photos && e.photos.length){
+      for(let i=0;i<e.photos.length;i++){
+        try{
+          const res=await fetch(e.photos[i]);
+          const blob=await res.blob();
+          files.push(new File([blob],(title+'-'+(i+1)+'.jpg').replace(/\s+/g,'_'),{type:blob.type||'image/jpeg'}));
+        }catch(err){}
+      }
+    }
+  }
+  try{
+    if(navigator.share){
+      if(files.length && navigator.canShare && navigator.canShare({files:files})) await navigator.share({title:entries.length+' mobiles',text:text,files:files});
+      else await navigator.share({title:entries.length+' mobiles',text:text});
+    }else{
+      await navigator.clipboard.writeText(text);
+      showToast('Direct share support nahi — message copy kar diya gaya.');
+    }
+  }catch(err){
+    if(err && err.name==='AbortError') return;
+    try{ await navigator.clipboard.writeText(text); showToast('Share sheet nahi khuli — message copy kar diya gaya.'); }catch(e){ alert(text); }
+  }
+}
+
 function render(){
   renderStats();
   renderStorageBar();
@@ -2970,52 +3056,51 @@ function chargerShareLine(e){
 }
 
 const WA_SHARE_FIELD_DEFS = [
-  {key:'network', label:'📶 Network'},
-  {key:'model', label:'📱 Brand & Model'},
-  {key:'status', label:'🏷️ Status'},
-  {key:'price', label:'💰 Price'},
-  {key:'salePrice', label:'💵 Sale Price'},
-  {key:'ram', label:'🧠 RAM'},
-  {key:'storage', label:'💾 Storage'},
-  {key:'battery', label:'🔋 Battery'},
-  {key:'issues', label:'⚠️ Condition / Issues'},
-  {key:'charger', label:'🔌 Charger'},
-  {key:'box', label:'📦 Box'},
-  {key:'packing', label:'🎁 Packing'},
-  {key:'faceid', label:'🔐 Face ID'},
-  {key:'truetone', label:'🎨 True Tone'},
-  {key:'notes', label:'📝 Notes'},
-  {key:'warranty', label:'🛡️ Warranty'}
+  {key:'network', label:'📶 Network', token:'[Network]'},
+  {key:'model', label:'📱 Brand & Model', token:'[Model]'},
+  {key:'status', label:'🏷️ Status', token:'[Status]'},
+  {key:'price', label:'💰 Price', token:'[Price]'},
+  {key:'salePrice', label:'💵 Sale Price', token:'[Sale Price]'},
+  {key:'ram', label:'🧠 RAM', token:'[RAM]'},
+  {key:'storage', label:'💾 Storage', token:'[Storage]'},
+  {key:'battery', label:'🔋 Battery', token:'[Battery]'},
+  {key:'issues', label:'⚠️ Condition / Issues', token:'[Issues]'},
+  {key:'charger', label:'🔌 Charger', token:'[Charger]'},
+  {key:'box', label:'📦 Box', token:'[Box]'},
+  {key:'packing', label:'🎁 Packing', token:'[Packing]'},
+  {key:'faceid', label:'🔐 Face ID', token:'[Face ID]'},
+  {key:'truetone', label:'🎨 True Tone', token:'[True Tone]'},
+  {key:'notes', label:'📝 Notes', token:'[Notes]'},
+  {key:'warranty', label:'🛡️ Warranty', token:'[Warranty]'}
 ];
+const DEFAULT_WA_MESSAGE = '📶 [Network]\n*[Model]*\nStatus: [Status]\nPrice: [Price]\n[Sale Price]\nRAM: [RAM]\nStorage: [Storage]\nBattery: [Battery]\n[Issues]\n[Charger]\n[Box]\n[Packing]\n[Face ID]\n[True Tone]\n[Notes]\n\n[Warranty]';
 
-const DEFAULT_WA_SHARE_TEMPLATE = WA_SHARE_FIELD_DEFS.map(function(f){ return {type:'field', key:f.key}; });
-let waTemplateDragIndex = -1;
-
-function normalizeWaShareTemplate(){
-  const saved = cardDisplaySettings.whatsappShareTemplate;
-  if(!Array.isArray(saved)) return DEFAULT_WA_SHARE_TEMPLATE.map(function(x){return Object.assign({},x);});
-  return saved.filter(function(x){
-    return x && ((x.type==='field' && WA_SHARE_FIELD_DEFS.some(function(f){return f.key===x.key;})) || (x.type==='text' && typeof x.text==='string' && x.text.trim()));
-  }).map(function(x){
-    return x.type==='text' ? {type:'text', text:String(x.text)} : {type:'field', key:x.key};
-  });
+function waLegacyTemplateToText(template){
+  if(!Array.isArray(template)) return DEFAULT_WA_MESSAGE;
+  return template.map(function(item){
+    if(item.type==='text') return item.text||'';
+    const f=WA_SHARE_FIELD_DEFS.find(function(x){return x.key===item.key;});
+    if(!f) return '';
+    if(item.key==='model') return '*[Model]*';
+    return f.token;
+  }).filter(Boolean).join('\n') || DEFAULT_WA_MESSAGE;
 }
 
-function saveWaShareTemplate(){
+function getWaMessageTemplate(){
+  let text=cardDisplaySettings.whatsappShareTemplateText;
+  if(typeof text==='string' && text.trim()) return text;
+  if(Array.isArray(cardDisplaySettings.whatsappShareTemplate)) return waLegacyTemplateToText(cardDisplaySettings.whatsappShareTemplate);
+  return DEFAULT_WA_MESSAGE;
+}
+function saveWaMessageTemplate(text){
   if(isAdminShopView()) return;
-  cardDisplaySettings.whatsappShareTemplate = normalizeWaShareTemplate();
+  cardDisplaySettings.whatsappShareTemplateText=String(text||'');
   saveCardDisplaySettings();
 }
-
-function waShareFieldLabel(key){
-  const f=WA_SHARE_FIELD_DEFS.find(function(x){return x.key===key;});
-  return f ? f.label : key;
-}
-
-function buildShareFieldLine(e,key){
+function buildShareFieldValue(e,key){
   if(!e) return '';
   if(key==='network') return e.network==='5G' ? '📶 5G' : '';
-  if(key==='model') return e.brand || e.model ? '*'+(e.brand||'')+' '+(e.model||'')+'*' : '';
+  if(key==='model') return (e.brand||e.model) ? '*'+(e.brand||'')+' '+(e.model||'')+'*' : '';
   if(key==='status') return e.status ? 'Status: '+e.status : '';
   if(key==='price') return e.range ? 'Price: '+upperPriceFromRange(e.range) : '';
   if(key==='salePrice') return e.sold && !isReturnedSale(e) && e.sell!=null ? 'Sale price: '+fmt(e.sell) : '';
@@ -3040,111 +3125,71 @@ function buildShareFieldLine(e,key){
   if(key==='warranty') return '✅ 3 days check warranty';
   return '';
 }
-
-function buildShareText(e){
-  const template=normalizeWaShareTemplate();
-  const lines=[];
-  template.forEach(function(item){
-    if(item.type==='text'){
-      if(item.text && item.text.trim()) lines.push(item.text.trim());
-      return;
-    }
-    const line=buildShareFieldLine(e,item.key);
-    if(line) lines.push(line);
+function buildShareTextFromTemplate(e, templateText){
+  let text=String(templateText==null ? getWaMessageTemplate() : templateText);
+  WA_SHARE_FIELD_DEFS.forEach(function(f){
+    const value=buildShareFieldValue(e,f.key);
+    const escaped=f.token.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    text=text.replace(new RegExp(escaped,'g'), value);
   });
-  return lines.join('\n');
+  // Remove lines whose only dynamic field had no value, plus tidy extra blank lines.
+  const lines=text.split(/\r?\n/);
+  const out=[];
+  lines.forEach(function(line){
+    const trimmed=line.trim();
+    if(!trimmed) { if(out.length && out[out.length-1]!=='' ) out.push(''); return; }
+    if(/^(?:\[[^\]]+\]|\s*)$/.test(trimmed)) return;
+    out.push(line.replace(/[ \t]+$/,''));
+  });
+  while(out.length && out[0]==='') out.shift();
+  while(out.length && out[out.length-1]==='') out.pop();
+  return out.join('\n');
 }
 
-function renderWaTemplateEditor(){
-  const addEl=document.getElementById('waTemplateAddFields');
-  const listEl=document.getElementById('waTemplateList');
-  const previewEl=document.getElementById('waTemplatePreview');
-  if(!addEl || !listEl || !previewEl) return;
-  const template=normalizeWaShareTemplate();
-  cardDisplaySettings.whatsappShareTemplate=template;
-
-  addEl.innerHTML=WA_SHARE_FIELD_DEFS.map(function(f){
-    return '<div class="wa-template-add" data-wa-add-field="'+f.key+'">'+f.label+'</div>';
+function renderWaMessageEditor(){
+  const editor=document.getElementById('waMessageEditor');
+  const toolbar=document.getElementById('waFieldToolbar');
+  const preview=document.getElementById('waTemplatePreview');
+  if(!editor || !toolbar || !preview) return;
+  if(document.activeElement!==editor) editor.value=getWaMessageTemplate();
+  toolbar.innerHTML=WA_SHARE_FIELD_DEFS.map(function(f){
+    return '<button type="button" class="wa-field-btn" data-wa-token="'+f.token+'">'+f.label+'</button>';
   }).join('');
-
-  listEl.innerHTML=template.map(function(item,i){
-    const label=item.type==='text' ? '✏️ '+item.text : waShareFieldLabel(item.key);
-    return '<div class="wa-template-item" draggable="true" data-wa-index="'+i+'">'+
-      '<span class="handle">⠿</span>'+
-      '<span class="label">'+escapeHtml(label)+'</span>'+
-      '<span class="remove" data-wa-remove="'+i+'">×</span>'+
-      '</div>';
-  }).join('') || '<div class="settings-note">Abhi koi field nahi hai. Upar se information add karein.</div>';
-
-  listEl.querySelectorAll('[data-wa-remove]').forEach(function(btn){
-    btn.onclick=function(e){
-      e.stopPropagation();
-      const idx=Number(btn.dataset.waRemove);
-      const next=normalizeWaShareTemplate();
-      next.splice(idx,1);
-      cardDisplaySettings.whatsappShareTemplate=next;
-      saveWaShareTemplate();
-      renderWaTemplateEditor();
-    };
-  });
-
-  listEl.querySelectorAll('.wa-template-item').forEach(function(item){
-    item.ondragstart=function(){ waTemplateDragIndex=Number(item.dataset.waIndex); item.classList.add('dragging'); };
-    item.ondragend=function(){ waTemplateDragIndex=-1; item.classList.remove('dragging'); };
-    item.ondragover=function(e){ e.preventDefault(); };
-    item.ondrop=function(e){
-      e.preventDefault();
-      const to=Number(item.dataset.waIndex), from=waTemplateDragIndex;
-      if(from<0 || from===to) return;
-      const next=normalizeWaShareTemplate();
-      const moved=next.splice(from,1)[0];
-      next.splice(to,0,moved);
-      cardDisplaySettings.whatsappShareTemplate=next;
-      saveWaShareTemplate();
-      renderWaTemplateEditor();
-    };
-  });
-
-  addEl.querySelectorAll('[data-wa-add-field]').forEach(function(btn){
+  toolbar.querySelectorAll('[data-wa-token]').forEach(function(btn){
     btn.onclick=function(){
-      const key=btn.dataset.waAddField;
-      const next=normalizeWaShareTemplate();
-      next.push({type:'field',key:key});
-      cardDisplaySettings.whatsappShareTemplate=next;
-      saveWaShareTemplate();
-      renderWaTemplateEditor();
+      const token=btn.dataset.waToken;
+      const start=editor.selectionStart||editor.value.length;
+      const end=editor.selectionEnd||start;
+      editor.value=editor.value.slice(0,start)+token+editor.value.slice(end);
+      editor.focus();
+      const pos=start+token.length;
+      editor.setSelectionRange(pos,pos);
+      preview.textContent=buildShareTextFromTemplate(previewEntryForWa(),editor.value);
     };
   });
-
-  const previewEntry=inventory.find(function(x){return !x.sold && Number(x.quantity)>0;}) || inventory[0] || {
+  preview.textContent=buildShareTextFromTemplate(previewEntryForWa(),editor.value);
+}
+function previewEntryForWa(){
+  return inventory.find(function(x){return !x.sold && Number(x.quantity)>0;}) || inventory[0] || {
     brand:'iPhone',model:'13 Pro',network:'5G',status:'PTA',range:'145000-150000',ram:'6GB',storage:'256GB',battery:'88%',
     display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',charger:'Yes',box:'Yes',packing:'Box pack',faceid:'Yes',truetone:'Yes',notes:''
   };
-  previewEl.textContent=buildShareText(previewEntry) || 'Preview yahan nazar aayega.';
 }
-
-function initWaTemplateEditor(){
-  const customInput=document.getElementById('waTemplateCustomText');
-  const customBtn=document.getElementById('waTemplateCustomAdd');
+function initWaMessageEditor(){
+  const editor=document.getElementById('waMessageEditor');
+  const saveBtn=document.getElementById('waTemplateSave');
   const resetBtn=document.getElementById('waTemplateReset');
-  if(!customInput || !customBtn || !resetBtn) return;
-  customBtn.onclick=function(){
-    const text=customInput.value.trim();
-    if(!text) return;
-    const next=normalizeWaShareTemplate();
-    next.push({type:'text',text:text});
-    cardDisplaySettings.whatsappShareTemplate=next;
-    saveWaShareTemplate();
-    customInput.value='';
-    renderWaTemplateEditor();
+  if(!editor || !saveBtn || !resetBtn) return;
+  editor.oninput=function(){
+    document.getElementById('waTemplatePreview').textContent=buildShareTextFromTemplate(previewEntryForWa(),editor.value);
   };
-  customInput.onkeydown=function(e){ if(e.key==='Enter'){ e.preventDefault(); customBtn.click(); } };
+  saveBtn.onclick=function(){ saveWaMessageTemplate(editor.value); showToast('✓ WhatsApp message template save ho gaya.'); };
   resetBtn.onclick=function(){
-    if(!confirm('WhatsApp message ko default template par wapas le aayein?')) return;
-    cardDisplaySettings.whatsappShareTemplate=DEFAULT_WA_SHARE_TEMPLATE.map(function(x){return Object.assign({},x);});
-    saveWaShareTemplate();
-    renderWaTemplateEditor();
-    showToast('✓ Default WhatsApp template restore ho gaya.');
+    if(!confirm('WhatsApp message ko default format par wapas le aayein?')) return;
+    editor.value=DEFAULT_WA_MESSAGE;
+    saveWaMessageTemplate(DEFAULT_WA_MESSAGE);
+    renderWaMessageEditor();
+    showToast('✓ Default WhatsApp message restore ho gaya.');
   };
 }
 
@@ -4888,7 +4933,7 @@ document.getElementById('btnSettings').onclick = function(){
   renderBadgeOrderList();
   renderSettingsFieldOptions();
   renderSettingsBrands();
-  renderWaTemplateEditor();
+  renderWaMessageEditor();
   document.getElementById('settingsOverlay').classList.remove('hidden');
   pushOverlayHistory('settingsOverlay');
 };
@@ -4909,6 +4954,10 @@ document.getElementById('btnPrivacyToggle').onclick = function(){
   render();
   showToast('✓ Ho gaya.');
 };
+
+document.getElementById('btnMultiShare').onclick=function(){ setShareSelectMode(!shareSelectMode); };
+document.getElementById('multiShareCancel').onclick=function(){ setShareSelectMode(false); };
+document.getElementById('multiShareSend').onclick=shareSelectedEntries;
 
 // ---------- Clear data (password-protected) ----------
 // Not real cryptographic security — just a deterrent so a curious customer
