@@ -89,7 +89,7 @@
   .share-template-item button{padding:5px 8px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:11px;}
   #shareTemplateEditText{width:100%;margin-top:8px;min-height:150px;resize:vertical;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
   .share-variable-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
-  .share-variable-grid button{padding:5px 7px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-dim);font-size:10.5px;}
+  .share-variable-grid button{padding:7px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:11.5px;font-weight:600;}
   .card-actions{margin-top:8px;}
   .badges{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;}
   .badges.spec-badges{margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);}
@@ -956,20 +956,22 @@
     </div>
     <div class="settings-note">Jab Privacy mode ON ho, to Total profit har jagah •••• dikhega, aur Buy price jahan bhi screen par ho (card, dashboard, reports) aslee amount na dikha kar upar diye gaye fixed Rs jama karke dikhaya jayega — misaal: agar aap 40,000 enter karein aur yahan 2000 likha ho, to screen par 42,000 dikhega. Yaad rahe: 🙈 button header mein tap karke isay kabhi bhi turant on/off kar sakte hain — settings mein aana zaroori nahi.</div>
 
-    <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">📤 Share Message Templates</div>
-    <div class="settings-note">Apna WhatsApp/share message template banayein. Neeche diye variables message mein automatic mobile ki information se replace ho jayenge.</div>
+    <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">📤 WhatsApp Message</div>
+    <div class="settings-note">Customer ko mobile share karte waqt jo message jayega, yahan asani se set karein.</div>
     <div id="shareTemplatesList" class="share-template-list"></div>
     <div class="settings-add-row">
-      <input type="text" id="shareTemplateName" placeholder="Template name, e.g. Customer">
-      <button type="button" class="sell-btn" id="shareTemplateNewBtn">+ New</button>
+      <input type="text" id="shareTemplateName" placeholder="Naye message ka naam">
+      <button type="button" class="sell-btn" id="shareTemplateNewBtn">+ Naya</button>
     </div>
     <div id="shareTemplateEditor" style="display:none;margin-top:10px;">
-      <input type="text" id="shareTemplateEditName" placeholder="Template name" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;">
-      <textarea id="shareTemplateEditText" rows="9" placeholder="Message template..."></textarea>
+      <input type="text" id="shareTemplateEditName" placeholder="Message ka naam" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;">
+      <div class="settings-note" style="margin-top:8px;">Neeche message likhein. Jahan mobile ki info chahiye, us button par tap karein.</div>
+      <textarea id="shareTemplateEditText" rows="8" placeholder="Misal: Assalam o Alaikum, ye mobile available hai..."></textarea>
+      <div style="font-size:11px;font-weight:700;color:var(--text-dim);margin-top:9px;">📌 Mobile ki info add karein</div>
       <div class="share-variable-grid" id="shareVariableButtons"></div>
       <div class="sheet-actions" style="position:static;margin-top:8px;">
-        <button type="button" class="btn-cancel" id="shareTemplateCancelBtn">Cancel</button>
-        <button type="button" class="btn-save" id="shareTemplateSaveBtn">Save template</button>
+        <button type="button" class="btn-cancel" id="shareTemplateCancelBtn">Band</button>
+        <button type="button" class="btn-save" id="shareTemplateSaveBtn">Save karein</button>
       </div>
     </div>
 
@@ -3020,8 +3022,13 @@ function shareTemplateValue(e,key){
 function renderShareTemplateText(e,text){return String(text||'').replace(/\{([A-Za-z0-9_]+)\}/g,function(_,key){return shareTemplateValue(e,key);}).split('\n').filter(function(line,idx,arr){return !(line.trim()===''&&idx>0&&arr[idx-1].trim()==='');}).join('\n').trim();}
 function buildShareText(e){const t=getShareTemplate();return renderShareTemplateText(e,t?t.text:DEFAULT_SHARE_TEMPLATE_TEXT);}
 function renderShareTemplateSettings(){
-  const list=document.getElementById('shareTemplatesList');if(!list)return;const templates=getShareTemplates();
-  list.innerHTML=templates.map(function(t){const active=t.id===activeShareTemplateId;return '<div class="share-template-item '+(active?'active':'')+'"><div><b>'+escapeHtml(t.name||'Untitled')+'</b>'+(active?' <span style="color:var(--accent);font-size:10px;">Active</span>':'')+'</div><div class="template-actions"><button type="button" data-st-use="'+t.id+'">Use</button><button type="button" data-st-edit="'+t.id+'">Edit</button>'+(templates.length>1?'<button type="button" data-st-del="'+t.id+'">×</button>':'')+'</div></div>';}).join('');
+  const list=document.getElementById('shareTemplatesList');if(!list)return;
+  const templates=getShareTemplates();
+  const labels={brand:'Brand',model:'Model',status:'Status',price:'Price',sellPrice:'Sale Price',ram:'RAM',storage:'Storage',network:'Network',battery:'Battery',condition:'Condition',panel:'Panel',touch:'Touch',camera:'Camera',body:'Body',repair:'Repair',charger:'Charger',box:'Box',packing:'Packing',faceId:'Face ID',trueTone:'True Tone',notes:'Notes',imei:'IMEI',quantity:'Quantity',warranty:'Warranty',shop:'Shop name',date:'Date'};
+  list.innerHTML=templates.map(function(t){
+    const active=t.id===activeShareTemplateId;
+    return '<div class="share-template-item '+(active?'active':'')+'"><div><b>'+escapeHtml(t.name||'Untitled')+'</b>'+(active?' <span style="color:var(--accent);font-size:10px;">✓ Use ho raha hai</span>':'')+'</div><div class="template-actions"><button type="button" data-st-use="'+t.id+'">Use</button><button type="button" data-st-edit="'+t.id+'">Edit</button>'+(templates.length>1?'<button type="button" data-st-del="'+t.id+'">×</button>':'')+'</div></div>';
+  }).join('');
   list.querySelectorAll('[data-st-use]').forEach(function(b){b.onclick=function(){activeShareTemplateId=b.dataset.stUse;saveCardDisplaySettings();renderShareTemplateSettings();};});
   list.querySelectorAll('[data-st-edit]').forEach(function(b){b.onclick=function(){startShareTemplateEdit(b.dataset.stEdit);};});
   list.querySelectorAll('[data-st-del]').forEach(function(b){b.onclick=function(){deleteShareTemplate(b.dataset.stDel);};});
@@ -3032,7 +3039,16 @@ function saveShareTemplate(){const name=document.getElementById('shareTemplateEd
 function createShareTemplate(){const name=document.getElementById('shareTemplateName').value.trim()||'New Template';const id='st_'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);getShareTemplates().push({id:id,name:name,text:DEFAULT_SHARE_TEMPLATE_TEXT});activeShareTemplateId=id;saveCardDisplaySettings();document.getElementById('shareTemplateName').value='';renderShareTemplateSettings();startShareTemplateEdit(id);}
 function deleteShareTemplate(id){const list=getShareTemplates();if(list.length<=1)return;if(!confirm('Ye share template delete kar dein?'))return;const i=list.findIndex(function(t){return t.id===id;});if(i<0)return;list.splice(i,1);if(activeShareTemplateId===id)activeShareTemplateId=list[0].id;saveCardDisplaySettings();renderShareTemplateSettings();}
 function insertShareVariable(v){const ta=document.getElementById('shareTemplateEditText');if(!ta)return;const token='{'+v+'}',start=ta.selectionStart,end=ta.selectionEnd;ta.value=ta.value.slice(0,start)+token+ta.value.slice(end);ta.focus();ta.selectionStart=ta.selectionEnd=start+token.length;}
-function setupShareVariableButtons(){const el=document.getElementById('shareVariableButtons');if(!el)return;const vars=['brand','model','status','price','sellPrice','ram','storage','network','battery','condition','panel','touch','camera','body','repair','charger','box','packing','faceId','trueTone','notes','imei','quantity','warranty','shop','date'];el.innerHTML=vars.map(function(v){return '<button type="button" data-share-var="'+v+'">{'+v+'}</button>';}).join('');el.querySelectorAll('[data-share-var]').forEach(function(b){b.onclick=function(){insertShareVariable(b.dataset.shareVar);};});}
+function setupShareVariableButtons(){
+  const el=document.getElementById('shareVariableButtons');if(!el)return;
+  const vars=[
+    ['brand','Brand'],['model','Model'],['price','Price'],['status','PTA / Status'],
+    ['ram','RAM'],['storage','Storage'],['battery','Battery'],['condition','Condition'],
+    ['charger','Charger'],['box','Box'],['warranty','Warranty'],['shop','Shop name']
+  ];
+  el.innerHTML=vars.map(function(x){return '<button type="button" data-share-var="'+x[0]+'">'+x[1]+'</button>';}).join('');
+  el.querySelectorAll('[data-share-var]').forEach(function(b){b.onclick=function(){insertShareVariable(b.dataset.shareVar);};});
+}
 function refreshMultiShareBar(){const bar=document.getElementById('multiShareBar'),count=document.getElementById('multiShareCount');if(!bar||!count)return;count.textContent=selectedShareIds.size;bar.classList.toggle('hidden',!shareSelectionMode);}
 function startShareSelection(id){
   shareSelectionMode=true;
