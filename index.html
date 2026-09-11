@@ -303,16 +303,20 @@
   .wa-field-btn:hover{border-color:var(--accent);color:var(--accent);}
   .wa-editor-actions{display:flex;gap:7px;margin-top:8px;}
   .wa-editor-actions button{flex:1;}
-  .multi-share-bar{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);width:min(448px,calc(100% - 20px));z-index:80;background:var(--surface-2);border:1px solid var(--border-strong);box-shadow:0 10px 35px rgba(0,0,0,.45);border-radius:14px;padding:9px;display:none;gap:7px;align-items:center;}
+  .multi-share-bar{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);width:min(448px,calc(100% - 20px));z-index:80;background:var(--surface-2);border:1px solid var(--border-strong);box-shadow:0 10px 35px rgba(0,0,0,.45);border-radius:15px;padding:9px;display:none;gap:7px;align-items:center;}
   .multi-share-bar.show{display:flex;}
-  .multi-share-count{font-size:12px;font-weight:800;flex:1;}
+  .multi-share-count{font-size:12px;font-weight:800;flex:1;white-space:nowrap;}
   .multi-share-bar button{padding:9px 11px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;font-weight:700;}
   .multi-share-bar .primary{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
-  .share-select-check{display:none;align-items:center;gap:7px;margin-bottom:8px;font-size:12px;color:var(--text-dim);}
-  body.share-select-mode .share-select-check{display:flex;}
-  .share-select-check input{width:18px;height:18px;accent-color:var(--accent);}
-  body.share-select-mode .card-actions [data-share], body.share-select-mode .card-actions .share-btn{display:none;}
-  body.share-select-mode .card-actions [data-edit], body.share-select-mode .card-actions [data-sell], body.share-select-mode .card-actions [data-split], body.share-select-mode .card-actions [data-del], body.share-select-mode .card-actions [data-return]{display:none;}
+  .multi-share-bar .danger{color:var(--danger);border-color:rgba(239,68,68,.35);}
+  .multi-selectable{position:relative;cursor:pointer;user-select:none;-webkit-user-select:none;}
+  .multi-selectable.is-selected{outline:2px solid var(--accent);outline-offset:-2px;}
+  .multi-select-mark{display:none;position:absolute;top:9px;right:9px;width:25px;height:25px;border-radius:50%;background:var(--surface);border:2px solid var(--text-faint);z-index:12;align-items:center;justify-content:center;font-size:14px;font-weight:900;box-shadow:0 3px 10px rgba(0,0,0,.25);}
+  body.share-select-mode .multi-select-mark{display:flex;}
+  .multi-selectable.is-selected .multi-select-mark{background:var(--accent);border-color:var(--accent);color:var(--accent-text);}
+  body.share-select-mode .card-actions{display:none;}
+  body.share-select-mode .add-piece-btn{display:none;}
+  .long-press-hint{padding:6px 16px 0;color:var(--text-faint);font-size:10.5px;text-align:center;}
   .badge-order-list{display:flex;flex-direction:column;gap:6px;margin-top:14px;}
   .badge-order-item{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;cursor:grab;}
   .badge-order-item.dragging{opacity:0.4;}
@@ -467,9 +471,7 @@
       <option value="qty-asc">Kam quantity pehle</option>
     </select>
   </div>
-  <div style="padding:7px 16px 0;">
-    <button type="button" class="btn-cancel" id="btnMultiShare" style="width:100%;">📤 Multiple mobiles select karke Share karein</button>
-  </div>
+  <div class="long-press-hint">Mobile ko long-press karke multiple selection shuru karein</div>
   <div class="chips-scroll" id="brandFilterChips"></div>
   <div class="chips-scroll" id="filterChips"></div>
   <div class="activity-filter-row">
@@ -486,9 +488,10 @@
   <div class="list" id="list"></div>
 </div>
 <div class="multi-share-bar" id="multiShareBar">
-  <div class="multi-share-count" id="multiShareCount">0 mobile selected</div>
+  <div class="multi-share-count" id="multiShareCount">0 selected</div>
   <button type="button" id="multiShareCancel">Cancel</button>
-  <button type="button" class="primary" id="multiShareSend">📤 WhatsApp Share</button>
+  <button type="button" class="danger" id="multiShareDelete">🗑 Delete</button>
+  <button type="button" class="primary" id="multiShareSend">📤 Share</button>
 </div>
 
 <button class="fab" id="fabAdd" style="display:none;">+</button>
@@ -2520,7 +2523,8 @@ function renderList(){
   listEl.querySelectorAll('[data-piece-brand]').forEach(function(b){
     b.onclick = function(){ openAddPiece(decodeURIComponent(b.dataset.pieceBrand), decodeURIComponent(b.dataset.pieceModel)); };
   });
-  syncShareCheckboxes();
+  bindLongPressSelection();
+  clearSelectionVisuals();
 }
 
 function pieceStatusBadges(e, outOfStock){
@@ -2793,7 +2797,8 @@ function renderSingleStockCard(e){
   const canSplit = !outOfStock && (e.quantity||1) > 1;
   const compact = cardDisplaySettings.cardViewMode === 'compact';
   return (
-  '<div class="card '+(outOfStock?'outofstock':'')+(compact?' compact':'')+'">'+
+  '<div class="card multi-selectable '+(outOfStock?'outofstock ':'')+(compact?'compact':'')+'" data-multi-select-card="'+e.id+'">'+
+    '<span class="multi-select-mark">✓</span>'+
     '<div class="card-title">'+e.brand+' '+e.model+'</div>'+
     prominentSellRangeHtml(e.range)+
     cardPhotoHtml(e)+
@@ -2970,63 +2975,110 @@ function renderSoldCard(e){
 
 let shareSelectMode=false;
 let selectedShareIds=[];
+let longPressTimer=null;
+let suppressNextSelectionClick=false;
+
 function updateMultiShareBar(){
   const bar=document.getElementById('multiShareBar');
   const count=document.getElementById('multiShareCount');
   if(!bar || !count) return;
-  count.textContent=selectedShareIds.length+' mobile'+(selectedShareIds.length===1?'':'s')+' selected';
+  count.textContent=selectedShareIds.length+' selected';
   bar.classList.toggle('show',shareSelectMode);
 }
-function syncShareCheckboxes(){
-  document.querySelectorAll('[data-share-select]').forEach(function(cb){
-    cb.checked=selectedShareIds.indexOf(String(cb.dataset.shareSelect))!==-1;
-    cb.onchange=function(){
-      const id=String(cb.dataset.shareSelect);
-      if(cb.checked){ if(selectedShareIds.indexOf(id)===-1) selectedShareIds.push(id); }
-      else selectedShareIds=selectedShareIds.filter(function(x){return x!==id;});
-      updateMultiShareBar();
-    };
+
+function clearSelectionVisuals(){
+  document.querySelectorAll('[data-multi-select-card]').forEach(function(el){
+    el.classList.toggle('is-selected',selectedShareIds.indexOf(String(el.dataset.multiSelectCard))!==-1);
   });
 }
-function setShareSelectMode(on){
+
+function setShareSelectMode(on, firstId){
   shareSelectMode=!!on;
   document.body.classList.toggle('share-select-mode',shareSelectMode);
   if(!shareSelectMode) selectedShareIds=[];
-  const btn=document.getElementById('btnMultiShare');
-  if(btn) btn.textContent=shareSelectMode ? '✕ Multiple Share mode band karein' : '📤 Multiple mobiles select karke Share karein';
+  else if(firstId!=null && selectedShareIds.indexOf(String(firstId))===-1) selectedShareIds.push(String(firstId));
   updateMultiShareBar();
-  renderList();
-  syncShareCheckboxes();
+  clearSelectionVisuals();
 }
+
+function toggleShareSelection(id){
+  id=String(id);
+  const idx=selectedShareIds.indexOf(id);
+  if(idx===-1) selectedShareIds.push(id); else selectedShareIds.splice(idx,1);
+  if(selectedShareIds.length===0){ setShareSelectMode(false); return; }
+  updateMultiShareBar();
+  clearSelectionVisuals();
+}
+
+function bindLongPressSelection(){
+  document.querySelectorAll('[data-multi-select-card]').forEach(function(el){
+    const id=String(el.dataset.multiSelectCard);
+    el.onpointerdown=function(ev){
+      if(ev.button!=null && ev.button!==0) return;
+      clearTimeout(longPressTimer);
+      longPressTimer=setTimeout(function(){
+        longPressTimer=null;
+        if(!shareSelectMode) setShareSelectMode(true,id);
+        else toggleShareSelection(id);
+        suppressNextSelectionClick=true;
+      },550);
+    };
+    el.onpointerup=function(){clearTimeout(longPressTimer); longPressTimer=null;};
+    el.onpointercancel=function(){clearTimeout(longPressTimer); longPressTimer=null;};
+    el.onpointerleave=function(){clearTimeout(longPressTimer); longPressTimer=null;};
+    el.onclick=function(ev){
+      if(suppressNextSelectionClick){
+        suppressNextSelectionClick=false; ev.preventDefault(); ev.stopPropagation(); return;
+      }
+      if(shareSelectMode){
+        ev.preventDefault(); ev.stopPropagation();
+        if(ev.target.closest && ev.target.closest('button,a,input,select,textarea')) return;
+        toggleShareSelection(id);
+      }
+    };
+  });
+}
+
 async function shareSelectedEntries(){
   const entries=selectedShareIds.map(function(id){return inventory.find(function(x){return String(x.id)===String(id);});}).filter(Boolean);
-  if(!entries.length){ alert('Pehle kam az kam 1 mobile select karein.'); return; }
+  if(!entries.length){alert('Pehle kam az kam 1 mobile select karein.');return;}
   const text=entries.map(function(e){return buildShareTextFromTemplate(e,getWaMessageTemplate());}).filter(Boolean).join('\n\n──────────\n\n');
   const files=[];
   for(let j=0;j<entries.length;j++){
     const e=entries[j], title=(e.brand||'Mobile')+' '+(e.model||'');
-    if(e.photos && e.photos.length){
-      for(let i=0;i<e.photos.length;i++){
-        try{
-          const res=await fetch(e.photos[i]);
-          const blob=await res.blob();
-          files.push(new File([blob],(title+'-'+(i+1)+'.jpg').replace(/\s+/g,'_'),{type:blob.type||'image/jpeg'}));
-        }catch(err){}
-      }
+    if(e.photos && e.photos.length) for(let i=0;i<e.photos.length;i++){
+      try{const res=await fetch(e.photos[i]);const blob=await res.blob();files.push(new File([blob],(title+'-'+(i+1)+'.jpg').replace(/\s+/g,'_'),{type:blob.type||'image/jpeg'}));}catch(err){}
     }
   }
   try{
     if(navigator.share){
       if(files.length && navigator.canShare && navigator.canShare({files:files})) await navigator.share({title:entries.length+' mobiles',text:text,files:files});
       else await navigator.share({title:entries.length+' mobiles',text:text});
-    }else{
-      await navigator.clipboard.writeText(text);
-      showToast('Direct share support nahi — message copy kar diya gaya.');
-    }
+    }else{await navigator.clipboard.writeText(text);showToast('Direct share support nahi — message copy kar diya gaya.');}
   }catch(err){
     if(err && err.name==='AbortError') return;
-    try{ await navigator.clipboard.writeText(text); showToast('Share sheet nahi khuli — message copy kar diya gaya.'); }catch(e){ alert(text); }
+    try{await navigator.clipboard.writeText(text);showToast('Share sheet nahi khuli — message copy kar diya gaya.');}catch(e){alert(text);}
   }
+}
+
+function deleteSelectedEntries(){
+  if(isAdminShopView()){alert('Admin Shop view read-only hai — delete nahi kiya ja sakta.');return;}
+  const entries=selectedShareIds.map(function(id){return inventory.find(function(x){return String(x.id)===String(id);});}).filter(Boolean);
+  if(!entries.length){alert('Pehle mobile select karein.');return;}
+  const names=entries.slice(0,5).map(function(e){return (e.brand||'')+' '+(e.model||'');});
+  const extra=entries.length>5 ? '\n... aur '+(entries.length-5)+' mobile' : '';
+  if(!confirm('⚠️ WARNING\n\nAap '+entries.length+' mobile delete karne wale hain. Ye entries app se remove ho jayengi.\n\n'+names.join('\n')+extra+'\n\nKya aap waqai delete karna chahte hain?')) return;
+  const ids=new Set(entries.map(function(e){return String(e.id);}));
+  const removed=inventory.filter(function(e){return ids.has(String(e.id));});
+  const candidate=inventory.filter(function(e){return !ids.has(String(e.id));});
+  if(!tryCommitInventory(candidate)){alert(SAVE_FAIL_MSG);return;}
+  setShareSelectMode(false);
+  render();
+  showUndoToast(entries.length+' mobile delete ho gaye.',function(){
+    if(tryCommitInventory(inventory.concat(removed))){render();showToast('✓ Wapis aa gaye');}
+    else alert(SAVE_FAIL_MSG);
+  });
+  backupAfterChange();
 }
 
 function render(){
@@ -4955,8 +5007,8 @@ document.getElementById('btnPrivacyToggle').onclick = function(){
   showToast('✓ Ho gaya.');
 };
 
-document.getElementById('btnMultiShare').onclick=function(){ setShareSelectMode(!shareSelectMode); };
 document.getElementById('multiShareCancel').onclick=function(){ setShareSelectMode(false); };
+document.getElementById('multiShareDelete').onclick=deleteSelectedEntries;
 document.getElementById('multiShareSend').onclick=shareSelectedEntries;
 
 // ---------- Clear data (password-protected) ----------
