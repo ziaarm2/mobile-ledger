@@ -404,7 +404,6 @@
 
     <div class="menu-dropdown hidden" id="menuDropdown">
       <div class="menu-section-label">Overview</div>
-      <button class="menu-item" id="btnAdminShops" style="display:none;">🏢 All Shops (Admin)</button>
       <button class="menu-item" id="btnExitAdminShop" style="display:none;">↩ Apni Shop par wapas</button>
       <button class="menu-item" id="btnDashboard">📊 Dashboard</button>
       <button class="menu-item" id="btnReports">📄 Reports</button>
@@ -4121,7 +4120,6 @@ document.getElementById('btnRateBookClose').onclick = function(){ requestOverlay
 document.getElementById('rateBookOverlay').onclick = function(e){ if(e.target.id==='rateBookOverlay') requestOverlayClose(); };
 document.getElementById('adminShopsOverlay').onclick = function(e){ if(e.target.id==='adminShopsOverlay') requestOverlayClose(); };
 document.getElementById('btnAdminShopsClose').onclick = function(){ requestOverlayClose(); };
-document.getElementById('btnAdminShops').onclick = function(){ openAdminShops(); };
 document.getElementById('btnRateBookAdd').onclick = function(){ openRateAdd(); };
 document.getElementById('btnRateAddCancel').onclick = function(){ requestOverlayClose(); };
 document.getElementById('btnRateAddSave').onclick = function(){ saveManualRate(); };
@@ -5252,7 +5250,6 @@ function updateAdminShopContextUI(){
   if(banner) banner.classList.toggle('show', isAdminShopView());
   if(nameEl) nameEl.textContent = isAdminShopView() ? (shopProfile.shopName || adminViewShopId || 'Selected shop') : '';
   if(exitBtn) exitBtn.style.display = isAdminShopView() ? 'block' : 'none';
-  if(isAdminShopView()) document.getElementById('btnAdminShops').style.display='block';
 }
 
 function enterAdminShop(shopId){
