@@ -318,8 +318,8 @@
   .wa-history-actions button{width:36px;height:32px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;font-size:16px;}
   .wa-history-label{font-size:10.5px;color:var(--text-dim);margin-right:4px;}
   .activity-history-actions{display:flex;gap:5px;margin-top:7px;}
-  .activity-history-actions button{font-size:10px;padding:5px 8px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:7px;}
-  .activity-history-actions .danger{color:var(--danger);}
+  .activity-history-actions button{font-size:10.5px;padding:6px 10px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);border-radius:7px;cursor:pointer;pointer-events:auto;}
+  .activity-history-actions button:disabled{opacity:.38;cursor:not-allowed;} .activity-history-actions .danger{color:var(--danger);}
 
   .multi-selectable{position:relative;cursor:pointer;user-select:none;-webkit-user-select:none;}
   .multi-selectable.is-selected{outline:2px solid var(--accent);outline-offset:-2px;}
@@ -3148,6 +3148,7 @@ function returnSoldItem(soldId){
     '" ki sale return karna chahte hain?\n\nQuantity: '+qty+
     '\nMobile stock mein wapas aa jayega aur sale Returned mark ho jayegi.')) return;
 
+  activityBeforeFromCurrentMutation();
   const returnDate=new Date().toISOString();
   if(original){
     original.quantity=(Number(original.quantity)||0)+qty;
@@ -4306,28 +4307,66 @@ function openActivityStateDB(){
   });
   return activityDbPromise;
 }
-function putActivityState(id,before,after){return openActivityStateDB().then(function(db){return new Promise(function(resolve,reject){const tx=db.transaction(ACTIVITY_STORE,'readwrite');tx.objectStore(ACTIVITY_STORE).put({id:id,before:before,after:after,savedAt:Date.now()});tx.oncomplete=function(){resolve(true);};tx.onerror=function(){reject(tx.error);};});});}
-function getActivityState(id){return openActivityStateDB().then(function(db){return new Promise(function(resolve,reject){const req=db.transaction(ACTIVITY_STORE,'readonly').objectStore(ACTIVITY_STORE).get(id);req.onsuccess=function(){resolve(req.result||null);};req.onerror=function(){reject(req.error);};});});}
+function putActivityState(id,before,after){
+  const payload={id:id,before:before,after:after,savedAt:Date.now()};
+  return openActivityStateDB().then(function(db){return new Promise(function(resolve,reject){
+    let tx;
+    try{tx=db.transaction(ACTIVITY_STORE,'readwrite');}catch(e){reject(e);return;}
+    tx.objectStore(ACTIVITY_STORE).put(payload);
+    tx.oncomplete=function(){resolve(true);};
+    tx.onerror=function(){reject(tx.error||new Error('Activity state transaction failed'));};
+    tx.onabort=function(){reject(tx.error||new Error('Activity state transaction aborted'));};
+  });});
+}
+function getActivityState(id){
+  try{
+    const raw=localStorage.getItem('mobileLedger_activityState_'+id);
+    if(raw){const parsed=JSON.parse(raw);if(parsed&&parsed.before&&parsed.after)return Promise.resolve(parsed);}
+  }catch(e){}
+  return openActivityStateDB().then(function(db){return new Promise(function(resolve,reject){
+    let tx;try{tx=db.transaction(ACTIVITY_STORE,'readonly');}catch(e){reject(e);return;}
+    const req=tx.objectStore(ACTIVITY_STORE).get(id);
+    req.onsuccess=function(){resolve(req.result||null);};
+    req.onerror=function(){reject(req.error||new Error('Activity state read failed'));};
+  });});
+}
 function activityBeforeFromCurrentMutation(){try{activityBeforeState=appStateSnapshot();}catch(e){activityBeforeState=null;}}
 function logActivity(type,title,detail){
   if(isAdminShopView()) return;
   const id=Date.now().toString(36)+Math.random().toString(36).slice(2,7);
   const before=activityBeforeState; activityBeforeState=null;
   let after=null; try{after=appStateSnapshot();}catch(e){}
-  try{const arr=JSON.parse(localStorage.getItem(LS_ACTIVITY_KEY)||'[]');arr.unshift({id:id,time:new Date().toISOString(),type:type||'info',title:title||'',detail:detail||'',hasState:!!(before&&after)});localStorage.setItem(LS_ACTIVITY_KEY,JSON.stringify(arr.slice(0,300)));}catch(e){}
-  if(before&&after){putActivityState(id,before,after).catch(function(err){console.error('Activity state save error',err);try{const arr=JSON.parse(localStorage.getItem(LS_ACTIVITY_KEY)||'[]');const a=arr.find(function(x){return x.id===id;});if(a)a.hasState=false;localStorage.setItem(LS_ACTIVITY_KEY,JSON.stringify(arr));}catch(ignore){}});}
+  const hasState=!!(before&&after);
+  try{
+    const arr=JSON.parse(localStorage.getItem(LS_ACTIVITY_KEY)||'[]');
+    arr.unshift({id:id,time:new Date().toISOString(),type:type||'info',title:title||'',detail:detail||'',hasState:hasState});
+    localStorage.setItem(LS_ACTIVITY_KEY,JSON.stringify(arr.slice(0,300)));
+  }catch(e){}
+  if(before&&after){
+    // Keep a small local fallback as well. This makes Activity History usable
+    // even on browsers where IndexedDB is blocked or temporarily unavailable.
+    try{
+      const fallback=JSON.stringify({id:id,before:before,after:after,savedAt:Date.now()});
+      if(fallback.length<=2500000) localStorage.setItem('mobileLedger_activityState_'+id,fallback);
+    }catch(e){}
+    putActivityState(id,before,after).catch(function(err){console.error('Activity state save error',err);});
+  }
 }
 function readActivityList(){try{return JSON.parse(localStorage.getItem(LS_ACTIVITY_KEY)||'[]');}catch(e){return [];}}
+let activityRestoreBusy=false;
 function activityRestore(index,direction){
+  if(activityRestoreBusy)return;
   const arr=readActivityList(),target=arr[index];if(!target)return;
-  if(!target.hasState){alert('Is activity ki Undo/Redo state save nahi hui thi. Ye purani history hai. Nayi activities fully reversible hongi.');return;}
+  activityRestoreBusy=true;
+  if(!target.hasState){activityRestoreBusy=false;alert('Is activity ki Undo/Redo state available nahi hai. Ye purani history hai. Nayi activities fully reversible hongi.');return;}
   getActivityState(target.id).then(function(st){
     if(!st){alert('Is activity ki reversible state nahi mili.');return;}
     const state=direction==='before'?st.before:st.after;if(!state){alert('Is activity ki required state available nahi hai.');return;}
     const action=direction==='before'?'Undo':'Redo';
-    if(!confirm(action+' karne se app ka data us activity ke '+(direction==='before'?'pehle':'baad')+' wali exact state par chala jayega.\n\n'+target.title+'\n\nAage barhein?'))return;
+    if(!confirm(action+' karne se app ka data us activity ke '+(direction==='before'?'pehle':'baad')+' wali exact state par chala jayega.\n\n'+target.title+'\n\nAage barhein?')){activityRestoreBusy=false;return;}
     if(applyAppState(state)){showToast((direction==='before'?'↶ ':'↷ ')+target.title+' — '+action+' ho gaya.');renderActivityHistory();}
-  }).catch(function(){alert('Activity state load nahi ho saki.');});
+    activityRestoreBusy=false;
+  }).catch(function(){activityRestoreBusy=false;alert('Activity state load nahi ho saki.');});
 }
 function undoActivity(index){activityRestore(index,'before');}
 function redoActivity(index){activityRestore(index,'after');}
@@ -4335,7 +4374,7 @@ function renderActivityHistory(){
   const el=document.getElementById('activityHistoryList');if(!el)return;
   const arr=readActivityList();if(!arr.length){el.innerHTML='<div class="empty">Abhi koi activity history nahi hai.</div>';return;}
   const icons={add:'➕',edit:'✏️',sell:'💰',return:'↩️',delete:'🗑️',expense:'💵',settings:'⚙️',share:'📤',restore:'↩️',split:'✂️',rate:'📋',import:'📥',clear:'🗑️',info:'ℹ️'};
-  el.innerHTML=arr.map(function(a,i){const d=new Date(a.time);const dt=isNaN(d.getTime())?'':d.toLocaleString('en-PK',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});const enabled=!!a.hasState;return '<div class="activity-history-row"><div class="activity-history-icon">'+(icons[a.type]||'ℹ️')+'</div><div class="activity-history-main"><div class="activity-history-title">'+escapeHtml(a.title)+'</div><div class="activity-history-meta">'+escapeHtml(a.detail||'')+(dt?' · '+escapeHtml(dt):'')+'</div><div class="activity-history-actions"><button type="button" data-act-undo="'+i+'" '+(enabled?'':'disabled')+'>↶ Undo</button><button type="button" data-act-redo="'+i+'" '+(enabled?'':'disabled')+'>↷ Redo</button></div></div></div>';}).join('');
+  el.innerHTML=arr.map(function(a,i){const d=new Date(a.time);const dt=isNaN(d.getTime())?'':d.toLocaleString('en-PK',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});return '<div class="activity-history-row"><div class="activity-history-icon">'+(icons[a.type]||'ℹ️')+'</div><div class="activity-history-main"><div class="activity-history-title">'+escapeHtml(a.title)+'</div><div class="activity-history-meta">'+escapeHtml(a.detail||'')+(dt?' · '+escapeHtml(dt):'')+'</div><div class="activity-history-actions"><button type="button" class="activity-action-btn" data-act-undo="'+i+'">↶ Undo</button><button type="button" class="activity-action-btn" data-act-redo="'+i+'">↷ Redo</button></div></div></div>';}).join('');
   el.querySelectorAll('[data-act-undo]').forEach(function(b){b.onclick=function(){undoActivity(Number(b.dataset.actUndo));};});
   el.querySelectorAll('[data-act-redo]').forEach(function(b){b.onclick=function(){redoActivity(Number(b.dataset.actRedo));};});
 }
