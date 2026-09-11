@@ -314,8 +314,9 @@
   .history-actions{display:flex;gap:6px;margin-left:auto;}
   .history-actions button{width:34px;height:30px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;font-size:16px;}
   .history-actions button:disabled{opacity:.35;}
-  .wa-history-actions{display:flex;gap:6px;align-items:center;margin-left:auto;}
-  .wa-history-actions button{width:34px;height:30px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;font-size:16px;}
+  .wa-history-actions{display:flex;gap:6px;align-items:center;margin:6px 0 0;}
+  .wa-history-actions button{width:36px;height:32px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;font-size:16px;}
+  .wa-history-label{font-size:10.5px;color:var(--text-dim);margin-right:4px;}
   .activity-history-actions{display:flex;gap:5px;margin-top:7px;}
   .activity-history-actions button{font-size:10px;padding:5px 8px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:7px;}
   .activity-history-actions .danger{color:var(--danger);}
@@ -1010,11 +1011,12 @@
 
     <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">📤 WhatsApp message customize karein</div>
     <div class="settings-note" style="margin-top:0;">Bilkul WhatsApp message ki tarah neeche message likhein/edit karein. Jahan mobile ki automatic information chahiye ho, neeche diye buttons se add karein. Kisi coding ya special code ki zaroorat nahi.</div>
-    <div style="display:flex;justify-content:flex-end;gap:6px;margin:7px 0 6px;">
-      <button type="button" class="history-icon-btn" id="waUndoBtn" title="Undo" aria-label="Undo">↶</button>
-      <button type="button" class="history-icon-btn" id="waRedoBtn" title="Redo" aria-label="Redo">↷</button>
-    </div>
     <textarea id="waMessageEditor" class="wa-message-editor" spellcheck="false"></textarea>
+    <div class="wa-history-actions">
+      <span class="wa-history-label">Text Undo / Redo</span>
+      <button type="button" id="waUndoBtn" title="Undo" aria-label="Undo">↶</button>
+      <button type="button" id="waRedoBtn" title="Redo" aria-label="Redo">↷</button>
+    </div>
     <div class="sec-label" style="margin-top:12px;font-size:11.5px;">➕ Mobile ki information add karein</div>
     <div class="wa-field-toolbar" id="waFieldToolbar"></div>
     <div class="wa-editor-actions">
@@ -1333,9 +1335,15 @@ function loadCustomOptionData(){
 
 function saveCustomOptionData(){
   if(isAdminShopView()) return;
-  pushUndoHistory('Entry options');
-  try{ localStorage.setItem(LS_CUSTOM_OPTIONS_KEY, JSON.stringify(customOptionData)); }catch(err){}
+  let oldRaw=null; try{oldRaw=localStorage.getItem(LS_CUSTOM_OPTIONS_KEY);}catch(e){}
+  const newRaw=JSON.stringify(customOptionData);
+  if(oldRaw!==newRaw){
+    try{const st=appStateSnapshot();st.customOptionData=oldRaw||'{}';activityBeforeState=st;}catch(e){activityBeforeFromCurrentMutation();}
+    pushUndoHistory('Entry options');
+  }
+  try{ localStorage.setItem(LS_CUSTOM_OPTIONS_KEY,newRaw); }catch(err){return;}
   schedulePush();
+  if(oldRaw!==newRaw) logActivity('settings','Entry options update','');
 }
 
 function getEntryPlatform(brand){ return String(brand||'').trim()==='iPhone' ? 'iphone' : 'android'; }
@@ -1495,7 +1503,7 @@ async function loadExpenses(){
 // write fails, nothing changes and the add-expense form keeps its data.
 function tryCommitExpenses(candidateExpenses){
   if(isAdminShopView()) return false;
-  if(!historyApplying && JSON.stringify(candidateExpenses)!==JSON.stringify(expenses)) pushUndoHistory('Expense change');
+  if(!historyApplying && JSON.stringify(candidateExpenses)!==JSON.stringify(expenses)){activityBeforeFromCurrentMutation();pushUndoHistory('Expense change');}
   const json = JSON.stringify(candidateExpenses);
   try{
     localStorage.setItem(LS_EXPENSES_KEY, json);
@@ -1901,7 +1909,7 @@ function addRateBookEntry(entry, silent){
   const rate=Number(entry.rate); if(!isFinite(rate)||rate<=0) return false;
   const item={id:entry.id||('rb_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7)),sourceInventoryId:entry.sourceInventoryId||'',brand:String(entry.brand||'').trim(),model:String(entry.model||'').trim(),variant:String(entry.variant||'').trim(),status:String(entry.status||'').trim(),rate:rate,quantity:Math.max(1,Number(entry.quantity)||1),date:entry.date||todayISO(),seller:String(entry.seller||'').trim(),notes:String(entry.notes||'').trim(),source:entry.source||'manual'};
   if(!item.brand||!item.model) return false;
-  rateBook.unshift(item); const ok=saveRateBook(); if(!ok){rateBook.shift();return false;} if(!silent) renderRateBook(); return true;
+  activityBeforeFromCurrentMutation(); rateBook.unshift(item); const ok=saveRateBook(); if(!ok){rateBook.shift();activityBeforeState=null;return false;} if(!silent){renderRateBook();logActivity('rate','Rate Book mein rate add kiya: '+item.brand+' '+item.model,'Rs '+fmt(item.rate));} return true;
 }
 function migrateInventoryToRateBook(){
   if(!Array.isArray(inventory)||!inventory.length) return;
@@ -1918,7 +1926,7 @@ function renderRateBook(){
   if(!cards.length){list.innerHTML='<div class="empty" style="padding:35px 10px;">Koi rate nahi mila. + Add Rate se manually rate save karein.</div>';return;}
   list.innerHTML=cards.map(function(g,gi){ const h=g.history, latest=h[0], nums=h.map(function(x){return Number(x.rate)||0;}), low=Math.min.apply(Math,nums), high=Math.max.apply(Math,nums), avg=nums.reduce(function(a,b){return a+b;},0)/nums.length; const rows=h.map(function(x){return '<div class="rate-book-history-row"><span>'+escapeHtml(x.date)+(x.quantity>1?' · x'+x.quantity:'')+(x.seller?' · '+escapeHtml(x.seller):'')+'</span><span class="rate">Rs '+fmt(x.rate)+'</span></div>';}).join(''); return '<div class="rate-book-card"><div class="rate-book-card-head"><div><div class="rate-book-title">'+escapeHtml(g.brand+' '+g.model+(g.variant?' '+g.variant:''))+'</div><div class="rate-book-sub">'+escapeHtml(g.status||'No status')+' · Last: '+escapeHtml(latest.date)+'</div></div><div class="rate-book-current">Rs '+fmt(latest.rate)+'</div></div><div class="rate-book-stats"><span class="rate-book-stat">Lowest: Rs '+fmt(low)+'</span><span class="rate-book-stat">Highest: Rs '+fmt(high)+'</span><span class="rate-book-stat">Average: Rs '+fmt(avg)+'</span></div><div class="rate-book-card-actions"><button type="button" data-rate-history="'+gi+'">'+(h.length>1?'View '+h.length+' rates':'View history')+'</button><button type="button" class="danger" data-rate-delete-group="'+gi+'">Delete history</button></div><div class="rate-book-history" id="rateHistory_'+gi+'">'+rows+'</div></div>'; }).join('');
   list.querySelectorAll('[data-rate-history]').forEach(function(btn){btn.onclick=function(){const el=document.getElementById('rateHistory_'+btn.dataset.rateHistory);if(el)el.classList.toggle('show');};});
-  list.querySelectorAll('[data-rate-delete-group]').forEach(function(btn){btn.onclick=function(){if(isAdminShopView()){alert('Admin Shop view read-only hai — Rate Book change nahi ki ja sakti.');return;}const g=cards[Number(btn.dataset.rateDeleteGroup)];if(!g)return;if(!confirm('Is mobile ki puri rate history delete karni hai?'))return;const key=rateBookKey(g);rateBook=rateBook.filter(function(r){return rateBookKey(r)!==key;});saveRateBook();renderRateBook();};});
+  list.querySelectorAll('[data-rate-delete-group]').forEach(function(btn){btn.onclick=function(){if(isAdminShopView()){alert('Admin Shop view read-only hai — Rate Book change nahi ki ja sakti.');return;}const g=cards[Number(btn.dataset.rateDeleteGroup)];if(!g)return;if(!confirm('Is mobile ki puri rate history delete karni hai?'))return;const key=rateBookKey(g);activityBeforeFromCurrentMutation();rateBook=rateBook.filter(function(r){return rateBookKey(r)!==key;});saveRateBook();logActivity('rate','Rate Book history delete ki: '+g.brand+' '+g.model,'');renderRateBook();};});
 }
 function openRateBook(){ document.getElementById('rateBookSearch').value='';document.getElementById('rateBookStatusFilter').value='all';renderRateBook();document.getElementById('rateBookOverlay').classList.remove('hidden');pushOverlayHistory('rateBookOverlay'); }
 function openRateAdd(){ document.getElementById('rb-brand').value='';document.getElementById('rb-model').value='';document.getElementById('rb-variant').value='';document.getElementById('rb-rate').value='';document.getElementById('rb-rate-hint').textContent='';document.getElementById('rb-date').value=todayISO();document.getElementById('rb-seller').value='';document.getElementById('rb-notes').value='';const sel=document.getElementById('rb-status');sel.innerHTML=rateBookStatusOptions().map(function(x){return '<option value="'+x+'">'+x+'</option>';}).join('');sel.value='PTA';document.getElementById('rateAddOverlay').classList.remove('hidden');pushOverlayHistory('rateAddOverlay'); }
@@ -1975,7 +1983,7 @@ async function loadInventory(){
 // so the form still has the person's typed data and nothing is silently lost.
 function tryCommitInventory(candidateInventory){
   if(isAdminShopView()) return false;
-  if(!historyApplying && JSON.stringify(candidateInventory)!==JSON.stringify(inventory)) pushUndoHistory('Inventory change');
+  if(!historyApplying && JSON.stringify(candidateInventory)!==JSON.stringify(inventory)){activityBeforeFromCurrentMutation();pushUndoHistory('Inventory change');}
   const json = JSON.stringify(candidateInventory);
   try{
     localStorage.setItem(LS_INVENTORY_KEY, json);
@@ -2828,9 +2836,15 @@ function loadCardDisplaySettings(){
 }
 function saveCardDisplaySettings(){
   if(isAdminShopView()) return;
-  pushUndoHistory('Card settings');
-  try{ localStorage.setItem(LS_CARD_DISPLAY_KEY, JSON.stringify(cardDisplaySettings)); }catch(err){}
+  let oldRaw=null; try{oldRaw=localStorage.getItem(LS_CARD_DISPLAY_KEY);}catch(e){}
+  const newRaw=JSON.stringify(cardDisplaySettings);
+  if(oldRaw!==newRaw){
+    try{const st=appStateSnapshot();st.cardDisplaySettings=oldRaw||'{}';activityBeforeState=st;}catch(e){activityBeforeFromCurrentMutation();}
+    pushUndoHistory('Card settings');
+  }
+  try{ localStorage.setItem(LS_CARD_DISPLAY_KEY,newRaw); }catch(err){return;}
   schedulePush();
+  if(oldRaw!==newRaw) logActivity('settings','Card / WhatsApp settings update','');
 }
 
 // Recalculate auto sell ranges for existing stock whenever the rules change.
@@ -3520,19 +3534,26 @@ function initWaMessageEditor(){
   const waUndo=document.getElementById('waUndoBtn');
   const waRedo=document.getElementById('waRedoBtn');
   if(!editor || !saveBtn || !resetBtn) return;
-  if(waUndo) waUndo.onclick=function(){editor.focus();document.execCommand('undo');editor.dispatchEvent(new Event('input'));};
-  if(waRedo) waRedo.onclick=function(){editor.focus();document.execCommand('redo');editor.dispatchEvent(new Event('input'));};
-  editor.oninput=function(){
-    document.getElementById('waTemplatePreview').textContent=buildShareTextFromTemplate(previewEntryForWa(),editor.value);
-  };
-  saveBtn.onclick=function(){ saveWaMessageTemplate(editor.value); logActivity('settings','WhatsApp template update',''); showToast('✓ WhatsApp message template save ho gaya.'); };
-  resetBtn.onclick=function(){
-    if(!confirm('WhatsApp message ko default format par wapas le aayein?')) return;
-    editor.value=DEFAULT_WA_MESSAGE;
-    saveWaMessageTemplate(DEFAULT_WA_MESSAGE);
-    renderWaMessageEditor();
-    showToast('✓ Default WhatsApp message restore ho gaya.');
-  };
+  if(!editor._historyReady){
+    editor._historyReady=true; editor._hist=[editor.value||getWaMessageTemplate()]; editor._histIndex=0;
+    let timer=null;
+    editor.addEventListener('input',function(){
+      clearTimeout(timer); timer=setTimeout(function(){
+        const v=editor.value; if(editor._hist[editor._histIndex]===v){updateWaTextHistoryButtons();return;}
+        editor._hist=editor._hist.slice(0,editor._histIndex+1); editor._hist.push(v);
+        if(editor._hist.length>100){editor._hist.shift();} else {editor._histIndex++;}
+        document.getElementById('waTemplatePreview').textContent=buildShareTextFromTemplate(previewEntryForWa(),v); updateWaTextHistoryButtons();
+      },80);
+    });
+  }
+  function updateWaTextHistoryButtons(){if(waUndo)waUndo.disabled=editor._histIndex<=0;if(waRedo)waRedo.disabled=editor._histIndex>=editor._hist.length-1;}
+  function setWaHistoryValue(v){editor.value=v;editor.focus();document.getElementById('waTemplatePreview').textContent=buildShareTextFromTemplate(previewEntryForWa(),v);updateWaTextHistoryButtons();}
+  if(waUndo)waUndo.onclick=function(){if(editor._histIndex<=0)return;editor._histIndex--;setWaHistoryValue(editor._hist[editor._histIndex]);};
+  if(waRedo)waRedo.onclick=function(){if(editor._histIndex>=editor._hist.length-1)return;editor._histIndex++;setWaHistoryValue(editor._hist[editor._histIndex]);};
+  editor.oninput=function(){document.getElementById('waTemplatePreview').textContent=buildShareTextFromTemplate(previewEntryForWa(),editor.value);updateWaTextHistoryButtons();};
+  saveBtn.onclick=function(){saveWaMessageTemplate(editor.value);showToast('✓ WhatsApp message template save ho gaya.');};
+  resetBtn.onclick=function(){if(!confirm('WhatsApp message ko default format par wapas le aayein?'))return;editor.value=DEFAULT_WA_MESSAGE;editor._hist=[DEFAULT_WA_MESSAGE];editor._histIndex=0;saveWaMessageTemplate(DEFAULT_WA_MESSAGE);renderWaMessageEditor();updateWaTextHistoryButtons();showToast('✓ Default WhatsApp message restore ho gaya.');};
+  updateWaTextHistoryButtons();
 }
 
 async function shareEntry(id){
@@ -3627,6 +3648,7 @@ function splitEntry(id){
     return;
   }
   render();
+  logActivity('split','Stock split: '+e.brand+' '+e.model,n+' pieces alag kiye gaye');
   showToast('✓ Split ho gaya');
   backupAfterChange();
 }
@@ -4172,6 +4194,7 @@ function confirmSell(){
   closeSellSheet();
   currentFilter = 'all';
   render();
+  logActivity('sell','Mobile sold: '+e.brand+' '+e.model,'Qty: '+qty+' · Rs '+fmt(price));
   showToast('✓ Sold ho gaya — '+fmt(price)+' mein.');
 }
 
@@ -4211,7 +4234,7 @@ let undoStack=[];
 let redoStack=[];
 let historyApplying=false;
 function appStateSnapshot(){
-  return {inventory:JSON.stringify(inventory),expenses:JSON.stringify(expenses),customOptionData:JSON.stringify(customOptionData),cardDisplaySettings:JSON.stringify(cardDisplaySettings),waTemplate:localStorage.getItem(LS_WA_TEMPLATE_KEY)||''};
+  return {inventory:JSON.stringify(inventory),expenses:JSON.stringify(expenses),customOptionData:JSON.stringify(customOptionData),cardDisplaySettings:JSON.stringify(cardDisplaySettings),customModels:JSON.stringify(customModels||{}),rateBook:JSON.stringify(rateBook||[]),waTemplate:localStorage.getItem(LS_WA_TEMPLATE_KEY)||''};
 }
 function pushUndoHistory(label){
   if(historyApplying) return;
@@ -4230,10 +4253,14 @@ function applyAppState(st){
     expenses=JSON.parse(st.expenses||'[]');
     customOptionData=JSON.parse(st.customOptionData||'{}');
     cardDisplaySettings=JSON.parse(st.cardDisplaySettings||'{}');
+    customModels=JSON.parse(st.customModels||'{}');
+    rateBook=JSON.parse(st.rateBook||'[]');
     localStorage.setItem(LS_INVENTORY_KEY,JSON.stringify(inventory));
     localStorage.setItem(LS_EXPENSES_KEY,JSON.stringify(expenses));
     localStorage.setItem(LS_CUSTOM_OPTIONS_KEY,JSON.stringify(customOptionData));
     localStorage.setItem(LS_CARD_DISPLAY_KEY,JSON.stringify(cardDisplaySettings));
+    localStorage.setItem(LS_CUSTOM_MODELS_KEY,JSON.stringify(customModels));
+    localStorage.setItem(LS_RATE_BOOK_KEY,JSON.stringify(rateBook));
     localStorage.setItem(LS_WA_TEMPLATE_KEY,st.waTemplate||'');
     schedulePush(); render(); renderAllChips(); renderWaMessageEditor(); renderExpensesList();
     return true;
@@ -4264,47 +4291,51 @@ function makeUndoSnapshot(label){ try{lastUndoSnapshot=appStateSnapshot();}catch
 function restoreUndoSnapshot(){ globalUndo(); }
 function offerGlobalUndo(msg){ if(undoStack.length) showToast(msg||'Undo available — upar ↶ dabayein.'); }
 const LS_ACTIVITY_KEY='mobileLedger_activityHistory';
-// Keep activity history lightweight: full app snapshots can contain photos and
-// are therefore kept in memory for reversible actions, while metadata persists.
-const activityStateCache={};
+const ACTIVITY_DB_NAME='MobileLedgerActivityDB';
+const ACTIVITY_DB_VERSION=1;
+const ACTIVITY_STORE='states';
+let activityDbPromise=null;
+let activityBeforeState=null;
+function openActivityStateDB(){
+  if(activityDbPromise) return activityDbPromise;
+  activityDbPromise=new Promise(function(resolve,reject){
+    if(!window.indexedDB){reject(new Error('IndexedDB unavailable'));return;}
+    const req=indexedDB.open(ACTIVITY_DB_NAME,ACTIVITY_DB_VERSION);
+    req.onupgradeneeded=function(){const db=req.result;if(!db.objectStoreNames.contains(ACTIVITY_STORE))db.createObjectStore(ACTIVITY_STORE,{keyPath:'id'});};
+    req.onsuccess=function(){resolve(req.result);}; req.onerror=function(){reject(req.error||new Error('Activity DB error'));};
+  });
+  return activityDbPromise;
+}
+function putActivityState(id,before,after){return openActivityStateDB().then(function(db){return new Promise(function(resolve,reject){const tx=db.transaction(ACTIVITY_STORE,'readwrite');tx.objectStore(ACTIVITY_STORE).put({id:id,before:before,after:after,savedAt:Date.now()});tx.oncomplete=function(){resolve(true);};tx.onerror=function(){reject(tx.error);};});});}
+function getActivityState(id){return openActivityStateDB().then(function(db){return new Promise(function(resolve,reject){const req=db.transaction(ACTIVITY_STORE,'readonly').objectStore(ACTIVITY_STORE).get(id);req.onsuccess=function(){resolve(req.result||null);};req.onerror=function(){reject(req.error);};});});}
+function activityBeforeFromCurrentMutation(){try{activityBeforeState=appStateSnapshot();}catch(e){activityBeforeState=null;}}
 function logActivity(type,title,detail){
   if(isAdminShopView()) return;
   const id=Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-  try{
-    const arr=JSON.parse(localStorage.getItem(LS_ACTIVITY_KEY)||'[]');
-    arr.unshift({id:id,time:new Date().toISOString(),type:type||'info',title:title||'',detail:detail||''});
-    localStorage.setItem(LS_ACTIVITY_KEY,JSON.stringify(arr.slice(0,300)));
-  }catch(e){}
-  try{ activityStateCache[id]=appStateSnapshot(); }catch(e){}
+  const before=activityBeforeState; activityBeforeState=null;
+  let after=null; try{after=appStateSnapshot();}catch(e){}
+  try{const arr=JSON.parse(localStorage.getItem(LS_ACTIVITY_KEY)||'[]');arr.unshift({id:id,time:new Date().toISOString(),type:type||'info',title:title||'',detail:detail||'',hasState:!!(before&&after)});localStorage.setItem(LS_ACTIVITY_KEY,JSON.stringify(arr.slice(0,300)));}catch(e){}
+  if(before&&after){putActivityState(id,before,after).catch(function(err){console.error('Activity state save error',err);try{const arr=JSON.parse(localStorage.getItem(LS_ACTIVITY_KEY)||'[]');const a=arr.find(function(x){return x.id===id;});if(a)a.hasState=false;localStorage.setItem(LS_ACTIVITY_KEY,JSON.stringify(arr));}catch(ignore){}});}
 }
-function restoreActivityState(index){
-  let arr=[];try{arr=JSON.parse(localStorage.getItem(LS_ACTIVITY_KEY)||'[]');}catch(e){return;}
-  const target=arr[index]; if(!target) return;
-  const targetState=activityStateCache[target.id];
-  if(!targetState){alert('Is activity ki reversible state is session mein available nahi hai.');return;}
-  if(!confirm('Is activity ki saved state restore karni hai?\n\n'+target.title+'\n\nCurrent data is state par chala jayega.')) return;
-  pushUndoHistory('Activity restore: '+target.title);
-  if(applyAppState(targetState)) showToast('✓ Activity state restore ho gayi.');
+function readActivityList(){try{return JSON.parse(localStorage.getItem(LS_ACTIVITY_KEY)||'[]');}catch(e){return [];}}
+function activityRestore(index,direction){
+  const arr=readActivityList(),target=arr[index];if(!target)return;
+  if(!target.hasState){alert('Is activity ki Undo/Redo state save nahi hui thi. Ye purani history hai. Nayi activities fully reversible hongi.');return;}
+  getActivityState(target.id).then(function(st){
+    if(!st){alert('Is activity ki reversible state nahi mili.');return;}
+    const state=direction==='before'?st.before:st.after;if(!state){alert('Is activity ki required state available nahi hai.');return;}
+    const action=direction==='before'?'Undo':'Redo';
+    if(!confirm(action+' karne se app ka data us activity ke '+(direction==='before'?'pehle':'baad')+' wali exact state par chala jayega.\n\n'+target.title+'\n\nAage barhein?'))return;
+    if(applyAppState(state)){showToast((direction==='before'?'↶ ':'↷ ')+target.title+' — '+action+' ho gaya.');renderActivityHistory();}
+  }).catch(function(){alert('Activity state load nahi ho saki.');});
 }
-function undoActivity(index){
-  let arr=[];try{arr=JSON.parse(localStorage.getItem(LS_ACTIVITY_KEY)||'[]');}catch(e){return;}
-  const target=arr[index]; const previous=index+1<arr.length ? activityStateCache[arr[index+1].id] : null;
-  if(!target||!previous){alert('Is activity se pehle ki reversible state is session mein available nahi hai.');return;}
-  if(!confirm('Is activity ko undo karna hai?\n\n'+target.title)) return;
-  pushUndoHistory('Activity undo: '+target.title);
-  if(applyAppState(previous)) showToast('↶ Activity undo ho gayi.');
-}
-function redoActivity(index){ restoreActivityState(index); }
+function undoActivity(index){activityRestore(index,'before');}
+function redoActivity(index){activityRestore(index,'after');}
 function renderActivityHistory(){
-  const el=document.getElementById('activityHistoryList'); if(!el)return;
-  let arr=[]; try{arr=JSON.parse(localStorage.getItem(LS_ACTIVITY_KEY)||'[]');}catch(e){}
-  if(!arr.length){el.innerHTML='<div class="empty">Abhi koi activity history nahi hai.</div>';return;}
-  const icons={add:'➕',edit:'✏️',sell:'💰',return:'↩️',delete:'🗑️',expense:'💵',settings:'⚙️',share:'📤',restore:'↩️',info:'ℹ️'};
-  el.innerHTML=arr.map(function(a,i){
-    const d=new Date(a.time); const dt=isNaN(d.getTime())?'':d.toLocaleString('en-PK',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-    const canUndo=!!arr[i+1]&&!!activityStateCache[a.id]&&!!activityStateCache[arr[i+1].id];
-    return '<div class="activity-history-row"><div class="activity-history-icon">'+(icons[a.type]||'ℹ️')+'</div><div class="activity-history-main"><div class="activity-history-title">'+escapeHtml(a.title)+'</div><div class="activity-history-meta">'+escapeHtml(a.detail||'')+(dt?' · '+escapeHtml(dt):'')+'</div><div class="activity-history-actions">'+(canUndo?'<button type="button" data-act-undo="'+i+'">↶ Undo</button>':'')+'<button type="button" data-act-redo="'+i+'">↷ Redo</button></div></div></div>';
-  }).join('');
+  const el=document.getElementById('activityHistoryList');if(!el)return;
+  const arr=readActivityList();if(!arr.length){el.innerHTML='<div class="empty">Abhi koi activity history nahi hai.</div>';return;}
+  const icons={add:'➕',edit:'✏️',sell:'💰',return:'↩️',delete:'🗑️',expense:'💵',settings:'⚙️',share:'📤',restore:'↩️',split:'✂️',rate:'📋',import:'📥',clear:'🗑️',info:'ℹ️'};
+  el.innerHTML=arr.map(function(a,i){const d=new Date(a.time);const dt=isNaN(d.getTime())?'':d.toLocaleString('en-PK',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});const enabled=!!a.hasState;return '<div class="activity-history-row"><div class="activity-history-icon">'+(icons[a.type]||'ℹ️')+'</div><div class="activity-history-main"><div class="activity-history-title">'+escapeHtml(a.title)+'</div><div class="activity-history-meta">'+escapeHtml(a.detail||'')+(dt?' · '+escapeHtml(dt):'')+'</div><div class="activity-history-actions"><button type="button" data-act-undo="'+i+'" '+(enabled?'':'disabled')+'>↶ Undo</button><button type="button" data-act-redo="'+i+'" '+(enabled?'':'disabled')+'>↷ Redo</button></div></div></div>';}).join('');
   el.querySelectorAll('[data-act-undo]').forEach(function(b){b.onclick=function(){undoActivity(Number(b.dataset.actUndo));};});
   el.querySelectorAll('[data-act-redo]').forEach(function(b){b.onclick=function(){redoActivity(Number(b.dataset.actRedo));};});
 }
@@ -5605,6 +5636,8 @@ document.getElementById('btnClearData').onclick = function(){
   }
   if(!confirm('Ye action WAPIS NAHI HO SAKTA — sara stock, sales history, aur customization mit jayega aur app bilkul nayi shuruaat se save karegi. Pakka aage badhna hai?')) return;
 
+  activityBeforeFromCurrentMutation();
+  const clearBeforeState=activityBeforeState;
   const ok = tryCommitInventory([]);
   if(!ok){ alert('Clear nahi ho saka — storage mein masla hua, dobara try karein.'); return; }
   tryCommitExpenses([]);
@@ -5629,6 +5662,9 @@ document.getElementById('btnClearData').onclick = function(){
   saveCardDisplaySettings();
   renderAllChips();
   render();
+  activityBeforeState=clearBeforeState;
+  logActivity('clear','Sara data clear kiya','Stock, expenses, Rate Book aur settings reset');
+  activityBeforeState=null;
   alert('✓ Sara data clear ho gaya. Ab bilkul nayi shuruaat hai.');
 };
 
