@@ -1503,7 +1503,7 @@ async function loadExpenses(){
 // write fails, nothing changes and the add-expense form keeps its data.
 function tryCommitExpenses(candidateExpenses){
   if(isAdminShopView()) return false;
-  if(!historyApplying && JSON.stringify(candidateExpenses)!==JSON.stringify(expenses)){activityBeforeFromCurrentMutation();pushUndoHistory('Expense change');}
+  if(!historyApplying && JSON.stringify(candidateExpenses)!==JSON.stringify(expenses)){activityBeforeFromCurrentMutation();pushUndoState('Expense change',activityBeforeState); }
   const json = JSON.stringify(candidateExpenses);
   try{
     localStorage.setItem(LS_EXPENSES_KEY, json);
@@ -1983,7 +1983,7 @@ async function loadInventory(){
 // so the form still has the person's typed data and nothing is silently lost.
 function tryCommitInventory(candidateInventory){
   if(isAdminShopView()) return false;
-  if(!historyApplying && JSON.stringify(candidateInventory)!==JSON.stringify(inventory)){activityBeforeFromCurrentMutation();pushUndoHistory('Inventory change');}
+  if(!historyApplying && JSON.stringify(candidateInventory)!==JSON.stringify(inventory)){activityBeforeFromCurrentMutation();pushUndoState('Inventory change',activityBeforeState); }
   const json = JSON.stringify(candidateInventory);
   try{
     localStorage.setItem(LS_INVENTORY_KEY, json);
@@ -4234,17 +4234,31 @@ let lastUndoSnapshot = null;
 let undoStack=[];
 let redoStack=[];
 let historyApplying=false;
+const LS_UNDO_STACK='mobileLedger_undoStack_v15';
+const LS_REDO_STACK='mobileLedger_redoStack_v15';
 function appStateSnapshot(){
   return {inventory:JSON.stringify(inventory),expenses:JSON.stringify(expenses),customOptionData:JSON.stringify(customOptionData),cardDisplaySettings:JSON.stringify(cardDisplaySettings),customModels:JSON.stringify(customModels||{}),rateBook:JSON.stringify(rateBook||[]),waTemplate:localStorage.getItem(LS_WA_TEMPLATE_KEY)||''};
 }
+function loadPersistentHistory(){
+  try{undoStack=JSON.parse(localStorage.getItem(LS_UNDO_STACK)||'[]')||[];}catch(e){undoStack=[];}
+  try{redoStack=JSON.parse(localStorage.getItem(LS_REDO_STACK)||'[]')||[];}catch(e){redoStack=[];}
+  if(!Array.isArray(undoStack))undoStack=[]; if(!Array.isArray(redoStack))redoStack=[];
+  updateHistoryButtons();
+}
+function persistHistory(){
+  try{localStorage.setItem(LS_UNDO_STACK,JSON.stringify(undoStack.slice(-60)));}catch(e){}
+  try{localStorage.setItem(LS_REDO_STACK,JSON.stringify(redoStack.slice(-60)));}catch(e){}
+}
+function pushUndoState(label,state){
+  if(historyApplying||!state)return;
+  undoStack.push({label:label||'Change',state:state,time:Date.now()});
+  if(undoStack.length>60)undoStack.shift();
+  redoStack=[];
+  persistHistory(); updateHistoryButtons();
+}
 function pushUndoHistory(label){
-  if(historyApplying) return;
-  try{
-    undoStack.push({label:label||'Change',state:appStateSnapshot(),time:Date.now()});
-    if(undoStack.length>60) undoStack.shift();
-    redoStack=[];
-    updateHistoryButtons();
-  }catch(e){}
+  if(historyApplying)return;
+  try{pushUndoState(label,appStateSnapshot());}catch(e){}
 }
 function applyAppState(st){
   if(!st) return false;
@@ -4273,7 +4287,7 @@ function globalUndo(){
   const item=undoStack.pop();
   redoStack.push({label:item.label,state:current,time:Date.now()});
   if(!applyAppState(item.state)){redoStack.pop();undoStack.push(item);return;}
-  showToast('↶ '+item.label+' undo ho gaya.');
+  persistHistory(); showToast('↶ '+item.label+' undo ho gaya.');
 }
 function globalRedo(){
   if(!redoStack.length){showToast('Redo ke liye koi change nahi hai.');return;}
@@ -4281,12 +4295,12 @@ function globalRedo(){
   const item=redoStack.pop();
   undoStack.push({label:item.label,state:current,time:Date.now()});
   if(!applyAppState(item.state)){undoStack.pop();redoStack.push(item);return;}
-  showToast('↷ '+item.label+' redo ho gaya.');
+  persistHistory(); showToast('↷ '+item.label+' redo ho gaya.');
 }
 function updateHistoryButtons(){
   const u=document.getElementById('globalUndoBtn'),r=document.getElementById('globalRedoBtn');
-  if(u)u.disabled=!undoStack.length;
-  if(r)r.disabled=!redoStack.length;
+  if(u){u.disabled=false;u.title=undoStack.length?'Undo — '+undoStack[undoStack.length-1].label:'Undo — koi change nahi';}
+  if(r){r.disabled=false;r.title=redoStack.length?'Redo — '+redoStack[redoStack.length-1].label:'Redo — koi change nahi';}
 }
 function makeUndoSnapshot(label){ try{lastUndoSnapshot=appStateSnapshot();}catch(e){lastUndoSnapshot=null;} }
 function restoreUndoSnapshot(){ globalUndo(); }
@@ -4297,6 +4311,8 @@ const ACTIVITY_DB_VERSION=1;
 const ACTIVITY_STORE='states';
 let activityDbPromise=null;
 let activityBeforeState=null;
+let activityCurrentState=null;
+function initActivityBaseline(){try{activityCurrentState=appStateSnapshot();}catch(e){activityCurrentState=null;}}
 function openActivityStateDB(){
   if(activityDbPromise) return activityDbPromise;
   activityDbPromise=new Promise(function(resolve,reject){
@@ -4334,9 +4350,11 @@ function activityBeforeFromCurrentMutation(){try{activityBeforeState=appStateSna
 function logActivity(type,title,detail){
   if(isAdminShopView()) return;
   const id=Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-  const before=activityBeforeState; activityBeforeState=null;
+  let before=activityBeforeState; activityBeforeState=null;
+  if(!before) before=activityCurrentState;
   let after=null; try{after=appStateSnapshot();}catch(e){}
   const hasState=!!(before&&after);
+  activityCurrentState=after||activityCurrentState;
   try{
     const arr=JSON.parse(localStorage.getItem(LS_ACTIVITY_KEY)||'[]');
     arr.unshift({id:id,time:new Date().toISOString(),type:type||'info',title:title||'',detail:detail||'',hasState:hasState});
@@ -5145,6 +5163,7 @@ document.getElementById('contactsOverlay').onclick = function(e){
 document.getElementById('contactsSearch').oninput = renderContacts;
 
 // ---------- Activity History ----------
+initActivityBaseline();
 document.getElementById('btnActivityHistory').onclick=function(){renderActivityHistory();document.getElementById('activityHistoryOverlay').classList.remove('hidden');pushOverlayHistory('activityHistoryOverlay');};
 document.getElementById('waSharePreviewClose').onclick=closeWaSharePreview;
 document.getElementById('waSharePreviewCancel').onclick=closeWaSharePreview;
@@ -5152,7 +5171,7 @@ document.getElementById('waSharePreviewShare').onclick=executePendingWaShare;
 document.getElementById('waSharePreviewOverlay').onclick=function(e){if(e.target.id==='waSharePreviewOverlay')closeWaSharePreview();};
 document.getElementById('globalUndoBtn').onclick=globalUndo;
 document.getElementById('globalRedoBtn').onclick=globalRedo;
-updateHistoryButtons();
+loadPersistentHistory();
 document.getElementById('btnActivityHistoryClose').onclick=function(){requestOverlayClose();};
 document.getElementById('activityHistoryOverlay').onclick=function(e){if(e.target.id==='activityHistoryOverlay')requestOverlayClose();};
 
