@@ -628,6 +628,8 @@
       <div class="sec-label">True Tone</div>
       <div class="chip-row" id="truetoneChips"></div>
 
+      <div id="customEntryFields"></div>
+
       <div class="field" style="margin-top:10px;"><label>Notes</label><input id="f-notes" placeholder="Koi khaas baat"></div>
     </div>
 
@@ -999,6 +1001,11 @@
     <div class="settings-note" style="margin-top:0;">Yahan se entry banate waqt aane wale chip options ko control karein. Android aur iPhone ki lists <b>alag</b> hongi. Naya option add/hide karein aur har field ka <b>default selected option</b> bhi set karein.</div>
     <div class="chip-row" id="settingsPlatformToggles" style="margin-top:9px;"></div>
     <select class="settings-field-select" id="settings-field-select"></select>
+    <div class="settings-add-row" style="margin-top:8px;">
+      <input type="text" id="settingsNewField" placeholder="Nayi field, jaise Condition / Color">
+      <button type="button" class="sell-btn" id="settingsAddFieldBtn">+ Field</button>
+    </div>
+    <div id="settingsCustomFieldActions" style="margin-top:8px;"></div>
     <div class="settings-default-row" style="display:flex;gap:8px;align-items:center;margin-top:8px;">
       <span style="font-size:12px;color:var(--text-dim);white-space:nowrap;">Default:</span>
       <select class="settings-field-select" id="settings-default-select" style="margin:0;flex:1;"></select>
@@ -1232,6 +1239,7 @@ function ensurePlatformOptionData(platform){
   if(!p.extra) p.extra={};
   if(!p.hidden) p.hidden={};
   if(!p.defaults) p.defaults={};
+  if(!Array.isArray(p.customFields)) p.customFields=[];
   const fallback={status:'PTA',ram:'',storage:'',network:'',display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',battery:'Perfect',box:'No',packing:'No pack',charger:'Original charger',faceid:platform==='iphone'?'Yes':'No',truetone:platform==='iphone'?'Yes':'No'};
   Object.keys(fallback).forEach(function(k){ if(!Object.prototype.hasOwnProperty.call(p.defaults,k)) p.defaults[k]=fallback[k]; });
   return p;
@@ -1259,6 +1267,19 @@ function saveCustomOptionData(){
 
 function getEntryPlatform(brand){ return String(brand||'').trim()==='iPhone' ? 'iphone' : 'android'; }
 function platformLabel(platform){ return platform==='iphone' ? '🍎 iPhone' : '🤖 Android'; }
+
+function getPlatformCustomFields(platform){
+  const p=ensurePlatformOptionData(platform);
+  return p.customFields;
+}
+function getCustomFieldDef(platform, fieldKey){
+  return getPlatformCustomFields(platform).find(function(f){ return f.key===fieldKey; }) || null;
+}
+function getAllSettingsFields(platform){
+  const builtIn=CUSTOMIZABLE_FIELDS.map(function(f){ return {key:f.key,label:f.label,base:f.base,isCustom:false}; });
+  const custom=getPlatformCustomFields(platform).map(function(f){ return {key:f.key,label:f.label,base:f.options||[],isCustom:true}; });
+  return builtIn.concat(custom);
+}
 
 function getPlatformFieldOptions(platform, fieldKey, baseOptions){
   const p=ensurePlatformOptionData(platform);
@@ -1297,11 +1318,19 @@ function applyPlatformDefaultsToForm(platform){
     const opts=getEntryFieldOptionsForPlatform(platform,k);
     formState[k]=(d && opts.indexOf(d)!==-1) ? d : '';
   });
+  if(!formState.customFields) formState.customFields={};
+  getPlatformCustomFields(platform).forEach(function(f){
+    const d=getPlatformDefault(platform,f.key,'');
+    const opts=getEntryFieldOptionsForPlatform(platform,f.key);
+    formState.customFields[f.key]=(d && opts.indexOf(d)!==-1) ? d : '';
+  });
   formState.__platform=platform;
 }
 function getEntryFieldOptionsForPlatform(platform, fieldKey){
   const baseMap={status:STATUS_OPTS,ram:RAM_OPTS,storage:STORAGE_OPTS,network:NETWORK_OPTS,display:DISPLAY_OPTS,touch:TOUCH_OPTS,camera:CAMERA_OPTS,body:BODY_OPTS,openrepair:OPEN_REPAIR_OPTS,battery:BATTERY_OPTS,box:['No','Yes'],packing:PACKING_OPTS,charger:CHARGER_OPTS,faceid:['No','Yes'],truetone:['No','Yes']};
-  return getPlatformFieldOptions(platform,fieldKey,baseMap[fieldKey]||[]);
+  if(Object.prototype.hasOwnProperty.call(baseMap,fieldKey)) return getPlatformFieldOptions(platform,fieldKey,baseMap[fieldKey]);
+  const cf=getCustomFieldDef(platform,fieldKey);
+  return cf ? (cf.options||[]) : [];
 }
 
 const MODEL_CATALOG = {
@@ -2870,10 +2899,16 @@ function pieceSpecBadges(e){
     const pb = effectiveBadgeProminent(b, e[b]) ? 0 : 1;
     return pa - pb;
   });
-  return prominentFirst.map(function(field){
+  let html=prominentFirst.map(function(field){
     if((field==='faceid' || field==='truetone') && e.brand!=='iPhone') return '';
     return fieldBadge(field, e[field]);
   }).join('');
+  const customFields=getPlatformCustomFields(getEntryPlatform(e.brand));
+  customFields.forEach(function(f){
+    const val=e.customFields && e.customFields[f.key];
+    if(val) html += '<span class="badge spec">'+escapeHtml(f.label)+': '+escapeHtml(val)+'</span>';
+  });
+  return html;
 }
 
 function cardPhotoHtml(e){
@@ -3444,6 +3479,26 @@ function renderChipGroup(containerId, options, groupKey, extraClass){
   });
 }
 
+function renderCustomEntryFields(){
+  const box=document.getElementById('customEntryFields');
+  if(!box) return;
+  const platform=getEntryPlatform(formState && formState.brand);
+  const fields=getPlatformCustomFields(platform);
+  if(!formState.customFields) formState.customFields={};
+  box.innerHTML=fields.map(function(f){
+    const opts=getEntryFieldOptionsForPlatform(platform,f.key);
+    return '<div class="sec-label">'+escapeHtml(f.label)+'</div><div class="chip-row custom-entry-chip-row" data-custom-field="'+f.key+'">'+opts.map(function(o){
+      return '<div class="chip-opt '+(formState.customFields[f.key]===o?'on':'')+'" data-val="'+escapeHtml(o)+'">'+escapeHtml(o)+'</div>';
+    }).join('')+'</div>';
+  }).join('');
+  box.querySelectorAll('[data-custom-field]').forEach(function(row){
+    const key=row.dataset.customField;
+    row.querySelectorAll('.chip-opt').forEach(function(c){
+      c.onclick=function(){ formState.customFields[key]=c.dataset.val; renderCustomEntryFields(); };
+    });
+  });
+}
+
 function renderAllChips(){
   renderChipGroup('brandChips', getLiveBrands(), 'brand');
   renderChipGroup('statusChips', getEntryFieldOptions('status', STATUS_OPTS), 'status', 'status-opt');
@@ -3461,6 +3516,7 @@ function renderAllChips(){
   renderChipGroup('chargerChips', getEntryFieldOptions('charger', CHARGER_OPTS), 'charger');
   renderChipGroup('faceidChips', getEntryFieldOptions('faceid', ['No','Yes']), 'faceid');
   renderChipGroup('truetoneChips', getEntryFieldOptions('truetone', ['No','Yes']), 'truetone');
+  renderCustomEntryFields();
 }
 
 function updateModelField(brand){
@@ -3533,7 +3589,7 @@ function openAdd(){
   rangeInputMode = 'auto';
   document.getElementById('sheetTitle').textContent = 'Nayi stock entry';
   document.getElementById('qtyLabel').textContent = 'Quantity (kitne piece)';
-  formState = {brand:'', status:'PTA', ram:'', storage:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'No', packing:'No pack', charger:'Original charger', faceid:'No', truetone:'No', isSold:false, __platform:'android'};
+  formState = {brand:'', status:'PTA', ram:'', storage:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'No', packing:'No pack', charger:'Original charger', faceid:'No', truetone:'No', customFields:{}, isSold:false, __platform:'android'};
   applyPlatformDefaultsToForm('android');
   formPhotos = [];
   renderPhotoStrip();
@@ -3600,6 +3656,7 @@ function openEdit(id){
     display: e.display || 'Original panel', touch: e.touch || 'Perfect', camera: e.camera || 'Perfect', body: e.body || 'Original', openrepair: e.openrepair || 'No open, no repair', battery: e.battery || 'Perfect',
     box: e.box || 'No', packing: e.packing || 'No pack', charger: e.charger || 'Original charger',
     faceid: e.faceid || 'No', truetone: e.truetone || 'No',
+    customFields: Object.assign({}, e.customFields || {}),
     isSold: !!e.sold
   };
   formPhotos = (e.photos || []).slice();
@@ -3689,6 +3746,7 @@ function saveEntry(){
     charger: formState.charger || 'Original charger',
     faceid: formState.faceid || 'No',
     truetone: formState.truetone || 'No',
+    customFields: Object.assign({}, formState.customFields || {}),
     notes: document.getElementById('f-notes').value.trim(),
     photos: formPhotos.slice(),
     phoneExpenses: [],
@@ -4893,148 +4951,179 @@ function renderSettingsPlatformToggles(){
 }
 
 function renderSettingsFieldOptions(){
-  const fieldKey = document.getElementById('settings-field-select').value;
-  const fieldDef = CUSTOMIZABLE_FIELDS.filter(function(f){ return f.key===fieldKey; })[0];
-  if(!fieldDef) return;
+  const sel=document.getElementById('settings-field-select');
+  const fieldKey=sel.value;
+  const fields=getAllSettingsFields(settingsPlatform);
+  const fieldDef=fields.find(function(f){return f.key===fieldKey;});
   const p=ensurePlatformOptionData(settingsPlatform);
-  const hidden = p.hidden[fieldKey] || [];
-  const extra = p.extra[fieldKey] || [];
-  const options = fieldDef.base.filter(function(o){return hidden.indexOf(o)===-1;}).concat(extra);
+  if(!fieldDef) return;
+  const isCustom=!!fieldDef.isCustom;
+  const hidden=isCustom ? [] : (p.hidden[fieldKey] || []);
+  const extra=isCustom ? (fieldDef.base||[]) : (p.extra[fieldKey] || []);
+  const options=isCustom ? (fieldDef.base||[]) : fieldDef.base.filter(function(o){return hidden.indexOf(o)===-1;}).concat(extra);
   const defaultSelect=document.getElementById('settings-default-select');
   if(defaultSelect){
     const current=Object.prototype.hasOwnProperty.call(p.defaults,fieldKey)?p.defaults[fieldKey]:'';
-    defaultSelect.innerHTML='<option value="">— Koi default nahi —</option>'+options.map(function(o){return '<option value="'+o.replace(/"/g,'&quot;')+'">'+o+'</option>';}).join('');
+    defaultSelect.innerHTML='<option value="">— Koi default nahi —</option>'+options.map(function(o){return '<option value="'+escapeHtml(o)+'">'+escapeHtml(o)+'</option>';}).join('');
     defaultSelect.value=current;
     defaultSelect.onchange=function(){
-      const val=defaultSelect.value;
-      p.defaults[fieldKey]=val;
+      p.defaults[fieldKey]=defaultSelect.value;
       saveCustomOptionData();
       renderSettingsFieldOptions();
       renderAllChips();
     };
   }
-  const canHaveIssue = !!GOOD_CONDITION_VALUES[fieldKey];
-  const isCardBadgeField = DEFAULT_BADGE_ORDER.indexOf(fieldKey) !== -1;
-  document.getElementById('settingsIssueNote').style.display = 'block';
+
+  const actionBox=document.getElementById('settingsCustomFieldActions');
+  if(actionBox){
+    actionBox.innerHTML=isCustom ? '<button type="button" class="btn-cancel" id="settingsDeleteFieldBtn" style="width:100%;">🗑️ Ye custom field delete karein</button>' : '<div class="settings-note" style="margin:0;">Built-in field hai — isay delete nahi kiya ja sakta, sirf options hide/add aur default set kar sakte hain.</div>';
+    const del=document.getElementById('settingsDeleteFieldBtn');
+    if(del) del.onclick=function(){
+      if(!confirm('"'+fieldDef.label+'" field aur is ke options ko '+platformLabel(settingsPlatform)+' se delete kar dein?')) return;
+      p.customFields=p.customFields.filter(function(f){return f.key!==fieldKey;});
+      delete p.defaults[fieldKey];
+      saveCustomOptionData();
+      populateSettingsFieldSelect();
+      renderSettingsFieldOptions();
+      renderAllChips();
+    };
+  }
+
+  const canHaveIssue=!isCustom && !!GOOD_CONDITION_VALUES[fieldKey];
+  const isCardBadgeField=!isCustom && DEFAULT_BADGE_ORDER.indexOf(fieldKey)!==-1;
+  document.getElementById('settingsIssueNote').style.display='block';
 
   function issueToggleHtml(val){
     if(!canHaveIssue) return '';
-    const isIssue = isConditionIssue(fieldKey, val);
-    return '<span class="issue-toggle'+(isIssue?' is-issue':'')+'" data-val="'+val+'">'+(isIssue?'⚠ Issue':'Normal')+'</span>';
+    const isIssue=isConditionIssue(fieldKey,val);
+    return '<span class="issue-toggle'+(isIssue?' is-issue':'')+'" data-val="'+escapeHtml(val)+'">'+(isIssue?'⚠ Issue':'Normal')+'</span>';
   }
   function cardVisToggleHtml(val){
-    if(!isCardBadgeField) return ''; // Status & Expense category never show as a card badge, so this toggle would do nothing.
-    const vis = effectiveCardVisible(fieldKey, val);
-    const prom = effectiveBadgeProminent(fieldKey, val);
-    const label = !vis ? '🚫 Hidden' : (prom ? '⭐ Prominent' : '👁 Card pe');
-    return '<span class="card-vis-toggle'+(vis?' is-visible':'')+(prom?' is-prominent':'')+'" data-val="'+val+'">'+label+'</span>';
+    if(!isCardBadgeField) return '';
+    const vis=effectiveCardVisible(fieldKey,val);
+    const prom=effectiveBadgeProminent(fieldKey,val);
+    const label=!vis?'🚫 Hidden':(prom?'⭐ Prominent':'👁 Card pe');
+    return '<span class="card-vis-toggle'+(vis?' is-visible':'')+(prom?' is-prominent':'')+'" data-val="'+escapeHtml(val)+'">'+label+'</span>';
   }
   function colorInputHtml(val){
     if(!isCardBadgeField) return '';
-    const color = effectiveBadgeColor(fieldKey, val) || '#8a8a93';
-    return '<input type="color" class="badge-color-input" data-val="'+val+'" value="'+color+'" title="Is value ka badge color">';
+    const color=effectiveBadgeColor(fieldKey,val)||'#8a8a93';
+    return '<input type="color" class="badge-color-input" data-val="'+escapeHtml(val)+'" value="'+color+'" title="Is value ka badge color">';
   }
 
-  const baseHtml = fieldDef.base.map(function(o){
-    const isHidden = hidden.indexOf(o)!==-1;
-    return '<div class="settings-opt'+(isHidden?' is-hidden':'')+'" data-kind="base" data-val="'+o+'">'+o+
-      issueToggleHtml(o)+cardVisToggleHtml(o)+colorInputHtml(o)+
-      '<span class="rm" data-action="'+(isHidden?'restore':'hide')+'">'+(isHidden?'↺':'×')+'</span></div>';
-  }).join('');
-  const extraHtml = extra.map(function(o){
-    return '<div class="settings-opt" data-kind="extra" data-val="'+o+'">'+o+issueToggleHtml(o)+cardVisToggleHtml(o)+colorInputHtml(o)+'<span class="rm" data-action="delete">×</span></div>';
-  }).join('');
-  document.getElementById('settingsOptsList').innerHTML = baseHtml + extraHtml;
+  let html='';
+  if(isCustom){
+    html=options.map(function(o){
+      return '<div class="settings-opt" data-kind="custom" data-val="'+escapeHtml(o)+'">'+escapeHtml(o)+'<span class="rm" data-action="delete">×</span></div>';
+    }).join('');
+  }else{
+    html=fieldDef.base.map(function(o){
+      const isHidden=hidden.indexOf(o)!==-1;
+      return '<div class="settings-opt'+(isHidden?' is-hidden':'')+'" data-kind="base" data-val="'+escapeHtml(o)+'">'+escapeHtml(o)+issueToggleHtml(o)+cardVisToggleHtml(o)+colorInputHtml(o)+'<span class="rm" data-action="'+(isHidden?'restore':'hide')+'">'+(isHidden?'↺':'×')+'</span></div>';
+    }).join('')+extra.map(function(o){
+      return '<div class="settings-opt" data-kind="extra" data-val="'+escapeHtml(o)+'">'+escapeHtml(o)+issueToggleHtml(o)+cardVisToggleHtml(o)+colorInputHtml(o)+'<span class="rm" data-action="delete">×</span></div>';
+    }).join('');
+  }
+  document.getElementById('settingsOptsList').innerHTML=html;
 
   document.getElementById('settingsOptsList').querySelectorAll('.issue-toggle').forEach(function(btn){
-    btn.onclick = function(e){
-      e.stopPropagation();
-      const val = btn.dataset.val;
-      if(!customOptionData.issueOverrides[fieldKey]) customOptionData.issueOverrides[fieldKey] = {};
-      customOptionData.issueOverrides[fieldKey][val] = !isConditionIssue(fieldKey, val);
-      saveCustomOptionData();
-      renderSettingsFieldOptions();
-      renderList();
+    btn.onclick=function(e){
+      e.stopPropagation(); const val=btn.dataset.val;
+      if(!customOptionData.issueOverrides[fieldKey]) customOptionData.issueOverrides[fieldKey]={};
+      customOptionData.issueOverrides[fieldKey][val]=!isConditionIssue(fieldKey,val);
+      saveCustomOptionData(); renderSettingsFieldOptions(); renderList();
     };
   });
   document.getElementById('settingsOptsList').querySelectorAll('.card-vis-toggle').forEach(function(btn){
-    btn.onclick = function(e){
-      e.stopPropagation();
-      const val = btn.dataset.val;
-      const vis = effectiveCardVisible(fieldKey, val);
-      const prom = effectiveBadgeProminent(fieldKey, val);
-      if(!customOptionData.cardVisibility[fieldKey]) customOptionData.cardVisibility[fieldKey] = {};
-      if(!customOptionData.badgeProminent[fieldKey]) customOptionData.badgeProminent[fieldKey] = {};
-      if(!vis){
-        // Hidden -> Card pe (normal)
-        customOptionData.cardVisibility[fieldKey][val] = true;
-        customOptionData.badgeProminent[fieldKey][val] = false;
-      } else if(vis && !prom){
-        // Card pe -> Prominent
-        customOptionData.badgeProminent[fieldKey][val] = true;
-      } else {
-        // Prominent -> Hidden
-        customOptionData.cardVisibility[fieldKey][val] = false;
-        customOptionData.badgeProminent[fieldKey][val] = false;
-      }
-      saveCustomOptionData();
-      renderSettingsFieldOptions();
-      renderList();
+    btn.onclick=function(e){
+      e.stopPropagation(); const val=btn.dataset.val;
+      const vis=effectiveCardVisible(fieldKey,val), prom=effectiveBadgeProminent(fieldKey,val);
+      if(!customOptionData.cardVisibility[fieldKey]) customOptionData.cardVisibility[fieldKey]={};
+      if(!customOptionData.badgeProminent[fieldKey]) customOptionData.badgeProminent[fieldKey]={};
+      if(!vis){ customOptionData.cardVisibility[fieldKey][val]=true; customOptionData.badgeProminent[fieldKey][val]=false; }
+      else if(vis&&!prom){ customOptionData.badgeProminent[fieldKey][val]=true; }
+      else { customOptionData.cardVisibility[fieldKey][val]=false; customOptionData.badgeProminent[fieldKey][val]=false; }
+      saveCustomOptionData(); renderSettingsFieldOptions(); renderList();
     };
   });
   document.getElementById('settingsOptsList').querySelectorAll('.badge-color-input').forEach(function(input){
-    input.onclick = function(e){ e.stopPropagation(); };
-    input.onchange = function(e){
-      e.stopPropagation();
-      const val = input.dataset.val;
-      if(!customOptionData.badgeColor[fieldKey]) customOptionData.badgeColor[fieldKey] = {};
-      customOptionData.badgeColor[fieldKey][val] = input.value;
-      saveCustomOptionData();
-      renderList();
+    input.onclick=function(e){e.stopPropagation();};
+    input.onchange=function(e){
+      e.stopPropagation(); const val=input.dataset.val;
+      if(!customOptionData.badgeColor[fieldKey]) customOptionData.badgeColor[fieldKey]={};
+      customOptionData.badgeColor[fieldKey][val]=input.value;
+      saveCustomOptionData(); renderList();
     };
   });
   document.getElementById('settingsOptsList').querySelectorAll('.rm').forEach(function(btn){
-    btn.onclick = function(e){
-      e.stopPropagation();
-      const parent = btn.closest('.settings-opt');
-      const val = parent.dataset.val;
-      const kind = parent.dataset.kind;
-      const action = btn.dataset.action;
-      if(kind==='base'){
-        if(!p.hidden[fieldKey]) p.hidden[fieldKey] = [];
-        if(action==='hide'){
-          if(p.hidden[fieldKey].indexOf(val)===-1) p.hidden[fieldKey].push(val);
-        } else {
-          p.hidden[fieldKey] = p.hidden[fieldKey].filter(function(x){ return x!==val; });
-        }
-      } else {
-        p.extra[fieldKey] = (p.extra[fieldKey]||[]).filter(function(x){ return x!==val; });
+    btn.onclick=function(e){
+      e.stopPropagation(); const parent=btn.closest('.settings-opt'); const val=parent.dataset.val; const kind=parent.dataset.kind; const action=btn.dataset.action;
+      if(isCustom){
+        fieldDef.base=fieldDef.base.filter(function(x){return x!==val;});
+        p.defaults[fieldKey]=p.defaults[fieldKey]===val?'':p.defaults[fieldKey];
+      }else if(kind==='base'){
+        if(!p.hidden[fieldKey]) p.hidden[fieldKey]=[];
+        if(action==='hide'){ if(p.hidden[fieldKey].indexOf(val)===-1) p.hidden[fieldKey].push(val); }
+        else p.hidden[fieldKey]=p.hidden[fieldKey].filter(function(x){return x!==val;});
+      }else{
+        p.extra[fieldKey]=(p.extra[fieldKey]||[]).filter(function(x){return x!==val;});
+        if(p.defaults[fieldKey]===val) p.defaults[fieldKey]='';
       }
-      saveCustomOptionData();
-      renderSettingsFieldOptions();
-      renderAllChips();
+      saveCustomOptionData(); renderSettingsFieldOptions(); renderAllChips();
     };
   });
 }
 
+function populateSettingsFieldSelect(){
+  const sel=document.getElementById('settings-field-select');
+  if(!sel) return;
+  const fields=getAllSettingsFields(settingsPlatform);
+  sel.innerHTML=fields.map(function(f){return '<option value="'+escapeHtml(f.key)+'">'+(f.isCustom?'🧩 ':'')+escapeHtml(f.label)+'</option>';}).join('');
+  if(!fields.some(function(f){return f.key===sel.value;})) sel.value=fields[0] ? fields[0].key : '';
+}
+
+
 document.getElementById('settingsAddBtn').onclick = function(){
-  const fieldKey = document.getElementById('settings-field-select').value;
-  const input = document.getElementById('settingsNewOption');
-  const val = input.value.trim();
+  const fieldKey=document.getElementById('settings-field-select').value;
+  const input=document.getElementById('settingsNewOption');
+  const val=input.value.trim();
   if(!val) return;
-  const fieldDef = CUSTOMIZABLE_FIELDS.filter(function(f){ return f.key===fieldKey; })[0];
   const p=ensurePlatformOptionData(settingsPlatform);
-  if(!p.extra[fieldKey]) p.extra[fieldKey] = [];
-  const already = fieldDef.base.indexOf(val)!==-1 || p.extra[fieldKey].indexOf(val)!==-1;
-  if(already){ alert('Ye option is platform par pehle se maujood hai.'); return; }
-  p.extra[fieldKey].push(val);
+  const custom=getCustomFieldDef(settingsPlatform,fieldKey);
+  if(custom){
+    if(custom.options.indexOf(val)!==-1){ alert('Ye option pehle se maujood hai.'); return; }
+    custom.options.push(val);
+  }else{
+    const fieldDef=CUSTOMIZABLE_FIELDS.find(function(f){return f.key===fieldKey;});
+    if(!fieldDef) return;
+    if(!p.extra[fieldKey]) p.extra[fieldKey]=[];
+    const already=fieldDef.base.indexOf(val)!==-1 || p.extra[fieldKey].indexOf(val)!==-1;
+    if(already){ alert('Ye option is platform par pehle se maujood hai.'); return; }
+    p.extra[fieldKey].push(val);
+  }
+  saveCustomOptionData(); input.value=''; renderSettingsFieldOptions(); renderAllChips();
+};
+
+document.getElementById('settingsAddFieldBtn').onclick=function(){
+  const input=document.getElementById('settingsNewField');
+  const label=input.value.trim();
+  if(!label) return;
+  const p=ensurePlatformOptionData(settingsPlatform);
+  const duplicate=getAllSettingsFields(settingsPlatform).some(function(f){return f.label.toLowerCase()===label.toLowerCase();});
+  if(duplicate){ alert('Is naam ki field pehle se maujood hai.'); return; }
+  const key='custom_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7);
+  p.customFields.push({key:key,label:label,options:[]});
+  p.defaults[key]='';
   saveCustomOptionData();
-  input.value = '';
+  input.value='';
+  populateSettingsFieldSelect();
+  document.getElementById('settings-field-select').value=key;
   renderSettingsFieldOptions();
   renderAllChips();
 };
 
-document.getElementById('settings-field-select').onchange = renderSettingsFieldOptions;
+document.getElementById('settings-field-select').onchange=renderSettingsFieldOptions;
+
 
 // ---------- Brand list customization ----------
 const BASE_BRANDS = BRANDS.filter(function(b){ return b!=='Other'; });
@@ -5096,8 +5185,7 @@ document.getElementById('settingsAddBrandBtn').onclick = function(){
 };
 
 document.getElementById('btnSettings').onclick = function(){
-  const sel = document.getElementById('settings-field-select');
-  sel.innerHTML = CUSTOMIZABLE_FIELDS.map(function(f){ return '<option value="'+f.key+'">'+f.label+'</option>'; }).join('');
+  populateSettingsFieldSelect();
   renderCardViewModeToggles();
   renderAutoSellRangeSettings();
   renderPrivacySettings();
@@ -5176,7 +5264,7 @@ document.getElementById('btnClearData').onclick = function(){
   schedulePush();
   customModels = {};
   saveCustomModels();
-  customOptionData = {extra:{}, hidden:{}, issueOverrides:{}, cardVisibility:{}, badgeColor:{}, badgeProminent:{}};
+  customOptionData = {extra:{}, hidden:{}, issueOverrides:{}, cardVisibility:{}, badgeColor:{}, badgeProminent:{}, platforms:{}};
   saveCustomOptionData();
   cardDisplaySettings = {
     showFields: {display:true, battery:true, touch:true, camera:true, body:true, openrepair:true, ram:true, storage:true, network:true, packing:true},
