@@ -1503,7 +1503,11 @@ async function loadExpenses(){
 // write fails, nothing changes and the add-expense form keeps its data.
 function tryCommitExpenses(candidateExpenses){
   if(isAdminShopView()) return false;
-  if(!historyApplying && JSON.stringify(candidateExpenses)!==JSON.stringify(expenses)){activityBeforeFromCurrentMutation();pushUndoState('Expense change',activityBeforeState); }
+  if(!historyApplying && JSON.stringify(candidateExpenses)!==JSON.stringify(expenses)){
+    activityBeforeFromCurrentMutation();
+    lastUndoSnapshot=activityBeforeState;
+    pushUndoState('Expense change',activityBeforeState);
+  }
   const json = JSON.stringify(candidateExpenses);
   try{
     localStorage.setItem(LS_EXPENSES_KEY, json);
@@ -1983,7 +1987,14 @@ async function loadInventory(){
 // so the form still has the person's typed data and nothing is silently lost.
 function tryCommitInventory(candidateInventory){
   if(isAdminShopView()) return false;
-  if(!historyApplying && JSON.stringify(candidateInventory)!==JSON.stringify(inventory)){activityBeforeFromCurrentMutation();pushUndoState('Inventory change',activityBeforeState); }
+  if(!historyApplying && JSON.stringify(candidateInventory)!==JSON.stringify(inventory)){
+    activityBeforeFromCurrentMutation();
+    // Keep the last pre-change state in a small, synchronous in-memory fallback.
+    // This guarantees the permanent header Undo still works even if the full
+    // history snapshot cannot be persisted to localStorage because of size/quota.
+    lastUndoSnapshot=activityBeforeState;
+    pushUndoState('Inventory change',activityBeforeState);
+  }
   const json = JSON.stringify(candidateInventory);
   try{
     localStorage.setItem(LS_INVENTORY_KEY, json);
@@ -3601,9 +3612,11 @@ async function shareEntry(id){
 }
 
 function deleteEntry(id){
-  makeUndoSnapshot('Delete entry');
   if(isAdminShopView()){ alert('Admin Shop view read-only hai — delete nahi kiya ja sakta.'); return; }
   if(!confirm('Ye entry delete kar dein?')) return;
+  // Capture the exact state only after confirmation, so cancelling a delete
+  // can never leave a stale Undo snapshot behind.
+  makeUndoSnapshot('Delete entry');
   const idx = inventory.findIndex(function(x){return x.id===id;});
   if(idx===-1) return;
   const removedItem = inventory[idx];
@@ -4287,18 +4300,38 @@ function applyAppState(st){
 let globalHistoryBusy=false;
 function globalUndo(){
   if(globalHistoryBusy)return;
+  // Primary path: normal undo stack.
   if(undoStack.length){
     const current=appStateSnapshot();
     const item=undoStack.pop();
     redoStack.push({label:item.label,state:current,time:Date.now()});
     if(!applyAppState(item.state)){redoStack.pop();undoStack.push(item);return;}
+    lastUndoSnapshot=null;
     persistHistory(); showToast('↶ '+item.label+' undo ho gaya.');
     return;
   }
-  // Fallback: if the snapshot stack could not be kept in localStorage
-  // (commonly because inventory contains large photo data), use the most
-  // recent Activity History transaction. Its exact before-state is stored
-  // in IndexedDB and therefore does not depend on the short-lived toast.
+  // Synchronous fallback: every real inventory/expense mutation also keeps
+  // its exact BEFORE state here. This is deliberately checked before the
+  // Activity History fallback, because it works immediately in the same tab
+  // even when localStorage quota prevented the large undo stack from saving.
+  if(lastUndoSnapshot){
+    const current=appStateSnapshot();
+    const state=lastUndoSnapshot;
+    globalHistoryBusy=true;
+    if(applyAppState(state)){
+      redoStack.push({label:'Last change',state:current,time:Date.now()});
+      lastUndoSnapshot=null;
+      persistHistory();
+      showToast('↶ Last change undo ho gaya.');
+    }else{
+      showToast('Undo state apply nahi ho saki.');
+    }
+    globalHistoryBusy=false;
+    updateHistoryButtons();
+    return;
+  }
+  // Final fallback: use the most recent Activity History transaction. Its
+  // exact before-state is stored in IndexedDB and does not depend on the toast.
   const arr=readActivityList();
   const latest=arr&&arr[0];
   if(!latest||!latest.hasState){showToast('Undo ke liye koi saved change nahi mila.');return;}
