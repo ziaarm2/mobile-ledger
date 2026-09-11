@@ -1010,10 +1010,14 @@
 
     <div class="sec-label" style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--border);">📤 WhatsApp message customize karein</div>
     <div class="settings-note" style="margin-top:0;">Bilkul WhatsApp message ki tarah neeche message likhein/edit karein. Jahan mobile ki automatic information chahiye ho, neeche diye buttons se add karein. Kisi coding ya special code ki zaroorat nahi.</div>
+    <div style="display:flex;justify-content:flex-end;gap:6px;margin:7px 0 6px;">
+      <button type="button" class="history-icon-btn" id="waUndoBtn" title="Undo" aria-label="Undo">↶</button>
+      <button type="button" class="history-icon-btn" id="waRedoBtn" title="Redo" aria-label="Redo">↷</button>
+    </div>
     <textarea id="waMessageEditor" class="wa-message-editor" spellcheck="false"></textarea>
     <div class="sec-label" style="margin-top:12px;font-size:11.5px;">➕ Mobile ki information add karein</div>
     <div class="wa-field-toolbar" id="waFieldToolbar"></div>
-    <div class="wa-editor-actions"><div class="wa-history-actions"><button type="button" id="waUndoBtn" title="Undo">↶</button><button type="button" id="waRedoBtn" title="Redo">↷</button></div>
+    <div class="wa-editor-actions">
       <button type="button" class="btn-cancel" id="waTemplateReset">↩️ Default message</button>
       <button type="button" class="btn-save" id="waTemplateSave">✓ Save message</button>
     </div>
@@ -3059,7 +3063,8 @@ function renderStockGroup(g){
     const outOfStock = (e.quantity||0) <= 0;
     const canSplit = !outOfStock && (e.quantity||1) > 1;
     return (
-    '<div class="piece-row '+(outOfStock?'outofstock':'')+(compact?' compact-row':'')+'">'+
+    '<div class="piece-row multi-selectable '+(outOfStock?'outofstock ':'')+(compact?' compact-row':'')+'" data-multi-select-card="'+e.id+'">'+
+      '<span class="multi-select-mark">✓</span>'+
       '<div class="piece-row-top">'+pieceStatusBadges(e, outOfStock)+'</div>'+
       (pieceSpecBadges(e) ? '<div class="piece-row-top spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
       cardPhotoHtml(e)+
@@ -4259,32 +4264,35 @@ function makeUndoSnapshot(label){ try{lastUndoSnapshot=appStateSnapshot();}catch
 function restoreUndoSnapshot(){ globalUndo(); }
 function offerGlobalUndo(msg){ if(undoStack.length) showToast(msg||'Undo available — upar ↶ dabayein.'); }
 const LS_ACTIVITY_KEY='mobileLedger_activityHistory';
+// Keep activity history lightweight: full app snapshots can contain photos and
+// are therefore kept in memory for reversible actions, while metadata persists.
+const activityStateCache={};
 function logActivity(type,title,detail){
   if(isAdminShopView()) return;
+  const id=Date.now().toString(36)+Math.random().toString(36).slice(2,7);
   try{
     const arr=JSON.parse(localStorage.getItem(LS_ACTIVITY_KEY)||'[]');
-    const snap=appStateSnapshot();
-    arr.unshift({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),time:new Date().toISOString(),type:type||'info',title:title||'',detail:detail||'',state:snap});
-    localStorage.setItem(LS_ACTIVITY_KEY,JSON.stringify(arr.slice(0,200)));
+    arr.unshift({id:id,time:new Date().toISOString(),type:type||'info',title:title||'',detail:detail||''});
+    localStorage.setItem(LS_ACTIVITY_KEY,JSON.stringify(arr.slice(0,300)));
   }catch(e){}
+  try{ activityStateCache[id]=appStateSnapshot(); }catch(e){}
 }
 function restoreActivityState(index){
   let arr=[];try{arr=JSON.parse(localStorage.getItem(LS_ACTIVITY_KEY)||'[]');}catch(e){return;}
-  if(!arr[index]||!arr[index].state){alert('Is activity ke liye reversible state available nahi hai.');return;}
-  const target=arr[index];
-  const previous=arr[index+1];
-  const targetState=target.state;
+  const target=arr[index]; if(!target) return;
+  const targetState=activityStateCache[target.id];
+  if(!targetState){alert('Is activity ki reversible state is session mein available nahi hai.');return;}
   if(!confirm('Is activity ki saved state restore karni hai?\n\n'+target.title+'\n\nCurrent data is state par chala jayega.')) return;
   pushUndoHistory('Activity restore: '+target.title);
   if(applyAppState(targetState)) showToast('✓ Activity state restore ho gayi.');
 }
 function undoActivity(index){
   let arr=[];try{arr=JSON.parse(localStorage.getItem(LS_ACTIVITY_KEY)||'[]');}catch(e){return;}
-  const prev=arr[index+1];
-  if(!prev||!prev.state){alert('Is activity se pehle ki saved state available nahi hai.');return;}
-  if(!confirm('Is activity ko undo karna hai?\n\n'+arr[index].title)) return;
-  pushUndoHistory('Activity undo: '+arr[index].title);
-  if(applyAppState(prev.state)) showToast('↶ Activity undo ho gayi.');
+  const target=arr[index]; const previous=index+1<arr.length ? activityStateCache[arr[index+1].id] : null;
+  if(!target||!previous){alert('Is activity se pehle ki reversible state is session mein available nahi hai.');return;}
+  if(!confirm('Is activity ko undo karna hai?\n\n'+target.title)) return;
+  pushUndoHistory('Activity undo: '+target.title);
+  if(applyAppState(previous)) showToast('↶ Activity undo ho gayi.');
 }
 function redoActivity(index){ restoreActivityState(index); }
 function renderActivityHistory(){
@@ -4294,7 +4302,7 @@ function renderActivityHistory(){
   const icons={add:'➕',edit:'✏️',sell:'💰',return:'↩️',delete:'🗑️',expense:'💵',settings:'⚙️',share:'📤',restore:'↩️',info:'ℹ️'};
   el.innerHTML=arr.map(function(a,i){
     const d=new Date(a.time); const dt=isNaN(d.getTime())?'':d.toLocaleString('en-PK',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-    const canUndo=!!arr[i+1]&&!!a.state;
+    const canUndo=!!arr[i+1]&&!!activityStateCache[a.id]&&!!activityStateCache[arr[i+1].id];
     return '<div class="activity-history-row"><div class="activity-history-icon">'+(icons[a.type]||'ℹ️')+'</div><div class="activity-history-main"><div class="activity-history-title">'+escapeHtml(a.title)+'</div><div class="activity-history-meta">'+escapeHtml(a.detail||'')+(dt?' · '+escapeHtml(dt):'')+'</div><div class="activity-history-actions">'+(canUndo?'<button type="button" data-act-undo="'+i+'">↶ Undo</button>':'')+'<button type="button" data-act-redo="'+i+'">↷ Redo</button></div></div></div>';
   }).join('');
   el.querySelectorAll('[data-act-undo]').forEach(function(b){b.onclick=function(){undoActivity(Number(b.dataset.actUndo));};});
