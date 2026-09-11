@@ -3196,7 +3196,7 @@ function initWaMessageEditor(){
 async function shareEntry(id){
   const e = inventory.find(function(x){return x.id===id;});
   if(!e) return;
-  const text = buildShareText(e);
+  const text = buildShareTextFromTemplate(e, getWaMessageTemplate());
   const title = e.brand+' '+e.model;
 
   const files = [];
@@ -4946,7 +4946,7 @@ document.getElementById('settingsOverlay').onclick = function(e){
 
 document.getElementById('autoRangeAddBtn').onclick = addAutoSellRangeRule;
 
-initWaTemplateEditor();
+initWaMessageEditor();
 
 document.getElementById('btnPrivacyToggle').onclick = function(){
   cardDisplaySettings.privacy.enabled = !cardDisplaySettings.privacy.enabled;
