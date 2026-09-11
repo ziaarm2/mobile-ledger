@@ -3251,13 +3251,30 @@ const WA_SHARE_FIELD_DEFS = [
   {key:'notes', label:'📝 Notes', token:'[Notes]'},
   {key:'warranty', label:'🛡️ Warranty', token:'[Warranty]'}
 ];
+function getWaShareFieldDefs(){
+  const defs=WA_SHARE_FIELD_DEFS.slice();
+  const seen={};
+  defs.forEach(function(f){seen[f.token.toLowerCase()]=true;});
+  ['android','iphone'].forEach(function(platform){
+    getPlatformCustomFields(platform).forEach(function(f){
+      const label=String(f.label||'').trim();
+      if(!label) return;
+      const token='['+label+']';
+      const low=token.toLowerCase();
+      if(seen[low]) return;
+      seen[low]=true;
+      defs.push({key:'custom:'+f.key,label:'🧩 '+label,token:token,customKey:f.key,customLabel:label});
+    });
+  });
+  return defs;
+}
 const DEFAULT_WA_MESSAGE = '📶 [Network]\n*[Model]*\nStatus: [Status]\nPrice: [Price]\n[Sale Price]\nRAM: [RAM]\nStorage: [Storage]\nBattery: [Battery]\n[Issues]\n[Charger]\n[Box]\n[Packing]\n[Face ID]\n[True Tone]\n[Notes]\n\n[Warranty]';
 
 function waLegacyTemplateToText(template){
   if(!Array.isArray(template)) return DEFAULT_WA_MESSAGE;
   return template.map(function(item){
     if(item.type==='text') return item.text||'';
-    const f=WA_SHARE_FIELD_DEFS.find(function(x){return x.key===item.key;});
+    const f=getWaShareFieldDefs().find(function(x){return x.key===item.key;});
     if(!f) return '';
     if(item.key==='model') return '*[Model]*';
     return f.token;
@@ -3301,11 +3318,18 @@ function buildShareFieldValue(e,key){
   if(key==='truetone') return e.brand==='iPhone' && e.truetone==='Yes' ? 'True Tone: Working' : '';
   if(key==='notes') return e.notes ? 'Notes: '+e.notes : '';
   if(key==='warranty') return '✅ 3 days check warranty';
+  if(String(key).indexOf('custom:')===0){
+    const customKey=String(key).slice(7);
+    const platform=getEntryPlatform(e.brand);
+    const field=getCustomFieldDef(platform,customKey);
+    const value=e.customFields && e.customFields[customKey];
+    return field && value ? field.label+': '+value : '';
+  }
   return '';
 }
 function buildShareTextFromTemplate(e, templateText){
   let text=String(templateText==null ? getWaMessageTemplate() : templateText);
-  WA_SHARE_FIELD_DEFS.forEach(function(f){
+  getWaShareFieldDefs().forEach(function(f){
     const value=buildShareFieldValue(e,f.key);
     const escaped=f.token.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
     text=text.replace(new RegExp(escaped,'g'), value);
@@ -3330,7 +3354,7 @@ function renderWaMessageEditor(){
   const preview=document.getElementById('waTemplatePreview');
   if(!editor || !toolbar || !preview) return;
   if(document.activeElement!==editor) editor.value=getWaMessageTemplate();
-  toolbar.innerHTML=WA_SHARE_FIELD_DEFS.map(function(f){
+  toolbar.innerHTML=getWaShareFieldDefs().map(function(f){
     return '<button type="button" class="wa-field-btn" data-wa-token="'+f.token+'">'+f.label+'</button>';
   }).join('');
   toolbar.querySelectorAll('[data-wa-token]').forEach(function(btn){
@@ -4976,7 +5000,9 @@ function renderSettingsFieldOptions(){
 
   const actionBox=document.getElementById('settingsCustomFieldActions');
   if(actionBox){
-    actionBox.innerHTML=isCustom ? '<button type="button" class="btn-cancel" id="settingsDeleteFieldBtn" style="width:100%;">🗑️ Ye custom field delete karein</button>' : '<div class="settings-note" style="margin:0;">Built-in field hai — isay delete nahi kiya ja sakta, sirf options hide/add aur default set kar sakte hain.</div>';
+    actionBox.innerHTML=isCustom
+      ? '<div style="display:flex;gap:7px;flex-wrap:wrap;"><button type="button" class="btn-cancel" id="settingsDeleteFieldBtn" style="flex:1;min-width:140px;">🗑️ Field delete</button><button type="button" class="btn-save" id="settingsApplyExistingBtn" style="flex:1;min-width:180px;">↻ Existing entries par apply</button></div>'
+      : '<div class="settings-note" style="margin:0;">Built-in field hai — isay delete nahi kiya ja sakta, sirf options hide/add aur default set kar sakte hain.</div>';
     const del=document.getElementById('settingsDeleteFieldBtn');
     if(del) del.onclick=function(){
       if(!confirm('"'+fieldDef.label+'" field aur is ke options ko '+platformLabel(settingsPlatform)+' se delete kar dein?')) return;
@@ -4986,6 +5012,26 @@ function renderSettingsFieldOptions(){
       populateSettingsFieldSelect();
       renderSettingsFieldOptions();
       renderAllChips();
+      renderWaMessageEditor();
+    };
+    const applyExisting=document.getElementById('settingsApplyExistingBtn');
+    if(applyExisting) applyExisting.onclick=function(){
+      const value=(document.getElementById('settings-default-select')||{}).value||'';
+      if(!value){ alert('Pehle Default mein koi option select karein.'); return; }
+      const targets=inventory.filter(function(e){ return getEntryPlatform(e.brand)===settingsPlatform; });
+      if(!targets.length){ alert('Is platform ki koi existing entry nahi mili.'); return; }
+      if(!confirm(platformLabel(settingsPlatform)+' ki '+targets.length+' existing entries par \"'+fieldDef.label+' = '+value+'\" apply kar dein?')) return;
+      targets.forEach(function(e){
+        if(!e.customFields) e.customFields={};
+        e.customFields[fieldKey]=value;
+        e.lastUpdated=todayStr();
+      });
+      saveInventory();
+      renderSettingsFieldOptions();
+      renderAllChips();
+      renderList();
+      renderWaMessageEditor();
+      showToast('✓ '+targets.length+' existing entries update ho gayi.');
     };
   }
 
@@ -5101,7 +5147,7 @@ document.getElementById('settingsAddBtn').onclick = function(){
     if(already){ alert('Ye option is platform par pehle se maujood hai.'); return; }
     p.extra[fieldKey].push(val);
   }
-  saveCustomOptionData(); input.value=''; renderSettingsFieldOptions(); renderAllChips();
+  saveCustomOptionData(); input.value=''; renderSettingsFieldOptions(); renderAllChips(); renderWaMessageEditor();
 };
 
 document.getElementById('settingsAddFieldBtn').onclick=function(){
@@ -5120,9 +5166,10 @@ document.getElementById('settingsAddFieldBtn').onclick=function(){
   document.getElementById('settings-field-select').value=key;
   renderSettingsFieldOptions();
   renderAllChips();
+  renderWaMessageEditor();
 };
 
-document.getElementById('settings-field-select').onchange=renderSettingsFieldOptions;
+document.getElementById('settings-field-select').onchange=function(){ renderSettingsFieldOptions(); renderWaMessageEditor(); };
 
 
 // ---------- Brand list customization ----------
