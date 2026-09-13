@@ -3351,27 +3351,38 @@ function executePendingWaShare(){
   const editor=document.getElementById('waSharePreviewEditor');
   const text=editor.value||'';
   const entries=pendingWaShare.ids.map(function(id){return inventory.find(function(x){return String(x.id)===String(id);});}).filter(Boolean);
-  if(!entries.length){requestOverlayClose();return;}
-  const shareData={title:pendingWaShare.title,text:text};
+  if(!entries.length){closeWaSharePreview();return;}
   const files=pendingWaShare.files||[];
-  if(files.length && navigator.canShare && navigator.canShare({files:files})) shareData.files=files;
+  const shareData={title:pendingWaShare.title,text:text};
+  let canNativeFiles=false;
+  try{ canNativeFiles=!!(files.length && navigator.canShare && navigator.canShare({files:files})); }catch(e){ canNativeFiles=false; }
+  if(canNativeFiles) shareData.files=files;
+
   logActivity('share',entries.length+' mobiles WhatsApp share','');
-  try{
-    if(navigator.share){
-      // IMPORTANT: do not await fetch/share preparation here. navigator.share()
-      // must run directly from the user's button click to retain user activation.
-      const sharePromise=navigator.share(shareData);
-      if(sharePromise&&sharePromise.catch) sharePromise.catch(function(err){
-        if(err&&err.name==='AbortError')return;
+
+  // Close the editor first. This prevents the preview from remaining on screen
+  // when the native share sheet / WhatsApp navigation starts.
+  const overlay=document.getElementById('waSharePreviewOverlay');
+  if(overlay) overlay.classList.add('hidden');
+
+  // Native share must be invoked synchronously from this click handler.
+  // If it is unavailable/fails, immediately fall back to WhatsApp with the
+  // exact text currently visible in the editor.
+  if(navigator.share){
+    try{
+      const p=navigator.share(shareData);
+      if(p&&p.catch)p.catch(function(err){
+        if(err&&err.name==='AbortError'){pendingWaShare=null;return;}
         fallbackWhatsAppText(text);
       });
+      pendingWaShare=null;
       return;
+    }catch(err){
+      if(err&&err.name==='AbortError'){pendingWaShare=null;return;}
     }
-    fallbackWhatsAppText(text);
-  }catch(err){
-    if(err&&err.name==='AbortError')return;
-    fallbackWhatsAppText(text);
   }
+  pendingWaShare=null;
+  fallbackWhatsAppText(text);
 }
 function closeWaSharePreview(){pendingWaShare=null;requestOverlayClose();}
 function shareSelectedEntries(){
