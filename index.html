@@ -3312,42 +3312,69 @@ function bindLongPressSelection(){
 }
 
 let pendingWaShare=null;
+function preloadWaShareFiles(entries){
+  const files=[];
+  const jobs=[];
+  for(let j=0;j<entries.length;j++){
+    const e=entries[j], title=(e.brand||'Mobile')+' '+(e.model||'');
+    if(e.photos&&e.photos.length)for(let i=0;i<e.photos.length;i++){
+      jobs.push(fetch(e.photos[i]).then(function(res){return res.blob();}).then(function(blob){
+        files.push(new File([blob],(title+'-'+(i+1)+'.jpg').replace(/\s+/g,'_'),{type:blob.type||'image/jpeg'}));
+      }).catch(function(){}));
+    }
+  }
+  return Promise.all(jobs).then(function(){return files;});
+}
 function openWaSharePreview(entries){
   if(!entries||!entries.length)return;
   const text=entries.map(function(e,i){const body=buildShareTextFromTemplate(e,getWaMessageTemplate());return body?((entries.length>1?(i+1)+'. ':'')+body):'';}).filter(Boolean).join('\n\n──────────\n\n');
-  pendingWaShare={ids:entries.map(function(e){return String(e.id);}),title:entries.length+' mobiles'};
+  pendingWaShare={ids:entries.map(function(e){return String(e.id);}),title:entries.length+' mobiles',text:text,files:[],filesReady:false};
   document.getElementById('waSharePreviewTitle').textContent='📤 WhatsApp Preview'+(entries.length>1?' ('+entries.length+' mobiles)':'');
   document.getElementById('waSharePreviewEditor').value=text;
   document.getElementById('waSharePreviewOverlay').classList.remove('hidden');
   pushOverlayHistory('waSharePreviewOverlay');
   setTimeout(function(){document.getElementById('waSharePreviewEditor').focus();},50);
+  // Photos are prepared while the preview is open, so the Share click itself
+  // can call navigator.share immediately and keep the browser's user gesture.
+  preloadWaShareFiles(entries).then(function(files){
+    if(pendingWaShare){pendingWaShare.files=files;pendingWaShare.filesReady=true;}
+  });
 }
-async function executePendingWaShare(){
+function fallbackWhatsAppText(text){
+  const url='https://wa.me/?text='+encodeURIComponent(text||'');
+  try{window.location.href=url;return;}catch(e){}
+  try{navigator.clipboard.writeText(text||'').then(function(){showToast('WhatsApp open nahi hua — message copy kar diya gaya.');}).catch(function(){alert(text||'');});}
+  catch(e){alert(text||'');}
+}
+function executePendingWaShare(){
   if(!pendingWaShare)return;
   const editor=document.getElementById('waSharePreviewEditor');
-  const text=editor.value;
+  const text=editor.value||'';
   const entries=pendingWaShare.ids.map(function(id){return inventory.find(function(x){return String(x.id)===String(id);});}).filter(Boolean);
   if(!entries.length){requestOverlayClose();return;}
+  const shareData={title:pendingWaShare.title,text:text};
+  const files=pendingWaShare.files||[];
+  if(files.length && navigator.canShare && navigator.canShare({files:files})) shareData.files=files;
   logActivity('share',entries.length+' mobiles WhatsApp share','');
-  const files=[];
-  for(let j=0;j<entries.length;j++){
-    const e=entries[j], title=(e.brand||'Mobile')+' '+(e.model||'');
-    if(e.photos&&e.photos.length)for(let i=0;i<e.photos.length;i++){
-      try{const res=await fetch(e.photos[i]);const blob=await res.blob();files.push(new File([blob],(title+'-'+(i+1)+'.jpg').replace(/\s+/g,'_'),{type:blob.type||'image/jpeg'}));}catch(err){}
-    }
-  }
   try{
     if(navigator.share){
-      if(files.length&&navigator.canShare&&navigator.canShare({files:files})) await navigator.share({title:pendingWaShare.title,text:text,files:files});
-      else await navigator.share({title:pendingWaShare.title,text:text});
-    }else{await navigator.clipboard.writeText(text);showToast('Direct share support nahi — message copy kar diya gaya.');}
+      // IMPORTANT: do not await fetch/share preparation here. navigator.share()
+      // must run directly from the user's button click to retain user activation.
+      const sharePromise=navigator.share(shareData);
+      if(sharePromise&&sharePromise.catch) sharePromise.catch(function(err){
+        if(err&&err.name==='AbortError')return;
+        fallbackWhatsAppText(text);
+      });
+      return;
+    }
+    fallbackWhatsAppText(text);
   }catch(err){
     if(err&&err.name==='AbortError')return;
-    try{await navigator.clipboard.writeText(text);showToast('Share sheet nahi khuli — message copy kar diya gaya.');}catch(e){alert(text);}
+    fallbackWhatsAppText(text);
   }
 }
 function closeWaSharePreview(){pendingWaShare=null;requestOverlayClose();}
-async function shareSelectedEntries(){
+function shareSelectedEntries(){
   const entries=selectedShareIds.map(function(id){return inventory.find(function(x){return String(x.id)===String(id);});}).filter(Boolean);
   if(!entries.length){alert('Pehle kam az kam 1 mobile select karein.');return;}
   openWaSharePreview(entries);
