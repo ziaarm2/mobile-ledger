@@ -133,7 +133,7 @@
   .fab{position:fixed;bottom:calc(46px + env(safe-area-inset-bottom, 0px));right:50%;transform:translateX(230px);width:56px;height:56px;border-radius:50%;background:var(--accent);color:var(--accent-text);border:none;font-size:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,0.4);z-index:20;}
   @media (max-width:520px){ .fab{transform:none;right:20px;} }
 
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:30;display:flex;align-items:flex-end;justify-content:center;}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:flex;align-items:flex-end;justify-content:center;}
   .overlay.hidden{display:none;}
   .sheet{background:var(--surface);width:100%;max-width:480px;border-radius:20px 20px 0 0;max-height:90vh;overflow-y:auto;padding:16px 16px 20px;}
   .sheet-handle{width:36px;height:4px;background:var(--border-strong);border-radius:2px;margin:0 auto 12px;}
@@ -1200,6 +1200,7 @@ window.addEventListener('popstate', function(){
       processNextCropFile();
     }
     if(id==='imeiScanOverlay') stopImeiScan();
+    if(id==='waSharePreviewOverlay'){ const mb=document.getElementById('multiShareBar'); if(mb) updateMultiShareBar(); }
     if(mainHistoryGuardActive){
       try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){}
     }
@@ -3332,6 +3333,9 @@ function openWaSharePreview(entries){
   document.getElementById('waSharePreviewTitle').textContent='📤 WhatsApp Preview'+(entries.length>1?' ('+entries.length+' mobiles)':'');
   document.getElementById('waSharePreviewEditor').value=text;
   document.getElementById('waSharePreviewOverlay').classList.remove('hidden');
+  // Keep the multi-selection action bar underneath the full-screen preview.
+  const multiBar=document.getElementById('multiShareBar');
+  if(multiBar) multiBar.classList.remove('show');
   pushOverlayHistory('waSharePreviewOverlay');
   setTimeout(function(){document.getElementById('waSharePreviewEditor').focus();},50);
   // Photos are prepared while the preview is open, so the Share click itself
