@@ -350,6 +350,9 @@
   .phone-expense-row .phone-expense-remove{margin-top:7px;width:100%;padding:6px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--danger);font-size:11px;}
   #btnPrivacyToggle{position:relative;}
   #btnPrivacyToggle.privacy-on::after{content:'';position:absolute;top:6px;right:8px;width:5px;height:5px;border-radius:50%;background:var(--text-faint);opacity:0.6;}
+  .quick-privacy-btn{min-width:34px;padding:0 8px;font-size:16px;position:relative;}
+  .quick-privacy-btn.is-on{border-color:rgba(45,212,191,.45);background:rgba(45,212,191,.08);}
+  .quick-privacy-amount-btn{min-width:42px;padding:0 8px;font-size:11px;font-weight:800;}
 
   /* Admin Shop Context */
   #adminShopContextBanner{display:none;align-items:center;justify-content:space-between;gap:8px;background:var(--jv-bg);border:1px solid var(--jv);color:var(--jv);border-radius:10px;padding:9px 11px;margin:8px 16px 0;font-size:12px;}
@@ -492,6 +495,15 @@
   .access-actions .approve{background:var(--pta);border-color:var(--pta);color:#06150e;}
   .access-actions .danger{color:var(--danger);border-color:rgba(239,68,68,.3);}
   .access-template{min-height:88px;resize:vertical;width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:12px;line-height:1.45;font-family:inherit;}
+
+  .privacy-amount-popover{position:absolute;top:58px;right:8px;z-index:40;width:min(330px,calc(100vw - 28px));background:var(--surface-2);border:1px solid var(--border-strong);border-radius:14px;padding:12px;box-shadow:0 16px 40px rgba(0,0,0,.45);display:none;}
+  .privacy-amount-popover.show{display:block;}
+  .privacy-amount-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
+  .privacy-amount-value{font-size:16px;font-weight:900;color:var(--text);white-space:nowrap;}
+  .privacy-amount-input{width:92px;padding:8px 9px;border-radius:9px;border:1px solid var(--border-strong);background:var(--surface-3);color:var(--text);font:700 14px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;text-align:right;}
+  .privacy-amount-slider{width:100%;accent-color:var(--accent);margin:4px 0 2px;}
+  .privacy-amount-scale{display:flex;justify-content:space-between;color:var(--text-faint);font-size:10px;margin-top:4px;}
+  .privacy-amount-hint{font-size:10.5px;color:var(--text-dim);margin-top:8px;line-height:1.35;}
   .access-tabs{display:flex;gap:7px;overflow:auto;margin-bottom:10px;padding-bottom:2px;}
   .access-tab{flex:0 0 auto;border:1px solid var(--border);background:var(--surface-2);color:var(--text-dim);padding:8px 11px;border-radius:999px;font-size:11px;font-weight:800;}
   .access-tab.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
@@ -511,8 +523,23 @@
         <button class="history-icon-btn" id="globalUndoBtn" title="Undo" aria-label="Undo">↶</button>
         <button class="history-icon-btn" id="globalRedoBtn" title="Redo" aria-label="Redo">↷</button>
         <button class="history-icon-btn" id="adminNotificationBtn" title="Notifications" aria-label="Notifications" style="display:none;position:relative;">🔔<span id="adminNotificationBadge" class="shop-access-badge" style="position:absolute;right:-2px;top:-3px;display:none;margin:0;min-width:17px;height:17px;padding:0 4px;"></span></button>
+        <button class="history-icon-btn quick-privacy-btn" id="quickPrivacyHeaderBtn" title="Privacy: tap = ON/OFF, long-press = amount" aria-label="Quick Privacy">🙈</button>
+        <button class="history-icon-btn quick-privacy-amount-btn" id="quickPrivacyAmountBtn" title="Privacy fixed amount" aria-label="Privacy amount">₹<span id="quickPrivacyAmountLabel">2k</span></button>
         <button class="menu-btn" id="btnMenu">☰ Menu</button>
       </div>
+    </div>
+    <div class="privacy-amount-popover" id="privacyAmountPopover" aria-hidden="true">
+      <div class="privacy-amount-row">
+        <div>
+          <div style="font-size:12px;font-weight:800;color:var(--text);">Privacy fixed amount</div>
+          <div style="font-size:10.5px;color:var(--text-dim);margin-top:2px;">Buy price mein itna add hoga</div>
+        </div>
+        <input class="privacy-amount-input" id="quickPrivacyAmountInput" type="number" inputmode="numeric" min="500" max="10000" step="500" value="2000" aria-label="Privacy amount">
+      </div>
+      <div class="privacy-amount-value" id="quickPrivacySliderValue">Rs 2,000</div>
+      <input class="privacy-amount-slider" id="quickPrivacyAmountSlider" type="range" min="500" max="10000" step="500" value="2000" aria-label="Privacy amount slider">
+      <div class="privacy-amount-scale"><span>Rs 500</span><span>Rs 5,000</span><span>Rs 10,000</span></div>
+      <div class="privacy-amount-hint">Slider se 500 se 10,000 tak 500 ke steps mein foran change karein. Number box mein exact amount bhi likh sakte hain.</div>
     </div>
     <div id="offlineBanner" style="display:none;background:#3a2610;border:1px solid #6b4a1f;color:#ffdca8;border-radius:10px;padding:9px 11px;font-size:11.5px;margin:0 0 9px;">📴 Offline mode — data phone mein save ho raha hai. Internet wapas aayega to sync ho jayega.</div>
     <div class="backup-reminder" id="backupReminder">
@@ -5565,6 +5592,7 @@ function renderPrivacySettings(){
     cardDisplaySettings.privacy.buyMarkupAmount = isNaN(v) ? 0 : Math.max(0, v);
     saveCardDisplaySettings();
     render();
+    syncQuickPrivacyHeader();
   };
 }
 
@@ -5946,6 +5974,107 @@ document.getElementById('settingsOverlay').onclick = function(e){ if(e.target.id
 document.getElementById('autoRangeAddBtn').onclick = addAutoSellRangeRule;
 
 initWaMessageEditor();
+
+function syncQuickPrivacyHeader(){
+  const btn=document.getElementById('quickPrivacyHeaderBtn');
+  const amtBtn=document.getElementById('quickPrivacyAmountBtn');
+  const label=document.getElementById('quickPrivacyAmountLabel');
+  if(btn){
+    const on=isPrivacyOn();
+    btn.classList.toggle('is-on',on);
+    btn.textContent=on?'🙈':'👁';
+    btn.title=on?'Privacy ON — tap to hide/unhide, long-press to change amount':'Privacy OFF — tap to turn on, long-press to change amount';
+  }
+  if(label){
+    const n=Number(cardDisplaySettings.privacy.buyMarkupAmount)||0;
+    label.textContent=n>=1000?(String(Math.round(n/100)/10).replace(/\.0$/,'')+'k'):String(Math.round(n));
+  }
+  if(amtBtn){ amtBtn.title='Privacy fixed amount: Rs '+(Number(cardDisplaySettings.privacy.buyMarkupAmount)||0); }
+}
+function toggleQuickPrivacy(){
+  cardDisplaySettings.privacy.enabled=!cardDisplaySettings.privacy.enabled;
+  saveCardDisplaySettings();
+  render();
+  syncQuickPrivacyHeader();
+  showToast(cardDisplaySettings.privacy.enabled?'🙈 Privacy ON':'👁 Privacy OFF');
+}
+function formatPrivacyAmountLabel(n){
+  n=Number(n)||0;
+  return n>=1000 ? ('Rs '+n.toLocaleString('en-US')) : ('Rs '+Math.round(n));
+}
+function closePrivacyAmountPopover(){
+  const pop=document.getElementById('privacyAmountPopover');
+  if(pop){ pop.classList.remove('show'); pop.setAttribute('aria-hidden','true'); }
+}
+function openPrivacyAmountPopover(){
+  const pop=document.getElementById('privacyAmountPopover');
+  const slider=document.getElementById('quickPrivacyAmountSlider');
+  const input=document.getElementById('quickPrivacyAmountInput');
+  const value=document.getElementById('quickPrivacySliderValue');
+  const current=Math.min(10000,Math.max(500,Math.round(Number(cardDisplaySettings.privacy.buyMarkupAmount)||2000)));
+  if(slider) slider.value=String(current);
+  if(input) input.value=String(current);
+  if(value) value.textContent=formatPrivacyAmountLabel(current);
+  if(pop){ pop.classList.add('show'); pop.setAttribute('aria-hidden','false'); }
+}
+function setQuickPrivacyAmount(raw, options){
+  options=options||{};
+  const cleaned=String(raw==null?'':raw).replace(/,/g,'').trim();
+  if(!cleaned) return;
+  let parsed=Number(cleaned);
+  if(!isFinite(parsed)) return;
+  parsed=Math.round(parsed/500)*500;
+  parsed=Math.min(10000,Math.max(500,parsed));
+  cardDisplaySettings.privacy.buyMarkupAmount=parsed;
+  const slider=document.getElementById('quickPrivacyAmountSlider');
+  const input=document.getElementById('quickPrivacyAmountInput');
+  const value=document.getElementById('quickPrivacySliderValue');
+  if(slider) slider.value=String(parsed);
+  if(input) input.value=String(parsed);
+  if(value) value.textContent=formatPrivacyAmountLabel(parsed);
+  saveCardDisplaySettings();
+  render();
+  renderPrivacySettings();
+  syncQuickPrivacyHeader();
+  if(!options.silent) showToast('✓ Privacy amount '+formatPrivacyAmountLabel(parsed)+' set ho gaya.');
+}
+function quickSetPrivacyAmount(){
+  openPrivacyAmountPopover();
+}
+(function wireQuickPrivacyHeader(){
+  const btn=document.getElementById('quickPrivacyHeaderBtn');
+  const amt=document.getElementById('quickPrivacyAmountBtn');
+  const slider=document.getElementById('quickPrivacyAmountSlider');
+  const input=document.getElementById('quickPrivacyAmountInput');
+  const pop=document.getElementById('privacyAmountPopover');
+  if(btn){
+    btn.onclick=toggleQuickPrivacy;
+    let timer=null;
+    const start=()=>{ timer=setTimeout(()=>{timer=null;openPrivacyAmountPopover();},650); };
+    const cancel=()=>{ if(timer){clearTimeout(timer);timer=null;} };
+    btn.addEventListener('pointerdown',start);
+    btn.addEventListener('pointerup',cancel);
+    btn.addEventListener('pointercancel',cancel);
+    btn.addEventListener('pointerleave',cancel);
+    btn.addEventListener('contextmenu',e=>{e.preventDefault();openPrivacyAmountPopover();});
+  }
+  if(amt) amt.onclick=function(e){e.stopPropagation(); if(pop && pop.classList.contains('show')) closePrivacyAmountPopover(); else openPrivacyAmountPopover();};
+  if(slider) slider.addEventListener('input',function(){ setQuickPrivacyAmount(this.value,{silent:true}); });
+  if(input){
+    input.addEventListener('input',function(){
+      const n=Number(this.value);
+      if(isFinite(n) && n>=500 && n<=10000){ setQuickPrivacyAmount(n,{silent:true}); }
+    });
+    input.addEventListener('change',function(){ setQuickPrivacyAmount(this.value); });
+    input.addEventListener('keydown',function(e){ if(e.key==='Enter'){ setQuickPrivacyAmount(this.value); closePrivacyAmountPopover(); this.blur(); } });
+  }
+  document.addEventListener('pointerdown',function(e){
+    if(!pop || !pop.classList.contains('show')) return;
+    if(pop.contains(e.target) || e.target===amt || e.target===btn) return;
+    closePrivacyAmountPopover();
+  });
+  syncQuickPrivacyHeader();
+})();
 
 document.getElementById('btnPrivacyToggle').onclick = function(){
   cardDisplaySettings.privacy.enabled = !cardDisplaySettings.privacy.enabled;
