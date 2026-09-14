@@ -4,11 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
+<meta name="application-name" content="Mobile Hisab">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest.json?v=25">
 <meta name="theme-color" content="#0f1115">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1212,7 +1213,7 @@
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">Professional settings UI • v24</div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">Professional settings UI • v25</div></div>
       </div>
     </div>
   </div>
@@ -6293,7 +6294,7 @@ function resolveUserRoleAndShop(user){
   const admin=isOwnerAdminUser(user);
   return fbDb.collection('users').doc(user.uid).get().then(function(snap){
     if(admin){
-      userRole='admin'; userShopId=user.uid; userAccessStatus='active'; userAccessReason='';
+      userRole='admin'; userShopId=user.uid; userAccessStatus='active'; userAccessReason=''; try{localStorage.setItem('mobileLedger_lastAdminSession','1');}catch(e){}
       return fbDb.collection('users').doc(user.uid).set({role:'admin',shopId:user.uid,accessStatus:'active',email:user.email||null,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
     }
     if(snap.exists){
@@ -6310,7 +6311,7 @@ function resolveUserRoleAndShop(user){
     });
   }).catch(function(err){
     console.error('Could not resolve user role', err);
-    if(admin){ userRole='admin'; userShopId=user.uid; userAccessStatus='active'; }
+    if(admin){ userRole='admin'; userShopId=user.uid; userAccessStatus='active'; try{localStorage.setItem('mobileLedger_lastAdminSession','1');}catch(e){} }
     else { userRole='shop'; userShopId=user.uid; userAccessStatus='pending'; }
   }).then(function(){ return ensureAccessTemplatesLoaded(); });
 }
@@ -6541,7 +6542,8 @@ function updateGoogleEnvironmentNote(){
   const unsupported=!firebaseAuthEnvironmentSupported();
   if(note) note.style.display=unsupported?'block':'none';
   if(btn){
-    btn.style.opacity=unsupported?'0.78':'1';
+    btn.style.opacity='1';
+    btn.disabled=false;
     btn.title=unsupported?'Google login ke liye app ko https:// ya localhost/hosted web app se open karein.':'';
   }
 }
@@ -6666,7 +6668,7 @@ function updateAccountUI(){
     const menuLogout=document.getElementById('btnMenuLogout'); if(menuLogout) menuLogout.style.display='none';
   }
   const accessCat=document.getElementById('settingsShopAccessCategory'); if(accessCat) accessCat.style.display=(userRole==='admin'?'flex':'none');
-  const bell=document.getElementById('adminNotificationBtn'); if(bell) bell.style.display=(userRole==='admin'?'inline-flex':'none');
+  const bell=document.getElementById('adminNotificationBtn'); if(bell) bell.style.display=(userRole==='admin'?'inline-flex':'none'); try{ if(userRole!=='admin') localStorage.removeItem('mobileLedger_lastAdminSession'); }catch(e){}
   const shareAppBtn=document.getElementById('btnShareApp'); if(shareAppBtn) shareAppBtn.style.display=(userRole==='admin'?'block':'none');
   renderSettingsHomeSummaries();
 }
@@ -6693,6 +6695,15 @@ function stopNotificationSubscriptions(){
   if(shopNotificationUnsub){shopNotificationUnsub();shopNotificationUnsub=null;}
   if(accessStatusUnsub){accessStatusUnsub();accessStatusUnsub=null;}
 }
+function restoreAdminBellHint(){
+  try{
+    if(localStorage.getItem('mobileLedger_lastAdminSession')==='1'){
+      const bell=document.getElementById('adminNotificationBtn');
+      if(bell) bell.style.display='inline-flex';
+    }
+  }catch(e){}
+}
+
 function updateAdminNotificationBadge(){
   const b=document.getElementById('adminNotificationBadge'); if(!b) return;
   b.textContent=String(unreadAdminNotifications||0); b.style.display=unreadAdminNotifications>0?'inline-flex':'none';
@@ -7187,6 +7198,7 @@ updateOfflineBanner();
 const savedUIState = loadUIState();
 if(document.getElementById('sortSelect')) document.getElementById('sortSelect').value = currentSort;
 loadCardDisplaySettings();
+try{document.title='Mobile Hisab by Z Mobile';}catch(e){}
 loadCustomOptionData();
 loadCustomModels();
 loadExpenses();
@@ -7194,6 +7206,7 @@ loadRateBook();
 loadInventory();
 autoBackupIfDue();
 checkBackupReminder();
+restoreAdminBellHint();
 initFirebaseSync();
 
 // Restore the exact main-screen position after inventory has rendered.
