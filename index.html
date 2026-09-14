@@ -477,6 +477,23 @@
   .account-info-box{background:var(--surface-2);border-radius:11px;padding:10px;}
   .shop-setup-overlay{z-index:1100!important;}
   .shop-setup-card{max-width:390px;margin:auto;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;}
+  .shop-access-badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--danger);color:#fff;font-size:10px;font-weight:800;margin-left:6px;}
+  .access-status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 9px;font-size:10.5px;font-weight:800;border:1px solid var(--border);background:var(--surface-2);}
+  .access-status.pending{color:#f0c674;border-color:rgba(240,198,116,.28);}
+  .access-status.active{color:#70d6a5;border-color:rgba(112,214,165,.28);}
+  .access-status.rejected,.access-status.suspended{color:var(--danger);border-color:rgba(239,68,68,.30);}
+  .access-request-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:9px;}
+  .access-request-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;}
+  .access-request-name{font-weight:800;font-size:13.5px;}
+  .access-request-meta{font-size:11px;color:var(--text-dim);margin-top:3px;line-height:1.4;}
+  .access-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;}
+  .access-actions button{flex:1;min-width:105px;border-radius:9px;padding:9px 10px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:11.5px;font-weight:800;}
+  .access-actions .approve{background:var(--pta);border-color:var(--pta);color:#06150e;}
+  .access-actions .danger{color:var(--danger);border-color:rgba(239,68,68,.3);}
+  .access-template{min-height:88px;resize:vertical;width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:12px;line-height:1.45;font-family:inherit;}
+  .access-tabs{display:flex;gap:7px;overflow:auto;margin-bottom:10px;padding-bottom:2px;}
+  .access-tab{flex:0 0 auto;border:1px solid var(--border);background:var(--surface-2);color:var(--text-dim);padding:8px 11px;border-radius:999px;font-size:11px;font-weight:800;}
+  .access-tab.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
   @media(min-width:700px){.settings-shell,.account-shell{height:calc(100vh - 40px);max-height:900px;margin:20px auto;border:1px solid var(--border);border-radius:18px;box-shadow:0 20px 55px rgba(0,0,0,.35)}#accountOverlay{background:rgba(0,0,0,.58);padding:0 12px;}}
 
 </style>
@@ -492,6 +509,7 @@
       <div style="display:flex;align-items:center;gap:6px;">
         <button class="history-icon-btn" id="globalUndoBtn" title="Undo" aria-label="Undo">↶</button>
         <button class="history-icon-btn" id="globalRedoBtn" title="Redo" aria-label="Redo">↷</button>
+        <button class="history-icon-btn" id="adminNotificationBtn" title="Notifications" aria-label="Notifications" style="display:none;position:relative;">🔔<span id="adminNotificationBadge" class="shop-access-badge" style="position:absolute;right:-2px;top:-3px;display:none;margin:0;min-width:17px;height:17px;padding:0 4px;"></span></button>
         <button class="menu-btn" id="btnMenu">☰ Menu</button>
       </div>
     </div>
@@ -948,6 +966,20 @@
         </div>
       </div>
 
+      <div id="accountAccessView" style="display:none;">
+        <div class="auth-brand" style="margin-top:28px;">
+          <div class="auth-logo"><img src="icon-192.png" alt="Z Mobile" style="width:100%;height:100%;object-fit:cover;border-radius:18px;display:block;"></div>
+          <h2 id="accountAccessTitle">Request Received ✅</h2>
+          <p id="accountAccessMessage">Aapki Mobile Hisab access request Z Mobile ko bhej di gayi hai. Approval ka intezar karein.</p>
+        </div>
+        <div class="auth-card">
+          <div style="display:flex;justify-content:center;"><span class="access-status pending" id="accountAccessStatusPill">🟡 Pending Approval</span></div>
+          <div id="accountAccessReason" class="settings-note" style="margin-top:12px;text-align:center;display:none;"></div>
+          <button class="auth-primary" id="btnAccessRefresh" style="margin-top:14px;">Status refresh karein</button>
+          <button class="btn-cancel" id="btnAccessLogout" style="width:100%;margin-top:8px;padding:11px;">Logout</button>
+        </div>
+      </div>
+
       <div id="accountLoggedInView" style="display:none;">
         <div class="account-profile-card">
           <div class="account-avatar" id="accountAvatar">MH</div>
@@ -1052,6 +1084,7 @@
           <button class="settings-category" data-settings-page="backup"><span class="settings-category-icon">☁️</span><span class="settings-category-main"><span class="settings-category-title">Backup & Sync</span><span class="settings-category-sub" id="settingsSummarySync">Cloud sync & backup</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="data"><span class="settings-category-icon">🗂️</span><span class="settings-category-main"><span class="settings-category-title">Data Management</span><span class="settings-category-sub">Import, restore & clear data</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="about"><span class="settings-category-icon">ℹ️</span><span class="settings-category-main"><span class="settings-category-title">About</span><span class="settings-category-sub">Mobile Hisab app info</span></span><span class="settings-category-arrow">›</span></button>
+          <button class="settings-category" id="settingsShopAccessCategory" data-settings-page="shopaccess" style="display:none;"><span class="settings-category-icon">🔑</span><span class="settings-category-main"><span class="settings-category-title">Shop Access</span><span class="settings-category-sub" id="settingsSummaryShopAccess">Approvals & message templates</span></span><span class="settings-category-arrow">›</span></button>
         </div>
       </div>
 
@@ -1152,9 +1185,34 @@
         <div class="settings-section-card settings-danger-card"><div class="sec-label" style="color:var(--danger);">Danger Zone</div><div class="settings-note">Clear data se app ka local business data remove ho jayega. Password protection apply hogi.</div><button class="menu-item danger" id="btnClearData" style="margin-top:10px;background:var(--surface-2);border:1px solid var(--border);">🗑️ Clear all data</button></div>
       </div>
 
+      <div class="settings-view" data-settings-view="shopaccess">
+        <div class="settings-page-title">Shop Access Management</div>
+        <div class="settings-section-card">
+          <div class="sec-label">Requests & access</div>
+          <div class="settings-note" style="margin-top:5px;">Naye shops pehle Pending rahenge. Aap approve, reject, suspend aur baad mein reactivate kar sakte hain.</div>
+          <div class="access-tabs" style="margin-top:10px;">
+            <button class="access-tab active" data-access-tab="pending">Pending <span id="accessPendingCount"></span></button>
+            <button class="access-tab" data-access-tab="active">Active</button>
+            <button class="access-tab" data-access-tab="suspended">Suspended</button>
+            <button class="access-tab" data-access-tab="rejected">Rejected</button>
+          </div>
+          <div id="shopAccessRequestsList"></div>
+        </div>
+        <div class="settings-section-card">
+          <div class="sec-label">Editable notification messages</div>
+          <div class="settings-note" style="margin-top:5px;">In messages mein <b>{shopName}</b>, <b>{ownerName}</b> aur <b>{reason}</b> variables use kar sakte hain. Ye text aap kabhi bhi change kar sakte hain.</div>
+          <div class="field"><label>Request received</label><textarea class="access-template" id="tplRequestReceived"></textarea></div>
+          <div class="field"><label>Approved</label><textarea class="access-template" id="tplApproved"></textarea></div>
+          <div class="field"><label>Rejected</label><textarea class="access-template" id="tplRejected"></textarea></div>
+          <div class="field"><label>Suspended</label><textarea class="access-template" id="tplSuspended"></textarea></div>
+          <div class="field"><label>Reactivated</label><textarea class="access-template" id="tplReactivated"></textarea></div>
+          <button class="btn-save" id="saveAccessTemplates" style="width:100%;padding:12px;border:0;border-radius:10px;">✓ Save notification messages</button>
+        </div>
+      </div>
+
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">Professional settings UI • v23</div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">Professional settings UI • v24</div></div>
       </div>
     </div>
   </div>
@@ -5802,13 +5860,14 @@ document.getElementById('settingsAddBrandBtn').onclick = function(){
   renderBrandFilter();
 };
 
-const SETTINGS_PAGE_TITLES={home:'Settings',account:'Account',shop:'Shop',inventory:'Stock & Pricing',appearance:'Appearance',fields:'Fields & Options',whatsapp:'WhatsApp',privacy:'Privacy & Security',backup:'Backup & Sync',data:'Data Management',about:'About'};
+const SETTINGS_PAGE_TITLES={home:'Settings',account:'Account',shop:'Shop',inventory:'Stock & Pricing',appearance:'Appearance',fields:'Fields & Options',whatsapp:'WhatsApp',privacy:'Privacy & Security',backup:'Backup & Sync',data:'Data Management',about:'About',shopaccess:'Shop Access'};
 let currentSettingsPage='home';
 function renderSettingsHomeSummaries(){
   const a=document.getElementById('settingsSummaryAccount');
   if(a) a.textContent=fbUser ? ((fbUser.email||fbUser.displayName||'Signed in')+' • sync ON') : 'Sign in required';
   const s=document.getElementById('settingsSummaryShop'); if(s) s.textContent=shopProfile.shopName ? (shopProfile.shopName+(shopProfile.shopPhone?' • '+shopProfile.shopPhone:'')) : 'Shop profile set karein';
   const p=document.getElementById('settingsSummaryPrivacy'); if(p) p.textContent='Privacy mode '+(cardDisplaySettings.privacy&&cardDisplaySettings.privacy.enabled?'ON':'OFF')+' • security controls';
+  const sa=document.getElementById('settingsSummaryShopAccess'); if(sa && userRole==='admin') sa.textContent='Approvals, suspensions & messages';
   const sy=document.getElementById('settingsSummarySync'); if(sy) sy.textContent=fbUser?'Cloud sync active • backup export':'Login ke baad cloud sync';
   const ai=document.getElementById('settingsAccountInfo'); if(ai) ai.innerHTML=fbUser?('<b>'+escapeHtml(accountDisplayId(fbUser))+'</b><br>'+(isGoogleUser(fbUser)?'Google':'Email & Password')+' • Cloud sync enabled'):'Account signed out';
   const cs=document.getElementById('settingsCloudSyncStatus'); if(cs) cs.textContent=fbUser?'Signed in — cloud sync enabled. Photos local device par rehti hain; baqi business data sync hota hai.':'Cloud sync ke liye Account mein sign in karein.';
@@ -5825,10 +5884,12 @@ function dedupeSettingsHomeCategories(){
 }
 function openSettingsPage(page){
   dedupeSettingsHomeCategories();
+  if(page==='shopaccess' && userRole!=='admin') page='home';
   currentSettingsPage=page||'home';
   document.querySelectorAll('#settingsOverlay .settings-view').forEach(function(v){v.classList.toggle('active',v.dataset.settingsView===currentSettingsPage);});
   const back=document.getElementById('settingsBackBtn'); if(back) back.style.visibility=currentSettingsPage==='home'?'hidden':'visible';
   const heading=document.getElementById('settingsPageHeading'); if(heading) heading.textContent=SETTINGS_PAGE_TITLES[currentSettingsPage]||'Settings';
+  if(currentSettingsPage==='shopaccess'){ openShopAccessSettings(); }
   if(currentSettingsPage==='shop'){
     document.getElementById('settings-shopname').value=shopProfile.shopName||'';
     document.getElementById('settings-ownername').value=shopProfile.ownerName||'';
@@ -5866,6 +5927,12 @@ async function shareMobileHisabApp(){
 const btnShareApp=document.getElementById('btnShareApp');
 if(btnShareApp) btnShareApp.onclick=shareMobileHisabApp;
 
+document.getElementById('adminNotificationBtn').onclick=function(){
+  if(userRole!=='admin') return;
+  document.getElementById('settingsOverlay').classList.remove('hidden'); pushOverlayHistory('settingsOverlay');
+  populateSettingsFieldSelect(); renderCardViewModeToggles(); renderAutoSellRangeSettings(); renderPrivacySettings(); renderBadgeOrderList(); renderSettingsPlatformToggles(); renderSettingsFieldOptions(); renderSettingsBrands(); renderWaMessageEditor(); renderSettingsHomeSummaries(); openSettingsPage('shopaccess');
+};
+if(document.getElementById('saveAccessTemplates')) document.getElementById('saveAccessTemplates').onclick=saveAccessTemplates;
 document.getElementById('btnSettings').onclick = function(){
   dedupeSettingsHomeCategories();
   populateSettingsFieldSelect(); renderCardViewModeToggles(); renderAutoSellRangeSettings(); renderPrivacySettings(); renderBadgeOrderList(); renderSettingsPlatformToggles(); renderSettingsFieldOptions(); renderSettingsBrands(); renderWaMessageEditor(); renderSettingsHomeSummaries();
@@ -6131,6 +6198,22 @@ let shopProfile = {shopName:"", ownerName:""};
 // shop data with restricted permissions, layered in next).
 let userRole = 'owner';
 let userShopId = null;
+let userAccessStatus = 'active';
+let userAccessReason = '';
+let adminNotificationUnsub = null;
+let shopNotificationUnsub = null;
+let accessStatusUnsub = null;
+let unreadAdminNotifications = 0;
+const ADMIN_EMAILS = ['ziarealme.5604@gmail.com'];
+const DEFAULT_ACCESS_TEMPLATES = {
+  requestReceived:'✅ Request Received\n\nAapki Mobile Hisab access request Z Mobile ko bhej di gayi hai. Approval milne ka intezar karein.\n\nStatus: Pending Approval',
+  approved:'🎉 Approval Granted\n\nHi {ownerName},\nAapki Mobile Hisab access request approve kar di gayi hai. Ab aap app use kar sakte hain.\n\nWelcome to Mobile Hisab by Z Mobile!',
+  rejected:'❌ Request Rejected\n\nHi {ownerName},\nAapki Mobile Hisab access request approve nahi hui.\n\nReason: {reason}',
+  suspended:'⚠️ Access Suspended\n\nHi {ownerName},\nAapka Mobile Hisab access Z Mobile admin ne suspend kar diya hai.\n\nReason: {reason}',
+  reactivated:'✅ Access Reactivated\n\nHi {ownerName},\nAapka Mobile Hisab access dobara active kar diya gaya hai. Aap app use kar sakte hain.'
+};
+let accessTemplates = Object.assign({}, DEFAULT_ACCESS_TEMPLATES);
+
 
 // Admin Shop Context: temporarily renders a selected shop using the exact same
 // main-screen data variables, without logging into or changing that owner's account.
@@ -6161,6 +6244,7 @@ function setAuthGateView(mode){ // 'checking' | 'locked' | 'unlocked'
   const checking = document.getElementById('accountCheckingView');
   const loggedOut = document.getElementById('accountLoggedOutView');
   const loggedIn = document.getElementById('accountLoggedInView');
+  const accessView = document.getElementById('accountAccessView');
   const closeRow = document.getElementById('accountCloseRow');
   const topbar = document.getElementById('accountTopbar');
   const title = document.getElementById('accountOverlayTitle');
@@ -6169,17 +6253,18 @@ function setAuthGateView(mode){ // 'checking' | 'locked' | 'unlocked'
   const fab = document.getElementById('fabAdd');
   if(mode === 'checking'){
     overlay.classList.remove('hidden');
-    checking.style.display = 'block'; loggedOut.style.display = 'none'; loggedIn.style.display = 'none';
+    checking.style.display = 'block'; loggedOut.style.display = 'none'; loggedIn.style.display = 'none'; if(accessView) accessView.style.display='none';
     if(closeRow) closeRow.style.display = 'none'; if(topbar) topbar.style.display='none'; if(note) note.style.display='none';
     if(appEl) appEl.style.visibility = 'hidden'; if(fab) fab.style.display = 'none';
   } else if(mode === 'locked'){
     overlay.classList.remove('hidden');
-    checking.style.display = 'none'; loggedOut.style.display = 'block'; loggedIn.style.display = 'none';
+    checking.style.display = 'none'; loggedOut.style.display = 'block'; loggedIn.style.display = 'none'; if(accessView) accessView.style.display='none';
     if(closeRow) closeRow.style.display = 'none'; if(topbar) topbar.style.display='none'; if(note) note.style.display='none';
     if(appEl) appEl.style.visibility = 'hidden'; if(fab) fab.style.display = 'none';
     setAccEmailMode('login');
   } else {
     checking.style.display = 'none';
+    if(accessView) accessView.style.display='none';
     if(closeRow) closeRow.style.display = 'flex';
     if(topbar) topbar.style.display='flex';
     if(title) title.textContent = 'Account';
@@ -6194,30 +6279,63 @@ function setAuthGateView(mode){ // 'checking' | 'locked' | 'unlocked'
 // won't have a /users/{uid} doc yet, so we create one on first login,
 // treating them as owners of their own existing shop — nothing about their
 // data or access changes.
+function isOwnerAdminUser(user){
+  const email=String(user && user.email || '').trim().toLowerCase();
+  return ADMIN_EMAILS.indexOf(email)!==-1;
+}
+function ensureAccessTemplatesLoaded(){
+  if(!fbDb) return Promise.resolve();
+  return fbDb.collection('appConfig').doc('accessTemplates').get().then(function(snap){
+    if(snap.exists){ accessTemplates=Object.assign({},DEFAULT_ACCESS_TEMPLATES,snap.data()||{}); }
+  }).catch(function(e){ console.warn('Access templates load failed',e); });
+}
 function resolveUserRoleAndShop(user){
+  const admin=isOwnerAdminUser(user);
   return fbDb.collection('users').doc(user.uid).get().then(function(snap){
-    if(snap.exists){
-      const d = snap.data();
-      userRole = d.role || 'owner';
-      userShopId = d.shopId || user.uid;
-    } else {
-      userRole = 'owner';
-      userShopId = user.uid;
-      return fbDb.collection('users').doc(user.uid).set({
-        role: 'owner',
-        shopId: user.uid,
-        email: user.email || null,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, {merge:true});
+    if(admin){
+      userRole='admin'; userShopId=user.uid; userAccessStatus='active'; userAccessReason='';
+      return fbDb.collection('users').doc(user.uid).set({role:'admin',shopId:user.uid,accessStatus:'active',email:user.email||null,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
     }
+    if(snap.exists){
+      const d=snap.data()||{};
+      userRole=d.role||'shop'; userShopId=d.shopId||user.uid; userAccessStatus=d.accessStatus||'pending'; userAccessReason=d.accessReason||'';
+      return null;
+    }
+    userRole='shop'; userShopId=user.uid; userAccessStatus='pending'; userAccessReason='';
+    return fbDb.collection('users').doc(user.uid).set({
+      role:'shop',shopId:user.uid,accessStatus:'pending',accessReason:'',email:user.email||null,
+      shopName:shopProfile.shopName||'',ownerName:shopProfile.ownerName||'',createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true}).then(function(){
+      return fbDb.collection('shopRequests').doc(user.uid).set({uid:user.uid,email:user.email||'',shopName:shopProfile.shopName||'',ownerName:shopProfile.ownerName||'',status:'pending',submittedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+    });
   }).catch(function(err){
     console.error('Could not resolve user role', err);
-    // Fail safe: still treat them as owner of their own data rather than
-    // locking them out entirely if this lookup has a hiccup.
-    userRole = 'owner';
-    userShopId = user.uid;
-  });
+    if(admin){ userRole='admin'; userShopId=user.uid; userAccessStatus='active'; }
+    else { userRole='shop'; userShopId=user.uid; userAccessStatus='pending'; }
+  }).then(function(){ return ensureAccessTemplatesLoaded(); });
 }
+function fillTemplate(text, data){
+  return String(text||'').replace(/\{shopName\}/g,String(data.shopName||'')).replace(/\{ownerName\}/g,String(data.ownerName||'')).replace(/\{reason\}/g,String(data.reason||''));
+}
+function writeShopNotification(uid,title,body,type){
+  if(!fbDb || !uid) return Promise.resolve();
+  return fbDb.collection('notifications').doc(uid).collection('items').add({title:title,body:body,type:type,read:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(function(e){ console.warn('shop notification write failed',e); });
+}
+function writeAdminNotification(title,body,type,shopUid){
+  if(!fbDb || !fbUser) return Promise.resolve();
+  return fbDb.collection('adminNotifications').add({title:title,body:body,type:type,shopUid:shopUid||null,read:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(function(e){ console.warn('admin notification write failed',e); });
+}
+function setAccessGate(status, reason){
+  const overlay=document.getElementById('accountOverlay'); const checking=document.getElementById('accountCheckingView'); const loggedOut=document.getElementById('accountLoggedOutView'); const loggedIn=document.getElementById('accountLoggedInView'); const access=document.getElementById('accountAccessView'); const topbar=document.getElementById('accountTopbar'); const appEl=document.querySelector('.app'); const fab=document.getElementById('fabAdd');
+  if(!overlay) return;
+  overlay.classList.remove('hidden'); if(checking) checking.style.display='none'; if(loggedOut) loggedOut.style.display='none'; if(loggedIn) loggedIn.style.display='none'; if(access) access.style.display='block'; if(topbar) topbar.style.display='none'; if(appEl) appEl.style.visibility='hidden'; if(fab) fab.style.display='none';
+  const title=document.getElementById('accountAccessTitle'), msg=document.getElementById('accountAccessMessage'), pill=document.getElementById('accountAccessStatusPill'), r=document.getElementById('accountAccessReason');
+  const map={pending:{title:'Request Received ✅',pill:'🟡 Pending Approval',cls:'pending',msg:'Aapki Mobile Hisab access request Z Mobile ko bhej di gayi hai. Approval milne ka intezar karein.'},rejected:{title:'Request Rejected',pill:'🔴 Rejected',cls:'rejected',msg:'Aapki Mobile Hisab access request approve nahi hui.'},suspended:{title:'Access Suspended',pill:'⛔ Suspended',cls:'suspended',msg:'Aapka Mobile Hisab access filhal suspend hai.'},active:{title:'Approved',pill:'🟢 Active',cls:'active',msg:'Aapka account active hai.'}}[status] || null;
+  if(map){ if(title) title.textContent=map.title; if(msg) msg.textContent=map.msg; if(pill){pill.textContent=map.pill;pill.className='access-status '+map.cls;} }
+  if(r){ r.textContent=reason ? 'Reason: '+reason : ''; r.style.display=reason?'block':'none'; }
+}
+function accessStatusAllowsUse(){ return userRole==='admin' || userAccessStatus==='active'; }
+
 
 
 // ---------- Admin / multi-shop dashboard ----------
@@ -6477,21 +6595,30 @@ function initFirebaseSync(){
         try{ localStorage.setItem(LS_WAS_LOGGED_IN_KEY, '1'); }catch(e){}
         resolveUserRoleAndShop(user).then(function(){
           updateAccountUI();
-          setAuthGateView('unlocked');
-          if(userRole==='admin'){
-            // Admin opens the same normal-looking app as every shop owner.
-            // All Shops is available only through the hidden admin gesture.
-            updateAdminShopContextUI();
-            startCloudSync(userShopId);
+          if(accessStatusAllowsUse()){
+            setAuthGateView('unlocked');
+            subscribeUserNotifications();
+            if(userRole==='admin'){
+              updateAdminShopContextUI();
+              startCloudSync(userShopId);
+              subscribeAdminNotifications();
+            }else{
+              startCloudSync(userShopId);
+              setTimeout(function(){ if(pendingGoogleShopSetup) maybeOpenShopSetup(true); }, 450);
+            }
           }else{
-            startCloudSync(userShopId);
-            setTimeout(function(){ if(pendingGoogleShopSetup) maybeOpenShopSetup(true); }, 450);
+            setAccessGate(userAccessStatus,userAccessReason);
+            subscribeUserNotifications();
+            setTimeout(function(){ if(pendingGoogleShopSetup) maybeOpenShopSetup(true); }, 350);
           }
         });
       } else {
+        stopNotificationSubscriptions();
         try{ localStorage.removeItem(LS_WAS_LOGGED_IN_KEY); }catch(e){}
         userRole = 'owner';
         userShopId = null;
+        userAccessStatus = 'active';
+        userAccessReason = '';
         updateAccountUI();
         setAuthGateView('locked');
       }
@@ -6538,6 +6665,9 @@ function updateAccountUI(){
     if(statusLine) statusLine.style.display = 'none';
     const menuLogout=document.getElementById('btnMenuLogout'); if(menuLogout) menuLogout.style.display='none';
   }
+  const accessCat=document.getElementById('settingsShopAccessCategory'); if(accessCat) accessCat.style.display=(userRole==='admin'?'flex':'none');
+  const bell=document.getElementById('adminNotificationBtn'); if(bell) bell.style.display=(userRole==='admin'?'inline-flex':'none');
+  const shareAppBtn=document.getElementById('btnShareApp'); if(shareAppBtn) shareAppBtn.style.display=(userRole==='admin'?'block':'none');
   renderSettingsHomeSummaries();
 }
 
@@ -6557,6 +6687,135 @@ function setAccountSyncStatus(text, state){
     line.style.display = 'block';
   }
 }
+
+function stopNotificationSubscriptions(){
+  if(adminNotificationUnsub){adminNotificationUnsub();adminNotificationUnsub=null;}
+  if(shopNotificationUnsub){shopNotificationUnsub();shopNotificationUnsub=null;}
+  if(accessStatusUnsub){accessStatusUnsub();accessStatusUnsub=null;}
+}
+function updateAdminNotificationBadge(){
+  const b=document.getElementById('adminNotificationBadge'); if(!b) return;
+  b.textContent=String(unreadAdminNotifications||0); b.style.display=unreadAdminNotifications>0?'inline-flex':'none';
+}
+function subscribeAdminNotifications(){
+  if(!fbDb || !fbUser || userRole!=='admin') return;
+  if(adminNotificationUnsub) adminNotificationUnsub();
+  adminNotificationUnsub=fbDb.collection('adminNotifications').limit(50).onSnapshot(function(snap){
+    unreadAdminNotifications=0; let hasNew=false;
+    snap.forEach(function(doc){ const d=doc.data()||{}; if(!d.read) unreadAdminNotifications++; });
+    snap.docChanges().forEach(function(ch){ if(ch.type==='added'){ const d=ch.doc.data()||{}; if(d.read===false){ hasNew=true; } } });
+    updateAdminNotificationBadge();
+    if(hasNew){ showToast('🔔 New shop access request'); renderShopAccessRequests(); }
+  },function(err){ console.warn('Admin notifications listener',err); });
+}
+function subscribeUserNotifications(){
+  if(!fbDb || !fbUser || userRole==='admin') return;
+  if(shopNotificationUnsub) shopNotificationUnsub();
+  shopNotificationUnsub=fbDb.collection('notifications').doc(fbUser.uid).collection('items').orderBy('createdAt','desc').limit(20).onSnapshot(function(snap){
+    snap.docChanges().forEach(function(ch){ if(ch.type==='added'){ const d=ch.doc.data()||{}; if(d.read===false){ showToast('🔔 '+(d.title||'New notification')); } } });
+  },function(err){ console.warn('Shop notifications listener',err); });
+  if(accessStatusUnsub) accessStatusUnsub();
+  accessStatusUnsub=fbDb.collection('users').doc(fbUser.uid).onSnapshot(function(snap){
+    if(!snap.exists) return;
+    const d=snap.data()||{};
+    const prev=userAccessStatus;
+    userAccessStatus=d.accessStatus||'pending';
+    userAccessReason=d.accessReason||'';
+    if(prev!==userAccessStatus){
+      updateAccountUI();
+      if(accessStatusAllowsUse()){
+        setAuthGateView('unlocked');
+        if(!cloudUnsub && userShopId) startCloudSync(userShopId);
+      }else{
+        if(cloudUnsub){cloudUnsub();cloudUnsub=null;}
+        setAccessGate(userAccessStatus,userAccessReason);
+      }
+    }
+  },function(err){ console.warn('Access status listener',err); });
+}
+function refreshAccessState(){
+  if(!fbDb || !fbUser) return;
+  fbDb.collection('users').doc(fbUser.uid).get().then(function(snap){
+    if(!snap.exists) return;
+    const d=snap.data()||{}; userRole=d.role||userRole; userShopId=d.shopId||userShopId; userAccessStatus=d.accessStatus||'pending'; userAccessReason=d.accessReason||'';
+    updateAccountUI();
+    if(accessStatusAllowsUse()){
+      setAuthGateView('unlocked');
+      if(!cloudUnsub) startCloudSync(userShopId);
+    }else setAccessGate(userAccessStatus,userAccessReason);
+  });
+}
+function saveAccessTemplates(){
+  if(userRole!=='admin' || !fbDb || !fbUser) return;
+  accessTemplates={
+    requestReceived:document.getElementById('tplRequestReceived').value,
+    approved:document.getElementById('tplApproved').value,
+    rejected:document.getElementById('tplRejected').value,
+    suspended:document.getElementById('tplSuspended').value,
+    reactivated:document.getElementById('tplReactivated').value
+  };
+  fbDb.collection('appConfig').doc('accessTemplates').set(Object.assign({},accessTemplates,{updatedBy:fbUser.uid,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}),{merge:true}).then(function(){showToast('✓ Notification messages save ho gaye.');}).catch(function(e){showToast('Templates save nahi ho sake: '+(e.message||'permission error'));});
+}
+function renderAccessTemplates(){
+  ['requestReceived','approved','rejected','suspended','reactivated'].forEach(function(k){const el=document.getElementById('tpl'+k.charAt(0).toUpperCase()+k.slice(1));if(el)el.value=accessTemplates[k]||DEFAULT_ACCESS_TEMPLATES[k];});
+}
+function accessStatusLabel(st){return st==='active'?'🟢 Active':st==='pending'?'🟡 Pending':st==='suspended'?'⛔ Suspended':'🔴 Rejected';}
+let currentAccessTab='pending';
+async function loadAccessUsers(){
+  if(userRole!=='admin'||!fbDb) return [];
+  const snap=await fbDb.collection('users').get(); const arr=[];
+  snap.forEach(function(doc){const d=doc.data()||{}; if(d.role!=='admin'){arr.push({uid:doc.id,data:d});}});
+  return arr;
+}
+function renderShopAccessRequests(){
+  const list=document.getElementById('shopAccessRequestsList'); if(!list || userRole!=='admin' || !fbDb) return;
+  loadAccessUsers().then(function(arr){
+    const filtered=arr.filter(function(x){return (x.data.accessStatus||'pending')===currentAccessTab;}).sort(function(a,b){return String((b.data.updatedAt&&b.data.updatedAt.toMillis)?b.data.updatedAt.toMillis():0).localeCompare(String((a.data.updatedAt&&a.data.updatedAt.toMillis)?a.data.updatedAt.toMillis():0));});
+    const pendingCount=arr.filter(function(x){return (x.data.accessStatus||'pending')==='pending';}).length; const pc=document.getElementById('accessPendingCount'); if(pc) pc.textContent=pendingCount?(' '+pendingCount):'';
+    list.innerHTML=filtered.length?filtered.map(function(x){const d=x.data; const shop=escapeHtml(d.shopName||'Unnamed shop'),owner=escapeHtml(d.ownerName||'Owner name not set'),email=escapeHtml(d.email||''); const reason=escapeHtml(d.accessReason||''); const st=d.accessStatus||'pending';
+      let actions='';
+      if(st==='pending') actions='<button class="approve" data-access-action="approve" data-access-uid="'+x.uid+'">Approve</button><button class="danger" data-access-action="reject" data-access-uid="'+x.uid+'">Reject</button>';
+      if(st==='active') actions='<button class="danger" data-access-action="suspend" data-access-uid="'+x.uid+'">Suspend access</button>';
+      if(st==='suspended'||st==='rejected') actions='<button class="approve" data-access-action="reactivate" data-access-uid="'+x.uid+'">Reactivate</button>';
+      return '<div class="access-request-card"><div class="access-request-top"><div><div class="access-request-name">'+shop+'</div><div class="access-request-meta">'+owner+' · '+email+'</div></div><span class="access-status '+st+'">'+accessStatusLabel(st)+'</span></div>'+(reason?'<div class="settings-note" style="margin-top:8px;">Reason: '+reason+'</div>':'')+'<div class="access-actions">'+actions+'</div></div>';}).join(''):'<div class="empty" style="padding:18px 8px;text-align:center;color:var(--text-dim);">Is category mein koi shop nahi.</div>';
+    list.querySelectorAll('[data-access-action]').forEach(function(btn){btn.onclick=function(){handleAccessAction(btn.dataset.accessAction,btn.dataset.accessUid);};});
+  }).catch(function(e){ list.innerHTML='<div class="settings-note">Shops load nahi ho sakin: '+escapeHtml(e.message||'permission error')+'</div>'; });
+}
+async function handleAccessAction(action,uid){
+  if(userRole!=='admin'||!fbDb||!uid) return;
+  const snap=await fbDb.collection('users').doc(uid).get(); if(!snap.exists) return; const d=snap.data()||{};
+  let reason='';
+  if(action==='reject'||action==='suspend') reason=prompt(action==='reject'?'Reject reason (optional)':'Suspend reason (optional)','') || '';
+  if(action==='approve' && !confirm('Is shop ko approve karna hai?')) return;
+  if(action==='reject' && !confirm('Is shop request ko reject karna hai?')) return;
+  if(action==='suspend' && !confirm('Is active shop ka access suspend karna hai?')) return;
+  if(action==='reactivate' && !confirm('Is shop ko dobara active karna hai?')) return;
+  const next={approve:'active',reject:'rejected',suspend:'suspended',reactivate:'active'}[action]; if(!next)return;
+  const base={accessStatus:next,accessReason:reason||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  if(action==='approve') base.approvedAt=firebase.firestore.FieldValue.serverTimestamp();
+  if(action==='reactivate') base.reactivatedAt=firebase.firestore.FieldValue.serverTimestamp();
+  if(action==='reject') base.rejectedAt=firebase.firestore.FieldValue.serverTimestamp();
+  if(action==='suspend') base.suspendedAt=firebase.firestore.FieldValue.serverTimestamp();
+  await fbDb.collection('users').doc(uid).set(base,{merge:true});
+  await fbDb.collection('shopRequests').doc(uid).set(Object.assign({},base,{uid:uid,email:d.email||'',shopName:d.shopName||'',ownerName:d.ownerName||'',status:next}),{merge:true});
+  const vals={shopName:d.shopName||'',ownerName:d.ownerName||'',reason:reason||''};
+  const templKey={approve:'approved',reject:'rejected',suspend:'suspended',reactivate:'reactivated'}[action];
+  await writeShopNotification(uid,action==='approve'?'Approval Granted':action==='reject'?'Request Rejected':action==='suspend'?'Access Suspended':'Access Reactivated',fillTemplate(accessTemplates[templKey]||DEFAULT_ACCESS_TEMPLATES[templKey],vals),templKey);
+  await fbDb.collection('adminNotifications').where('shopUid','==',uid).get().then(function(snap2){const batch=fbDb.batch();snap2.forEach(function(doc){if(!doc.data().read)batch.update(doc.ref,{read:true});});return batch.commit();}).catch(function(){});
+  showToast('✓ '+(d.shopName||'Shop')+' ka status '+next+' kar diya gaya.');
+  renderShopAccessRequests();
+}
+function openShopAccessSettings(){
+  if(userRole!=='admin') return;
+  if(fbDb && fbUser){ fbDb.collection('adminNotifications').where('adminUid','==',fbUser.uid).where('read','==',false).get().then(function(snap){ const batch=fbDb.batch(); snap.forEach(function(doc){batch.update(doc.ref,{read:true});}); return batch.commit(); }).then(function(){ unreadAdminNotifications=0; updateAdminNotificationBadge(); }).catch(function(){}); }
+  currentAccessTab='pending'; document.querySelectorAll('.access-tab').forEach(function(b){b.classList.toggle('active',b.dataset.accessTab==='pending');});
+  renderAccessTemplates(); renderShopAccessRequests();
+}
+
+document.addEventListener('click',function(e){
+  const tab=e.target.closest && e.target.closest('.access-tab');
+  if(tab){ currentAccessTab=tab.dataset.accessTab; document.querySelectorAll('.access-tab').forEach(function(b){b.classList.toggle('active',b===tab);}); renderShopAccessRequests(); }
+});
 
 // Firestore doc shape: everything except photos (photos stay local-only per
 // device — this keeps each sync write small, fast and free-tier-friendly;
@@ -6764,9 +7023,16 @@ document.getElementById('btnAccountSignup').onclick = function(){
     .then(function(){
       shopProfile = {shopName:shopName, ownerName:ownerName, shopPhone:''};
       try{ localStorage.setItem(LS_SHOP_PROFILE_KEY, JSON.stringify(shopProfile)); }catch(e){}
-      if(!fbUser) fbUser = fbAuth.currentUser;
-      showToast('✓ Account ban gaya — sync shuru.');
-      // schedulePush() fires once userShopId is resolved by onAuthStateChanged
+      const u=fbAuth.currentUser; if(!u) return;
+      const payload={role:'shop',shopId:u.uid,accessStatus:'pending',accessReason:'',email:u.email||email,shopName:shopName,ownerName:ownerName,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+      return fbDb.collection('users').doc(u.uid).set(payload,{merge:true}).then(function(){
+        return fbDb.collection('shopRequests').doc(u.uid).set({uid:u.uid,email:u.email||email,shopName:shopName,ownerName:ownerName,status:'pending',submittedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+      }).then(function(){
+        return Promise.all([
+          writeShopNotification(u.uid,'Request Received',fillTemplate(accessTemplates.requestReceived,Object.assign({},shopProfile,{reason:''})),'requestReceived'),
+          writeAdminNotification('New Shop Request',shopName+' ne Mobile Hisab access ke liye request bheji hai.','request',u.uid)
+        ]);
+      }).then(function(){ showToast('✓ Request receive ho gayi — Z Mobile approval ka wait karein.'); });
     })
     .catch(function(err){ showAccountError(friendlyAuthError(err)); });
 };
@@ -6781,8 +7047,11 @@ document.getElementById('btnAccountForgotPassword').onclick = function(){
 };
 document.getElementById('btnAccountLogout').onclick = function(){
   if(!confirm('Is device se logout karna hai? Dobara use karne ke liye login zaroori hoga.')) return;
+  stopNotificationSubscriptions();
   fbAuth.signOut();
 };
+if(document.getElementById('btnAccessLogout')) document.getElementById('btnAccessLogout').onclick=function(){ if(fbAuth) fbAuth.signOut(); };
+if(document.getElementById('btnAccessRefresh')) document.getElementById('btnAccessRefresh').onclick=function(){ refreshAccessState(); };
 document.getElementById('btnEditShopProfile').onclick = function(){
   document.getElementById('edit-shopname').value = shopProfile.shopName || '';
   document.getElementById('edit-ownername').value = shopProfile.ownerName || '';
@@ -6863,10 +7132,20 @@ document.getElementById('btnCompleteShopSetup').onclick=function(){
   if(!shopName){ err.textContent='Shop Name zaroor likhein.'; err.style.display='block'; return; }
   shopProfile={shopName:shopName,ownerName:ownerName,shopPhone:shopPhone};
   try{ localStorage.setItem(LS_SHOP_PROFILE_KEY, JSON.stringify(shopProfile)); }catch(e){}
-  schedulePush(); updateAccountUI();
+  if(fbDb && fbUser && userRole!=='admin'){
+    fbDb.collection('users').doc(fbUser.uid).set({shopName:shopName,ownerName:ownerName,shopPhone:shopPhone,accessStatus:userAccessStatus||'pending',updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).then(function(){
+      return fbDb.collection('shopRequests').doc(fbUser.uid).set({uid:fbUser.uid,email:fbUser.email||'',shopName:shopName,ownerName:ownerName,status:userAccessStatus||'pending',submittedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+    }).then(function(){
+      if(userAccessStatus!=='active') return Promise.all([
+        writeShopNotification(fbUser.uid,'Request Received',fillTemplate(accessTemplates.requestReceived,Object.assign({},shopProfile,{reason:''})),'requestReceived'),
+        writeAdminNotification('New Shop Request',shopName+' ne Google account se Mobile Hisab access request bheji hai.','request',fbUser.uid)
+      ]);
+    }).catch(function(e){console.warn('Shop setup sync failed',e);});
+  }
+  if(accessStatusAllowsUse()) schedulePush(); updateAccountUI();
   document.getElementById('shopSetupOverlay').classList.add('hidden');
   pendingGoogleShopSetup=false;
-  showToast('✓ Shop profile save ho gaya.');
+  showToast(accessStatusAllowsUse()?'✓ Shop profile save ho gaya.':'✓ Request receive ho gayi — Z Mobile approval ka wait karein.');
 };
 
 document.getElementById('btnAccountChangePassword').onclick=function(){

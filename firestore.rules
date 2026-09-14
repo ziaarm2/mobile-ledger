@@ -1,0 +1,112 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Admin email currently configured for Mobile Hisab.
+    // If you ever change the Z Mobile owner email, change it here too.
+    function isAdmin() {
+      return signedIn() && request.auth.token.email == 'ziarealme.5604@gmail.com';
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function selfUser() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function isActiveShop() {
+      return signedIn()
+        && selfUser().data.role == 'shop'
+        && selfUser().data.accessStatus == 'active';
+    }
+
+    // ---------------- Users ----------------
+    match /users/{uid} {
+      allow read: if isAdmin() || isSelf(uid);
+
+      // New shop accounts can only create themselves as pending shops.
+      allow create: if isAdmin()
+        || (isSelf(uid)
+          && request.resource.data.role == 'shop'
+          && request.resource.data.shopId == uid
+          && request.resource.data.accessStatus == 'pending');
+
+      // Only admin can change approval/access state, role or shopId.
+      // A shop can update its profile fields, but cannot self-approve.
+      allow update: if isAdmin()
+        || (isSelf(uid)
+          && request.resource.data.role == resource.data.role
+          && request.resource.data.shopId == resource.data.shopId
+          && request.resource.data.accessStatus == resource.data.accessStatus
+          && request.resource.data.email == resource.data.email);
+
+      allow delete: if isAdmin();
+    }
+
+    // ---------------- Shop approval requests ----------------
+    match /shopRequests/{uid} {
+      allow read: if isAdmin() || isSelf(uid);
+
+      allow create: if isAdmin()
+        || (isSelf(uid)
+          && request.resource.data.uid == uid
+          && request.resource.data.status == 'pending');
+
+      allow update: if isAdmin()
+        || (isSelf(uid)
+          && request.resource.data.uid == uid
+          && request.resource.data.status == 'pending');
+
+      allow delete: if isAdmin();
+    }
+
+    // ---------------- Shop business data ----------------
+    match /shops/{shopId} {
+      allow read, write: if isAdmin()
+        || (isActiveShop() && request.auth.uid == shopId);
+    }
+
+    // ---------------- Shop notifications ----------------
+    match /notifications/{uid}/items/{notificationId} {
+      allow read: if isAdmin() || isSelf(uid);
+
+      // A shop may only create its own initial request notification.
+      allow create: if isAdmin()
+        || (isSelf(uid) && request.resource.data.type == 'requestReceived');
+
+      // Shop users may mark their own notifications as read, but may not
+      // rewrite the message or notification owner.
+      allow update: if isAdmin()
+        || (isSelf(uid)
+          && request.resource.data.title == resource.data.title
+          && request.resource.data.body == resource.data.body
+          && request.resource.data.type == resource.data.type);
+
+      allow delete: if isAdmin() || isSelf(uid);
+    }
+
+    // ---------------- Admin notifications ----------------
+    match /adminNotifications/{notificationId} {
+      allow read, update, delete: if isAdmin();
+
+      // Shop can create only its own new-request alert. Admin can create
+      // anything, although normal approval/rejection flows are admin-driven.
+      allow create: if isAdmin()
+        || (signedIn()
+          && request.resource.data.type == 'request'
+          && request.resource.data.shopUid == request.auth.uid
+          && request.resource.data.read == false);
+    }
+
+    // ---------------- Editable approval-message templates ----------------
+    match /appConfig/{docId} {
+      allow read, write: if isAdmin() && docId == 'accessTemplates';
+    }
+  }
+}

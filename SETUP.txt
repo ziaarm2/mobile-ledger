@@ -1,0 +1,27 @@
+MOBILE HISAB v24 — SHOP ACCESS SETUP
+
+1) GitHub Pages
+Replace these files in your GitHub Pages root:
+- index.html
+- manifest.json
+- icon-192.png
+- icon-512.png
+Keep your existing service-worker.js for now.
+
+2) Firebase Firestore Rules
+Open Firebase Console > Firestore Database > Rules and replace/publish the rules from firestore.rules.
+The current owner/admin email configured in the app/rules is:
+ziarealme.5604@gmail.com
+Change it in BOTH places if you ever move admin ownership to another email.
+
+3) What v24 adds
+- Owner-only Shop Access settings
+- Pending / Active / Suspended / Rejected tabs
+- Approve, reject, suspend, reactivate
+- Live access status changes
+- Admin notification bell for new signup requests
+- Shop notification/status screen
+- Editable request/approval/rejection/suspension/reactivation messages
+- Share Mobile Hisab button visible only to admin
+
+Important: Firestore Rules are part of the security model. Do not skip publishing them.
