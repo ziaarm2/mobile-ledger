@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mobile-hisab-v25';
+const CACHE_NAME = 'mobile-hisab-v26';
 
 self.addEventListener('install', () => self.skipWaiting());
 
@@ -11,5 +11,4 @@ self.addEventListener('activate', event => {
 });
 
 // Deliberately no fetch handler: the app is served fresh from the network.
-// This prevents an older cached index/manifest from keeping the old app name
-// or Google-login screen alive after an update.
+// This prevents stale cached app files from keeping an older build alive.
