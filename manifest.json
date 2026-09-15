@@ -1,13 +1,13 @@
 {
   "name": "Mobile Hisab by Z Mobile",
   "short_name": "Mobile Hisab",
-  "id": "https://ziaarm2.github.io/",
-  "start_url": "/?v=25",
-  "scope": "/",
+  "id": "/mobile-ledger/",
+  "start_url": "/mobile-ledger/?v=26",
+  "scope": "/mobile-ledger/",
   "display": "standalone",
   "background_color": "#0f1115",
   "theme_color": "#0f1115",
-  "description": "Used mobile sale & purchase business ke liye Mobile Hisab app.",
+  "description": "Used mobile sale & purchase business ke liye live Mobile Hisab app.",
   "icons": [
     {
       "src": "icon-192.png",
