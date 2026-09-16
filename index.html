@@ -3110,16 +3110,16 @@ let cardDisplaySettings = {
 const LS_CARD_DISPLAY_KEY = 'mobileLedger_cardDisplaySettings';
 const LS_APP_LOCK_KEY = 'mobileLedger_appLock_v1';
 const LS_APP_LOCK_SESSION_KEY = 'mobileLedger_appLockSession_v1';
-let appLockConfig = { enabled:false, methods:{pin:false, pattern:false, fingerprint:false}, preferred:'pin', pinSalt:'', pinHash:'', patternSalt:'', patternHash:'', fingerprintCredentialId:'' };
+let appLockConfig = { enabled:false, methods:{pin:false, pattern:false, fingerprint:false}, preferred:'pin', pinLength:4, pinSalt:'', pinHash:'', patternSalt:'', patternHash:'', fingerprintCredentialId:'' };
 let appLockUnlocked = false;
 function appLockSessionIsUnlocked(){ try{return sessionStorage.getItem(LS_APP_LOCK_SESSION_KEY)==='1';}catch(e){return false;} }
 function setAppLockSessionUnlocked(v){ try{ if(v) sessionStorage.setItem(LS_APP_LOCK_SESSION_KEY,'1'); else sessionStorage.removeItem(LS_APP_LOCK_SESSION_KEY); }catch(e){} }
 let appLockSetupMode = null;
 let appLockActiveMethod = null;
-function defaultAppLockConfig(){ return { enabled:false, methods:{pin:false,pattern:false,fingerprint:false}, preferred:'pin', pinSalt:'', pinHash:'', patternSalt:'', patternHash:'', fingerprintCredentialId:'' }; }
+function defaultAppLockConfig(){ return { enabled:false, methods:{pin:false,pattern:false,fingerprint:false}, preferred:'pin', pinLength:4, pinSalt:'', pinHash:'', patternSalt:'', patternHash:'', fingerprintCredentialId:'' }; }
 loadAppLockConfig();
 function loadAppLockConfig(){
-  try{ const raw=localStorage.getItem(LS_APP_LOCK_KEY); if(raw){ const parsed=JSON.parse(raw)||{}; appLockConfig=Object.assign(defaultAppLockConfig(),parsed,{methods:Object.assign({pin:false,pattern:false,fingerprint:false},parsed.methods||{})}); } }catch(e){ appLockConfig=defaultAppLockConfig(); }
+  try{ const raw=localStorage.getItem(LS_APP_LOCK_KEY); if(raw){ const parsed=JSON.parse(raw)||{}; appLockConfig=Object.assign(defaultAppLockConfig(),parsed,{methods:Object.assign({pin:false,pattern:false,fingerprint:false},parsed.methods||{})}); appLockConfig.pinLength=Math.min(8,Math.max(4,Number(appLockConfig.pinLength)||4)); } }catch(e){ appLockConfig=defaultAppLockConfig(); }
 }
 function saveAppLockConfig(){ try{ localStorage.setItem(LS_APP_LOCK_KEY, JSON.stringify(appLockConfig)); }catch(e){} }
 function appLockHasAnyMethod(){ return !!(appLockConfig.methods && (appLockConfig.methods.pin || appLockConfig.methods.pattern || appLockConfig.methods.fingerprint)); }
@@ -5753,7 +5753,7 @@ async function appLockSetPin(){
   if(pin!==conf){ alert('PIN match nahi kar raha.'); return; }
   const salt=bytesToB64Url(randomBytes(16));
   const hash=await hashAppSecret(pin,salt);
-  appLockConfig.pinSalt=salt; appLockConfig.pinHash=hash; appLockConfig.methods.pin=true; appLockConfig.preferred='pin'; saveAppLockConfig(); closeAppLockSetup(); renderAppLockSettings();
+  appLockConfig.pinSalt=salt; appLockConfig.pinHash=hash; appLockConfig.pinLength=pin.length; appLockConfig.methods.pin=true; appLockConfig.preferred='pin'; appLockConfig.enabled=true; saveAppLockConfig(); setAppLockSessionUnlocked(true); closeAppLockSetup(); renderAppLockSettings();
   showToast('✓ App PIN save ho gaya.');
 }
 async function verifyAppPin(pin){ if(!appLockConfig.pinHash||!appLockConfig.pinSalt)return false; return (await hashAppSecret(pin,appLockConfig.pinSalt))===appLockConfig.pinHash; }
@@ -5768,11 +5768,12 @@ function renderPinDots(){ const el=document.getElementById('appLockPinDots'); if
 function ensurePinEntryInput(){
   const view=document.getElementById('appLockPinView'); if(!view || document.getElementById('appLockPinEntry')) return;
   const dots=document.getElementById('appLockPinDots'); const keypad=document.getElementById('appLockKeypad');
-  const hidden=document.createElement('input'); hidden.id='appLockPinEntry'; hidden.type='password'; hidden.inputMode='numeric'; hidden.maxLength=8; hidden.autocomplete='off'; hidden.style.cssText='position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;';
-  view.insertBefore(hidden,dots); hidden.addEventListener('input',renderPinDots); hidden.addEventListener('change',appLockSubmitPin);
-  const keys=['1','2','3','4','5','6','7','8','9','⌫','0','✓'];
-  keypad.innerHTML=keys.map(k=>'<button type="button" class="app-lock-key" data-k="'+k+'">'+k+'</button>').join('');
-  keypad.querySelectorAll('.app-lock-key').forEach(b=>b.onclick=function(){ const k=b.dataset.k; if(k==='⌫'){hidden.value=hidden.value.slice(0,-1);renderPinDots();return;} if(k==='✓'){appLockSubmitPin();return;} if(hidden.value.length<8){hidden.value+=k;renderPinDots();if(hidden.value.length>=4){} } });
+  const pinLen=Math.min(8,Math.max(4,Number(appLockConfig.pinLength)||4));
+  const hidden=document.createElement('input'); hidden.id='appLockPinEntry'; hidden.type='password'; hidden.inputMode='numeric'; hidden.maxLength=pinLen; hidden.autocomplete='off'; hidden.style.cssText='position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;';
+  view.insertBefore(hidden,dots); hidden.addEventListener('input',function(){ renderPinDots(); if(hidden.value.length===pinLen) setTimeout(appLockSubmitPin,70); });
+  const keys=['1','2','3','4','5','6','7','8','9','⌫','0',''];
+  keypad.innerHTML=keys.map(k=>k===''?'<button type="button" class="app-lock-key" disabled aria-hidden="true"></button>':'<button type="button" class="app-lock-key" data-k="'+k+'">'+k+'</button>').join('');
+  keypad.querySelectorAll('.app-lock-key').forEach(b=>b.onclick=function(){ const k=b.dataset.k; if(!k)return; if(k==='⌫'){hidden.value=hidden.value.slice(0,-1);renderPinDots();return;} if(hidden.value.length<pinLen){hidden.value+=k;renderPinDots();if(hidden.value.length===pinLen)setTimeout(appLockSubmitPin,70);} });
   renderPinDots();
 }
 const lockPatternPad={canvasId:'appLockPatternCanvas', pattern:[], drawing:false, last:null, mode:'unlock'};
@@ -5785,8 +5786,8 @@ function addPatternDotsAlong(obj,a,b){ if(!a||!b)return; const dx=b.x-a.x,dy=b.y
 function resetPatternDraw(obj){ obj.pattern=[];obj.drawing=false;obj.last=null;drawPatternPad(obj); }
 function wirePatternPad(obj, onComplete){ const c=document.getElementById(obj.canvasId); if(!c||c._wired)return; c._wired=true; c.style.touchAction='none'; c.addEventListener('pointerdown',e=>{e.preventDefault();obj.drawing=true;const pt=patternCanvasPoint(c,e);const idx=patternDotIndex(pt);addPatternDot(obj,idx);obj.last=pt;drawPatternPad(obj);try{c.setPointerCapture(e.pointerId);}catch(_){}}); c.addEventListener('pointermove',e=>{if(!obj.drawing)return;e.preventDefault();const pt=patternCanvasPoint(c,e);addPatternDotsAlong(obj,obj.last,pt);obj.last=pt;}); c.addEventListener('pointerup',e=>{if(!obj.drawing)return;e.preventDefault();obj.drawing=false;obj.last=null;drawPatternPad(obj); if(onComplete)onComplete(obj.pattern.slice());}); c.addEventListener('pointercancel',()=>{obj.drawing=false;obj.last=null;drawPatternPad(obj);}); resetPatternDraw(obj); }
 async function handleUnlockPattern(pattern){ if(pattern.length<4){showAppLockError('Kam az kam 4 dots ka pattern chahiye.');resetPatternDraw(lockPatternPad);return;} const sig=pattern.join('-'); if(!appLockConfig.patternHash){showAppLockError('Pattern set nahi hai.');return;} const ok=(await hashAppSecret(sig,appLockConfig.patternSalt))===appLockConfig.patternHash; if(ok) hideAppLockOverlay(); else {showAppLockError('Pattern ghalat hai.');resetPatternDraw(lockPatternPad);} }
-async function saveSetupPattern(){ const pattern=setupPatternPad.pattern.slice(); if(pattern.length<4){alert('Kam az kam 4 dots ka pattern banayein.');return;} const salt=bytesToB64Url(randomBytes(16)); const hash=await hashAppSecret(pattern.join('-'),salt); appLockConfig.patternSalt=salt;appLockConfig.patternHash=hash;appLockConfig.methods.pattern=true;appLockConfig.preferred='pattern';saveAppLockConfig();closeAppLockSetup();renderAppLockSettings();showToast('✓ App pattern save ho gaya.'); }
-function openAppLockSetup(mode){ appLockSetupMode=mode; const ov=document.getElementById('appLockSetupOverlay'); const title=document.getElementById('appLockSetupTitle'); const sub=document.getElementById('appLockSetupSub'); ['appLockPinSetupView','appLockPatternSetupView','appLockFingerprintSetupView'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';}); if(mode==='pin'){title.textContent='Set App PIN';sub.textContent='Apna custom 4–8 digit PIN set karein.';document.getElementById('appLockPinSetupView').style.display='block';document.getElementById('appLockPinSetupInput').value='';document.getElementById('appLockPinSetupConfirm').value='';} else if(mode==='pattern'){title.textContent='Set App Pattern';sub.textContent='3×3 dots ko drag karke custom pattern banayein.';document.getElementById('appLockPatternSetupView').style.display='block';document.getElementById('appLockPatternSetupStatus').textContent='Kam az kam 4 dots ka pattern banayein.';resetPatternDraw(setupPatternPad);} else {title.textContent='Register Fingerprint';sub.textContent='Phone ka secure biometric authenticator register karein.';document.getElementById('appLockFingerprintSetupView').style.display='block';} ov.classList.remove('hidden');}
+async function saveSetupPattern(){ const pattern=setupPatternPad.pattern.slice(); if(pattern.length<4){alert('Kam az kam 4 dots ka pattern banayein.');return;} const salt=bytesToB64Url(randomBytes(16)); const hash=await hashAppSecret(pattern.join('-'),salt); appLockConfig.patternSalt=salt;appLockConfig.patternHash=hash;appLockConfig.methods.pattern=true;appLockConfig.preferred='pattern';appLockConfig.enabled=true;saveAppLockConfig();setAppLockSessionUnlocked(true);closeAppLockSetup();renderAppLockSettings();showToast('✓ App pattern save ho gaya.'); }
+function openAppLockSetup(mode){ appLockSetupMode=mode; const ov=document.getElementById('appLockSetupOverlay'); const title=document.getElementById('appLockSetupTitle'); const sub=document.getElementById('appLockSetupSub'); ['appLockPinSetupView','appLockPatternSetupView','appLockFingerprintSetupView'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';}); if(mode==='pin'){title.textContent='Set App PIN';sub.textContent='Apna custom 4–8 digit PIN set karein. Lock save hote hi ON ho jayega.';document.getElementById('appLockPinSetupView').style.display='block';document.getElementById('appLockPinSetupInput').value='';document.getElementById('appLockPinSetupConfirm').value='';} else if(mode==='pattern'){title.textContent='Set App Pattern';sub.textContent='3×3 dots ko drag karke custom pattern banayein.';document.getElementById('appLockPatternSetupView').style.display='block';document.getElementById('appLockPatternSetupStatus').textContent='Kam az kam 4 dots ka pattern banayein.';resetPatternDraw(setupPatternPad);} else {title.textContent='Register Fingerprint';sub.textContent='Phone ka secure biometric authenticator register karein.';document.getElementById('appLockFingerprintSetupView').style.display='block';} ov.classList.remove('hidden');}
 function closeAppLockSetup(){ const ov=document.getElementById('appLockSetupOverlay');if(ov)ov.classList.add('hidden'); appLockSetupMode=null; }
 async function registerAppLockFingerprint(){
   try{
@@ -5794,7 +5795,7 @@ async function registerAppLockFingerprint(){
     const rpId=location.hostname; if(!rpId || rpId==='') throw new Error('Hosted web app par fingerprint use karein.');
     const cred=await navigator.credentials.create({publicKey:{challenge:randomBytes(32),rp:{name:'Mobile Hisab',id:rpId},user:{id:randomBytes(16),name:'mobile-hisab',displayName:'Mobile Hisab'},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required',residentKey:'discouraged'},timeout:60000,attestation:'none'}});
     if(!cred)throw new Error('Fingerprint registration cancel ho gayi.');
-    appLockConfig.fingerprintCredentialId=bytesToB64Url(new Uint8Array(cred.rawId)); appLockConfig.methods.fingerprint=true; appLockConfig.preferred='fingerprint'; saveAppLockConfig();closeAppLockSetup();renderAppLockSettings();showToast('✓ Fingerprint / biometric register ho gaya.');
+    appLockConfig.fingerprintCredentialId=bytesToB64Url(new Uint8Array(cred.rawId)); appLockConfig.methods.fingerprint=true; appLockConfig.preferred='fingerprint'; appLockConfig.enabled=true; saveAppLockConfig(); setAppLockSessionUnlocked(true); closeAppLockSetup(); renderAppLockSettings(); showToast('✓ Fingerprint / biometric register ho gaya.');
   }catch(err){console.error(err);alert(err && err.message ? err.message : 'Fingerprint register nahi ho saka.');}
 }
 async function unlockWithFingerprint(){
