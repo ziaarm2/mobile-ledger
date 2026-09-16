@@ -362,6 +362,8 @@
   .app-lock-direct-icon{font-size:54px;line-height:1;margin:4px 0 12px;}
   .app-lock-fallback-btn{margin-top:16px;min-width:190px;}
   .app-lock-other-btn{margin-top:14px;width:auto;border:0;background:transparent;color:var(--accent);font-weight:800;font-size:12px;padding:7px 10px;}
+  .app-lock-change-note{margin:0 auto 10px;color:var(--text-dim);font-size:11.5px;line-height:1.35;}
+  .app-lock-forgot-btn{margin-top:8px;width:auto;border:0;background:transparent;color:var(--text-dim);font-weight:800;font-size:11.5px;padding:7px 10px;text-decoration:underline;}
   #appLockOverlay{z-index:2500;background:var(--bg);align-items:center;padding:18px;}
   #appLockOverlay.hidden{display:none;}
   #appLockSetupOverlay{z-index:2600;align-items:center;padding:18px;}
@@ -1019,7 +1021,9 @@
       <div class="app-lock-direct-title">Draw Pattern</div>
       <div class="pattern-canvas-wrap"><canvas id="appLockPatternCanvas" width="250" height="250"></canvas></div>
     </div>
+    <div class="app-lock-change-note" id="appLockChangeNote" style="display:none;">Current App Lock verify karein.</div>
     <button type="button" class="app-lock-other-btn" id="appLockOtherMethodBtn" style="display:none;">Use another method</button>
+    <button type="button" class="app-lock-forgot-btn" id="appLockForgotBtn" style="display:none;">Forgot lock? Gmail se verify karein</button>
     <div class="app-lock-error" id="appLockError"></div>
   </div>
 </div>
@@ -3116,6 +3120,7 @@ function appLockSessionIsUnlocked(){ try{return sessionStorage.getItem(LS_APP_LO
 function setAppLockSessionUnlocked(v){ try{ if(v) sessionStorage.setItem(LS_APP_LOCK_SESSION_KEY,'1'); else sessionStorage.removeItem(LS_APP_LOCK_SESSION_KEY); }catch(e){} }
 let appLockSetupMode = null;
 let appLockActiveMethod = null;
+let appLockChangePendingMode = null;
 function defaultAppLockConfig(){ return { enabled:false, methods:{pin:false,pattern:false,fingerprint:false}, preferred:'pin', pinLength:4, pinSalt:'', pinHash:'', patternSalt:'', patternHash:'', fingerprintCredentialId:'' }; }
 loadAppLockConfig();
 function loadAppLockConfig(){
@@ -3129,10 +3134,11 @@ function b64UrlToBytes(str){ const b64=String(str||'').replace(/-/g,'+').replace
 async function hashAppSecret(secret,salt){ const data=new TextEncoder().encode(String(salt)+'\0'+String(secret)); const digest=await crypto.subtle.digest('SHA-256',data); return bytesToB64Url(new Uint8Array(digest)); }
 function showAppLockError(msg){ const el=document.getElementById('appLockError'); if(el) el.textContent=msg||''; }
 function appLockAvailableMethods(){ const out=[]; if(appLockConfig.methods.pin && appLockConfig.pinHash) out.push('pin'); if(appLockConfig.methods.pattern && appLockConfig.patternHash) out.push('pattern'); if(appLockConfig.methods.fingerprint && appLockConfig.fingerprintCredentialId) out.push('fingerprint'); return out; }
-function setAppLockMethod(method){ appLockActiveMethod=method; showAppLockError(''); ['appLockPinView','appLockFingerprintView','appLockPatternView'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';}); const map={pin:'appLockPinView',fingerprint:'appLockFingerprintView',pattern:'appLockPatternView'}; const el=document.getElementById(map[method]); if(el)el.style.display='block'; const other=document.getElementById('appLockOtherMethodBtn'); if(other){ other.style.display=appLockAvailableMethods().length>1?'inline-flex':'none'; } if(method==='pin'){resetPinEntry(); setTimeout(function(){const input=document.getElementById('appLockPinEntry'); if(input) input.focus();},60);} if(method==='pattern'){resetPatternDraw(lockPatternPad);} if(method==='fingerprint'){const btn=document.getElementById('appLockFingerprintBtn');if(btn)btn.style.display='none'; setTimeout(function(){unlockWithFingerprint();},60);} }
+function setAppLockMethod(method){ appLockActiveMethod=method; showAppLockError(''); ['appLockPinView','appLockFingerprintView','appLockPatternView'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';}); const map={pin:'appLockPinView',fingerprint:'appLockFingerprintView',pattern:'appLockPatternView'}; const el=document.getElementById(map[method]); if(el)el.style.display='block'; const other=document.getElementById('appLockOtherMethodBtn'); if(other){ other.style.display=appLockAvailableMethods().length>1?'inline-flex':'none'; } const forgot=document.getElementById('appLockForgotBtn'); if(forgot){ forgot.style.display=appLockChangePendingMode?'inline-flex':'none'; } const note=document.getElementById('appLockChangeNote'); if(note){ note.style.display=appLockChangePendingMode?'block':'none'; } if(method==='pin'){resetPinEntry(); setTimeout(function(){const input=document.getElementById('appLockPinEntry'); if(input) input.focus();},60);} if(method==='pattern'){resetPatternDraw(lockPatternPad);} if(method==='fingerprint'){const btn=document.getElementById('appLockFingerprintBtn');if(btn)btn.style.display='none'; setTimeout(function(){unlockWithFingerprint();},60);} }
 function showNextAppLockMethod(){ const methods=appLockAvailableMethods(); if(methods.length<2)return; const idx=Math.max(0,methods.indexOf(appLockActiveMethod)); setAppLockMethod(methods[(idx+1)%methods.length]); }
-function showAppLockOverlay(force){ const ov=document.getElementById('appLockOverlay'); if(!ov)return; if(!force && appLockSessionIsUnlocked()){ hideAppLockOverlay(false); return; } appLockUnlocked=false; ov.classList.remove('hidden'); const app=document.querySelector('.app'); if(app) app.style.visibility='hidden'; const methods=appLockAvailableMethods(); if(methods.length) setAppLockMethod(appLockConfig.preferred && methods.indexOf(appLockConfig.preferred)!==-1?appLockConfig.preferred:methods[0]); }
-function hideAppLockOverlay(persistSession=true){ const ov=document.getElementById('appLockOverlay'); if(ov) ov.classList.add('hidden'); appLockUnlocked=true; if(persistSession) setAppLockSessionUnlocked(true); const app=document.querySelector('.app'); if(app) app.style.visibility='visible'; showAppLockError(''); }
+function showAppLockOverlay(force){ const ov=document.getElementById('appLockOverlay'); if(!ov)return; if(!force && !appLockChangePendingMode && appLockSessionIsUnlocked()){ hideAppLockOverlay(false); return; } appLockUnlocked=false; ov.classList.remove('hidden'); const app=document.querySelector('.app'); if(app) app.style.visibility='hidden'; const methods=appLockAvailableMethods(); if(methods.length) setAppLockMethod(appLockConfig.preferred && methods.indexOf(appLockConfig.preferred)!==-1?appLockConfig.preferred:methods[0]); }
+function appLockVerificationSucceeded(){ if(appLockChangePendingMode){ const mode=appLockChangePendingMode; appLockChangePendingMode=null; hideAppLockOverlay(true); if(mode==='__toggle_off__'){ appLockConfig.enabled=false; saveAppLockConfig(); setAppLockSessionUnlocked(false); renderAppLockSettings(); renderSettingsHomeSummaries(); showToast('✓ App Lock OFF ho gaya.'); return; } if(String(mode).indexOf('__method_toggle__:')===0){ const m=String(mode).split(':')[1]; appLockConfig.methods[m]=!appLockConfig.methods[m]; if(appLockConfig.methods[m]) appLockConfig.preferred=m; saveAppLockConfig(); renderAppLockSettings(); showToast(appLockConfig.methods[m]?'✓ '+m+' unlock method ON ho gaya.':'✓ '+m+' unlock method OFF ho gaya.'); return; } openAppLockSetup(mode); return; } hideAppLockOverlay(true); }
+function hideAppLockOverlay(persistSession=true){ const ov=document.getElementById('appLockOverlay'); if(ov) ov.classList.add('hidden'); appLockUnlocked=true; if(persistSession) setAppLockSessionUnlocked(true); const app=document.querySelector('.app'); if(app) app.style.visibility='visible'; showAppLockError(''); const note=document.getElementById('appLockChangeNote'); if(note) note.style.display='none'; const forgot=document.getElementById('appLockForgotBtn'); if(forgot) forgot.style.display='none'; }
 function shouldRequireAppLock(){ return !!(appLockConfig.enabled && appLockHasAnyMethod() && appLockAvailableMethods().length); }
 function enforceAppLock(){ if(!shouldRequireAppLock()){ hideAppLockOverlay(false); return; } if(appLockSessionIsUnlocked()){ hideAppLockOverlay(false); return; } showAppLockOverlay(false); }
 
@@ -5760,11 +5766,11 @@ async function verifyAppPin(pin){ if(!appLockConfig.pinHash||!appLockConfig.pinS
 async function appLockSubmitPin(){
   const input=document.getElementById('appLockPinEntry'); const pin=String(input?.value||'');
   if(!pin)return; const ok=await verifyAppPin(pin);
-  if(ok){ hideAppLockOverlay(); return; }
+  if(ok){ appLockVerificationSucceeded(); return; }
   showAppLockError('PIN ghalat hai.'); if(input){input.value='';renderPinDots();} 
 }
 function resetPinEntry(){ const input=document.getElementById('appLockPinEntry'); if(input) input.value=''; renderPinDots(); }
-function renderPinDots(){ const el=document.getElementById('appLockPinDots'); if(!el)return; const len=String(document.getElementById('appLockPinEntry')?.value||'').length; el.innerHTML=Array.from({length:6},(_,i)=>'<span class="app-lock-pin-dot '+(i<len?'filled':'')+'"></span>').join(''); }
+function renderPinDots(){ const el=document.getElementById('appLockPinDots'); if(!el)return; const len=String(document.getElementById('appLockPinEntry')?.value||'').length; const pinLen=Math.min(8,Math.max(4,Number(appLockConfig.pinLength)||4)); el.innerHTML=Array.from({length:pinLen},(_,i)=>'<span class="app-lock-pin-dot '+(i<len?'filled':'')+'"></span>').join(''); }
 function ensurePinEntryInput(){
   const view=document.getElementById('appLockPinView'); if(!view || document.getElementById('appLockPinEntry')) return;
   const dots=document.getElementById('appLockPinDots'); const keypad=document.getElementById('appLockKeypad');
@@ -5785,10 +5791,28 @@ function addPatternDot(obj,idx){ if(idx<0||obj.pattern.indexOf(idx)!==-1)return 
 function addPatternDotsAlong(obj,a,b){ if(!a||!b)return; const dx=b.x-a.x,dy=b.y-a.y; const dist=Math.hypot(dx,dy); const steps=Math.max(1,Math.ceil(dist/8)); for(let i=1;i<=steps;i++){ const t=i/steps; const pt={x:a.x+dx*t,y:a.y+dy*t}; addPatternDot(obj,patternDotIndex(pt)); } drawPatternPad(obj); }
 function resetPatternDraw(obj){ obj.pattern=[];obj.drawing=false;obj.last=null;drawPatternPad(obj); }
 function wirePatternPad(obj, onComplete){ const c=document.getElementById(obj.canvasId); if(!c||c._wired)return; c._wired=true; c.style.touchAction='none'; c.addEventListener('pointerdown',e=>{e.preventDefault();obj.drawing=true;const pt=patternCanvasPoint(c,e);const idx=patternDotIndex(pt);addPatternDot(obj,idx);obj.last=pt;drawPatternPad(obj);try{c.setPointerCapture(e.pointerId);}catch(_){}}); c.addEventListener('pointermove',e=>{if(!obj.drawing)return;e.preventDefault();const pt=patternCanvasPoint(c,e);addPatternDotsAlong(obj,obj.last,pt);obj.last=pt;}); c.addEventListener('pointerup',e=>{if(!obj.drawing)return;e.preventDefault();obj.drawing=false;obj.last=null;drawPatternPad(obj); if(onComplete)onComplete(obj.pattern.slice());}); c.addEventListener('pointercancel',()=>{obj.drawing=false;obj.last=null;drawPatternPad(obj);}); resetPatternDraw(obj); }
-async function handleUnlockPattern(pattern){ if(pattern.length<4){showAppLockError('Kam az kam 4 dots ka pattern chahiye.');resetPatternDraw(lockPatternPad);return;} const sig=pattern.join('-'); if(!appLockConfig.patternHash){showAppLockError('Pattern set nahi hai.');return;} const ok=(await hashAppSecret(sig,appLockConfig.patternSalt))===appLockConfig.patternHash; if(ok) hideAppLockOverlay(); else {showAppLockError('Pattern ghalat hai.');resetPatternDraw(lockPatternPad);} }
+async function handleUnlockPattern(pattern){ if(pattern.length<4){showAppLockError('Kam az kam 4 dots ka pattern chahiye.');resetPatternDraw(lockPatternPad);return;} const sig=pattern.join('-'); if(!appLockConfig.patternHash){showAppLockError('Pattern set nahi hai.');return;} const ok=(await hashAppSecret(sig,appLockConfig.patternSalt))===appLockConfig.patternHash; if(ok) appLockVerificationSucceeded(); else {showAppLockError('Pattern ghalat hai.');resetPatternDraw(lockPatternPad);} }
 async function saveSetupPattern(){ const pattern=setupPatternPad.pattern.slice(); if(pattern.length<4){alert('Kam az kam 4 dots ka pattern banayein.');return;} const salt=bytesToB64Url(randomBytes(16)); const hash=await hashAppSecret(pattern.join('-'),salt); appLockConfig.patternSalt=salt;appLockConfig.patternHash=hash;appLockConfig.methods.pattern=true;appLockConfig.preferred='pattern';appLockConfig.enabled=true;saveAppLockConfig();setAppLockSessionUnlocked(true);closeAppLockSetup();renderAppLockSettings();showToast('✓ App pattern save ho gaya.'); }
+function beginAppLockChange(mode){
+  if(!appLockHasAnyMethod()){ openAppLockSetup(mode); return; }
+  appLockChangePendingMode=mode;
+  setAppLockSessionUnlocked(false);
+  showAppLockOverlay(true);
+}
+async function verifyGmailForLockChange(){
+  if(!appLockChangePendingMode) return;
+  if(!fbAuth || !fbUser || !isGoogleUser(fbUser)){ showAppLockError('Is account par Gmail verification available nahi. Account se re-login karein.'); return; }
+  try{
+    const provider=new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({prompt:'select_account',login_hint:fbUser.email||''});
+    showAppLockError('Gmail verification open ho rahi hai…');
+    await fbAuth.currentUser.reauthenticateWithPopup(provider);
+    appLockVerificationSucceeded();
+    showToast('✓ Gmail verification successful.');
+  }catch(err){ console.error('App Lock Gmail recovery failed',err); showAppLockError('Gmail verification complete nahi hui.'); }
+}
 function openAppLockSetup(mode){ appLockSetupMode=mode; const ov=document.getElementById('appLockSetupOverlay'); const title=document.getElementById('appLockSetupTitle'); const sub=document.getElementById('appLockSetupSub'); ['appLockPinSetupView','appLockPatternSetupView','appLockFingerprintSetupView'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';}); if(mode==='pin'){title.textContent='Set App PIN';sub.textContent='Apna custom 4–8 digit PIN set karein. Lock save hote hi ON ho jayega.';document.getElementById('appLockPinSetupView').style.display='block';document.getElementById('appLockPinSetupInput').value='';document.getElementById('appLockPinSetupConfirm').value='';} else if(mode==='pattern'){title.textContent='Set App Pattern';sub.textContent='3×3 dots ko drag karke custom pattern banayein.';document.getElementById('appLockPatternSetupView').style.display='block';document.getElementById('appLockPatternSetupStatus').textContent='Kam az kam 4 dots ka pattern banayein.';resetPatternDraw(setupPatternPad);} else {title.textContent='Register Fingerprint';sub.textContent='Phone ka secure biometric authenticator register karein.';document.getElementById('appLockFingerprintSetupView').style.display='block';} ov.classList.remove('hidden');}
-function closeAppLockSetup(){ const ov=document.getElementById('appLockSetupOverlay');if(ov)ov.classList.add('hidden'); appLockSetupMode=null; }
+function closeAppLockSetup(){ const ov=document.getElementById('appLockSetupOverlay');if(ov)ov.classList.add('hidden'); appLockSetupMode=null; appLockChangePendingMode=null; }
 async function registerAppLockFingerprint(){
   try{
     if(!window.PublicKeyCredential || !navigator.credentials){throw new Error('Is browser mein biometric WebAuthn supported nahi.');}
@@ -5801,7 +5825,7 @@ async function registerAppLockFingerprint(){
 async function unlockWithFingerprint(){
   try{
     if(!appLockConfig.fingerprintCredentialId) throw new Error('Fingerprint abhi register nahi hai.');
-    const cred=await navigator.credentials.get({publicKey:{challenge:randomBytes(32),rpId:location.hostname,allowCredentials:[{type:'public-key',id:b64UrlToBytes(appLockConfig.fingerprintCredentialId)}],userVerification:'required',timeout:60000}}); if(cred) hideAppLockOverlay();
+    const cred=await navigator.credentials.get({publicKey:{challenge:randomBytes(32),rpId:location.hostname,allowCredentials:[{type:'public-key',id:b64UrlToBytes(appLockConfig.fingerprintCredentialId)}],userVerification:'required',timeout:60000}}); if(cred) appLockVerificationSucceeded();
   }catch(err){
     console.error(err);
     const note=document.getElementById('appLockFingerprintNote');
@@ -5814,10 +5838,10 @@ async function unlockWithFingerprint(){
 function renderAppLockSettings(){
   const onEl=document.getElementById('appLockEnabledToggle'); const methodsEl=document.getElementById('appLockMethodsSettings'); if(!onEl||!methodsEl)return;
   const active=!!appLockConfig.enabled; onEl.innerHTML='<button type="button" class="settings-toggle-chip app-lock-power-btn '+(active?'on':'')+'" id="appLockEnabledChip"><span class="dot"></span><span>'+ (active?'App Lock ON':'App Lock OFF') +'</span><span class="app-lock-toggle-pill"><span></span></span></button>';
-  document.getElementById('appLockEnabledChip').onclick=function(){ if(!appLockHasAnyMethod()){alert('Pehle PIN, Pattern ya Fingerprint mein se kam az kam 1 method set karein.');return;} appLockConfig.enabled=!appLockConfig.enabled;saveAppLockConfig();renderAppLockSettings();renderSettingsHomeSummaries(); if(appLockConfig.enabled){setAppLockSessionUnlocked(false);showAppLockOverlay(true);} else {setAppLockSessionUnlocked(false);hideAppLockOverlay(false);} };
+  document.getElementById('appLockEnabledChip').onclick=function(){ if(!appLockHasAnyMethod()){alert('Pehle PIN, Pattern ya Fingerprint mein se kam az kam 1 method set karein.');return;} if(appLockConfig.enabled){ if(!confirm('App Lock OFF karne se pehle current lock verify hoga.')) return; appLockChangePendingMode='__toggle_off__'; setAppLockSessionUnlocked(false); showAppLockOverlay(true); } else { appLockConfig.enabled=true; saveAppLockConfig(); setAppLockSessionUnlocked(false); renderAppLockSettings(); renderSettingsHomeSummaries(); showAppLockOverlay(true); } };
   const defs=[['pin','🔢 PIN',!!appLockConfig.pinHash],['pattern','✍️ Pattern',!!appLockConfig.patternHash],['fingerprint','👆 Fingerprint',!!appLockConfig.fingerprintCredentialId]];
   methodsEl.innerHTML=defs.map(d=>'<button type="button" class="app-lock-setting-chip '+(appLockConfig.methods[d[0]]?'on':'')+'" data-method="'+d[0]+'">'+d[1]+(d[2]?' ✓':'')+'</button>').join('');
-  methodsEl.querySelectorAll('.app-lock-setting-chip').forEach(b=>b.onclick=function(){const m=b.dataset.method;if(m==='pin'&&!appLockConfig.pinHash){openAppLockSetup('pin');return;}if(m==='pattern'&&!appLockConfig.patternHash){openAppLockSetup('pattern');return;}if(m==='fingerprint'&&!appLockConfig.fingerprintCredentialId){openAppLockSetup('fingerprint');return;}appLockConfig.methods[m]=!appLockConfig.methods[m];if(appLockConfig.methods[m])appLockConfig.preferred=m;saveAppLockConfig();renderAppLockSettings();});
+  methodsEl.querySelectorAll('.app-lock-setting-chip').forEach(b=>b.onclick=function(){const m=b.dataset.method;if(!appLockHasAnyMethod()){openAppLockSetup(m);return;} if(m==='pin'&&!appLockConfig.pinHash){beginAppLockChange('pin');return;}if(m==='pattern'&&!appLockConfig.patternHash){beginAppLockChange('pattern');return;}if(m==='fingerprint'&&!appLockConfig.fingerprintCredentialId){beginAppLockChange('fingerprint');return;} appLockChangePendingMode='__method_toggle__:'+m; setAppLockSessionUnlocked(false); showAppLockOverlay(true);});
 }
 function openAppLockForTest(){ if(!appLockHasAnyMethod()){alert('Pehle kam az kam 1 App Lock method set karein.');return;} appLockConfig.enabled=true;saveAppLockConfig();setAppLockSessionUnlocked(false);showAppLockOverlay(true); }
 ensurePinEntryInput();
@@ -5825,13 +5849,14 @@ wirePatternPad(lockPatternPad, handleUnlockPattern);
 wirePatternPad(setupPatternPad, function(pattern){const el=document.getElementById('appLockPatternSetupStatus');if(el)el.textContent=pattern.length>=4?'Pattern ready — Save Pattern dabayein.':('Kam az kam 4 dots chahiye. Abhi '+pattern.length+' selected.');});
 document.getElementById('appLockFingerprintBtn').onclick=unlockWithFingerprint;
 document.getElementById('appLockOtherMethodBtn').onclick=showNextAppLockMethod;
+document.getElementById('appLockForgotBtn').onclick=verifyGmailForLockChange;
 document.getElementById('appLockPinSetupSave').onclick=appLockSetPin;
 document.getElementById('appLockPatternSetupSave').onclick=saveSetupPattern;
 document.getElementById('appLockFingerprintSetupBtn').onclick=registerAppLockFingerprint;
 document.getElementById('appLockSetupCancel').onclick=closeAppLockSetup;
-document.getElementById('appLockSetPinBtn').onclick=()=>openAppLockSetup('pin');
-document.getElementById('appLockSetPatternBtn').onclick=()=>openAppLockSetup('pattern');
-document.getElementById('appLockSetFingerprintBtn').onclick=()=>openAppLockSetup('fingerprint');
+document.getElementById('appLockSetPinBtn').onclick=()=>beginAppLockChange('pin');
+document.getElementById('appLockSetPatternBtn').onclick=()=>beginAppLockChange('pattern');
+document.getElementById('appLockSetFingerprintBtn').onclick=()=>beginAppLockChange('fingerprint');
 document.getElementById('appLockTestBtn').onclick=openAppLockForTest;
 renderAppLockSettings();
 
