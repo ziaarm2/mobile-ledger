@@ -397,6 +397,13 @@
   .app-lock-power-btn.on .app-lock-toggle-pill{background:var(--accent);border-color:var(--accent);justify-content:flex-end;}
   .app-lock-power-btn.on .app-lock-toggle-pill span{background:var(--accent-text);}
   .app-lock-settings-methods .app-lock-setting-chip{cursor:pointer;min-height:40px;}
+  /* Direct unlock: no promotional/extra lock screen. */
+  .app-lock-direct-brand{display:none;}
+  .app-lock-direct-title{font-size:22px;margin-bottom:8px;}
+  .app-lock-direct-shell{padding:24px 18px 18px;}
+  .app-lock-direct-icon{font-size:42px;margin:0 0 8px;}
+  .app-lock-direct-note{display:none;}
+  .app-lock-other-btn{margin-top:12px;}
 
   /* Admin Shop Context */
   #adminShopContextBanner{display:none;align-items:center;justify-content:space-between;gap:8px;background:var(--jv-bg);border:1px solid var(--jv);color:var(--jv);border-radius:10px;padding:9px 11px;margin:8px 16px 0;font-size:12px;}
@@ -568,6 +575,7 @@
         <button class="history-icon-btn" id="globalRedoBtn" title="Redo" aria-label="Redo">↷</button>
         <button class="history-icon-btn" id="adminNotificationBtn" title="Notifications" aria-label="Notifications" style="display:none;position:relative;">🔔<span id="adminNotificationBadge" class="shop-access-badge" style="position:absolute;right:-2px;top:-3px;display:none;margin:0;min-width:17px;height:17px;padding:0 4px;"></span></button>
         <button class="history-icon-btn quick-privacy-btn" id="quickPrivacyHeaderBtn" title="Privacy: tap = ON/OFF, long-press = amount" aria-label="Quick Privacy">🙈</button>
+        <button class="history-icon-btn quick-privacy-amount-btn" id="quickPrivacyAmountBtn" title="Privacy amount" aria-label="Privacy amount">⚙</button>
         <button class="menu-btn" id="btnMenu">☰ Menu</button>
       </div>
     </div>
@@ -3099,8 +3107,11 @@ let cardDisplaySettings = {
 };
 const LS_CARD_DISPLAY_KEY = 'mobileLedger_cardDisplaySettings';
 const LS_APP_LOCK_KEY = 'mobileLedger_appLock_v1';
+const LS_APP_LOCK_SESSION_KEY = 'mobileLedger_appLockSession_v1';
 let appLockConfig = { enabled:false, methods:{pin:false, pattern:false, fingerprint:false}, preferred:'pin', pinSalt:'', pinHash:'', patternSalt:'', patternHash:'', fingerprintCredentialId:'' };
 let appLockUnlocked = false;
+function appLockSessionIsUnlocked(){ try{return sessionStorage.getItem(LS_APP_LOCK_SESSION_KEY)==='1';}catch(e){return false;} }
+function setAppLockSessionUnlocked(v){ try{ if(v) sessionStorage.setItem(LS_APP_LOCK_SESSION_KEY,'1'); else sessionStorage.removeItem(LS_APP_LOCK_SESSION_KEY); }catch(e){} }
 let appLockSetupMode = null;
 let appLockActiveMethod = null;
 function defaultAppLockConfig(){ return { enabled:false, methods:{pin:false,pattern:false,fingerprint:false}, preferred:'pin', pinSalt:'', pinHash:'', patternSalt:'', patternHash:'', fingerprintCredentialId:'' }; }
@@ -3116,12 +3127,12 @@ function b64UrlToBytes(str){ const b64=String(str||'').replace(/-/g,'+').replace
 async function hashAppSecret(secret,salt){ const data=new TextEncoder().encode(String(salt)+'\0'+String(secret)); const digest=await crypto.subtle.digest('SHA-256',data); return bytesToB64Url(new Uint8Array(digest)); }
 function showAppLockError(msg){ const el=document.getElementById('appLockError'); if(el) el.textContent=msg||''; }
 function appLockAvailableMethods(){ const out=[]; if(appLockConfig.methods.pin && appLockConfig.pinHash) out.push('pin'); if(appLockConfig.methods.pattern && appLockConfig.patternHash) out.push('pattern'); if(appLockConfig.methods.fingerprint && appLockConfig.fingerprintCredentialId) out.push('fingerprint'); return out; }
-function setAppLockMethod(method){ appLockActiveMethod=method; showAppLockError(''); ['appLockPinView','appLockFingerprintView','appLockPatternView'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';}); const map={pin:'appLockPinView',fingerprint:'appLockFingerprintView',pattern:'appLockPatternView'}; const el=document.getElementById(map[method]); if(el)el.style.display='block'; const other=document.getElementById('appLockOtherMethodBtn'); if(other){ other.style.display=appLockAvailableMethods().length>1?'inline-flex':'none'; } if(method==='pin'){resetPinEntry();} if(method==='pattern'){resetPatternDraw(lockPatternPad);} if(method==='fingerprint'){const btn=document.getElementById('appLockFingerprintBtn');if(btn)btn.style.display='none'; setTimeout(function(){unlockWithFingerprint();},120);} }
+function setAppLockMethod(method){ appLockActiveMethod=method; showAppLockError(''); ['appLockPinView','appLockFingerprintView','appLockPatternView'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';}); const map={pin:'appLockPinView',fingerprint:'appLockFingerprintView',pattern:'appLockPatternView'}; const el=document.getElementById(map[method]); if(el)el.style.display='block'; const other=document.getElementById('appLockOtherMethodBtn'); if(other){ other.style.display=appLockAvailableMethods().length>1?'inline-flex':'none'; } if(method==='pin'){resetPinEntry(); setTimeout(function(){const input=document.getElementById('appLockPinEntry'); if(input) input.focus();},60);} if(method==='pattern'){resetPatternDraw(lockPatternPad);} if(method==='fingerprint'){const btn=document.getElementById('appLockFingerprintBtn');if(btn)btn.style.display='none'; setTimeout(function(){unlockWithFingerprint();},60);} }
 function showNextAppLockMethod(){ const methods=appLockAvailableMethods(); if(methods.length<2)return; const idx=Math.max(0,methods.indexOf(appLockActiveMethod)); setAppLockMethod(methods[(idx+1)%methods.length]); }
-function showAppLockOverlay(){ const ov=document.getElementById('appLockOverlay'); if(!ov)return; appLockUnlocked=false; ov.classList.remove('hidden'); document.querySelector('.app').style.visibility='hidden'; const methods=appLockAvailableMethods(); if(methods.length) setAppLockMethod(appLockConfig.preferred && methods.indexOf(appLockConfig.preferred)!==-1?appLockConfig.preferred:methods[0]); }
-function hideAppLockOverlay(){ const ov=document.getElementById('appLockOverlay'); if(ov) ov.classList.add('hidden'); appLockUnlocked=true; const app=document.querySelector('.app'); if(app) app.style.visibility='visible'; showAppLockError(''); }
+function showAppLockOverlay(force){ const ov=document.getElementById('appLockOverlay'); if(!ov)return; if(!force && appLockSessionIsUnlocked()){ hideAppLockOverlay(false); return; } appLockUnlocked=false; ov.classList.remove('hidden'); const app=document.querySelector('.app'); if(app) app.style.visibility='hidden'; const methods=appLockAvailableMethods(); if(methods.length) setAppLockMethod(appLockConfig.preferred && methods.indexOf(appLockConfig.preferred)!==-1?appLockConfig.preferred:methods[0]); }
+function hideAppLockOverlay(persistSession=true){ const ov=document.getElementById('appLockOverlay'); if(ov) ov.classList.add('hidden'); appLockUnlocked=true; if(persistSession) setAppLockSessionUnlocked(true); const app=document.querySelector('.app'); if(app) app.style.visibility='visible'; showAppLockError(''); }
 function shouldRequireAppLock(){ return !!(appLockConfig.enabled && appLockHasAnyMethod() && appLockAvailableMethods().length); }
-function enforceAppLock(){ if(shouldRequireAppLock()) showAppLockOverlay(); else hideAppLockOverlay(); }
+function enforceAppLock(){ if(!shouldRequireAppLock()){ hideAppLockOverlay(false); return; } if(appLockSessionIsUnlocked()){ hideAppLockOverlay(false); return; } showAppLockOverlay(false); }
 
 
 function loadCardDisplaySettings(){
@@ -5790,7 +5801,7 @@ async function unlockWithFingerprint(){
   }catch(err){
     console.error(err);
     const note=document.getElementById('appLockFingerprintNote');
-    if(note) note.textContent='Fingerprint use karne ke liye button dabayein.';
+    if(note) note.style.display='none';
     const btn=document.getElementById('appLockFingerprintBtn');
     if(btn) btn.style.display='inline-flex';
     showAppLockError('');
@@ -5799,12 +5810,12 @@ async function unlockWithFingerprint(){
 function renderAppLockSettings(){
   const onEl=document.getElementById('appLockEnabledToggle'); const methodsEl=document.getElementById('appLockMethodsSettings'); if(!onEl||!methodsEl)return;
   const active=!!appLockConfig.enabled; onEl.innerHTML='<button type="button" class="settings-toggle-chip app-lock-power-btn '+(active?'on':'')+'" id="appLockEnabledChip"><span class="dot"></span><span>'+ (active?'App Lock ON':'App Lock OFF') +'</span><span class="app-lock-toggle-pill"><span></span></span></button>';
-  document.getElementById('appLockEnabledChip').onclick=function(){ if(!appLockHasAnyMethod()){alert('Pehle PIN, Pattern ya Fingerprint mein se kam az kam 1 method set karein.');return;} appLockConfig.enabled=!appLockConfig.enabled;saveAppLockConfig();renderAppLockSettings();renderSettingsHomeSummaries(); if(appLockConfig.enabled)showAppLockOverlay(); else hideAppLockOverlay(); };
+  document.getElementById('appLockEnabledChip').onclick=function(){ if(!appLockHasAnyMethod()){alert('Pehle PIN, Pattern ya Fingerprint mein se kam az kam 1 method set karein.');return;} appLockConfig.enabled=!appLockConfig.enabled;saveAppLockConfig();renderAppLockSettings();renderSettingsHomeSummaries(); if(appLockConfig.enabled){setAppLockSessionUnlocked(false);showAppLockOverlay(true);} else {setAppLockSessionUnlocked(false);hideAppLockOverlay(false);} };
   const defs=[['pin','🔢 PIN',!!appLockConfig.pinHash],['pattern','✍️ Pattern',!!appLockConfig.patternHash],['fingerprint','👆 Fingerprint',!!appLockConfig.fingerprintCredentialId]];
   methodsEl.innerHTML=defs.map(d=>'<button type="button" class="app-lock-setting-chip '+(appLockConfig.methods[d[0]]?'on':'')+'" data-method="'+d[0]+'">'+d[1]+(d[2]?' ✓':'')+'</button>').join('');
   methodsEl.querySelectorAll('.app-lock-setting-chip').forEach(b=>b.onclick=function(){const m=b.dataset.method;if(m==='pin'&&!appLockConfig.pinHash){openAppLockSetup('pin');return;}if(m==='pattern'&&!appLockConfig.patternHash){openAppLockSetup('pattern');return;}if(m==='fingerprint'&&!appLockConfig.fingerprintCredentialId){openAppLockSetup('fingerprint');return;}appLockConfig.methods[m]=!appLockConfig.methods[m];if(appLockConfig.methods[m])appLockConfig.preferred=m;saveAppLockConfig();renderAppLockSettings();});
 }
-function openAppLockForTest(){ if(!appLockHasAnyMethod()){alert('Pehle kam az kam 1 App Lock method set karein.');return;} appLockConfig.enabled=true;saveAppLockConfig();showAppLockOverlay(); }
+function openAppLockForTest(){ if(!appLockHasAnyMethod()){alert('Pehle kam az kam 1 App Lock method set karein.');return;} appLockConfig.enabled=true;saveAppLockConfig();setAppLockSessionUnlocked(false);showAppLockOverlay(true); }
 ensurePinEntryInput();
 wirePatternPad(lockPatternPad, handleUnlockPattern);
 wirePatternPad(setupPatternPad, function(pattern){const el=document.getElementById('appLockPatternSetupStatus');if(el)el.textContent=pattern.length>=4?'Pattern ready — Save Pattern dabayein.':('Kam az kam 4 dots chahiye. Abhi '+pattern.length+' selected.');});
@@ -5820,13 +5831,6 @@ document.getElementById('appLockSetFingerprintBtn').onclick=()=>openAppLockSetup
 document.getElementById('appLockTestBtn').onclick=openAppLockForTest;
 renderAppLockSettings();
 
-
-// App Lock: require authentication again whenever the page becomes visible after being hidden.
-document.addEventListener('visibilitychange', function(){
-  if(document.visibilityState==='visible' && typeof appLockConfig!=='undefined' && shouldRequireAppLock()){
-    showAppLockOverlay();
-  }
-});
 
 let badgeOrderDragKey = null;
 function renderBadgeOrderList(){
@@ -6210,11 +6214,16 @@ initWaMessageEditor();
 
 function syncQuickPrivacyHeader(){
   const btn=document.getElementById('quickPrivacyHeaderBtn');
+  const amountBtn=document.getElementById('quickPrivacyAmountBtn');
   if(btn){
     const on=isPrivacyOn();
     btn.classList.toggle('is-on',on);
     btn.textContent=on?'🙈':'👁';
-    btn.title=on?'Privacy ON — tap to hide/unhide, long-press to change amount':'Privacy OFF — tap to turn on, long-press to change amount';
+    btn.title='Privacy '+(on?'ON':'OFF')+' — tap to toggle';
+  }
+  if(amountBtn){
+    amountBtn.textContent='⚙';
+    amountBtn.title='Privacy amount — slider ya manual amount';
   }
 }
 function toggleQuickPrivacy(){
@@ -6269,6 +6278,7 @@ function quickSetPrivacyAmount(){
 }
 (function wireQuickPrivacyHeader(){
   const btn=document.getElementById('quickPrivacyHeaderBtn');
+  const amountBtn=document.getElementById('quickPrivacyAmountBtn');
   const slider=document.getElementById('quickPrivacyAmountSlider');
   const input=document.getElementById('quickPrivacyAmountInput');
   const pop=document.getElementById('privacyAmountPopover');
@@ -6283,6 +6293,7 @@ function quickSetPrivacyAmount(){
     btn.addEventListener('pointerleave',cancel);
     btn.addEventListener('contextmenu',e=>{e.preventDefault();openPrivacyAmountPopover();});
   }
+  if(amountBtn) amountBtn.onclick=function(){ openPrivacyAmountPopover(); };
   if(slider) slider.addEventListener('input',function(){ setQuickPrivacyAmount(this.value,{silent:true}); });
   if(input){
     input.addEventListener('input',function(){
@@ -6294,19 +6305,11 @@ function quickSetPrivacyAmount(){
   }
   document.addEventListener('pointerdown',function(e){
     if(!pop || !pop.classList.contains('show')) return;
-    if(pop.contains(e.target) || e.target===btn) return;
+    if(pop.contains(e.target) || e.target===btn || e.target===amountBtn) return;
     closePrivacyAmountPopover();
   });
   syncQuickPrivacyHeader();
 })();
-
-document.addEventListener('visibilitychange', function(){
-  if(document.visibilityState==='hidden' && shouldRequireAppLock()){
-    appLockUnlocked=false;
-  }else if(document.visibilityState==='visible' && fbUser && shouldRequireAppLock() && !appLockUnlocked && !document.getElementById('appLockOverlay').classList.contains('hidden')){
-    showAppLockOverlay();
-  }
-});
 
 document.getElementById('btnPrivacyToggle').onclick = function(){
   cardDisplaySettings.privacy.enabled = !cardDisplaySettings.privacy.enabled;
