@@ -355,6 +355,13 @@
   .quick-privacy-amount-btn{min-width:42px;padding:0 8px;font-size:11px;font-weight:800;}
 
   /* ===== App Lock (PIN / Pattern / Fingerprint) ===== */
+  .app-lock-direct-shell{max-width:360px;padding:30px 20px 22px;border-radius:26px;background:var(--surface-2);}
+  .app-lock-direct-brand{font-size:12px;font-weight:900;letter-spacing:.16em;color:var(--text-faint);text-transform:uppercase;margin-bottom:18px;}
+  .app-lock-direct-title{font-size:20px;font-weight:900;color:var(--text);margin-bottom:12px;}
+  .app-lock-direct-note{font-size:12px;color:var(--text-dim);margin-top:7px;}
+  .app-lock-direct-icon{font-size:54px;line-height:1;margin:4px 0 12px;}
+  .app-lock-fallback-btn{margin-top:16px;min-width:190px;}
+  .app-lock-other-btn{margin-top:14px;width:auto;border:0;background:transparent;color:var(--accent);font-weight:800;font-size:12px;padding:7px 10px;}
   #appLockOverlay{z-index:2500;background:var(--bg);align-items:center;padding:18px;}
   #appLockOverlay.hidden{display:none;}
   .app-lock-shell{width:min(420px,100%);background:var(--surface-2);border:1px solid var(--border);border-radius:22px;padding:24px 18px;box-shadow:0 24px 70px rgba(0,0,0,.45);text-align:center;}
@@ -561,7 +568,6 @@
         <button class="history-icon-btn" id="globalRedoBtn" title="Redo" aria-label="Redo">↷</button>
         <button class="history-icon-btn" id="adminNotificationBtn" title="Notifications" aria-label="Notifications" style="display:none;position:relative;">🔔<span id="adminNotificationBadge" class="shop-access-badge" style="position:absolute;right:-2px;top:-3px;display:none;margin:0;min-width:17px;height:17px;padding:0 4px;"></span></button>
         <button class="history-icon-btn quick-privacy-btn" id="quickPrivacyHeaderBtn" title="Privacy: tap = ON/OFF, long-press = amount" aria-label="Quick Privacy">🙈</button>
-        <button class="history-icon-btn quick-privacy-amount-btn" id="quickPrivacyAmountBtn" title="Privacy fixed amount" aria-label="Privacy amount">₹<span id="quickPrivacyAmountLabel">2k</span></button>
         <button class="menu-btn" id="btnMenu">☰ Menu</button>
       </div>
     </div>
@@ -986,30 +992,24 @@
 </div>
 
 <div class="overlay hidden" id="appLockOverlay">
-  <div class="app-lock-shell">
-    <div class="app-lock-logo"><img src="icon-192.png" alt="Mobile Hisab"></div>
-    <div class="app-lock-title">App Locked</div>
-    <div class="app-lock-sub">Mobile Hisab kholne ke liye apna App Lock unlock karein.</div>
-    <div class="app-lock-methods" id="appLockUnlockMethods"></div>
+  <div class="app-lock-shell app-lock-direct-shell">
+    <div class="app-lock-direct-brand">Z Mobile</div>
     <div id="appLockPinView" style="display:none;">
+      <div class="app-lock-direct-title">Enter PIN</div>
       <div class="app-lock-pin-wrap" id="appLockPinDots"></div>
       <div class="app-lock-keypad" id="appLockKeypad"></div>
-      <div class="app-lock-secondary"><button type="button" class="btn-cancel" id="appLockPinBack" style="width:100%;">Doosra method</button></div>
     </div>
     <div id="appLockFingerprintView" style="display:none;">
-      <div class="app-lock-fingerprint">
-        <div style="font-size:46px;line-height:1;">👆</div>
-        <div style="font-size:13px;font-weight:800;">Fingerprint se unlock karein</div>
-        <div class="app-lock-sub">Phone ka registered fingerprint / biometric verify hoga.</div>
-        <button type="button" class="btn-save" id="appLockFingerprintBtn">👆 Unlock with Fingerprint</button>
-        <button type="button" class="btn-cancel" id="appLockFingerprintBack" style="width:100%;">Doosra method</button>
-      </div>
+      <div class="app-lock-direct-icon">👆</div>
+      <div class="app-lock-direct-title">Fingerprint</div>
+      <div class="app-lock-direct-note" id="appLockFingerprintNote">Fingerprint verify karein.</div>
+      <button type="button" class="btn-save app-lock-fallback-btn" id="appLockFingerprintBtn" style="display:none;">Use Fingerprint</button>
     </div>
     <div id="appLockPatternView" style="display:none;">
+      <div class="app-lock-direct-title">Draw Pattern</div>
       <div class="pattern-canvas-wrap"><canvas id="appLockPatternCanvas" width="250" height="250"></canvas></div>
-      <div class="app-lock-setup-note">Pattern banane ke liye dots ko sequence mein drag karein.</div>
-      <button type="button" class="btn-cancel" id="appLockPatternBack" style="width:100%;margin-top:10px;">Doosra method</button>
     </div>
+    <button type="button" class="app-lock-other-btn" id="appLockOtherMethodBtn" style="display:none;">Use another method</button>
     <div class="app-lock-error" id="appLockError"></div>
   </div>
 </div>
@@ -3116,9 +3116,9 @@ function b64UrlToBytes(str){ const b64=String(str||'').replace(/-/g,'+').replace
 async function hashAppSecret(secret,salt){ const data=new TextEncoder().encode(String(salt)+'\0'+String(secret)); const digest=await crypto.subtle.digest('SHA-256',data); return bytesToB64Url(new Uint8Array(digest)); }
 function showAppLockError(msg){ const el=document.getElementById('appLockError'); if(el) el.textContent=msg||''; }
 function appLockAvailableMethods(){ const out=[]; if(appLockConfig.methods.pin && appLockConfig.pinHash) out.push('pin'); if(appLockConfig.methods.pattern && appLockConfig.patternHash) out.push('pattern'); if(appLockConfig.methods.fingerprint && appLockConfig.fingerprintCredentialId) out.push('fingerprint'); return out; }
-function setAppLockMethod(method){ appLockActiveMethod=method; showAppLockError(''); ['appLockPinView','appLockFingerprintView','appLockPatternView'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';}); const map={pin:'appLockPinView',fingerprint:'appLockFingerprintView',pattern:'appLockPatternView'}; const el=document.getElementById(map[method]); if(el)el.style.display='block'; document.querySelectorAll('#appLockUnlockMethods .app-lock-method-btn').forEach(b=>b.classList.toggle('active',b.dataset.method===method)); if(method==='pin') resetPinEntry(); if(method==='pattern') resetPatternDraw(lockPatternPad); }
-function renderAppLockUnlockMethods(){ const el=document.getElementById('appLockUnlockMethods'); if(!el)return; const methods=appLockAvailableMethods(); const labels={pin:'🔢 PIN',pattern:'✍️ Pattern',fingerprint:'👆 Fingerprint'}; el.innerHTML=methods.map(m=>'<button type="button" class="app-lock-method-btn" data-method="'+m+'">'+labels[m]+'</button>').join(''); el.querySelectorAll('.app-lock-method-btn').forEach(b=>b.onclick=()=>setAppLockMethod(b.dataset.method)); }
-function showAppLockOverlay(){ const ov=document.getElementById('appLockOverlay'); if(!ov)return; appLockUnlocked=false; renderAppLockUnlockMethods(); ov.classList.remove('hidden'); document.querySelector('.app').style.visibility='hidden'; const methods=appLockAvailableMethods(); if(methods.length) setAppLockMethod(appLockConfig.preferred && methods.indexOf(appLockConfig.preferred)!==-1?appLockConfig.preferred:methods[0]); }
+function setAppLockMethod(method){ appLockActiveMethod=method; showAppLockError(''); ['appLockPinView','appLockFingerprintView','appLockPatternView'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';}); const map={pin:'appLockPinView',fingerprint:'appLockFingerprintView',pattern:'appLockPatternView'}; const el=document.getElementById(map[method]); if(el)el.style.display='block'; const other=document.getElementById('appLockOtherMethodBtn'); if(other){ other.style.display=appLockAvailableMethods().length>1?'inline-flex':'none'; } if(method==='pin'){resetPinEntry();} if(method==='pattern'){resetPatternDraw(lockPatternPad);} if(method==='fingerprint'){const btn=document.getElementById('appLockFingerprintBtn');if(btn)btn.style.display='none'; setTimeout(function(){unlockWithFingerprint();},120);} }
+function showNextAppLockMethod(){ const methods=appLockAvailableMethods(); if(methods.length<2)return; const idx=Math.max(0,methods.indexOf(appLockActiveMethod)); setAppLockMethod(methods[(idx+1)%methods.length]); }
+function showAppLockOverlay(){ const ov=document.getElementById('appLockOverlay'); if(!ov)return; appLockUnlocked=false; ov.classList.remove('hidden'); document.querySelector('.app').style.visibility='hidden'; const methods=appLockAvailableMethods(); if(methods.length) setAppLockMethod(appLockConfig.preferred && methods.indexOf(appLockConfig.preferred)!==-1?appLockConfig.preferred:methods[0]); }
 function hideAppLockOverlay(){ const ov=document.getElementById('appLockOverlay'); if(ov) ov.classList.add('hidden'); appLockUnlocked=true; const app=document.querySelector('.app'); if(app) app.style.visibility='visible'; showAppLockError(''); }
 function shouldRequireAppLock(){ return !!(appLockConfig.enabled && appLockHasAnyMethod() && appLockAvailableMethods().length); }
 function enforceAppLock(){ if(shouldRequireAppLock()) showAppLockOverlay(); else hideAppLockOverlay(); }
@@ -5787,7 +5787,14 @@ async function unlockWithFingerprint(){
   try{
     if(!appLockConfig.fingerprintCredentialId) throw new Error('Fingerprint abhi register nahi hai.');
     const cred=await navigator.credentials.get({publicKey:{challenge:randomBytes(32),rpId:location.hostname,allowCredentials:[{type:'public-key',id:b64UrlToBytes(appLockConfig.fingerprintCredentialId)}],userVerification:'required',timeout:60000}}); if(cred) hideAppLockOverlay();
-  }catch(err){console.error(err);showAppLockError('Fingerprint verify nahi hua. Dobara try karein ya doosra method choose karein.');}
+  }catch(err){
+    console.error(err);
+    const note=document.getElementById('appLockFingerprintNote');
+    if(note) note.textContent='Fingerprint use karne ke liye button dabayein.';
+    const btn=document.getElementById('appLockFingerprintBtn');
+    if(btn) btn.style.display='inline-flex';
+    showAppLockError('');
+  }
 }
 function renderAppLockSettings(){
   const onEl=document.getElementById('appLockEnabledToggle'); const methodsEl=document.getElementById('appLockMethodsSettings'); if(!onEl||!methodsEl)return;
@@ -5801,10 +5808,8 @@ function openAppLockForTest(){ if(!appLockHasAnyMethod()){alert('Pehle kam az ka
 ensurePinEntryInput();
 wirePatternPad(lockPatternPad, handleUnlockPattern);
 wirePatternPad(setupPatternPad, function(pattern){const el=document.getElementById('appLockPatternSetupStatus');if(el)el.textContent=pattern.length>=4?'Pattern ready — Save Pattern dabayein.':('Kam az kam 4 dots chahiye. Abhi '+pattern.length+' selected.');});
-document.getElementById('appLockPinBack').onclick=function(){const ms=appLockAvailableMethods();if(ms.length) setAppLockMethod(ms.find(m=>m!=='pin')||ms[0]);};
-document.getElementById('appLockFingerprintBack').onclick=function(){const ms=appLockAvailableMethods();if(ms.length) setAppLockMethod(ms.find(m=>m!=='fingerprint')||ms[0]);};
-document.getElementById('appLockPatternBack').onclick=function(){const ms=appLockAvailableMethods();if(ms.length) setAppLockMethod(ms.find(m=>m!=='pattern')||ms[0]);};
 document.getElementById('appLockFingerprintBtn').onclick=unlockWithFingerprint;
+document.getElementById('appLockOtherMethodBtn').onclick=showNextAppLockMethod;
 document.getElementById('appLockPinSetupSave').onclick=appLockSetPin;
 document.getElementById('appLockPatternSetupSave').onclick=saveSetupPattern;
 document.getElementById('appLockFingerprintSetupBtn').onclick=registerAppLockFingerprint;
@@ -6205,19 +6210,12 @@ initWaMessageEditor();
 
 function syncQuickPrivacyHeader(){
   const btn=document.getElementById('quickPrivacyHeaderBtn');
-  const amtBtn=document.getElementById('quickPrivacyAmountBtn');
-  const label=document.getElementById('quickPrivacyAmountLabel');
   if(btn){
     const on=isPrivacyOn();
     btn.classList.toggle('is-on',on);
     btn.textContent=on?'🙈':'👁';
     btn.title=on?'Privacy ON — tap to hide/unhide, long-press to change amount':'Privacy OFF — tap to turn on, long-press to change amount';
   }
-  if(label){
-    const n=Number(cardDisplaySettings.privacy.buyMarkupAmount)||0;
-    label.textContent=n>=1000?(String(Math.round(n/100)/10).replace(/\.0$/,'')+'k'):String(Math.round(n));
-  }
-  if(amtBtn){ amtBtn.title='Privacy fixed amount: Rs '+(Number(cardDisplaySettings.privacy.buyMarkupAmount)||0); }
 }
 function toggleQuickPrivacy(){
   cardDisplaySettings.privacy.enabled=!cardDisplaySettings.privacy.enabled;
@@ -6271,7 +6269,6 @@ function quickSetPrivacyAmount(){
 }
 (function wireQuickPrivacyHeader(){
   const btn=document.getElementById('quickPrivacyHeaderBtn');
-  const amt=document.getElementById('quickPrivacyAmountBtn');
   const slider=document.getElementById('quickPrivacyAmountSlider');
   const input=document.getElementById('quickPrivacyAmountInput');
   const pop=document.getElementById('privacyAmountPopover');
@@ -6286,7 +6283,6 @@ function quickSetPrivacyAmount(){
     btn.addEventListener('pointerleave',cancel);
     btn.addEventListener('contextmenu',e=>{e.preventDefault();openPrivacyAmountPopover();});
   }
-  if(amt) amt.onclick=function(e){e.stopPropagation(); if(pop && pop.classList.contains('show')) closePrivacyAmountPopover(); else openPrivacyAmountPopover();};
   if(slider) slider.addEventListener('input',function(){ setQuickPrivacyAmount(this.value,{silent:true}); });
   if(input){
     input.addEventListener('input',function(){
@@ -6298,7 +6294,7 @@ function quickSetPrivacyAmount(){
   }
   document.addEventListener('pointerdown',function(e){
     if(!pop || !pop.classList.contains('show')) return;
-    if(pop.contains(e.target) || e.target===amt || e.target===btn) return;
+    if(pop.contains(e.target) || e.target===btn) return;
     closePrivacyAmountPopover();
   });
   syncQuickPrivacyHeader();
