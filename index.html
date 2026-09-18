@@ -268,6 +268,20 @@
   .contact-tx .tx-main{color:var(--text);}
   .contact-tx .tx-date{flex-shrink:0;}
   .settings-field-select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;margin-top:10px;}
+  .add-expense-inline{display:inline-flex;align-items:center;margin-top:7px;color:var(--accent);font-size:12.5px;font-weight:700;cursor:pointer;user-select:none;padding:4px 0;}
+  .add-expense-inline:focus{outline:1px solid var(--accent);outline-offset:3px;border-radius:5px;}
+  .entry-layout-main{display:flex;flex-direction:column;gap:0;}
+  .entry-layout-group{order:0;}
+  .entry-layout-group.is-hidden{display:none !important;}
+  .entry-layout-setting-row{display:grid;grid-template-columns:1fr repeat(5,auto);gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+  .entry-layout-setting-row:last-child{border-bottom:0;}
+  .entry-layout-setting-name{font-size:12.5px;color:var(--text);min-width:0;}
+  .entry-layout-setting-row button{border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);border-radius:8px;padding:5px 7px;font-size:11px;}
+  .entry-layout-setting-row button.on{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
+  .entry-platform-card-list{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px;}
+  .entry-platform-card-opt{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px;font-size:12px;}
+  .entry-platform-card-opt input{accent-color:var(--accent);}
+
   .settings-opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
   .settings-opt{display:flex;align-items:center;gap:6px;background:var(--surface);border-radius:999px;padding:6px 8px 6px 12px;font-size:13px;}
   .settings-opt.is-hidden{opacity:0.45;text-decoration:line-through;}
@@ -363,6 +377,7 @@
   .app-lock-fallback-btn{margin-top:16px;min-width:190px;}
   .app-lock-other-btn{margin-top:14px;width:auto;border:0;background:transparent;color:var(--accent);font-weight:800;font-size:12px;padding:7px 10px;}
   .app-lock-change-note{margin:0 auto 10px;color:var(--text-dim);font-size:11.5px;line-height:1.35;}
+  .app-lock-forgot-btn{margin-top:8px;width:auto;border:0;background:transparent;color:var(--text-dim);font-weight:800;font-size:11.5px;padding:7px 10px;text-decoration:underline;}
   #appLockOverlay{z-index:2500;background:var(--bg);align-items:center;padding:18px;}
   #appLockOverlay.hidden{display:none;}
   #appLockSetupOverlay{z-index:2600;align-items:center;padding:18px;}
@@ -731,7 +746,7 @@
     </div>
 
     <div class="two-col">
-      <div class="field"><label>Buy price</label><input id="f-buy" type="text" inputmode="decimal" placeholder="e.g. 45k"><div class="price-hint" id="f-buy-hint"></div></div>
+      <div class="field"><label>Buy price <span style="color:var(--danger);">*</span></label><input id="f-buy" type="text" inputmode="decimal" placeholder="e.g. 45k" required><div class="price-hint" id="f-buy-hint"></div></div>
       <div class="field"><label>Sell price range</label><input id="f-range" placeholder="45k-47k"><div class="price-hint" id="f-range-hint"></div></div>
     </div>
 
@@ -756,12 +771,12 @@
     <div class="sec-label" style="margin-top:14px;">📱 Is mobile par hua extra kharcha</div>
     <div class="settings-note" style="margin-top:0;">Jelly/protector, repair ya koi bhi phone-specific kharcha yahan add karein. Ye isi mobile ke profit se minus hoga.</div>
     <div id="f-phone-expenses" class="phone-expense-list"></div>
-    <button type="button" class="add-extra-buy" id="addPhoneExpenseBtn">+ Phone ka expense add karein</button>
+    <div class="add-expense-inline" id="addPhoneExpenseInline" role="button" tabindex="0">+ Aur expense</div>
 
     <div class="more-section" id="saleFieldsWrap">
       <div class="two-col big-input">
         <div class="field"><label>Sale price</label><input id="f-sellprice" type="text" inputmode="decimal" placeholder="e.g. 45k"><div class="price-hint" id="f-sellprice-hint"></div></div>
-        <div class="field"><label>Buy price</label><input id="f-buy-insale" type="text" inputmode="decimal" placeholder="e.g. 40k"><div class="price-hint" id="f-buy-insale-hint"></div></div>
+        <div class="field"><label>Buy price <span style="color:var(--danger);">*</span></label><input id="f-buy-insale" type="text" inputmode="decimal" placeholder="e.g. 40k" required><div class="price-hint" id="f-buy-insale-hint"></div></div>
       </div>
       <div class="two-col">
         <div class="field"><label>Customer name</label><input id="f-customer" placeholder="Naam"></div>
@@ -1022,6 +1037,7 @@
     </div>
     <div class="app-lock-change-note" id="appLockChangeNote" style="display:none;">Current App Lock verify karein.</div>
     <button type="button" class="app-lock-other-btn" id="appLockOtherMethodBtn" style="display:none;">Use another method</button>
+    <button type="button" class="app-lock-forgot-btn" id="appLockForgotBtn" style="display:none;">Forgot lock? Gmail se verify karein</button>
     <div class="app-lock-error" id="appLockError"></div>
   </div>
 </div>
@@ -1275,6 +1291,17 @@
           <div class="settings-opts" id="settingsOptsList"></div>
           <div class="settings-add-row"><input type="text" id="settingsNewOption" placeholder="Naya option likhein"><button type="button" class="sell-btn" id="settingsAddBtn">Add</button></div>
           <div class="settings-note" id="settingsIssueNote">× se option is platform ki entry list se hide hoga. Default, issue classification aur visibility yahin control hoti hai.</div>
+          <div class="settings-section-card" style="margin-top:10px;">
+            <div class="sec-label">Entry layout — Main / Zyada details</div>
+            <div class="settings-note">Android aur iPhone ke liye alag order rakhein. Up/down se order badlein, Main / Zyada se jagah badlein, Hide se field chhupayein.</div>
+            <div id="entryLayoutSettingsList" style="margin-top:8px;"></div>
+          </div>
+          <div class="settings-section-card" style="margin-top:10px;">
+            <div class="sec-label">Main screen — fields</div>
+            <div class="settings-note">Phone card par kaun si basic information dikhni chahiye, Android / iPhone / Both ke liye alag set karein.</div>
+            <div class="chip-row" id="cardPlatformToggles" style="margin-top:8px;"></div>
+            <div class="entry-platform-card-list" id="platformCardFieldList"></div>
+          </div>
         </div>
       </div>
 
@@ -1558,8 +1585,19 @@ const DEFAULT_BADGE_ORDER = ['display','battery','touch','camera','body','openre
 let customOptionData = {extra:{}, hidden:{}, globalCustomFields:[]};
 const LS_CUSTOM_OPTIONS_KEY = 'mobileLedger_customOptions';
 
+const DEFAULT_ENTRY_LAYOUT = {
+  main: ['brand','model','photos','status','quantity','buyRange','buyMeta','seller','extras','phoneExpenses','saleFields'],
+  more: ['ram','storage','network','display','touch','camera','body','openrepair','battery','box','packing','charger','faceid','truetone','customFields','notes'],
+  hidden: []
+};
+const ENTRY_LAYOUT_LABELS = {
+  brand:'Brand', model:'Model', photos:'Pics', status:'Status', quantity:'Quantity', buyRange:'Buy price + Sell range', buyMeta:'Buy date + IMEI', seller:'Seller details', extras:'Extra pieces', phoneExpenses:'Phone expenses', saleFields:'Sale details',
+  ram:'RAM', storage:'Storage', network:'Network', display:'Display / Panel', touch:'Touch', camera:'Camera', body:'Body', openrepair:'Open aur Repair', battery:'Battery health', box:'Box', packing:'Packing', charger:'Charger', faceid:'Face ID', truetone:'True Tone', customFields:'Custom fields', notes:'Notes'
+};
+const DEFAULT_PLATFORM_CARD_FIELDS = ['display','battery','touch','camera','body','openrepair','ram','storage','network','packing','charger','box','faceid','truetone'];
+function defaultEntryLayout(){ return {main:DEFAULT_ENTRY_LAYOUT.main.slice(), more:DEFAULT_ENTRY_LAYOUT.more.slice(), hidden:[]}; }
 function emptyPlatformOptionData(){
-  return {extra:{}, hidden:{}, defaults:{}, hiddenFields:{}};
+  return {extra:{}, hidden:{}, defaults:{}, hiddenFields:{}, entryLayout:defaultEntryLayout(), cardFields:{}};
 }
 function cloneOptionMap(obj){
   const out={};
@@ -1580,6 +1618,11 @@ function ensurePlatformOptionData(platform){
   if(!p.hidden) p.hidden={};
   if(!p.defaults) p.defaults={};
   if(!p.hiddenFields) p.hiddenFields={};
+  if(!p.entryLayout) p.entryLayout=defaultEntryLayout();
+  if(!Array.isArray(p.entryLayout.main)) p.entryLayout.main=DEFAULT_ENTRY_LAYOUT.main.slice();
+  if(!Array.isArray(p.entryLayout.more)) p.entryLayout.more=DEFAULT_ENTRY_LAYOUT.more.slice();
+  if(!Array.isArray(p.entryLayout.hidden)) p.entryLayout.hidden=[];
+  if(!p.cardFields) p.cardFields={};
   if(!Array.isArray(p.customFields)) p.customFields=[];
   const fallback={status:'PTA',ram:'',storage:'',network:'',display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',battery:'Perfect',box:'No',packing:'No pack',charger:'Original charger',faceid:platform==='iphone'?'Yes':'No',truetone:platform==='iphone'?'Yes':'No'};
   Object.keys(fallback).forEach(function(k){ if(!Object.prototype.hasOwnProperty.call(p.defaults,k)) p.defaults[k]=fallback[k]; });
@@ -1851,6 +1894,11 @@ async function saveCustomModels(){
   }
   schedulePush();
 }
+
+const LS_LAST_MODEL_BY_BRAND_KEY='mobileLedger_lastModelByBrand';
+function loadLastModelByBrand(){ try{ return JSON.parse(localStorage.getItem(LS_LAST_MODEL_BY_BRAND_KEY)||'{}')||{}; }catch(e){return {};} }
+function saveLastModelForBrand(brand,model){ if(!brand||!model)return; try{ const m=loadLastModelByBrand(); m[brand]=model; localStorage.setItem(LS_LAST_MODEL_BY_BRAND_KEY,JSON.stringify(m)); }catch(e){} }
+function getLastModelForBrand(brand){ const m=loadLastModelByBrand(); return m[brand]||''; }
 
 function addCustomModelIfNew(brand, model){
   if(!brand || !model) return;
@@ -2797,11 +2845,16 @@ function activityDateHtml(e){
   }
   return '<div class="sale-meta">Available: '+formatDateDisplay(dateOnly(e.availableDate || e.buyDate))+'</div>';
 }
+function bindPhoneExpenseEnter(row){
+  const amt=row.querySelector('.pe-amount');
+  if(amt) amt.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); addPhoneExpenseRow('f-phone-expenses'); updateSellProfitPreview(); const rows=document.querySelectorAll('#f-phone-expenses .phone-expense-row'); const last=rows[rows.length-1]; if(last){ const inp=last.querySelector('.pe-category'); if(inp) inp.focus(); } } });
+}
 function renderPhoneExpenseRows(containerId, items){
   const el=document.getElementById(containerId);
   if(!el) return;
   const rows=Array.isArray(items)?items:[];
-  el.innerHTML=rows.map(function(x){
+  const showRows=rows.length?rows:[{category:'',amount:'',date:todayISO(),notes:''}];
+  el.innerHTML=showRows.map(function(x){
     return '<div class="phone-expense-row">'+
       '<div class="phone-expense-grid">'+
         '<input class="pe-category" placeholder="Jelly/Protector, Repair..." value="'+String(x.category||'').replace(/"/g,'&quot;')+'">'+
@@ -2812,6 +2865,7 @@ function renderPhoneExpenseRows(containerId, items){
       '<button type="button" class="phone-expense-remove">✕ Ye expense hata dein</button>'+
     '</div>';
   }).join('');
+  el.querySelectorAll('.phone-expense-row').forEach(bindPhoneExpenseEnter);
   el.querySelectorAll('.phone-expense-remove').forEach(function(btn){
     btn.onclick=function(){ btn.parentElement.remove(); updateSellProfitPreview(); };
   });
@@ -2831,6 +2885,7 @@ function addPhoneExpenseRow(containerId){
     '<button type="button" class="phone-expense-remove">✕ Ye expense hata dein</button>';
   wrapper.querySelector('.phone-expense-remove').onclick=function(){ wrapper.remove(); updateSellProfitPreview(); };
   el.appendChild(wrapper);
+  bindPhoneExpenseEnter(wrapper);
 }
 function readPhoneExpenseRows(containerId){
   const el=document.getElementById(containerId);
@@ -3132,11 +3187,11 @@ function b64UrlToBytes(str){ const b64=String(str||'').replace(/-/g,'+').replace
 async function hashAppSecret(secret,salt){ const data=new TextEncoder().encode(String(salt)+'\0'+String(secret)); const digest=await crypto.subtle.digest('SHA-256',data); return bytesToB64Url(new Uint8Array(digest)); }
 function showAppLockError(msg){ const el=document.getElementById('appLockError'); if(el) el.textContent=msg||''; }
 function appLockAvailableMethods(){ const out=[]; if(appLockConfig.methods.pin && appLockConfig.pinHash) out.push('pin'); if(appLockConfig.methods.pattern && appLockConfig.patternHash) out.push('pattern'); if(appLockConfig.methods.fingerprint && appLockConfig.fingerprintCredentialId) out.push('fingerprint'); return out; }
-function setAppLockMethod(method){ appLockActiveMethod=method; showAppLockError(''); ['appLockPinView','appLockFingerprintView','appLockPatternView'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';}); const map={pin:'appLockPinView',fingerprint:'appLockFingerprintView',pattern:'appLockPatternView'}; const el=document.getElementById(map[method]); if(el)el.style.display='block'; const other=document.getElementById('appLockOtherMethodBtn'); if(other){ other.style.display=appLockAvailableMethods().length>1?'inline-flex':'none'; } const note=document.getElementById('appLockChangeNote'); if(note){ note.style.display=appLockChangePendingMode?'block':'none'; } if(method==='pin'){resetPinEntry(); setTimeout(function(){const input=document.getElementById('appLockPinEntry'); if(input) input.focus();},60);} if(method==='pattern'){resetPatternDraw(lockPatternPad);} if(method==='fingerprint'){const btn=document.getElementById('appLockFingerprintBtn');if(btn)btn.style.display='none'; setTimeout(function(){unlockWithFingerprint();},60);} }
+function setAppLockMethod(method){ appLockActiveMethod=method; showAppLockError(''); ['appLockPinView','appLockFingerprintView','appLockPatternView'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';}); const map={pin:'appLockPinView',fingerprint:'appLockFingerprintView',pattern:'appLockPatternView'}; const el=document.getElementById(map[method]); if(el)el.style.display='block'; const other=document.getElementById('appLockOtherMethodBtn'); if(other){ other.style.display=appLockAvailableMethods().length>1?'inline-flex':'none'; } const forgot=document.getElementById('appLockForgotBtn'); if(forgot){ forgot.style.display=appLockChangePendingMode?'inline-flex':'none'; } const note=document.getElementById('appLockChangeNote'); if(note){ note.style.display=appLockChangePendingMode?'block':'none'; } if(method==='pin'){resetPinEntry(); setTimeout(function(){const input=document.getElementById('appLockPinEntry'); if(input) input.focus();},60);} if(method==='pattern'){resetPatternDraw(lockPatternPad);} if(method==='fingerprint'){const btn=document.getElementById('appLockFingerprintBtn');if(btn)btn.style.display='none'; setTimeout(function(){unlockWithFingerprint();},60);} }
 function showNextAppLockMethod(){ const methods=appLockAvailableMethods(); if(methods.length<2)return; const idx=Math.max(0,methods.indexOf(appLockActiveMethod)); setAppLockMethod(methods[(idx+1)%methods.length]); }
 function showAppLockOverlay(force){ const ov=document.getElementById('appLockOverlay'); if(!ov)return; if(!force && !appLockChangePendingMode && appLockSessionIsUnlocked()){ hideAppLockOverlay(false); return; } appLockUnlocked=false; ov.classList.remove('hidden'); const app=document.querySelector('.app'); if(app) app.style.visibility='hidden'; const methods=appLockAvailableMethods(); if(methods.length) setAppLockMethod(appLockConfig.preferred && methods.indexOf(appLockConfig.preferred)!==-1?appLockConfig.preferred:methods[0]); }
 function appLockVerificationSucceeded(){ if(appLockChangePendingMode){ const mode=appLockChangePendingMode; appLockChangePendingMode=null; hideAppLockOverlay(true); if(mode==='__toggle_off__'){ appLockConfig.enabled=false; saveAppLockConfig(); setAppLockSessionUnlocked(false); renderAppLockSettings(); renderSettingsHomeSummaries(); showToast('✓ App Lock OFF ho gaya.'); return; } if(String(mode).indexOf('__method_toggle__:')===0){ const m=String(mode).split(':')[1]; appLockConfig.methods[m]=!appLockConfig.methods[m]; if(appLockConfig.methods[m]) appLockConfig.preferred=m; saveAppLockConfig(); renderAppLockSettings(); showToast(appLockConfig.methods[m]?'✓ '+m+' unlock method ON ho gaya.':'✓ '+m+' unlock method OFF ho gaya.'); return; } openAppLockSetup(mode); return; } hideAppLockOverlay(true); }
-function hideAppLockOverlay(persistSession=true){ const ov=document.getElementById('appLockOverlay'); if(ov) ov.classList.add('hidden'); appLockUnlocked=true; if(persistSession) setAppLockSessionUnlocked(true); const app=document.querySelector('.app'); if(app) app.style.visibility='visible'; showAppLockError(''); const note=document.getElementById('appLockChangeNote'); if(note) note.style.display='none'; }
+function hideAppLockOverlay(persistSession=true){ const ov=document.getElementById('appLockOverlay'); if(ov) ov.classList.add('hidden'); appLockUnlocked=true; if(persistSession) setAppLockSessionUnlocked(true); const app=document.querySelector('.app'); if(app) app.style.visibility='visible'; showAppLockError(''); const note=document.getElementById('appLockChangeNote'); if(note) note.style.display='none'; const forgot=document.getElementById('appLockForgotBtn'); if(forgot) forgot.style.display='none'; }
 function shouldRequireAppLock(){ return !!(appLockConfig.enabled && appLockHasAnyMethod() && appLockAvailableMethods().length); }
 function enforceAppLock(){ if(!shouldRequireAppLock()){ hideAppLockOverlay(false); return; } if(appLockSessionIsUnlocked()){ hideAppLockOverlay(false); return; } showAppLockOverlay(false); }
 
@@ -3319,8 +3374,16 @@ function effectiveBadgeProminent(field, val){
   return !!(prom && prom[val]);
 }
 
-function fieldBadge(field, val){
+function platformCardFieldVisible(platform, field){
+  if(!platform) return true;
+  const p=ensurePlatformOptionData(platform);
+  if(Object.prototype.hasOwnProperty.call(p.cardFields,field)) return p.cardFields[field] !== false;
+  return true;
+}
+
+function fieldBadge(field, val, platform){
   if(!val) return '';
+  if(platform && !platformCardFieldVisible(platform, field)) return '';
   if(!effectiveCardVisible(field, val)) return '';
   const color = effectiveBadgeColor(field, val);
   const prominent = effectiveBadgeProminent(field, val);
@@ -3349,7 +3412,7 @@ function pieceSpecBadges(e){
   });
   let html=prominentFirst.map(function(field){
     if((field==='faceid' || field==='truetone') && e.brand!=='iPhone') return '';
-    return fieldBadge(field, e[field]);
+    return fieldBadge(field, e[field], getEntryPlatform(e.brand));
   }).join('');
   const customFields=getPlatformCustomFields(getEntryPlatform(e.brand));
   customFields.forEach(function(f){
@@ -4027,6 +4090,178 @@ function splitEntry(id){
   backupAfterChange();
 }
 
+
+let entryLayoutDomPrepared = false;
+function previousSecLabel(el){
+  let n=el ? el.previousElementSibling : null;
+  while(n){ if(n.classList && n.classList.contains('sec-label')) return n; n=n.previousElementSibling; }
+  return null;
+}
+function wrapEntryGroup(key, nodes, parent){
+  const clean=nodes.filter(function(n){return n && n.parentNode;});
+  if(!clean.length) return null;
+  const existing=parent.querySelector('.entry-layout-group[data-entry-group="'+key+'"]');
+  if(existing) return existing;
+  const first=clean[0];
+  const w=document.createElement('div'); w.className='entry-layout-group'; w.dataset.entryGroup=key;
+  first.parentNode.insertBefore(w, first);
+  clean.forEach(function(n){ w.appendChild(n); });
+  return w;
+}
+function prepareEntryLayoutDOM(){
+  if(entryLayoutDomPrepared) return;
+  const sheet=document.querySelector('#overlay .sheet');
+  if(!sheet) return;
+
+  const mainWrap=document.createElement('div');
+  mainWrap.id='entryLayoutMainWrap'; mainWrap.className='entry-layout-main';
+  const firstMain=sheet.querySelector('#brandChips') || sheet.querySelector('#f-qty');
+  if(firstMain){ sheet.insertBefore(mainWrap, previousSecLabel(firstMain) || firstMain.closest('.field') || firstMain); }
+
+  function addMainGroup(key,nodes){ const w=wrapEntryGroup(key,nodes,sheet); if(w) mainWrap.appendChild(w); }
+  const brandChips=sheet.querySelector('#brandChips');
+  if(brandChips) addMainGroup('brand',[previousSecLabel(brandChips),brandChips,sheet.querySelector('#brandOtherWrap')]);
+  const modelInput=sheet.querySelector('#f-model-other');
+  if(modelInput) addMainGroup('model',[previousSecLabel(modelInput.closest('.model-input-row')||modelInput),modelInput.closest('.model-input-row'),sheet.querySelector('#modelSuggestions'),sheet.querySelector('#modelSelectWrap')]);
+  const photoStrip=sheet.querySelector('#photoStrip');
+  if(photoStrip) addMainGroup('photos',[previousSecLabel(photoStrip.closest('.photo-add-row')||photoStrip),photoStrip.closest('.photo-add-row')]);
+  const statusChips=sheet.querySelector('#statusChips');
+  if(statusChips) addMainGroup('status',[previousSecLabel(statusChips),statusChips]);
+  const qty=sheet.querySelector('#f-qty');
+  if(qty) addMainGroup('quantity',[qty.closest('.field')]);
+  const buy=sheet.querySelector('#f-buy');
+  if(buy) addMainGroup('buyRange',[buy.closest('.two-col')]);
+  const buyDate=sheet.querySelector('#f-buydate');
+  if(buyDate) addMainGroup('buyMeta',[buyDate.closest('.two-col')]);
+  const seller=sheet.querySelector('#f-seller-name');
+  if(seller) addMainGroup('seller',[seller.closest('.two-col')]);
+  const extraList=sheet.querySelector('#extraBuyList');
+  if(extraList) addMainGroup('extras',[extraList,sheet.querySelector('#addExtraBuyBtn')]);
+  const phoneList=sheet.querySelector('#f-phone-expenses');
+  if(phoneList){
+    addMainGroup('phoneExpenses',[previousSecLabel(phoneList),phoneList,sheet.querySelector('#addPhoneExpenseInline')]);
+  }
+  const sale=sheet.querySelector('#saleFieldsWrap');
+  if(sale) addMainGroup('saleFields',[sale]);
+
+  // Put all main groups before the More-details toggle; remove any children that were moved.
+  mainWrap.appendChild(sheet.querySelector('#moreToggle'));
+  mainWrap.appendChild(sheet.querySelector('#moreSection'));
+  entryLayoutDomPrepared=true;
+
+  // Wrap each more-detail label + chip row as one movable group.
+  const more=sheet.querySelector('#moreSection');
+  if(more){
+    const kids=Array.prototype.slice.call(more.children);
+    let current=null;
+    kids.forEach(function(n){
+      if(n.id==='customEntryFields'){
+        const w=wrapEntryGroup('customFields',[n],more); if(w) more.appendChild(w); current=null; return;
+      }
+      if(n.classList && n.classList.contains('field')){
+        wrapEntryGroup('notes',[n],more); return;
+      }
+      if(n.classList && n.classList.contains('sec-label')) current=n;
+      else if(current && n.classList && n.classList.contains('chip-row')){
+        const keyMap={RAM:'ram',Storage:'storage',Network:'network',Display:'display',Touch:'touch',Camera:'camera',Body:'body','Open aur Repair':'openrepair','Battery health':'battery',Box:'box',Packing:'packing',Charger:'charger','Face ID':'faceid','True Tone':'truetone'};
+        const key=keyMap[String(current.textContent||'').trim()];
+        if(key){ wrapEntryGroup(key,[current,n],more); }
+        current=null;
+      }
+    });
+  }
+}
+
+function getEntryLayoutLabel(key){
+  if(ENTRY_LAYOUT_LABELS[key]) return ENTRY_LAYOUT_LABELS[key];
+  const allCustom = [];
+  try{
+    const globalCustom = Array.isArray(customOptionData.globalCustomFields) ? customOptionData.globalCustomFields : [];
+    globalCustom.forEach(function(f){ if(f && f.key) allCustom.push(f); });
+    if(customOptionData.platforms){
+      Object.keys(customOptionData.platforms).forEach(function(pl){
+        const list = Array.isArray(customOptionData.platforms[pl].customFields) ? customOptionData.platforms[pl].customFields : [];
+        list.forEach(function(f){ if(f && f.key && !allCustom.some(function(x){return x.key===f.key;})) allCustom.push(f); });
+      });
+    }
+  }catch(e){}
+  const found = allCustom.find(function(f){ return f.key===key || f.id===key; });
+  return found ? (found.label || found.name || key) : key;
+}
+function ensureLayoutContainsAll(layout){
+  const d=defaultEntryLayout();
+  layout=layout||d;
+  ['main','more','hidden'].forEach(function(k){ if(!Array.isArray(layout[k])) layout[k]=d[k].slice(); });
+  const all=d.main.concat(d.more);
+  all.forEach(function(k){ if(layout.main.indexOf(k)===-1 && layout.more.indexOf(k)===-1 && layout.hidden.indexOf(k)===-1){ layout.more.push(k); } });
+  // Preserve custom entry fields in the configurable layout as well.
+  try{
+    const customs=[];
+    const addList=function(list){ (Array.isArray(list)?list:[]).forEach(function(f){ if(f && f.key && customs.indexOf(f.key)===-1) customs.push(f.key); }); };
+    addList(customOptionData.globalCustomFields);
+    if(customOptionData.platforms){ Object.keys(customOptionData.platforms).forEach(function(pl){ addList(customOptionData.platforms[pl].customFields); }); }
+    customs.forEach(function(k){ if(layout.main.indexOf(k)===-1 && layout.more.indexOf(k)===-1 && layout.hidden.indexOf(k)===-1) layout.more.push(k); });
+  }catch(e){}
+  return layout;
+}
+function getEntryLayout(platform){
+  const p=ensurePlatformOptionData(platform);
+  p.entryLayout=ensureLayoutContainsAll(p.entryLayout);
+  return p.entryLayout;
+}
+function setEntryLayoutForTargets(platform, updater){
+  settingTargetPlatforms(platform).forEach(function(pl){ const p=ensurePlatformOptionData(pl); p.entryLayout=ensureLayoutContainsAll(p.entryLayout); updater(p.entryLayout,pl); });
+  saveCustomOptionData();
+  renderEntryLayoutSettings();
+  applyEntryLayoutToDOM(getEntryPlatform(formState && formState.brand));
+}
+function renderEntryLayoutSettings(){
+  const box=document.getElementById('entryLayoutSettingsList'); if(!box) return;
+  const L=getEntryLayout(settingsPlatform);
+  const entries=L.main.concat(L.more).concat(L.hidden);
+  const seen=[]; const order=[];
+  entries.forEach(function(k){ if(seen.indexOf(k)===-1){seen.push(k);order.push(k);} });
+  box.innerHTML=order.map(function(key){
+    let area=L.main.indexOf(key)!==-1?'main':(L.more.indexOf(key)!==-1?'more':'hidden');
+    const idx=area==='main'?L.main.indexOf(key):L.more.indexOf(key);
+    const label=getEntryLayoutLabel(key);
+    return '<div class="entry-layout-setting-row" data-layout-key="'+key+'">'+
+      '<div class="entry-layout-setting-name">'+escapeHtml(label)+'</div>'+
+      '<button type="button" data-layout-action="up" '+(idx<=0?'disabled':'')+'>↑</button>'+
+      '<button type="button" data-layout-action="down" '+(idx<0||idx>=((area==='main'?L.main:L.more).length-1)?'disabled':'')+'>↓</button>'+
+      '<button type="button" class="'+(area==='main'?'on':'')+'" data-layout-action="main">Main</button>'+
+      '<button type="button" class="'+(area==='more'?'on':'')+'" data-layout-action="more">More</button>'+
+      '<button type="button" class="'+(area==='hidden'?'on':'')+'" data-layout-action="hide">Hide</button>'+
+      '</div>';
+  }).join('');
+  box.querySelectorAll('button[data-layout-action]').forEach(function(btn){
+    btn.onclick=function(){
+      const row=btn.closest('.entry-layout-setting-row'); const key=row.dataset.layoutKey; const action=btn.dataset.layoutAction;
+      setEntryLayoutForTargets(settingsPlatform,function(layout){
+        layout.main=layout.main.filter(function(x){return x!==key;});
+        layout.more=layout.more.filter(function(x){return x!==key;});
+        layout.hidden=layout.hidden.filter(function(x){return x!==key;});
+        if(action==='main' || action==='more'){ const arr=action==='main'?layout.main:layout.more; arr.push(key); }
+        else if(action==='hide'){ layout.hidden.push(key); }
+        else { const arr=(layout.main.indexOf(key)!==-1?layout.main:layout.more); const oldIdx=arr.indexOf(key); if(oldIdx<0)return; const next=action==='up'?oldIdx-1:oldIdx+1; if(next<0||next>=arr.length){arr.splice(oldIdx,1);arr.splice(Math.max(0,Math.min(next,arr.length)),0,key);} else {arr.splice(oldIdx,1);arr.splice(next,0,key);} }
+      });
+    };
+  });
+}
+function applyEntryLayoutToDOM(platform){
+  if(!entryLayoutDomPrepared || !platform) return;
+  const L=getEntryLayout(platform);
+  const mainWrap=document.getElementById('entryLayoutMainWrap');
+  const more=document.getElementById('moreSection');
+  const mainGroups={}; if(mainWrap) mainWrap.querySelectorAll(':scope > .entry-layout-group').forEach(function(g){mainGroups[g.dataset.entryGroup]=g;});
+  const moreGroups={}; if(more) more.querySelectorAll(':scope > .entry-layout-group').forEach(function(g){moreGroups[g.dataset.entryGroup]=g;});
+  if(mainWrap){ L.main.forEach(function(k,i){const g=mainGroups[k];if(g){g.style.display='block';g.style.order=String(i);mainWrap.appendChild(g);}}); }
+  if(more){ L.more.forEach(function(k,i){const g=moreGroups[k];if(g){g.style.display='block';g.style.order=String(i);more.appendChild(g);}}); }
+  (L.hidden||[]).forEach(function(k){ const g=mainGroups[k]||moreGroups[k]; if(g) g.style.display='none'; });
+  // Keep the More toggle after main groups.
+  if(mainWrap){ const mt=document.getElementById('moreToggle'); if(mt) mainWrap.appendChild(mt); const ms=document.getElementById('moreSection'); if(ms) mainWrap.appendChild(ms); }
+}
+
 function renderChipGroup(containerId, options, groupKey, extraClass){
   const container = document.getElementById(containerId);
   container.innerHTML = options.map(function(o){
@@ -4038,8 +4273,12 @@ function renderChipGroup(containerId, options, groupKey, extraClass){
       if(groupKey==='brand'){
         document.getElementById('brandOtherWrap').style.display = (c.dataset.val==='Other') ? 'block' : 'none';
         updateModelField(c.dataset.val);
+        const remembered=getLastModelForBrand(c.dataset.val);
+        const modelInput=document.getElementById('f-model-other');
+        if(modelInput && !modelInput.value.trim() && remembered){ modelInput.value=remembered; renderModelSuggestions(remembered); }
         const platform=getEntryPlatform(c.dataset.val);
         if(formState.__platform!==platform) applyPlatformDefaultsToForm(platform);
+        applyEntryLayoutToDOM(platform);
       }
       renderAllChips();
     };
@@ -4098,7 +4337,11 @@ function renderModelSuggestions(typedVal){
   const brand = formState.brand;
   const list = getBrandModels(brand);
   const q = (typedVal||'').trim().toLowerCase();
+  const remembered = getLastModelForBrand(brand);
   let matches = q ? list.filter(function(m){ return m.toLowerCase().indexOf(q)!==-1; }) : list.slice(0, 8);
+  if(remembered){
+    matches = [remembered].concat(matches.filter(function(m){return m!==remembered;}));
+  }
   matches = matches.slice(0, 8);
   if(!matches.length){
     box.innerHTML = '';
@@ -4121,6 +4364,21 @@ function getFormModel(){
 
 document.getElementById('f-model-other').addEventListener('input', function(){
   renderModelSuggestions(this.value);
+  const v=this.value.trim().toLowerCase();
+  if(v.length>=2){
+    const list=getBrandModels(formState.brand).filter(function(m){return m.toLowerCase().indexOf(v)===0;});
+    if(list.length===1 && list[0].toLowerCase()!==v){
+      this.setAttribute('data-autofill-candidate',list[0]);
+    } else {
+      this.removeAttribute('data-autofill-candidate');
+    }
+  } else this.removeAttribute('data-autofill-candidate');
+});
+document.getElementById('f-model-other').addEventListener('keydown', function(ev){
+  if(ev.key==='Enter'){
+    const candidate=this.getAttribute('data-autofill-candidate');
+    if(candidate){ ev.preventDefault(); this.value=candidate; document.getElementById('modelSuggestions').innerHTML=''; this.removeAttribute('data-autofill-candidate'); }
+  }
 });
 
 document.getElementById('modelDropdownBtn').addEventListener('click', function(){
@@ -4150,6 +4408,7 @@ document.getElementById('f-model-select').addEventListener('change', function(){
 });
 
 function openAdd(){
+  prepareEntryLayoutDOM();
   if(isAdminShopView()){ alert('Admin Shop view read-only hai — nayi entry add nahi ki ja sakti.'); return; }
   hideSaveError('saveErrorBanner');
   editingId = null;
@@ -4188,6 +4447,7 @@ function openAdd(){
   extraPieceCount = 0;
   document.getElementById('addExtraBuyBtn').style.display = 'block';
   renderAllChips();
+  applyEntryLayoutToDOM(getEntryPlatform(formState.brand));
   document.getElementById('overlay').classList.remove('hidden');
   pushOverlayHistory('overlay');
 }
@@ -4267,7 +4527,9 @@ function openEdit(id){
   document.getElementById('extraBuyList').innerHTML = '';
   extraPieceCount = 0;
   document.getElementById('addExtraBuyBtn').style.display = 'none';
+  prepareEntryLayoutDOM();
   renderAllChips();
+  applyEntryLayoutToDOM(getEntryPlatform(formState.brand));
   document.getElementById('overlay').classList.remove('hidden');
   pushOverlayHistory('overlay');
 }
@@ -4345,17 +4607,20 @@ function saveEntry(){
     const sellVal = document.getElementById('f-sellprice').value.trim();
     const buyVal = document.getElementById('f-buy-insale').value.trim();
     if(sellVal !== '' && parsePrice(sellVal)===null){ alert('Sale price samajh nahi aaya. "45000" ya "45k" jese likhein.'); return; }
-    if(buyVal !== '' && parsePrice(buyVal)===null){ alert('Buy price samajh nahi aaya. "40000" ya "40k" jese likhein.'); return; }
+    if(buyVal === ''){ alert('Buy price zaroori hai. "40000" ya "40k" jese likhein.'); document.getElementById('f-buy-insale').focus(); return; }
+    if(parsePrice(buyVal)===null || parsePrice(buyVal)<=0){ alert('Buy price sahi likhein. "40000" ya "40k" jese likhein.'); document.getElementById('f-buy-insale').focus(); return; }
     data.sell = sellVal === '' ? null : parsePrice(sellVal);
-    data.buy = buyVal === '' ? null : parsePrice(buyVal);
+    data.buy = parsePrice(buyVal);
     data.customer = document.getElementById('f-customer').value.trim();
     data.customerNumber = document.getElementById('f-customer-number').value.trim();
     data.payment = document.getElementById('f-payment').value.trim();
     data.saleDate = document.getElementById('f-saledate').value || todayISO();
   } else {
     const buyVal = document.getElementById('f-buy').value.trim();
-    if(buyVal !== '' && parsePrice(buyVal)===null){ alert('Buy price samajh nahi aaya. "40000" ya "40k" jese likhein.'); return; }
-    data.buy = buyVal === '' ? null : parsePrice(buyVal);
+    if(buyVal === ''){ alert('Buy price zaroori hai. Entry save karne se pehle buy price likhein.'); document.getElementById('f-buy').focus(); return; }
+    const parsedBuy = parsePrice(buyVal);
+    if(parsedBuy===null || parsedBuy<=0){ alert('Buy price sahi likhein. "40000" ya "40k" jese likhein.'); document.getElementById('f-buy').focus(); return; }
+    data.buy = parsedBuy;
   }
 
   try{
@@ -4384,9 +4649,12 @@ function saveEntry(){
         alert('Piece #'+(i+2)+' ka buy price samajh nahi aaya. "40000" ya "40k" jese likhein, ya khali chhor dein.');
         return;
       }
+      if(buyValRaw === ''){ alert('Piece #'+(i+2)+' ka buy price zaroori hai.'); return; }
       const epState = block._epState || {};
       const rangeRaw = block.querySelector('.extra-range-input').value.trim();
-      const epBuy = buyValRaw === '' ? null : parsePrice(buyValRaw);
+      const parsedExtraBuy = parsePrice(buyValRaw);
+      if(parsedExtraBuy===null || parsedExtraBuy<=0){ alert('Piece #'+(i+2)+' ka buy price sahi likhein.'); return; }
+      const epBuy = parsedExtraBuy;
       const epRangeMode = rangeRaw==='' ? 'auto' : 'manual';
       extras.push({
         buy: epBuy,
@@ -4462,6 +4730,7 @@ function saveEntry(){
   }
 
   addCustomModelIfNew(brand, model);
+  saveLastModelForBrand(brand, model);
   closeSheet();
   render();
   showToast('✓ Save ho gaya');
@@ -4574,7 +4843,6 @@ function confirmSell(){
 
 document.getElementById('fabAdd').onclick = openAdd;
 document.getElementById('addExtraBuyBtn').onclick = addExtraBuyRow;
-document.getElementById('addPhoneExpenseBtn').onclick = function(){ addPhoneExpenseRow('f-phone-expenses'); };
 document.getElementById('addSalePhoneExpenseBtn').onclick = function(){ addPhoneExpenseRow('s-phone-expenses'); updateSellProfitPreview(); };
 document.getElementById('btnCancel').onclick = closeSheet;
 document.getElementById('btnSave').onclick = saveEntry;
@@ -5761,55 +6029,23 @@ async function appLockSetPin(){
   showToast('✓ App PIN save ho gaya.');
 }
 async function verifyAppPin(pin){ if(!appLockConfig.pinHash||!appLockConfig.pinSalt)return false; return (await hashAppSecret(pin,appLockConfig.pinSalt))===appLockConfig.pinHash; }
-async function appLockSubmitPin(showError){
+async function appLockSubmitPin(){
   const input=document.getElementById('appLockPinEntry'); const pin=String(input?.value||'');
-  if(!pin)return false;
-  const ok=await verifyAppPin(pin);
-  if(ok){
-    // Store the length actually used successfully. This also migrates older
-    // PINs created before pinLength was persisted.
-    appLockConfig.pinLength=pin.length;
-    saveAppLockConfig();
-    appLockVerificationSucceeded();
-    return true;
-  }
-  if(showError){ showAppLockError('PIN ghalat hai.'); if(input){input.value='';renderPinDots();} }
-  return false;
+  if(!pin)return; const ok=await verifyAppPin(pin);
+  if(ok){ appLockVerificationSucceeded(); return; }
+  showAppLockError('PIN ghalat hai.'); if(input){input.value='';renderPinDots();} 
 }
 function resetPinEntry(){ const input=document.getElementById('appLockPinEntry'); if(input) input.value=''; renderPinDots(); }
-function renderPinDots(){
-  const el=document.getElementById('appLockPinDots'); if(!el)return;
-  const len=String(document.getElementById('appLockPinEntry')?.value||'').length;
-  const configured=Math.min(8,Math.max(4,Number(appLockConfig.pinLength)||4));
-  // For legacy PINs whose length was not persisted, expand the dots as the
-  // user enters digits. After one successful unlock the exact length is saved.
-  const pinLen=Math.max(configured,len);
-  el.innerHTML=Array.from({length:pinLen},(_,i)=>'<span class="app-lock-pin-dot '+(i<len?'filled':'')+'"></span>').join('');
-}
+function renderPinDots(){ const el=document.getElementById('appLockPinDots'); if(!el)return; const len=String(document.getElementById('appLockPinEntry')?.value||'').length; const pinLen=Math.min(8,Math.max(4,Number(appLockConfig.pinLength)||4)); el.innerHTML=Array.from({length:pinLen},(_,i)=>'<span class="app-lock-pin-dot '+(i<len?'filled':'')+'"></span>').join(''); }
 function ensurePinEntryInput(){
   const view=document.getElementById('appLockPinView'); if(!view || document.getElementById('appLockPinEntry')) return;
   const dots=document.getElementById('appLockPinDots'); const keypad=document.getElementById('appLockKeypad');
-  const hidden=document.createElement('input'); hidden.id='appLockPinEntry'; hidden.type='password'; hidden.inputMode='numeric'; hidden.maxLength=8; hidden.autocomplete='off'; hidden.style.cssText='position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;';
-  view.insertBefore(hidden,dots);
-  hidden.addEventListener('input',async function(){
-    renderPinDots();
-    const n=hidden.value.length;
-    if(n>=4){
-      const ok=await appLockSubmitPin(false);
-      if(ok) return;
-    }
-  });
+  const pinLen=Math.min(8,Math.max(4,Number(appLockConfig.pinLength)||4));
+  const hidden=document.createElement('input'); hidden.id='appLockPinEntry'; hidden.type='password'; hidden.inputMode='numeric'; hidden.maxLength=pinLen; hidden.autocomplete='off'; hidden.style.cssText='position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;';
+  view.insertBefore(hidden,dots); hidden.addEventListener('input',function(){ renderPinDots(); if(hidden.value.length===pinLen) setTimeout(appLockSubmitPin,70); });
   const keys=['1','2','3','4','5','6','7','8','9','⌫','0',''];
   keypad.innerHTML=keys.map(k=>k===''?'<button type="button" class="app-lock-key" disabled aria-hidden="true"></button>':'<button type="button" class="app-lock-key" data-k="'+k+'">'+k+'</button>').join('');
-  keypad.querySelectorAll('.app-lock-key').forEach(b=>b.onclick=async function(){
-    const k=b.dataset.k; if(!k)return;
-    if(k==='⌫'){hidden.value=hidden.value.slice(0,-1);renderPinDots();return;}
-    if(hidden.value.length<8){
-      hidden.value+=k;
-      renderPinDots();
-      if(hidden.value.length>=4){ await appLockSubmitPin(false); }
-    }
-  });
+  keypad.querySelectorAll('.app-lock-key').forEach(b=>b.onclick=function(){ const k=b.dataset.k; if(!k)return; if(k==='⌫'){hidden.value=hidden.value.slice(0,-1);renderPinDots();return;} if(hidden.value.length<pinLen){hidden.value+=k;renderPinDots();if(hidden.value.length===pinLen)setTimeout(appLockSubmitPin,70);} });
   renderPinDots();
 }
 const lockPatternPad={canvasId:'appLockPatternCanvas', pattern:[], drawing:false, last:null, mode:'unlock'};
@@ -5828,6 +6064,18 @@ function beginAppLockChange(mode){
   appLockChangePendingMode=mode;
   setAppLockSessionUnlocked(false);
   showAppLockOverlay(true);
+}
+async function verifyGmailForLockChange(){
+  if(!appLockChangePendingMode) return;
+  if(!fbAuth || !fbUser || !isGoogleUser(fbUser)){ showAppLockError('Is account par Gmail verification available nahi. Account se re-login karein.'); return; }
+  try{
+    const provider=new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({prompt:'select_account',login_hint:fbUser.email||''});
+    showAppLockError('Gmail verification open ho rahi hai…');
+    await fbAuth.currentUser.reauthenticateWithPopup(provider);
+    appLockVerificationSucceeded();
+    showToast('✓ Gmail verification successful.');
+  }catch(err){ console.error('App Lock Gmail recovery failed',err); showAppLockError('Gmail verification complete nahi hui.'); }
 }
 function openAppLockSetup(mode){ appLockSetupMode=mode; const ov=document.getElementById('appLockSetupOverlay'); const title=document.getElementById('appLockSetupTitle'); const sub=document.getElementById('appLockSetupSub'); ['appLockPinSetupView','appLockPatternSetupView','appLockFingerprintSetupView'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';}); if(mode==='pin'){title.textContent='Set App PIN';sub.textContent='Apna custom 4–8 digit PIN set karein. Lock save hote hi ON ho jayega.';document.getElementById('appLockPinSetupView').style.display='block';document.getElementById('appLockPinSetupInput').value='';document.getElementById('appLockPinSetupConfirm').value='';} else if(mode==='pattern'){title.textContent='Set App Pattern';sub.textContent='3×3 dots ko drag karke custom pattern banayein.';document.getElementById('appLockPatternSetupView').style.display='block';document.getElementById('appLockPatternSetupStatus').textContent='Kam az kam 4 dots ka pattern banayein.';resetPatternDraw(setupPatternPad);} else {title.textContent='Register Fingerprint';sub.textContent='Phone ka secure biometric authenticator register karein.';document.getElementById('appLockFingerprintSetupView').style.display='block';} ov.classList.remove('hidden');}
 function closeAppLockSetup(){ const ov=document.getElementById('appLockSetupOverlay');if(ov)ov.classList.add('hidden'); appLockSetupMode=null; appLockChangePendingMode=null; }
@@ -5867,6 +6115,7 @@ wirePatternPad(lockPatternPad, handleUnlockPattern);
 wirePatternPad(setupPatternPad, function(pattern){const el=document.getElementById('appLockPatternSetupStatus');if(el)el.textContent=pattern.length>=4?'Pattern ready — Save Pattern dabayein.':('Kam az kam 4 dots chahiye. Abhi '+pattern.length+' selected.');});
 document.getElementById('appLockFingerprintBtn').onclick=unlockWithFingerprint;
 document.getElementById('appLockOtherMethodBtn').onclick=showNextAppLockMethod;
+document.getElementById('appLockForgotBtn').onclick=verifyGmailForLockChange;
 document.getElementById('appLockPinSetupSave').onclick=appLockSetPin;
 document.getElementById('appLockPatternSetupSave').onclick=saveSetupPattern;
 document.getElementById('appLockFingerprintSetupBtn').onclick=registerAppLockFingerprint;
@@ -5912,7 +6161,25 @@ function renderSettingsPlatformToggles(){
   const box=document.getElementById('settingsPlatformToggles');
   if(!box) return;
   box.innerHTML=['android','iphone','both'].map(function(p){ return '<div class="settings-toggle-chip'+(settingsPlatform===p?' on':'')+'" data-platform="'+p+'"><span class="dot"></span>'+platformLabel(p)+'</div>'; }).join('');
-  box.querySelectorAll('.settings-toggle-chip').forEach(function(ch){ ch.onclick=function(){ settingsPlatform=ch.dataset.platform; renderSettingsPlatformToggles(); renderSettingsFieldOptions(); }; });
+  box.querySelectorAll('.settings-toggle-chip').forEach(function(ch){ ch.onclick=function(){ settingsPlatform=ch.dataset.platform; renderSettingsPlatformToggles(); renderSettingsFieldOptions(); renderEntryLayoutSettings(); renderPlatformCardFieldSettings(); }; });
+}
+
+
+let cardSettingsPlatform='android';
+function renderCardPlatformToggles(){
+  const box=document.getElementById('cardPlatformToggles'); if(!box) return;
+  box.innerHTML=['android','iphone','both'].map(function(p){return '<div class="settings-toggle-chip'+(cardSettingsPlatform===p?' on':'')+'" data-card-platform="'+p+'">'+platformLabel(p)+'</div>';}).join('');
+  box.querySelectorAll('[data-card-platform]').forEach(function(ch){ch.onclick=function(){cardSettingsPlatform=ch.dataset.cardPlatform;renderCardPlatformToggles();renderPlatformCardFieldSettings();};});
+}
+function renderPlatformCardFieldSettings(){
+  const list=document.getElementById('platformCardFieldList'); if(!list) return;
+  const targets=settingTargetPlatforms(cardSettingsPlatform);
+  const fields=DEFAULT_PLATFORM_CARD_FIELDS;
+  list.innerHTML=fields.map(function(k){
+    const label=ENTRY_LAYOUT_LABELS[k]||k;
+    const on=targets.every(function(pl){return platformCardFieldVisible(pl,k);});
+    return '<label class="entry-platform-card-opt"><input type="checkbox" data-platform-card-field="'+k+'" '+(on?'checked':'')+'><span>'+escapeHtml(label)+'</span></label>';}).join('');
+  list.querySelectorAll('[data-platform-card-field]').forEach(function(inp){inp.onchange=function(){const key=inp.dataset.platformCardField; const checked=inp.checked; targets.forEach(function(pl){ensurePlatformOptionData(pl).cardFields[key]=checked;}); saveCustomOptionData(); renderList();};});
 }
 
 function renderSettingsFieldOptions(){
@@ -6242,12 +6509,12 @@ if(btnShareApp) btnShareApp.onclick=shareMobileHisabApp;
 document.getElementById('adminNotificationBtn').onclick=function(){
   if(userRole!=='admin') return;
   document.getElementById('settingsOverlay').classList.remove('hidden'); pushOverlayHistory('settingsOverlay');
-  populateSettingsFieldSelect(); renderCardViewModeToggles(); renderAutoSellRangeSettings(); renderPrivacySettings(); renderAppLockSettings(); renderBadgeOrderList(); renderSettingsPlatformToggles(); renderSettingsFieldOptions(); renderSettingsBrands(); renderWaMessageEditor(); renderSettingsHomeSummaries(); openSettingsPage('shopaccess');
+  prepareEntryLayoutDOM(); renderSettingsPlatformToggles(); renderEntryLayoutSettings(); renderCardPlatformToggles(); renderPlatformCardFieldSettings(); populateSettingsFieldSelect(); renderCardViewModeToggles(); renderAutoSellRangeSettings(); renderPrivacySettings(); renderAppLockSettings(); renderBadgeOrderList(); renderSettingsFieldOptions(); renderSettingsBrands(); renderWaMessageEditor(); renderSettingsHomeSummaries(); openSettingsPage('shopaccess');
 };
 if(document.getElementById('saveAccessTemplates')) document.getElementById('saveAccessTemplates').onclick=saveAccessTemplates;
 document.getElementById('btnSettings').onclick = function(){
   dedupeSettingsHomeCategories();
-  populateSettingsFieldSelect(); renderCardViewModeToggles(); renderAutoSellRangeSettings(); renderPrivacySettings(); renderAppLockSettings(); renderBadgeOrderList(); renderSettingsPlatformToggles(); renderSettingsFieldOptions(); renderSettingsBrands(); renderWaMessageEditor(); renderSettingsHomeSummaries();
+  prepareEntryLayoutDOM(); renderSettingsPlatformToggles(); renderEntryLayoutSettings(); renderCardPlatformToggles(); renderPlatformCardFieldSettings(); populateSettingsFieldSelect(); renderCardViewModeToggles(); renderAutoSellRangeSettings(); renderPrivacySettings(); renderAppLockSettings(); renderBadgeOrderList(); renderSettingsFieldOptions(); renderSettingsBrands(); renderWaMessageEditor(); renderSettingsHomeSummaries();
   openSettingsPage('home');
   document.getElementById('settingsOverlay').classList.remove('hidden'); pushOverlayHistory('settingsOverlay');
 };
