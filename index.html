@@ -275,7 +275,10 @@
   .entry-layout-group.is-hidden{display:none !important;}
   .entry-layout-setting-row{display:grid;grid-template-columns:1fr repeat(5,auto);gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
   .entry-layout-setting-row:last-child{border-bottom:0;}
-  .entry-layout-setting-name{font-size:12.5px;color:var(--text);min-width:0;}
+  .entry-layout-setting-name{font-size:12.5px;color:var(--text);min-width:0;display:flex;align-items:center;gap:7px;}
+  .entry-layout-drag-handle{font-size:15px;color:var(--text-faint);cursor:grab;user-select:none;}
+  .entry-layout-setting-row.dragging{opacity:.45;}
+  .entry-layout-setting-row.drop-target{outline:2px solid var(--accent);outline-offset:-2px;border-radius:8px;}
   .entry-layout-setting-row button{border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);border-radius:8px;padding:5px 7px;font-size:11px;}
   .entry-layout-setting-row button.on{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
   .entry-platform-card-list{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px;}
@@ -290,6 +293,10 @@
   .settings-add-row input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;}
   .settings-add-row button{white-space:nowrap;}
   .settings-note{font-size:11.5px;color:var(--text-dim);margin-top:10px;}
+  .settings-draft-bar{position:sticky;bottom:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-top:1px solid var(--border);background:var(--surface-2);}
+  .settings-draft-status{font-size:11.5px;color:var(--text-dim);}
+  .settings-draft-actions{display:flex;gap:7px;align-items:center;}
+  .settings-draft-actions button{min-width:112px;}
   .settings-toggle-chip{display:flex;align-items:center;gap:6px;background:var(--surface);border-radius:999px;padding:8px 14px;font-size:13px;cursor:pointer;user-select:none;pointer-events:auto;position:relative;z-index:2;}
   .settings-toggle-chip[aria-disabled="true"]{opacity:.6;}
   .model-admin-hint{font-size:9px;color:var(--danger);margin-left:4px;white-space:nowrap;}
@@ -362,12 +369,13 @@
   .activity-filter-row{display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:6px;padding:8px 16px 0;}
   .activity-filter-row select,.activity-filter-row input{min-width:0;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 8px;color:var(--text);font-size:11.5px;}
   .activity-filter-row button{grid-column:1/-1;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:8px;padding:6px;font-size:11px;}
-  .phone-expense-list{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
-  .phone-expense-row{background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:9px;}
-  .phone-expense-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:7px;}
+  .phone-expense-list{display:flex;flex-direction:column;gap:7px;margin-top:8px;}
+  .phone-expense-row{background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:7px 8px;}
+  .phone-expense-grid{display:grid;grid-template-columns:1.35fr .8fr auto;gap:7px;align-items:center;}
   .phone-expense-row input{width:100%;background:var(--surface-3);border:1px solid var(--border);border-radius:7px;padding:8px;color:var(--text);font-size:12.5px;}
-  .phone-expense-row .phone-expense-note{margin-top:7px;}
-  .phone-expense-row .phone-expense-remove{margin-top:7px;width:100%;padding:6px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--danger);font-size:11px;}
+  .phone-expense-date{font-size:10.5px;color:var(--text-faint);margin-top:4px;}
+  .phone-expense-row .phone-expense-remove{width:32px;height:32px;padding:0;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--danger);font-size:17px;display:inline-flex;align-items:center;justify-content:center;}
+  .phone-expense-row.empty .phone-expense-remove{display:none;}
   #btnPrivacyToggle{position:relative;}
   #btnPrivacyToggle.privacy-on::after{content:'';position:absolute;top:6px;right:8px;width:5px;height:5px;border-radius:50%;background:var(--text-faint);opacity:0.6;}
   .quick-privacy-btn{min-width:34px;padding:0 8px;font-size:16px;position:relative;}
@@ -1299,7 +1307,7 @@
           <div class="settings-note" id="settingsIssueNote">× se option is platform ki entry list se hide hoga. Default, issue classification aur visibility yahin control hoti hai.</div>
           <div class="settings-section-card" style="margin-top:10px;">
             <div class="sec-label">Entry layout — Main / Zyada details</div>
-            <div class="settings-note">Android aur iPhone ke liye alag order rakhein. Up/down se order badlein, Main / Zyada se jagah badlein, Hide se field chhupayein.</div>
+            <div class="settings-note">☷ ko drag karke order badlein. Main / Zyada se jagah badlein, Hide se field chhupayein. Both mein same change Android + iPhone dono par lagega.</div>
             <div id="entryLayoutSettingsList" style="margin-top:8px;"></div>
           </div>
           <div class="settings-section-card" style="margin-top:10px;">
@@ -1397,6 +1405,13 @@
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
         <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">Professional settings UI • v25</div></div>
+      </div>
+    </div>
+    <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
+      <div class="settings-draft-status" id="settingsDraftStatus">Settings draft — abhi save nahi hua</div>
+      <div class="settings-draft-actions">
+        <button type="button" class="btn-cancel" id="settingsDraftUndo">↶ Undo changes</button>
+        <button type="button" class="btn-save" id="settingsDraftSave">✓ Save changes</button>
       </div>
     </div>
   </div>
@@ -1669,6 +1684,7 @@ function loadCustomOptionData(){
 }
 
 function saveCustomOptionData(){
+  if(settingsDraftActive){ settingsDraftMarkDirty(); return; }
   if(isAdminShopView()) return;
   let oldRaw=null; try{oldRaw=localStorage.getItem(LS_CUSTOM_OPTIONS_KEY);}catch(e){}
   const newRaw=JSON.stringify(customOptionData);
@@ -2871,39 +2887,56 @@ function bindPhoneExpenseEnter(row){
   const amt=row.querySelector('.pe-amount');
   if(amt) amt.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); addPhoneExpenseRow('f-phone-expenses'); updateSellProfitPreview(); const rows=document.querySelectorAll('#f-phone-expenses .phone-expense-row'); const last=rows[rows.length-1]; if(last){ const inp=last.querySelector('.pe-category'); if(inp) inp.focus(); } } });
 }
+function refreshPhoneExpenseRowUi(row){
+  if(!row) return;
+  const cat=row.querySelector('.pe-category')?.value.trim()||'';
+  const amt=row.querySelector('.pe-amount')?.value.trim()||'';
+  const remove=row.querySelector('.phone-expense-remove');
+  const date=row.querySelector('.phone-expense-date');
+  const filled=!!(cat||amt);
+  row.classList.toggle('empty',!filled);
+  if(remove) remove.style.display=filled?'inline-flex':'none';
+  if(date) date.style.display=filled?'block':'none';
+}
+function bindPhoneExpenseEnter(row){
+  const amt=row.querySelector('.pe-amount');
+  const cat=row.querySelector('.pe-category');
+  [amt,cat].forEach(function(inp){ if(inp) inp.addEventListener('input',function(){ refreshPhoneExpenseRowUi(row); updateSellProfitPreview(); }); });
+  if(amt) amt.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); addPhoneExpenseRow('f-phone-expenses'); updateSellProfitPreview(); const rows=document.querySelectorAll('#f-phone-expenses .phone-expense-row'); const last=rows[rows.length-1]; if(last){ const inp=last.querySelector('.pe-category'); if(inp) inp.focus(); } } });
+}
 function renderPhoneExpenseRows(containerId, items){
   const el=document.getElementById(containerId);
   if(!el) return;
   const rows=Array.isArray(items)?items:[];
-  const showRows=rows.length?rows:[{category:'',amount:'',date:todayISO(),notes:''}];
-  el.innerHTML=showRows.map(function(x){
-    return '<div class="phone-expense-row">'+
+  el.innerHTML=rows.map(function(x){
+    const d=dateOnly(x.date)||todayISO();
+    return '<div class="phone-expense-row" data-expense-date="'+d+'">'+
       '<div class="phone-expense-grid">'+
         '<input class="pe-category" placeholder="Jelly / Repair" value="'+String(x.category||'').replace(/"/g,'&quot;')+'">'+
         '<input class="pe-amount" type="text" inputmode="decimal" placeholder="Amount" value="'+(x.amount!=null?Math.abs(Number(x.amount)||0):'')+'">'+
         '<button type="button" class="phone-expense-remove" aria-label="Remove expense">×</button>'+
       '</div>'+
+      '<div class="phone-expense-date">'+formatDateDisplay(d)+'</div>'+
     '</div>';
   }).join('');
-  el.querySelectorAll('.phone-expense-row').forEach(bindPhoneExpenseEnter);
-  el.querySelectorAll('.phone-expense-remove').forEach(function(btn){
-    btn.onclick=function(){ btn.parentElement.remove(); updateSellProfitPreview(); };
-  });
+  el.querySelectorAll('.phone-expense-row').forEach(function(row){ bindPhoneExpenseEnter(row); refreshPhoneExpenseRowUi(row); });
+  el.querySelectorAll('.phone-expense-remove').forEach(function(btn){ btn.onclick=function(){ btn.closest('.phone-expense-row').remove(); updateSellProfitPreview(); }; });
 }
 function addPhoneExpenseRow(containerId){
   const el=document.getElementById(containerId);
   if(!el) return;
   const wrapper=document.createElement('div');
-  wrapper.className='phone-expense-row';
+  wrapper.className='phone-expense-row empty';
+  wrapper.dataset.expenseDate=todayISO();
   wrapper.innerHTML=
     '<div class="phone-expense-grid">'+
       '<input class="pe-category" placeholder="Jelly / Repair">'+
       '<input class="pe-amount" type="text" inputmode="decimal" placeholder="Amount">'+
-      '<button type="button" class="phone-expense-remove" aria-label="Remove expense">×</button>'+
-    '</div>';
+      '<button type="button" class="phone-expense-remove" aria-label="Remove expense" style="display:none;">×</button>'+
+    '</div>'+
+    '<div class="phone-expense-date" style="display:none;">'+formatDateDisplay(todayISO())+'</div>';
   wrapper.querySelector('.phone-expense-remove').onclick=function(){ wrapper.remove(); updateSellProfitPreview(); };
-  el.appendChild(wrapper);
-  bindPhoneExpenseEnter(wrapper);
+  el.appendChild(wrapper); bindPhoneExpenseEnter(wrapper); refreshPhoneExpenseRowUi(wrapper);
 }
 function readPhoneExpenseRows(containerId){
   const el=document.getElementById(containerId);
@@ -2919,8 +2952,8 @@ function readPhoneExpenseRows(containerId){
     out.push({
       id:'pe_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
       category:category, amount:amount,
-      date:(row.querySelector('.pe-date') ? row.querySelector('.pe-date').value : todayISO()) || todayISO(),
-      notes:(row.querySelector('.pe-note') ? row.querySelector('.pe-note').value.trim() : '')
+      date:row.dataset.expenseDate || todayISO(),
+      notes:''
     });
   });
   return out;
@@ -3236,6 +3269,7 @@ function loadCardDisplaySettings(){
   }catch(err){}
 }
 function saveCardDisplaySettings(){
+  if(settingsDraftActive){ settingsDraftMarkDirty(); return; }
   if(isAdminShopView()) return;
   let oldRaw=null; try{oldRaw=localStorage.getItem(LS_CARD_DISPLAY_KEY);}catch(e){}
   const newRaw=JSON.stringify(cardDisplaySettings);
@@ -3267,9 +3301,8 @@ function applyAutoSellRangesToExistingEntries(){
     }
   });
   if(changed){
-    saveInventory();
+    if(settingsDraftActive){ settingsDraftMarkDirty(); } else { saveInventory(); schedulePush(); }
     render();
-    schedulePush();
   }
 }
 
@@ -4315,8 +4348,8 @@ function renderEntryLayoutSettings(){
     let area=L.main.indexOf(key)!==-1?'main':(L.more.indexOf(key)!==-1?'more':'hidden');
     const idx=area==='main'?L.main.indexOf(key):L.more.indexOf(key);
     const label=getEntryLayoutLabel(key);
-    return '<div class="entry-layout-setting-row" data-layout-key="'+key+'">'+
-      '<div class="entry-layout-setting-name">'+escapeHtml(label)+'</div>'+
+    return '<div class="entry-layout-setting-row" draggable="true" data-layout-key="'+key+'">'+
+      '<div class="entry-layout-setting-name"><span class="entry-layout-drag-handle" title="Drag karke move karein">☷</span>'+escapeHtml(label)+'</div>'+
       '<button type="button" data-layout-action="up" '+(idx<=0?'disabled':'')+'>↑</button>'+
       '<button type="button" data-layout-action="down" '+(idx<0||idx>=((area==='main'?L.main:L.more).length-1)?'disabled':'')+'>↓</button>'+
       '<button type="button" class="'+(area==='main'?'on':'')+'" data-layout-action="main">Main</button>'+
@@ -4324,6 +4357,26 @@ function renderEntryLayoutSettings(){
       '<button type="button" class="'+(area==='hidden'?'on':'')+'" data-layout-action="hide">Hide</button>'+
       '</div>';
   }).join('');
+  let dragKey=null;
+  box.querySelectorAll('.entry-layout-setting-row').forEach(function(row){
+    row.addEventListener('dragstart',function(e){ dragKey=row.dataset.layoutKey; row.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',dragKey); });
+    row.addEventListener('dragend',function(){ dragKey=null; row.classList.remove('dragging'); box.querySelectorAll('.drop-target').forEach(function(x){x.classList.remove('drop-target');}); });
+    row.addEventListener('dragover',function(e){ e.preventDefault(); row.classList.add('drop-target'); e.dataTransfer.dropEffect='move'; });
+    row.addEventListener('dragleave',function(){ row.classList.remove('drop-target'); });
+    row.addEventListener('drop',function(e){
+      e.preventDefault(); row.classList.remove('drop-target');
+      const fromKey=dragKey||e.dataTransfer.getData('text/plain'); const toKey=row.dataset.layoutKey;
+      if(!fromKey || fromKey===toKey) return;
+      setEntryLayoutForTargets(settingsPlatform,function(layout){
+        let src=layout.main.indexOf(fromKey)!==-1?layout.main:(layout.more.indexOf(fromKey)!==-1?layout.more:null);
+        let dst=layout.main.indexOf(toKey)!==-1?layout.main:(layout.more.indexOf(toKey)!==-1?layout.more:null);
+        if(!src || !dst || src!==dst) return;
+        const from=src.indexOf(fromKey), to=src.indexOf(toKey);
+        if(from<0||to<0||from===to) return;
+        src.splice(from,1); src.splice(to,0,fromKey);
+      });
+    });
+  });
   box.querySelectorAll('button[data-layout-action]').forEach(function(btn){
     btn.onclick=function(){
       const row=btn.closest('.entry-layout-setting-row'); const key=row.dataset.layoutKey; const action=btn.dataset.layoutAction;
@@ -5012,6 +5065,12 @@ document.getElementById('clearActivityFilter').onclick = function(){
   renderList();
   saveUIState();
 };
+const addPhoneExpenseInlineBtn=document.getElementById('addPhoneExpenseInline');
+if(addPhoneExpenseInlineBtn){
+  addPhoneExpenseInlineBtn.onclick=function(){ addPhoneExpenseRow('f-phone-expenses'); const rows=document.querySelectorAll('#f-phone-expenses .phone-expense-row'); const last=rows[rows.length-1]; if(last){ const inp=last.querySelector('.pe-category'); if(inp) setTimeout(function(){inp.focus();},0); } updateSellProfitPreview(); };
+  addPhoneExpenseInlineBtn.onkeydown=function(e){ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); addPhoneExpenseInlineBtn.click(); } };
+}
+
 document.getElementById('moreToggle').onclick = function(){
   const sec = document.getElementById('moreSection');
   sec.classList.toggle('show');
@@ -5026,7 +5085,7 @@ let historyApplying=false;
 const LS_UNDO_STACK='mobileLedger_undoStack_v15';
 const LS_REDO_STACK='mobileLedger_redoStack_v15';
 function appStateSnapshot(){
-  return {inventory:JSON.stringify(inventory),expenses:JSON.stringify(expenses),customOptionData:JSON.stringify(customOptionData),cardDisplaySettings:JSON.stringify(cardDisplaySettings),customModels:JSON.stringify(customModels||{}),rateBook:JSON.stringify(rateBook||[]),waTemplate:localStorage.getItem(LS_WA_TEMPLATE_KEY)||''};
+  return {inventory:JSON.stringify(inventory),expenses:JSON.stringify(expenses),customOptionData:JSON.stringify(customOptionData),cardDisplaySettings:JSON.stringify(cardDisplaySettings),customModels:JSON.stringify(customModels||{}),rateBook:JSON.stringify(rateBook||[]),waTemplate:localStorage.getItem(LS_WA_TEMPLATE_KEY)||'',shopProfile:JSON.stringify(shopProfile||{})};
 }
 function loadPersistentHistory(){
   try{undoStack=JSON.parse(localStorage.getItem(LS_UNDO_STACK)||'[]')||[];}catch(e){undoStack=[];}
@@ -5066,6 +5125,7 @@ function applyAppState(st){
     localStorage.setItem(LS_CUSTOM_MODELS_KEY,JSON.stringify(customModels));
     localStorage.setItem(LS_RATE_BOOK_KEY,JSON.stringify(rateBook));
     localStorage.setItem(LS_WA_TEMPLATE_KEY,st.waTemplate||'');
+    if(st.shopProfile!==undefined){ try{ shopProfile=JSON.parse(st.shopProfile||'{}'); localStorage.setItem(LS_SHOP_PROFILE_KEY,JSON.stringify(shopProfile)); }catch(e){} }
     schedulePush(); render(); renderAllChips(); renderWaMessageEditor(); renderExpensesList();
     return true;
   }catch(e){console.error(e);return false;}finally{historyApplying=false;updateHistoryButtons();}
@@ -6609,10 +6669,97 @@ function dedupeSettingsHomeCategories(){
     seen[key]=true;
   });
 }
+const SETTINGS_DRAFT_PAGES=['shop','inventory','appearance','fields','whatsapp','privacy'];
+let settingsDraftActive=false;
+let settingsDraftDirty=false;
+let settingsDraftBaseline=null;
+function settingsDraftPage(page){ return SETTINGS_DRAFT_PAGES.indexOf(page)!==-1; }
+function settingsDraftMarkDirty(){
+  if(!settingsDraftActive) return;
+  settingsDraftDirty=true;
+  const bar=document.getElementById('settingsDraftBar');
+  const status=document.getElementById('settingsDraftStatus');
+  if(bar) bar.style.display='flex';
+  if(status) status.textContent='Unsaved settings changes — Save changes dabayein.';
+}
+function settingsDraftBegin(){
+  if(settingsDraftActive) return;
+  settingsDraftActive=true;
+  settingsDraftDirty=false;
+  settingsDraftBaseline={app:appStateSnapshot(),shop:JSON.stringify(shopProfile||{})};
+  const bar=document.getElementById('settingsDraftBar'); if(bar) bar.style.display='flex';
+  const status=document.getElementById('settingsDraftStatus'); if(status) status.textContent='Settings draft — abhi save nahi hua';
+}
+function settingsDraftRefreshBar(){
+  const bar=document.getElementById('settingsDraftBar');
+  const status=document.getElementById('settingsDraftStatus');
+  if(!bar) return;
+  bar.style.display=settingsDraftPage(currentSettingsPage)?'flex':'none';
+  if(status) status.textContent=settingsDraftDirty?'Unsaved settings changes — Save changes dabayein.':'Settings draft — abhi save nahi hua';
+}
+function settingsDraftApplyMemorySnapshot(st,shopRaw){
+  historyApplying=true;
+  try{
+    inventory=JSON.parse(st.inventory||'[]');
+    expenses=JSON.parse(st.expenses||'[]');
+    customOptionData=JSON.parse(st.customOptionData||'{}');
+    cardDisplaySettings=JSON.parse(st.cardDisplaySettings||'{}');
+    customModels=JSON.parse(st.customModels||'{}');
+    rateBook=JSON.parse(st.rateBook||'[]');
+    if(shopRaw!==undefined) shopProfile=JSON.parse(shopRaw||'{}');
+    render(); renderAllChips(); renderWaMessageEditor(); renderSettingsFieldOptions(); renderEntryLayoutSettings(); renderCardViewModeToggles(); renderAutoSellRangeSettings(); renderPrivacySettings(); renderSettingsBrands(); updateAccountUI(); renderSettingsHomeSummaries();
+  }catch(e){ console.error(e); }
+  finally{ historyApplying=false; }
+}
+function settingsDraftUndo(){
+  if(!settingsDraftActive || !settingsDraftBaseline) return;
+  settingsDraftApplyMemorySnapshot(settingsDraftBaseline.app,settingsDraftBaseline.shop);
+  settingsDraftDirty=false;
+  settingsDraftRefreshBar();
+  showToast('↶ Unsaved settings changes undo ho gaye.');
+}
+function settingsDraftSave(){
+  if(!settingsDraftActive || !settingsDraftBaseline) return;
+  if(isAdminShopView()){ alert('Admin Shop view read-only hai.'); return; }
+  const before=settingsDraftBaseline.app;
+  try{
+    localStorage.setItem(LS_CUSTOM_OPTIONS_KEY,JSON.stringify(customOptionData));
+    localStorage.setItem(LS_CARD_DISPLAY_KEY,JSON.stringify(cardDisplaySettings));
+    localStorage.setItem(LS_WA_TEMPLATE_KEY,getWaMessageTemplate());
+    localStorage.setItem(LS_SHOP_PROFILE_KEY,JSON.stringify(shopProfile||{}));
+    schedulePush();
+    pushUndoState('Settings change',before);
+    logActivity('settings','Settings changes save kiye','');
+    settingsDraftBaseline={app:appStateSnapshot(),shop:JSON.stringify(shopProfile||{})};
+    settingsDraftDirty=false;
+    settingsDraftRefreshBar();
+    updateAccountUI(); renderSettingsHomeSummaries(); render();
+    showToast('✓ Settings save ho gayi.');
+  }catch(e){ alert('Settings save nahi ho sakin.'); }
+}
+function settingsDraftEndDiscard(){
+  settingsDraftActive=false; settingsDraftDirty=false; settingsDraftBaseline=null;
+  const bar=document.getElementById('settingsDraftBar'); if(bar) bar.style.display='none';
+}
+function settingsDraftPrompt(nextAction){
+  if(!settingsDraftActive || !settingsDraftDirty){ settingsDraftEndDiscard(); return true; }
+  const choice=confirm('Settings mein unsaved changes hain. OK = Save, Cancel = Discard.');
+  if(choice){ settingsDraftSave(); settingsDraftEndDiscard(); return true; }
+  settingsDraftUndo(); settingsDraftEndDiscard();
+  return true;
+}
+
 function openSettingsPage(page){
   dedupeSettingsHomeCategories();
   if(page==='shopaccess' && userRole!=='admin') page='home';
-  currentSettingsPage=page||'home';
+  const targetPage=page||'home';
+  if(settingsDraftActive && !settingsDraftPage(targetPage) && settingsDraftDirty){
+    settingsDraftPrompt(targetPage);
+  } else if(settingsDraftActive && !settingsDraftPage(targetPage) && !settingsDraftDirty){
+    settingsDraftEndDiscard();
+  }
+  if(settingsDraftPage(targetPage) && !settingsDraftActive) settingsDraftBegin();
+  currentSettingsPage=targetPage;
   document.querySelectorAll('#settingsOverlay .settings-view').forEach(function(v){v.classList.toggle('active',v.dataset.settingsView===currentSettingsPage);});
   const back=document.getElementById('settingsBackBtn'); if(back) back.style.visibility=currentSettingsPage==='home'?'hidden':'visible';
   const heading=document.getElementById('settingsPageHeading'); if(heading) heading.textContent=SETTINGS_PAGE_TITLES[currentSettingsPage]||'Settings';
@@ -6624,6 +6771,8 @@ function openSettingsPage(page){
   }
   renderSettingsHomeSummaries();
   const wrap=document.querySelector('#settingsOverlay .settings-page-wrap'); if(wrap) wrap.scrollTop=0;
+  settingsDraftRefreshBar();
+  return true;
 }
 document.querySelectorAll('#settingsOverlay [data-settings-page]').forEach(function(btn){btn.onclick=function(){openSettingsPage(btn.dataset.settingsPage);};});
 document.getElementById('settingsBackBtn').onclick=function(){openSettingsPage('home');};
@@ -6633,6 +6782,7 @@ document.getElementById('settingsSaveShopProfile').onclick=function(){
   const shopName=document.getElementById('settings-shopname').value.trim();
   if(!shopName){ alert('Shop Name likhein.'); return; }
   shopProfile={shopName:shopName,ownerName:document.getElementById('settings-ownername').value.trim(),shopPhone:document.getElementById('settings-shopphone').value.trim()};
+  if(settingsDraftActive){ settingsDraftMarkDirty(); updateAccountUI(); renderSettingsHomeSummaries(); return; }
   try{localStorage.setItem(LS_SHOP_PROFILE_KEY,JSON.stringify(shopProfile));}catch(e){}
   schedulePush(); updateAccountUI(); renderSettingsHomeSummaries(); showToast('✓ Shop profile save ho gaya.');
 };
@@ -6653,21 +6803,27 @@ async function shareMobileHisabApp(){
 }
 const btnShareApp=document.getElementById('btnShareApp');
 if(btnShareApp) btnShareApp.onclick=shareMobileHisabApp;
+const settingsDraftUndoBtn=document.getElementById('settingsDraftUndo');
+const settingsDraftSaveBtn=document.getElementById('settingsDraftSave');
+if(settingsDraftUndoBtn) settingsDraftUndoBtn.onclick=settingsDraftUndo;
+if(settingsDraftSaveBtn) settingsDraftSaveBtn.onclick=settingsDraftSave;
 
 document.getElementById('adminNotificationBtn').onclick=function(){
   if(userRole!=='admin') return;
   document.getElementById('settingsOverlay').classList.remove('hidden'); pushOverlayHistory('settingsOverlay');
+  settingsDraftBegin();
   prepareEntryLayoutDOM(); renderSettingsPlatformToggles(); renderEntryLayoutSettings(); renderCardPlatformToggles(); renderPlatformCardFieldSettings(); populateSettingsFieldSelect(); renderCardViewModeToggles(); renderAutoSellRangeSettings(); renderPrivacySettings(); renderAppLockSettings(); renderBadgeOrderList(); renderSettingsFieldOptions(); renderSettingsBrands(); renderWaMessageEditor(); renderSettingsHomeSummaries(); openSettingsPage('shopaccess');
 };
 if(document.getElementById('saveAccessTemplates')) document.getElementById('saveAccessTemplates').onclick=saveAccessTemplates;
 document.getElementById('btnSettings').onclick = function(){
   dedupeSettingsHomeCategories();
+  settingsDraftBegin();
   prepareEntryLayoutDOM(); renderSettingsPlatformToggles(); renderEntryLayoutSettings(); renderCardPlatformToggles(); renderPlatformCardFieldSettings(); populateSettingsFieldSelect(); renderCardViewModeToggles(); renderAutoSellRangeSettings(); renderPrivacySettings(); renderAppLockSettings(); renderBadgeOrderList(); renderSettingsFieldOptions(); renderSettingsBrands(); renderWaMessageEditor(); renderSettingsHomeSummaries();
   openSettingsPage('home');
   document.getElementById('settingsOverlay').classList.remove('hidden'); pushOverlayHistory('settingsOverlay');
 };
-document.getElementById('btnSettingsClose').onclick = function(){ requestOverlayClose(); };
-document.getElementById('settingsOverlay').onclick = function(e){ if(e.target.id==='settingsOverlay') requestOverlayClose(); };
+document.getElementById('btnSettingsClose').onclick = function(){ if(settingsDraftActive && settingsDraftDirty){ if(confirm('Unsaved settings hain. OK = Save, Cancel = Discard.')) settingsDraftSave(); else settingsDraftUndo(); } settingsDraftEndDiscard(); requestOverlayClose(); };
+document.getElementById('settingsOverlay').onclick = function(e){ if(e.target.id==='settingsOverlay'){ if(settingsDraftActive && settingsDraftDirty){ if(confirm('Unsaved settings hain. OK = Save, Cancel = Discard.')) settingsDraftSave(); else settingsDraftUndo(); } settingsDraftEndDiscard(); requestOverlayClose(); } };
 
 document.getElementById('autoRangeAddBtn').onclick = addAutoSellRangeRule;
 
