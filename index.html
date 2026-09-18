@@ -159,7 +159,8 @@
   .model-dropdown-btn.on{border-color:var(--accent);color:var(--accent);}
   .model-suggestions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
   .model-suggestions:empty{margin-top:0;}
-  .model-suggestion-chip{padding:6px 11px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);font-size:12.5px;color:var(--text-dim);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none;}
+  .model-suggestion-chip{padding:6px 11px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);font-size:12.5px;color:var(--text-dim);user-select:none;-webkit-user-select:none;-moz-user-select:none;-webkit-touch-callout:none;touch-action:none;}
+  .model-suggestion-chip::selection{background:transparent;color:inherit;}
   .model-suggestion-chip.new-tag{color:var(--accent);border-color:var(--accent);}
   .field input:focus,.field select:focus{outline:none;border-color:var(--accent);}
   .two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -4597,10 +4598,20 @@ function renderModelSuggestions(typedVal){
         }
       },650);
     };
-    c.addEventListener('pointerdown',startPress,{passive:false});
+    c.addEventListener('pointerdown',function(e){
+      if(e.pointerType==='touch' || e.pointerType==='pen'){
+        try{ e.preventDefault(); }catch(err){}
+      }
+      startPress(e);
+    },{passive:false});
     c.addEventListener('pointerup',clearPressTimer);
     c.addEventListener('pointercancel',clearPressTimer);
     c.addEventListener('pointerleave',clearPressTimer);
+    c.addEventListener('pointermove',function(e){
+      if(pressTimer && (Math.abs(e.movementX||0)>4 || Math.abs(e.movementY||0)>4)) clearPressTimer();
+    });
+    c.addEventListener('selectstart',function(e){ e.preventDefault(); });
+    c.addEventListener('contextmenu',function(e){ e.preventDefault(); });
   });
 }
 
@@ -6834,8 +6845,9 @@ function openSettingsPage(page){
   settingsDraftRefreshBar();
   return true;
 }
-// Settings navigation: handle touch/mouse directly on pointerup so one tap opens the page.
-// The old click-only handler could require a second tap on some mobile browsers.
+// Settings navigation: normal click handling is intentionally kept native.
+// A previous touchend bridge could swallow real clicks inside the Settings
+// sheet on some Android browsers, leaving pages/controls seemingly dead.
 document.querySelectorAll('#settingsOverlay [data-settings-page]').forEach(function(btn){
   btn.onclick = function(e){
     if(e){ e.preventDefault(); e.stopPropagation(); }
@@ -6848,42 +6860,6 @@ document.querySelectorAll('#settingsOverlay [data-settings-page]').forEach(funct
     }
   };
 });
-
-// Mobile fast-tap bridge for Settings. Some Android WebViews/browsers can
-// delay or swallow the synthetic click on the first tap when the Settings
-// sheet has just opened. Fire the same click action from touchend and suppress
-// the follow-up compatibility click so one tap is enough.
-(function(){
-  const overlay=document.getElementById('settingsOverlay');
-  if(!overlay) return;
-  let sx=0, sy=0;
-  let suppressClickUntil=0;
-  overlay.addEventListener('touchstart',function(e){
-    const t=e.touches&&e.touches[0];
-    if(t){sx=t.clientX;sy=t.clientY;}
-  },{passive:true,capture:true});
-  overlay.addEventListener('touchend',function(e){
-    const t=e.changedTouches&&e.changedTouches[0];
-    if(!t) return;
-    if(Math.abs(t.clientX-sx)>10 || Math.abs(t.clientY-sy)>10) return;
-    const target=e.target;
-    const el=target&&target.closest ? target.closest('button,[role="button"],[onclick],.settings-toggle-chip,.settings-opt .rm') : null;
-    if(!el || !overlay.contains(el)) return;
-    if(el.disabled) return;
-    // Keep native text-entry controls untouched.
-    if(el.matches('input,select,textarea')) return;
-    suppressClickUntil=Date.now()+700;
-    e.preventDefault();
-    e.stopPropagation();
-    try{ el.click(); }catch(err){}
-  },{passive:false,capture:true});
-  overlay.addEventListener('click',function(e){
-    if(Date.now()<suppressClickUntil){
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  },true);
-})();
 document.getElementById('settingsBackBtn').onclick=function(){openSettingsPage('home');};
 document.getElementById('settingsOpenAccountBtn').onclick=function(){ requestOverlayClose(); setTimeout(function(){ document.getElementById('btnAccount').click(); },120); };
 document.getElementById('settingsSaveShopProfile').onclick=function(){
