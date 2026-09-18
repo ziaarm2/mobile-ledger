@@ -4639,7 +4639,9 @@ function openAdd(){
   document.getElementById('modelDropdownBtn').classList.remove('on');
   document.getElementById('modelSuggestions').innerHTML = '';
   document.getElementById('extraBuyList').innerHTML = '';
-  renderPhoneExpenseRows('f-phone-expenses', []);
+  // New entries start with one ready-to-fill expense row. More rows are
+  // added only when the + button is pressed (or Enter is used on amount).
+  renderPhoneExpenseRows('f-phone-expenses', [{}]);
   extraPieceCount = 0;
   document.getElementById('addExtraBuyBtn').style.display = 'block';
   renderAllChips();
@@ -6815,12 +6817,23 @@ document.getElementById('adminNotificationBtn').onclick=function(){
   prepareEntryLayoutDOM(); renderSettingsPlatformToggles(); renderEntryLayoutSettings(); renderCardPlatformToggles(); renderPlatformCardFieldSettings(); populateSettingsFieldSelect(); renderCardViewModeToggles(); renderAutoSellRangeSettings(); renderPrivacySettings(); renderAppLockSettings(); renderBadgeOrderList(); renderSettingsFieldOptions(); renderSettingsBrands(); renderWaMessageEditor(); renderSettingsHomeSummaries(); openSettingsPage('shopaccess');
 };
 if(document.getElementById('saveAccessTemplates')) document.getElementById('saveAccessTemplates').onclick=saveAccessTemplates;
-document.getElementById('btnSettings').onclick = function(){
-  dedupeSettingsHomeCategories();
-  settingsDraftBegin();
-  prepareEntryLayoutDOM(); renderSettingsPlatformToggles(); renderEntryLayoutSettings(); renderCardPlatformToggles(); renderPlatformCardFieldSettings(); populateSettingsFieldSelect(); renderCardViewModeToggles(); renderAutoSellRangeSettings(); renderPrivacySettings(); renderAppLockSettings(); renderBadgeOrderList(); renderSettingsFieldOptions(); renderSettingsBrands(); renderWaMessageEditor(); renderSettingsHomeSummaries();
-  openSettingsPage('home');
-  document.getElementById('settingsOverlay').classList.remove('hidden'); pushOverlayHistory('settingsOverlay');
+document.getElementById('btnSettings').onclick = function(e){
+  // The Settings item lives inside the menu dropdown. Stop the click from
+  // bubbling into other menu/document handlers, close the menu first, and
+  // open Settings on the next tick so the two UI layers never fight over the
+  // same tap.
+  if(e){ e.preventDefault(); e.stopPropagation(); }
+  const menu=document.getElementById('menuDropdown');
+  if(menu) menu.classList.add('hidden');
+  setTimeout(function(){
+    const overlay=document.getElementById('settingsOverlay');
+    if(!overlay) return;
+    dedupeSettingsHomeCategories();
+    prepareEntryLayoutDOM(); renderSettingsPlatformToggles(); renderEntryLayoutSettings(); renderCardPlatformToggles(); renderPlatformCardFieldSettings(); populateSettingsFieldSelect(); renderCardViewModeToggles(); renderAutoSellRangeSettings(); renderPrivacySettings(); renderAppLockSettings(); renderBadgeOrderList(); renderSettingsFieldOptions(); renderSettingsBrands(); renderWaMessageEditor(); renderSettingsHomeSummaries();
+    openSettingsPage('home');
+    overlay.classList.remove('hidden');
+    if(overlayHistoryStack[overlayHistoryStack.length-1] !== 'settingsOverlay') pushOverlayHistory('settingsOverlay');
+  },0);
 };
 document.getElementById('btnSettingsClose').onclick = function(){ if(settingsDraftActive && settingsDraftDirty){ if(confirm('Unsaved settings hain. OK = Save, Cancel = Discard.')) settingsDraftSave(); else settingsDraftUndo(); } settingsDraftEndDiscard(); requestOverlayClose(); };
 document.getElementById('settingsOverlay').onclick = function(e){ if(e.target.id==='settingsOverlay'){ if(settingsDraftActive && settingsDraftDirty){ if(confirm('Unsaved settings hain. OK = Save, Cancel = Discard.')) settingsDraftSave(); else settingsDraftUndo(); } settingsDraftEndDiscard(); requestOverlayClose(); } };
