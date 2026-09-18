@@ -290,7 +290,13 @@
   .settings-add-row input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;}
   .settings-add-row button{white-space:nowrap;}
   .settings-note{font-size:11.5px;color:var(--text-dim);margin-top:10px;}
-  .settings-toggle-chip{display:flex;align-items:center;gap:6px;background:var(--surface);border-radius:999px;padding:8px 14px;font-size:13px;cursor:pointer;user-select:none;}
+  .settings-toggle-chip{display:flex;align-items:center;gap:6px;background:var(--surface);border-radius:999px;padding:8px 14px;font-size:13px;cursor:pointer;user-select:none;pointer-events:auto;position:relative;z-index:2;}
+  .settings-toggle-chip[aria-disabled="true"]{opacity:.6;}
+  .model-admin-hint{font-size:9px;color:var(--danger);margin-left:4px;white-space:nowrap;}
+  .phone-expense-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(90px,1fr) 34px;gap:7px;align-items:center;}
+  .phone-expense-remove{width:34px;height:34px;border:1px solid var(--border);background:var(--surface-2);color:var(--danger);border-radius:8px;font-size:18px;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;}
+  .phone-expense-remove:hover{background:var(--cpid-bg);border-color:var(--danger);}
+  .add-expense-inline{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--surface-2);color:var(--accent);font-size:22px;font-weight:700;cursor:pointer;margin-top:7px;}
   .settings-toggle-chip.on{background:var(--pta-bg);color:var(--pta);}
   .settings-toggle-chip .dot{width:8px;height:8px;border-radius:50%;background:var(--text-faint);}
   .settings-toggle-chip.on .dot{background:var(--pta);}
@@ -771,7 +777,7 @@
     <div class="sec-label" style="margin-top:14px;">📱 Is mobile par hua extra kharcha</div>
     <div class="settings-note" style="margin-top:0;">Jelly/protector, repair ya koi bhi phone-specific kharcha yahan add karein. Ye isi mobile ke profit se minus hoga.</div>
     <div id="f-phone-expenses" class="phone-expense-list"></div>
-    <div class="add-expense-inline" id="addPhoneExpenseInline" role="button" tabindex="0">+ Aur expense</div>
+    <div class="add-expense-inline" id="addPhoneExpenseInline" role="button" tabindex="0" aria-label="Add phone expense">+</div>
 
     <div class="more-section" id="saleFieldsWrap">
       <div class="two-col big-input">
@@ -1586,12 +1592,12 @@ let customOptionData = {extra:{}, hidden:{}, globalCustomFields:[]};
 const LS_CUSTOM_OPTIONS_KEY = 'mobileLedger_customOptions';
 
 const DEFAULT_ENTRY_LAYOUT = {
-  main: ['brand','model','photos','status','quantity','buyPrice','phoneExpenses','sellRange','buyMeta','seller','saleFields'],
+  main: ['brand','model','photos','status','quantity','buyPrice','phoneExpenses','sellRange','buyMeta','seller','saleFields','moreToggle','extras'],
   more: ['ram','storage','network','display','touch','camera','body','openrepair','battery','box','packing','charger','faceid','truetone','customFields','notes'],
   hidden: []
 };
 const ENTRY_LAYOUT_LABELS = {
-  brand:'Brand', model:'Model', photos:'Pics', status:'Status', quantity:'Quantity', buyPrice:'Buy price', phoneExpenses:'Phone expenses', sellRange:'Sell price range', buyRange:'Buy price + Sell range', buyMeta:'Buy date + IMEI', seller:'Seller details', extras:'Extra pieces', saleFields:'Sale details',
+  brand:'Brand', model:'Model', photos:'Pics', status:'Status', quantity:'Quantity', buyPrice:'Buy price', phoneExpenses:'Phone expenses', sellRange:'Sell price range', buyRange:'Buy price + Sell range', buyMeta:'Buy date + IMEI', seller:'Seller details', extras:'+ Isi model ka aur piece', moreToggle:'+ Zyada details add karein', saleFields:'Sale details',
   ram:'RAM', storage:'Storage', network:'Network', display:'Display / Panel', touch:'Touch', camera:'Camera', body:'Body', openrepair:'Open aur Repair', battery:'Battery health', box:'Box', packing:'Packing', charger:'Charger', faceid:'Face ID', truetone:'True Tone', customFields:'Custom fields', notes:'Notes'
 };
 const DEFAULT_PLATFORM_CARD_FIELDS = ['display','battery','touch','camera','body','openrepair','ram','storage','network','packing','charger','box','faceid','truetone'];
@@ -1784,13 +1790,17 @@ let customModels = {};
 function getBrandModels(brand){
   const base = MODEL_CATALOG[brand] || [];
   const custom = customModels[brand] || [];
-  const source = base.concat(custom.filter(function(m){ return base.indexOf(m)===-1; }));
+  const inventoryModels = inventory.filter(function(e){ return e && e.brand===brand && e.model; }).map(function(e){ return String(e.model).trim(); });
+  const source = base.concat(custom).concat(inventoryModels);
   const counts={};
   inventory.forEach(function(e){
-    if(e && e.brand===brand && e.model){ counts[e.model]=(counts[e.model]||0)+1; }
+    if(e && e.brand===brand && e.model){
+      const qty=Math.max(1, Number(e.quantity)||1);
+      counts[e.model]=(counts[e.model]||0)+qty;
+    }
   });
   const remembered=getLastModelForBrand(brand);
-  return source.filter(function(m,i){return source.indexOf(m)===i;}).sort(function(a,b){
+  return source.filter(function(m,i){return m && source.indexOf(m)===i;}).sort(function(a,b){
     if(remembered===a && remembered!==b) return -1;
     if(remembered===b && remembered!==a) return 1;
     const ca=counts[a]||0, cb=counts[b]||0;
@@ -2869,12 +2879,10 @@ function renderPhoneExpenseRows(containerId, items){
   el.innerHTML=showRows.map(function(x){
     return '<div class="phone-expense-row">'+
       '<div class="phone-expense-grid">'+
-        '<input class="pe-category" placeholder="Jelly/Protector, Repair..." value="'+String(x.category||'').replace(/"/g,'&quot;')+'">'+
+        '<input class="pe-category" placeholder="Jelly / Repair" value="'+String(x.category||'').replace(/"/g,'&quot;')+'">'+
         '<input class="pe-amount" type="text" inputmode="decimal" placeholder="Amount" value="'+(x.amount!=null?Math.abs(Number(x.amount)||0):'')+'">'+
+        '<button type="button" class="phone-expense-remove" aria-label="Remove expense">×</button>'+
       '</div>'+
-      '<input class="pe-date" type="date" style="margin-top:7px;" value="'+(dateOnly(x.date)||todayISO())+'">'+
-      '<input class="pe-note phone-expense-note" placeholder="Tafseel (optional)" value="'+String(x.notes||'').replace(/"/g,'&quot;')+'">'+
-      '<button type="button" class="phone-expense-remove">✕ Ye expense hata dein</button>'+
     '</div>';
   }).join('');
   el.querySelectorAll('.phone-expense-row').forEach(bindPhoneExpenseEnter);
@@ -2889,12 +2897,10 @@ function addPhoneExpenseRow(containerId){
   wrapper.className='phone-expense-row';
   wrapper.innerHTML=
     '<div class="phone-expense-grid">'+
-      '<input class="pe-category" placeholder="Jelly/Protector, Repair...">'+
+      '<input class="pe-category" placeholder="Jelly / Repair">'+
       '<input class="pe-amount" type="text" inputmode="decimal" placeholder="Amount">'+
-    '</div>'+
-    '<input class="pe-date" type="date" style="margin-top:7px;" value="'+todayISO()+'">'+
-    '<input class="pe-note phone-expense-note" placeholder="Tafseel (optional)">'+
-    '<button type="button" class="phone-expense-remove">✕ Ye expense hata dein</button>';
+      '<button type="button" class="phone-expense-remove" aria-label="Remove expense">×</button>'+
+    '</div>';
   wrapper.querySelector('.phone-expense-remove').onclick=function(){ wrapper.remove(); updateSellProfitPreview(); };
   el.appendChild(wrapper);
   bindPhoneExpenseEnter(wrapper);
@@ -2913,8 +2919,8 @@ function readPhoneExpenseRows(containerId){
     out.push({
       id:'pe_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
       category:category, amount:amount,
-      date:row.querySelector('.pe-date').value || todayISO(),
-      notes:row.querySelector('.pe-note').value.trim()
+      date:(row.querySelector('.pe-date') ? row.querySelector('.pe-date').value : todayISO()) || todayISO(),
+      notes:(row.querySelector('.pe-note') ? row.querySelector('.pe-note').value.trim() : '')
     });
   });
   return out;
@@ -3006,11 +3012,13 @@ function renderBrandFilter(){
   // custom/other brand names actually present in the data.
   const allBrands = getLiveBrands().filter(function(b){ return b!=='Other'; }).concat(invBrands);
   const distinct = allBrands.filter(function(b,i){return b && allBrands.indexOf(b)===i;});
-  // Rank brands by total saved entries (stock + sold/returned), so the
-  // brands you use most often are shown first on the main screen.
+  // Rank brands by total saved pieces, so a brand with 2 phones in one
+  // quantity=2 entry still appears above a brand with only 1 phone.
   const entryCount = {};
   distinct.forEach(function(b){
-    entryCount[b] = inventory.filter(function(e){return e.brand===b;}).length;
+    entryCount[b] = inventory.filter(function(e){return e.brand===b;}).reduce(function(sum,e){
+      return sum + Math.max(0, Number(e.quantity)||0);
+    },0);
   });
   distinct.sort(function(a,b){
     const ca = entryCount[a]||0, cb = entryCount[b]||0;
@@ -4165,8 +4173,15 @@ function prepareEntryLayoutDOM(){
     extrasWrap.dataset.entryGroup='extras';
     if(extraList) extrasWrap.appendChild(extraList);
     if(extraButton) extrasWrap.appendChild(extraButton);
-    const actions=sheet.querySelector('.sheet-actions');
-    if(actions) sheet.insertBefore(extrasWrap, actions); else sheet.appendChild(extrasWrap);
+    mainWrap.appendChild(extrasWrap);
+  }
+  const moreToggle=sheet.querySelector('#moreToggle');
+  if(moreToggle){
+    const moreToggleGroup=document.createElement('div');
+    moreToggleGroup.className='entry-layout-group';
+    moreToggleGroup.dataset.entryGroup='moreToggle';
+    moreToggleGroup.appendChild(moreToggle);
+    mainWrap.appendChild(moreToggleGroup);
   }
   const phoneList=sheet.querySelector('#f-phone-expenses');
   if(phoneList){
@@ -4175,9 +4190,9 @@ function prepareEntryLayoutDOM(){
   const sale=sheet.querySelector('#saleFieldsWrap');
   if(sale) addMainGroup('saleFields',[sale]);
 
-  // Put all main groups before the More-details toggle; remove any children that were moved.
-  mainWrap.appendChild(sheet.querySelector('#moreToggle'));
-  mainWrap.appendChild(sheet.querySelector('#moreSection'));
+  // Keep the More section itself separate; only the toggle is movable.
+  // The configured main-layout order controls where the toggle and extra-piece
+  // action appear.
   entryLayoutDomPrepared=true;
 
   // Wrap each more-detail label + chip row as one movable group.
@@ -4225,10 +4240,8 @@ function ensureLayoutContainsAll(layout){
   ['main','more','hidden'].forEach(function(k){ if(!Array.isArray(layout[k])) layout[k]=d[k].slice(); });
 
   // Migrate the previous combined Buy price + Sell range row into separate
-  // controls, and keep the extra-piece action fixed at the bottom of the form.
-  ['main','more','hidden'].forEach(function(k){
-    layout[k] = layout[k].filter(function(x){ return x!=='extras'; });
-  });
+  // controls. Also restore the two movable action controls for older layouts
+  // that were saved before they became configurable.
   ['main','more','hidden'].forEach(function(k){
     if(layout[k].indexOf('buyRange')!==-1){
       const idx=layout[k].indexOf('buyRange');
@@ -4244,7 +4257,7 @@ function ensureLayoutContainsAll(layout){
   }
 
   const all=d.main.concat(d.more);
-  all.forEach(function(k){ if(layout.main.indexOf(k)===-1 && layout.more.indexOf(k)===-1 && layout.hidden.indexOf(k)===-1){ layout.more.push(k); } });
+  all.forEach(function(k){ if(layout.main.indexOf(k)===-1 && layout.more.indexOf(k)===-1 && layout.hidden.indexOf(k)===-1){ layout.main.push(k); } });
   // Preserve custom entry fields in the configurable layout as well.
   try{
     const customs=[];
@@ -4256,12 +4269,38 @@ function ensureLayoutContainsAll(layout){
   return layout;
 }
 function getEntryLayout(platform){
+  if(platform==='both'){
+    // Both is a shared editing view. Android is used as the display order,
+    // while edits made in Both are mirrored to Android + iPhone below.
+    const p=ensurePlatformOptionData('android');
+    p.entryLayout=ensureLayoutContainsAll(p.entryLayout);
+    return p.entryLayout;
+  }
   const p=ensurePlatformOptionData(platform);
   p.entryLayout=ensureLayoutContainsAll(p.entryLayout);
   return p.entryLayout;
 }
+function cloneEntryLayout(layout){
+  return {main:(layout.main||[]).slice(), more:(layout.more||[]).slice(), hidden:(layout.hidden||[]).slice()};
+}
 function setEntryLayoutForTargets(platform, updater){
-  settingTargetPlatforms(platform).forEach(function(pl){ const p=ensurePlatformOptionData(pl); p.entryLayout=ensureLayoutContainsAll(p.entryLayout); updater(p.entryLayout,pl); });
+  if(platform==='both'){
+    const base=cloneEntryLayout(ensureLayoutContainsAll(ensurePlatformOptionData('android').entryLayout));
+    updater(base,'both');
+    base.main=base.main.filter(function(x,i,a){return a.indexOf(x)===i;});
+    base.more=base.more.filter(function(x,i,a){return a.indexOf(x)===i;});
+    base.hidden=base.hidden.filter(function(x,i,a){return a.indexOf(x)===i;});
+    ['android','iphone'].forEach(function(pl){
+      const p=ensurePlatformOptionData(pl);
+      p.entryLayout=cloneEntryLayout(base);
+    });
+  }else{
+    settingTargetPlatforms(platform).forEach(function(pl){
+      const p=ensurePlatformOptionData(pl);
+      p.entryLayout=ensureLayoutContainsAll(p.entryLayout);
+      updater(p.entryLayout,pl);
+    });
+  }
   saveCustomOptionData();
   renderEntryLayoutSettings();
   applyEntryLayoutToDOM(getEntryPlatform(formState && formState.brand));
@@ -4322,11 +4361,8 @@ function applyEntryLayoutToDOM(platform){
   if(mainWrap){ L.main.forEach(function(k,i){const g=mainGroups[k];if(g){g.style.display='block';g.style.order=String(i);mainWrap.appendChild(g);}}); }
   if(more){ L.more.forEach(function(k,i){const g=moreGroups[k];if(g){g.style.display='block';g.style.order=String(i);more.appendChild(g);}}); }
   (L.hidden||[]).forEach(function(k){ const g=mainGroups[k]||moreGroups[k]; if(g) g.style.display='none'; });
-  // Keep the More toggle/details together, then keep the extra-piece action at the very bottom.
-  if(mainWrap){ const mt=document.getElementById('moreToggle'); if(mt) mainWrap.appendChild(mt); const ms=document.getElementById('moreSection'); if(ms) mainWrap.appendChild(ms); }
-  const extrasGroup=document.querySelector('#overlay .entry-layout-group[data-entry-group="extras"]');
-  const actions= document.querySelector('#overlay .sheet-actions');
-  if(extrasGroup && actions) actions.parentNode.insertBefore(extrasGroup,actions);
+  // The More-details toggle and extra-piece action are now normal
+  // configurable layout groups. Do not force either one to a fixed position.
 }
 
 function renderChipGroup(containerId, options, groupKey, extraClass){
@@ -4373,7 +4409,19 @@ function renderCustomEntryFields(){
 }
 
 function renderAllChips(){
-  renderChipGroup('brandChips', getLiveBrands(), 'brand');
+  const orderedEntryBrands = getLiveBrands().slice().filter(function(b){return b!=='Other';});
+  const brandCounts = {};
+  inventory.forEach(function(e){
+    if(!e || !e.brand) return;
+    brandCounts[e.brand]=(brandCounts[e.brand]||0)+Math.max(0,Number(e.quantity)||0);
+  });
+  orderedEntryBrands.sort(function(a,b){
+    const ca=brandCounts[a]||0, cb=brandCounts[b]||0;
+    if(ca!==cb) return cb-ca;
+    return a.localeCompare(b);
+  });
+  orderedEntryBrands.push('Other');
+  renderChipGroup('brandChips', orderedEntryBrands, 'brand');
   renderChipGroup('statusChips', getEntryFieldOptions('status', STATUS_OPTS), 'status', 'status-opt');
   renderChipGroup('ramChips', getEntryFieldOptions('ram', RAM_OPTS), 'ram');
   renderChipGroup('storageChips', getEntryFieldOptions('storage', STORAGE_OPTS), 'storage');
@@ -4415,13 +4463,37 @@ function renderModelSuggestions(typedVal){
     return;
   }
   box.innerHTML = matches.map(function(m){
-    return '<div class="model-suggestion-chip" data-val="'+m+'">'+m+'</div>';
+    const isCustom = (customModels[brand]||[]).indexOf(m)!==-1;
+    return '<div class="model-suggestion-chip '+(isCustom?'is-custom-model':'')+'" data-val="'+m+'" data-custom-model="'+(isCustom?'1':'0')+'">'+m+(isCustom&&userRole==='admin'?' <span class="model-admin-hint">long press delete</span>':'')+'</div>';
   }).join('');
   box.querySelectorAll('.model-suggestion-chip').forEach(function(c){
+    let pressTimer=null, didLongPress=false;
     c.onclick = function(){
+      if(didLongPress){ didLongPress=false; return; }
       document.getElementById('f-model-other').value = c.dataset.val;
       box.innerHTML = '';
     };
+    const startPress=function(){
+      if(c.dataset.customModel!=='1' || userRole!=='admin' || isAdminShopView()) return;
+      didLongPress=false;
+      pressTimer=setTimeout(function(){
+        didLongPress=true;
+        const model=c.dataset.val;
+        if(confirm('"'+model+'" custom model ko delete kar dein?')){
+          customModels[brand]=(customModels[brand]||[]).filter(function(x){return x!==model;});
+          saveCustomModels();
+          renderModelSuggestions(document.getElementById('f-model-other').value);
+          showToast('✓ Model delete ho gaya');
+        }
+      },650);
+    };
+    const cancelPress=function(){ if(pressTimer){clearTimeout(pressTimer);pressTimer=null;} };
+    c.addEventListener('mousedown',startPress);
+    c.addEventListener('mouseup',cancelPress);
+    c.addEventListener('mouseleave',cancelPress);
+    c.addEventListener('touchstart',startPress,{passive:true});
+    c.addEventListener('touchend',cancelPress);
+    c.addEventListener('touchcancel',cancelPress);
   });
 }
 
