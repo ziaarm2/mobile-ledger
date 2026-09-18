@@ -6850,6 +6850,7 @@ function openSettingsPage(page){
 // A previous touchend bridge could swallow real clicks inside the Settings
 // sheet on some Android browsers, leaving pages/controls seemingly dead.
 document.querySelectorAll('#settingsOverlay [data-settings-page]').forEach(function(btn){
+  // Keep normal click support for mouse/keyboard.
   btn.onclick = function(e){
     if(e){ e.preventDefault(); e.stopPropagation(); }
     openSettingsPage(btn.dataset.settingsPage);
@@ -6860,6 +6861,27 @@ document.querySelectorAll('#settingsOverlay [data-settings-page]').forEach(funct
       openSettingsPage(btn.dataset.settingsPage);
     }
   };
+
+  // Mobile fix: activate Settings categories directly on touch/pen.
+  // This avoids relying on the browser's delayed/synthetic click, which
+  // can make the first tap appear to do nothing on some touch browsers.
+  btn.addEventListener('pointerup', function(e){
+    if(e.pointerType==='mouse') return;
+    e.preventDefault();
+    e.stopPropagation();
+    openSettingsPage(btn.dataset.settingsPage);
+    btn.setAttribute('data-settings-pointer-handled','1');
+    setTimeout(function(){ btn.removeAttribute('data-settings-pointer-handled'); },350);
+  }, {passive:false});
+
+  // Prevent the synthetic click from opening the page a second time.
+  btn.addEventListener('click', function(e){
+    if(btn.getAttribute('data-settings-pointer-handled')==='1'){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      btn.removeAttribute('data-settings-pointer-handled');
+    }
+  }, true);
 });
 document.getElementById('settingsBackBtn').onclick=function(){openSettingsPage('home');};
 document.getElementById('settingsOpenAccountBtn').onclick=function(){ requestOverlayClose(); setTimeout(function(){ document.getElementById('btnAccount').click(); },120); };
