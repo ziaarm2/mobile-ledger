@@ -4562,17 +4562,31 @@ function renderModelSuggestions(typedVal){
     return '<div class="model-suggestion-chip '+(isCustom?'is-custom-model':'')+'" data-val="'+m+'" data-custom-model="'+(isCustom?'1':'0')+'">'+m+'</div>';
   }).join('');
   box.querySelectorAll('.model-suggestion-chip').forEach(function(c){
-    let pressTimer=null, didLongPress=false;
-    c.onclick = function(){
-      if(didLongPress){ didLongPress=false; return; }
-      document.getElementById('f-model-other').value = c.dataset.val;
+    let pressTimer=null;
+    let didLongPress=false;
+    let suppressClickUntil=0;
+    c.onclick = function(e){
+      if(didLongPress || Date.now()<suppressClickUntil){
+        e.preventDefault();
+        e.stopPropagation();
+        didLongPress=false;
+        return;
+      }
+      const input=document.getElementById('f-model-other');
+      if(input) input.value = c.dataset.val;
       box.innerHTML = '';
     };
+    const clearPressTimer=function(){
+      if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; }
+    };
     const startPress=function(){
-      if(c.dataset.customModel!=='1' || userRole!=='admin' || isAdminShopView()) return;
+      clearPressTimer();
       didLongPress=false;
+      if(c.dataset.customModel!=='1' || userRole!=='admin' || isAdminShopView()) return;
       pressTimer=setTimeout(function(){
+        pressTimer=null;
         didLongPress=true;
+        suppressClickUntil=Date.now()+900;
         const model=c.dataset.val;
         if(confirm('"'+model+'" custom model ko delete kar dein?')){
           customModels[brand]=(customModels[brand]||[]).filter(function(x){return x!==model;});
@@ -4582,13 +4596,10 @@ function renderModelSuggestions(typedVal){
         }
       },650);
     };
-    const cancelPress=function(){ if(pressTimer){clearTimeout(pressTimer);pressTimer=null;} };
-    c.addEventListener('mousedown',startPress);
-    c.addEventListener('mouseup',cancelPress);
-    c.addEventListener('mouseleave',cancelPress);
-    c.addEventListener('touchstart',startPress,{passive:true});
-    c.addEventListener('touchend',cancelPress);
-    c.addEventListener('touchcancel',cancelPress);
+    c.addEventListener('pointerdown',startPress,{passive:true});
+    c.addEventListener('pointerup',clearPressTimer);
+    c.addEventListener('pointercancel',clearPressTimer);
+    c.addEventListener('pointerleave',clearPressTimer);
   });
 }
 
@@ -6822,7 +6833,28 @@ function openSettingsPage(page){
   settingsDraftRefreshBar();
   return true;
 }
-document.querySelectorAll('#settingsOverlay [data-settings-page]').forEach(function(btn){btn.onclick=function(){openSettingsPage(btn.dataset.settingsPage);};});
+// Settings navigation: handle touch/mouse directly on pointerup so one tap opens the page.
+// The old click-only handler could require a second tap on some mobile browsers.
+document.querySelectorAll('#settingsOverlay [data-settings-page]').forEach(function(btn){
+  btn.onclick = null;
+  btn.onkeydown = function(e){
+    if(e.key==='Enter' || e.key===' '){
+      e.preventDefault();
+      openSettingsPage(btn.dataset.settingsPage);
+    }
+  };
+});
+const settingsPageWrapEl=document.querySelector('#settingsOverlay .settings-page-wrap');
+if(settingsPageWrapEl){
+  settingsPageWrapEl.addEventListener('pointerup',function(e){
+    const btn=e.target && e.target.closest ? e.target.closest('[data-settings-page]') : null;
+    if(!btn || !settingsPageWrapEl.contains(btn)) return;
+    if(e.pointerType==='mouse' && e.button!==0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openSettingsPage(btn.dataset.settingsPage);
+  },{passive:false});
+}
 document.getElementById('settingsBackBtn').onclick=function(){openSettingsPage('home');};
 document.getElementById('settingsOpenAccountBtn').onclick=function(){ requestOverlayClose(); setTimeout(function(){ document.getElementById('btnAccount').click(); },120); };
 document.getElementById('settingsSaveShopProfile').onclick=function(){
