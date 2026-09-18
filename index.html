@@ -159,8 +159,9 @@
   .model-dropdown-btn.on{border-color:var(--accent);color:var(--accent);}
   .model-suggestions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
   .model-suggestions:empty{margin-top:0;}
-  .model-suggestion-chip{padding:6px 11px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);font-size:12.5px;color:var(--text-dim);user-select:none;-webkit-user-select:none;-moz-user-select:none;-webkit-touch-callout:none;touch-action:none;}
+  .model-suggestion-chip{padding:6px 11px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);font-size:12.5px;color:var(--text-dim);user-select:none;-webkit-user-select:none;-moz-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
   .model-suggestion-chip::selection{background:transparent;color:inherit;}
+  .settings-category,.settings-toggle-chip,.settings-opt,.chip,.chip-opt,[role=button],.add-extra-buy,.add-expense-inline,.add-piece-btn{user-select:none;-webkit-user-select:none;-moz-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
   .model-suggestion-chip.new-tag{color:var(--accent);border-color:var(--accent);}
   .field input:focus,.field select:focus{outline:none;border-color:var(--accent);}
   .two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -6914,6 +6915,32 @@ document.getElementById('btnSettings').onclick = function(e){
 };
 document.getElementById('btnSettingsClose').onclick = function(){ if(settingsDraftActive && settingsDraftDirty){ if(confirm('Unsaved settings hain. OK = Save, Cancel = Discard.')) settingsDraftSave(); else settingsDraftUndo(); } settingsDraftEndDiscard(); requestOverlayClose(); };
 document.getElementById('settingsOverlay').onclick = function(e){ if(e.target.id==='settingsOverlay'){ if(settingsDraftActive && settingsDraftDirty){ if(confirm('Unsaved settings hain. OK = Save, Cancel = Discard.')) settingsDraftSave(); else settingsDraftUndo(); } settingsDraftEndDiscard(); requestOverlayClose(); } };
+
+// Reliable single-tap handling for Settings on touch devices.
+// We invoke the existing click handler on pointerup, then swallow only the
+// browser's following synthetic click for that same target.
+(function(){
+  const overlay=document.getElementById('settingsOverlay');
+  if(!overlay) return;
+  let lastTarget=null, lastAt=0;
+  const selector='button,.chip,.chip-opt,.settings-category,.settings-toggle-chip,.settings-opt,[role="button"],.add-extra-buy,.add-expense-inline,.add-piece-btn';
+  overlay.addEventListener('pointerup',function(e){
+    if(e.pointerType==='mouse' && e.button!==0) return;
+    const el=e.target.closest && e.target.closest(selector);
+    if(!el || !overlay.contains(el)) return;
+    if(el.matches('input,select,textarea,.model-suggestion-chip')) return;
+    lastTarget=el; lastAt=Date.now();
+    try{ el.click(); }catch(err){}
+  },{passive:true});
+  overlay.addEventListener('click',function(e){
+    if(lastTarget && Date.now()-lastAt<900 && e.target.closest && e.target.closest(selector)===lastTarget){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      lastTarget=null;
+      lastAt=0;
+    }
+  },true);
+})();
 
 document.getElementById('autoRangeAddBtn').onclick = addAutoSellRangeRule;
 
