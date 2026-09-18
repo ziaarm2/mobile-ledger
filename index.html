@@ -1586,12 +1586,12 @@ let customOptionData = {extra:{}, hidden:{}, globalCustomFields:[]};
 const LS_CUSTOM_OPTIONS_KEY = 'mobileLedger_customOptions';
 
 const DEFAULT_ENTRY_LAYOUT = {
-  main: ['brand','model','photos','status','quantity','buyRange','buyMeta','seller','extras','phoneExpenses','saleFields'],
+  main: ['brand','model','photos','status','quantity','buyPrice','phoneExpenses','sellRange','buyMeta','seller','saleFields'],
   more: ['ram','storage','network','display','touch','camera','body','openrepair','battery','box','packing','charger','faceid','truetone','customFields','notes'],
   hidden: []
 };
 const ENTRY_LAYOUT_LABELS = {
-  brand:'Brand', model:'Model', photos:'Pics', status:'Status', quantity:'Quantity', buyRange:'Buy price + Sell range', buyMeta:'Buy date + IMEI', seller:'Seller details', extras:'Extra pieces', phoneExpenses:'Phone expenses', saleFields:'Sale details',
+  brand:'Brand', model:'Model', photos:'Pics', status:'Status', quantity:'Quantity', buyPrice:'Buy price', phoneExpenses:'Phone expenses', sellRange:'Sell price range', buyRange:'Buy price + Sell range', buyMeta:'Buy date + IMEI', seller:'Seller details', extras:'Extra pieces', saleFields:'Sale details',
   ram:'RAM', storage:'Storage', network:'Network', display:'Display / Panel', touch:'Touch', camera:'Camera', body:'Body', openrepair:'Open aur Repair', battery:'Battery health', box:'Box', packing:'Packing', charger:'Charger', faceid:'Face ID', truetone:'True Tone', customFields:'Custom fields', notes:'Notes'
 };
 const DEFAULT_PLATFORM_CARD_FIELDS = ['display','battery','touch','camera','body','openrepair','ram','storage','network','packing','charger','box','faceid','truetone'];
@@ -1784,7 +1784,19 @@ let customModels = {};
 function getBrandModels(brand){
   const base = MODEL_CATALOG[brand] || [];
   const custom = customModels[brand] || [];
-  return base.concat(custom.filter(function(m){ return base.indexOf(m)===-1; }));
+  const source = base.concat(custom.filter(function(m){ return base.indexOf(m)===-1; }));
+  const counts={};
+  inventory.forEach(function(e){
+    if(e && e.brand===brand && e.model){ counts[e.model]=(counts[e.model]||0)+1; }
+  });
+  const remembered=getLastModelForBrand(brand);
+  return source.filter(function(m,i){return source.indexOf(m)===i;}).sort(function(a,b){
+    if(remembered===a && remembered!==b) return -1;
+    if(remembered===b && remembered!==a) return 1;
+    const ca=counts[a]||0, cb=counts[b]||0;
+    if(ca!==cb) return cb-ca;
+    return a.localeCompare(b);
+  });
 }
 
 const LS_INVENTORY_KEY = 'mobileLedger_inventory';
@@ -2994,15 +3006,14 @@ function renderBrandFilter(){
   // custom/other brand names actually present in the data.
   const allBrands = getLiveBrands().filter(function(b){ return b!=='Other'; }).concat(invBrands);
   const distinct = allBrands.filter(function(b,i){return b && allBrands.indexOf(b)===i;});
-  // Count distinct models saved under each brand — the brand with the most
-  // models shows up first.
-  const modelCount = {};
+  // Rank brands by total saved entries (stock + sold/returned), so the
+  // brands you use most often are shown first on the main screen.
+  const entryCount = {};
   distinct.forEach(function(b){
-    const models = inventory.filter(function(e){return e.brand===b;}).map(function(e){return e.model;}).filter(Boolean);
-    modelCount[b] = models.filter(function(m,i){return models.indexOf(m)===i;}).length;
+    entryCount[b] = inventory.filter(function(e){return e.brand===b;}).length;
   });
   distinct.sort(function(a,b){
-    const ca = modelCount[a]||0, cb = modelCount[b]||0;
+    const ca = entryCount[a]||0, cb = entryCount[b]||0;
     if(ca!==cb) return cb-ca;
     return a.localeCompare(b);
   });
@@ -4130,13 +4141,33 @@ function prepareEntryLayoutDOM(){
   const qty=sheet.querySelector('#f-qty');
   if(qty) addMainGroup('quantity',[qty.closest('.field')]);
   const buy=sheet.querySelector('#f-buy');
-  if(buy) addMainGroup('buyRange',[buy.closest('.two-col')]);
+  const range=sheet.querySelector('#f-range');
+  if(buy){
+    const buyField=buy.closest('.field');
+    if(buyField) addMainGroup('buyPrice',[buyField]);
+  }
+  if(range){
+    const rangeField=range.closest('.field');
+    if(rangeField) addMainGroup('sellRange',[rangeField]);
+  }
+  const oldBuyRow=buy ? buy.closest('.two-col') : null;
+  if(oldBuyRow && oldBuyRow !== (range ? range.closest('.two-col') : null)) oldBuyRow.remove();
+  else if(oldBuyRow && !oldBuyRow.children.length) oldBuyRow.remove();
   const buyDate=sheet.querySelector('#f-buydate');
   if(buyDate) addMainGroup('buyMeta',[buyDate.closest('.two-col')]);
   const seller=sheet.querySelector('#f-seller-name');
   if(seller) addMainGroup('seller',[seller.closest('.two-col')]);
   const extraList=sheet.querySelector('#extraBuyList');
-  if(extraList) addMainGroup('extras',[extraList,sheet.querySelector('#addExtraBuyBtn')]);
+  const extraButton=sheet.querySelector('#addExtraBuyBtn');
+  if(extraList || extraButton){
+    const extrasWrap=document.createElement('div');
+    extrasWrap.className='entry-layout-group';
+    extrasWrap.dataset.entryGroup='extras';
+    if(extraList) extrasWrap.appendChild(extraList);
+    if(extraButton) extrasWrap.appendChild(extraButton);
+    const actions=sheet.querySelector('.sheet-actions');
+    if(actions) sheet.insertBefore(extrasWrap, actions); else sheet.appendChild(extrasWrap);
+  }
   const phoneList=sheet.querySelector('#f-phone-expenses');
   if(phoneList){
     addMainGroup('phoneExpenses',[previousSecLabel(phoneList),phoneList,sheet.querySelector('#addPhoneExpenseInline')]);
@@ -4192,6 +4223,26 @@ function ensureLayoutContainsAll(layout){
   const d=defaultEntryLayout();
   layout=layout||d;
   ['main','more','hidden'].forEach(function(k){ if(!Array.isArray(layout[k])) layout[k]=d[k].slice(); });
+
+  // Migrate the previous combined Buy price + Sell range row into separate
+  // controls, and keep the extra-piece action fixed at the bottom of the form.
+  ['main','more','hidden'].forEach(function(k){
+    layout[k] = layout[k].filter(function(x){ return x!=='extras'; });
+  });
+  ['main','more','hidden'].forEach(function(k){
+    if(layout[k].indexOf('buyRange')!==-1){
+      const idx=layout[k].indexOf('buyRange');
+      layout[k].splice(idx,1,'buyPrice','sellRange');
+    }
+  });
+
+  // Default fast-entry order: Buy price → Phone expense → Sell range.
+  if(layout.main.indexOf('buyPrice')!==-1){
+    const keepBuy=layout.main.indexOf('buyPrice');
+    layout.main=layout.main.filter(function(x){return x!=='buyPrice' && x!=='phoneExpenses' && x!=='sellRange';});
+    layout.main.splice(keepBuy,0,'buyPrice','phoneExpenses','sellRange');
+  }
+
   const all=d.main.concat(d.more);
   all.forEach(function(k){ if(layout.main.indexOf(k)===-1 && layout.more.indexOf(k)===-1 && layout.hidden.indexOf(k)===-1){ layout.more.push(k); } });
   // Preserve custom entry fields in the configurable layout as well.
@@ -4238,12 +4289,25 @@ function renderEntryLayoutSettings(){
     btn.onclick=function(){
       const row=btn.closest('.entry-layout-setting-row'); const key=row.dataset.layoutKey; const action=btn.dataset.layoutAction;
       setEntryLayoutForTargets(settingsPlatform,function(layout){
+        const fromMain=layout.main.indexOf(key)!==-1;
+        const fromMore=layout.more.indexOf(key)!==-1;
+        const currentArr=fromMain ? layout.main : (fromMore ? layout.more : null);
+
+        if(action==='up' || action==='down'){
+          if(!currentArr) return;
+          const oldIdx=currentArr.indexOf(key);
+          const next=action==='up'?oldIdx-1:oldIdx+1;
+          if(oldIdx<0 || next<0 || next>=currentArr.length) return;
+          currentArr.splice(oldIdx,1);
+          currentArr.splice(next,0,key);
+          return;
+        }
+
         layout.main=layout.main.filter(function(x){return x!==key;});
         layout.more=layout.more.filter(function(x){return x!==key;});
         layout.hidden=layout.hidden.filter(function(x){return x!==key;});
         if(action==='main' || action==='more'){ const arr=action==='main'?layout.main:layout.more; arr.push(key); }
         else if(action==='hide'){ layout.hidden.push(key); }
-        else { const arr=(layout.main.indexOf(key)!==-1?layout.main:layout.more); const oldIdx=arr.indexOf(key); if(oldIdx<0)return; const next=action==='up'?oldIdx-1:oldIdx+1; if(next<0||next>=arr.length){arr.splice(oldIdx,1);arr.splice(Math.max(0,Math.min(next,arr.length)),0,key);} else {arr.splice(oldIdx,1);arr.splice(next,0,key);} }
       });
     };
   });
@@ -4258,8 +4322,11 @@ function applyEntryLayoutToDOM(platform){
   if(mainWrap){ L.main.forEach(function(k,i){const g=mainGroups[k];if(g){g.style.display='block';g.style.order=String(i);mainWrap.appendChild(g);}}); }
   if(more){ L.more.forEach(function(k,i){const g=moreGroups[k];if(g){g.style.display='block';g.style.order=String(i);more.appendChild(g);}}); }
   (L.hidden||[]).forEach(function(k){ const g=mainGroups[k]||moreGroups[k]; if(g) g.style.display='none'; });
-  // Keep the More toggle after main groups.
+  // Keep the More toggle/details together, then keep the extra-piece action at the very bottom.
   if(mainWrap){ const mt=document.getElementById('moreToggle'); if(mt) mainWrap.appendChild(mt); const ms=document.getElementById('moreSection'); if(ms) mainWrap.appendChild(ms); }
+  const extrasGroup=document.querySelector('#overlay .entry-layout-group[data-entry-group="extras"]');
+  const actions= document.querySelector('#overlay .sheet-actions');
+  if(extrasGroup && actions) actions.parentNode.insertBefore(extrasGroup,actions);
 }
 
 function renderChipGroup(containerId, options, groupKey, extraClass){
@@ -4365,14 +4432,18 @@ function getFormModel(){
 document.getElementById('f-model-other').addEventListener('input', function(){
   renderModelSuggestions(this.value);
   const v=this.value.trim().toLowerCase();
+  this.removeAttribute('data-autofill-candidate');
   if(v.length>=2){
     const list=getBrandModels(formState.brand).filter(function(m){return m.toLowerCase().indexOf(v)===0;});
-    if(list.length===1 && list[0].toLowerCase()!==v){
-      this.setAttribute('data-autofill-candidate',list[0]);
-    } else {
-      this.removeAttribute('data-autofill-candidate');
+    if(list.length){
+      const candidate=list[0];
+      if(candidate.toLowerCase()!==v){
+        this.value=candidate;
+        this.setSelectionRange(v.length,candidate.length);
+        this.setAttribute('data-autofill-candidate',candidate);
+      }
     }
-  } else this.removeAttribute('data-autofill-candidate');
+  }
 });
 document.getElementById('f-model-other').addEventListener('keydown', function(ev){
   if(ev.key==='Enter'){
@@ -4449,6 +4520,11 @@ function openAdd(){
   renderAllChips();
   applyEntryLayoutToDOM(getEntryPlatform(formState.brand));
   document.getElementById('overlay').classList.remove('hidden');
+  // Always start a new entry at the very top so the user never has to scroll back up.
+  requestAnimationFrame(function(){
+    const sheet=document.querySelector('#overlay .sheet');
+    if(sheet) sheet.scrollTop=0;
+  });
   pushOverlayHistory('overlay');
 }
 
