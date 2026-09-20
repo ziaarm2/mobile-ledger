@@ -467,7 +467,12 @@
   .report-draft-toolbar{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;}
   .report-draft-toolbar input{flex:1 1 140px;min-width:0;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:9px 10px;color:var(--text);font-size:13px;}
   .report-draft-toolbar button{padding:9px 11px;border-radius:9px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:12px;font-weight:700;}
-  .report-draft-note{font-size:10.5px;color:var(--text-faint);line-height:1.35;margin-top:7px;}
+  .report-daily-list{display:flex;flex-direction:column;gap:9px;margin-top:10px;}
+  .report-day-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 12px;}
+  .report-day-head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .report-day-date{font-size:13px;font-weight:800;}
+  .report-day-profit{font-size:13px;font-weight:900;color:var(--pta);white-space:nowrap;}
+  .report-day-meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;font-size:10.5px;color:var(--text-dim);}
   #reportEditOverlay .sheet{max-height:94vh;}
   /* Admin Shop Context */
   #adminShopContextBanner{display:none;align-items:center;justify-content:space-between;gap:8px;background:var(--jv-bg);border:1px solid var(--jv);color:var(--jv);border-radius:10px;padding:9px 11px;margin:8px 16px 0;font-size:12px;}
@@ -1036,6 +1041,8 @@
       <span>Draft Net Profit</span>
       <span class="v" id="reportDraftNetProfit">0</span>
     </div>
+    <div class="sec-label" style="margin-top:14px;">Daily Profit</div>
+    <div class="report-daily-list" id="reportDraftDailyList"></div>
     <div class="sec-label" style="margin-top:15px;">Buy price adjustment — har mobile</div>
     <div class="report-draft-toolbar">
       <input id="reportDraftBuyAdjust" type="number" inputmode="numeric" step="500" placeholder="e.g. 5000">
@@ -5831,6 +5838,49 @@ function calcReportDraftTotals(){
   return {gross:gross,expenses:expenses,net:gross-expenses};
 }
 
+function calcReportDraftDaily(){
+  const map={};
+  function ensure(date){
+    const d=date||todayISO();
+    if(!map[d]) map[d]={date:d,gross:0,expenses:0,salesCount:0,expenseCount:0,net:0};
+    return map[d];
+  }
+  reportDraftEntries.forEach(function(e){
+    const d=ensure(dateOnly(e.saleDate));
+    if(!e.returned && e.buy!=='' && e.sell!==''){
+      d.gross += (Number(e.sell)-Number(e.buy))*(e.quantity||1);
+      d.salesCount += 1;
+    }
+  });
+  reportDraftExpenses.forEach(function(x){
+    const d=ensure(dateOnly(x.date));
+    d.expenses += Number(x.amount)||0;
+    d.expenseCount += 1;
+  });
+  Object.keys(map).forEach(function(k){map[k].net=map[k].gross-map[k].expenses;});
+  return Object.keys(map).sort().reverse().map(function(k){return map[k];});
+}
+
+function renderReportDraftDaily(){
+  const el=document.getElementById('reportDraftDailyList');
+  if(!el) return;
+  const days=calcReportDraftDaily();
+  el.innerHTML=days.map(function(d){
+    const color=d.net>=0?'var(--pta)':'var(--danger)';
+    return '<div class="report-day-box">'+
+      '<div class="report-day-head">'+
+        '<div class="report-day-date">'+escapeHtml(formatDateDisplay(d.date))+'</div>'+
+        '<div class="report-day-profit" style="color:'+color+';">Profit: '+fmt(d.net)+'</div>'+
+      '</div>'+
+      '<div class="report-day-meta">'+
+        '<span>Sales: '+d.salesCount+'</span>'+
+        '<span>Gross: '+fmt(d.gross)+'</span>'+
+        '<span>Expenses: -'+fmt(d.expenses)+'</span>'+
+      '</div>'+
+    '</div>';
+  }).join('') || '<div class="rr-sub" style="text-align:center;padding:16px 0;">Koi daily data nahi.</div>';
+}
+
 function renderReportDraftEditor(){
   const salesEl=document.getElementById('reportDraftSalesList');
   const expEl=document.getElementById('reportDraftExpensesList');
@@ -5839,6 +5889,7 @@ function renderReportDraftEditor(){
   if(grossEl){grossEl.innerHTML=displayProfitHtml(totals.gross);grossEl.style.color=totals.gross>=0?'var(--pta)':'var(--danger)';}
   const netEl=document.getElementById('reportDraftNetProfit');
   if(netEl){netEl.innerHTML=displayProfitHtml(totals.net);netEl.style.color=totals.net>=0?'var(--pta)':'var(--danger)';}
+  renderReportDraftDaily();
   if(salesEl){
     salesEl.innerHTML=reportDraftEntries.map(function(e,i){
       const title=escapeHtml((e.brand||'')+' '+(e.model||'')+(e.quantity>1?' x'+e.quantity:''));
@@ -5892,6 +5943,7 @@ function updateReportDraftTotalsOnly(){
   if(grossEl){grossEl.innerHTML=displayProfitHtml(t.gross);grossEl.style.color=t.gross>=0?'var(--pta)':'var(--danger)';}
   const el=document.getElementById('reportDraftNetProfit');
   if(el){el.innerHTML=displayProfitHtml(t.net);el.style.color=t.net>=0?'var(--pta)':'var(--danger)';}
+  renderReportDraftDaily();
   document.querySelectorAll('#reportDraftSalesList .report-draft-card').forEach(function(card){
     const i=Number(card.getAttribute('data-draft-sale'));
     const profitEl=card.querySelector('.draft-profit-value');
@@ -5934,8 +5986,9 @@ function buildDraftReportHtml(){
     return '<tr><td>'+escapeHtml(formatDateDisplay(dateOnly(e.saleDate)))+'</td><td>'+escapeHtml((e.brand||'')+' '+(e.model||'')+(e.quantity>1?' x'+e.quantity:''))+(e.returned?' (RETURNED)':'')+'</td><td>'+escapeHtml(e.customer||'')+(e.customerNumber?'<br>'+escapeHtml(e.customerNumber):'')+'</td><td style="text-align:right;">'+fmt(e.buy)+'</td><td style="text-align:right;">'+fmt(e.sell)+'</td><td style="text-align:right;">'+fmt(profit)+'</td></tr>';
   }).join('');
   const expRows=reportDraftExpenses.map(function(x){return '<tr><td>'+escapeHtml(formatDateDisplay(dateOnly(x.date)))+'</td><td>'+escapeHtml(x.category||'')+(x.source==='phone'?' (Phone)':'')+'</td><td>'+escapeHtml(x.notes||'')+'</td><td style="text-align:right;">'+fmt(x.amount)+'</td></tr>';}).join('');
+  const dailyRows=calcReportDraftDaily().map(function(d){ const c=d.net>=0?'#15803d':'#b91c1c'; return '<div class="daybox"><div class="daytop"><span>'+escapeHtml(formatDateDisplay(d.date))+'</span><span style="color:'+c+';font-weight:800;">Profit: '+fmt(d.net)+'</span></div><div class="daymeta">Sales: '+d.salesCount+' • Gross: '+fmt(d.gross)+' • Expenses: -'+fmt(d.expenses)+'</div></div>'; }).join('');
   const rangeLabel=(from||to)?((from?formatDateDisplay(from):'shuru')+' se '+(to?formatDateDisplay(to):'ab tak')):'Sab tareekhein';
-  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Mobile Hisab Report</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#111}h1{font-size:20px;margin-bottom:2px}h2{font-size:15px;margin:22px 0 8px}.sub{color:#555;font-size:12px;margin-bottom:18px}table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:left}th{background:#f0f0f0}.total-row td{font-weight:bold;background:#fafafa}.summary-table{width:auto;min-width:300px;margin:8px 0 16px}.summary-table td{border:none;padding:4px 8px}.summary-table .net td{border-top:2px solid #333;font-weight:bold;font-size:14px}@media print{body{padding:0}}</style></head><body><h1>Mobile Hisab — Sales Report</h1><div class="sub">'+escapeHtml(rangeLabel)+(brand!=='all'?(' • Brand: '+escapeHtml(brand)):'')+' • Customized draft</div><table class="summary-table"><tr><td>Sales profit (gross)</td><td style="text-align:right;font-weight:bold;">'+fmt(totals.gross)+'</td></tr><tr><td>Total expenses</td><td style="text-align:right;">-'+fmt(totals.expenses)+'</td></tr><tr class="net"><td>Net profit</td><td style="text-align:right;">'+fmt(totals.net)+'</td></tr></table><h2>Sales</h2><table><thead><tr><th>Date</th><th>Item</th><th>Customer</th><th>Buy</th><th>Sell</th><th>Profit</th></tr></thead><tbody>'+(rows||'<tr><td colspan="6" style="text-align:center;">Koi entry nahi mili</td></tr>')+'<tr class="total-row"><td colspan="5" style="text-align:right;">Sales profit (gross)</td><td style="text-align:right;">'+fmt(totals.gross)+'</td></tr></tbody></table><h2>Expenses</h2><table><thead><tr><th>Date</th><th>Category</th><th>Notes</th><th>Amount</th></tr></thead><tbody>'+(expRows||'<tr><td colspan="4" style="text-align:center;">Koi expense nahi</td></tr>')+'<tr class="total-row"><td colspan="3" style="text-align:right;">Total expenses</td><td style="text-align:right;">'+fmt(totals.expenses)+'</td></tr></tbody></table></body></html>';
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Mobile Hisab Report</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#111}h1{font-size:20px;margin-bottom:2px}h2{font-size:15px;margin:22px 0 8px}.sub{color:#555;font-size:12px;margin-bottom:18px}table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:left}th{background:#f0f0f0}.total-row td{font-weight:bold;background:#fafafa}.summary-table{width:auto;min-width:300px;margin:8px 0 16px}.summary-table td{border:none;padding:4px 8px}.summary-table .net td{border-top:2px solid #333;font-weight:bold;font-size:14px}@media print{body{padding:0}}</style></head><body><h1>Mobile Hisab — Sales Report</h1><div class="sub">'+escapeHtml(rangeLabel)+(brand!=='all'?(' • Brand: '+escapeHtml(brand)):'')+' • Customized draft</div><table class="summary-table"><tr><td>Sales profit (gross)</td><td style="text-align:right;font-weight:bold;">'+fmt(totals.gross)+'</td></tr><tr><td>Total expenses</td><td style="text-align:right;">-'+fmt(totals.expenses)+'</td></tr><tr class="net"><td>Net profit</td><td style="text-align:right;">'+fmt(totals.net)+'</td></tr></table><h2>Daily Profit</h2>'+(dailyRows||'<div>Koi daily data nahi.</div>')+'<h2>Sales</h2><table><thead><tr><th>Date</th><th>Item</th><th>Customer</th><th>Buy</th><th>Sell</th><th>Profit</th></tr></thead><tbody>'+(rows||'<tr><td colspan="6" style="text-align:center;">Koi entry nahi mili</td></tr>')+'<tr class="total-row"><td colspan="5" style="text-align:right;">Sales profit (gross)</td><td style="text-align:right;">'+fmt(totals.gross)+'</td></tr></tbody></table><h2>Expenses</h2><table><thead><tr><th>Date</th><th>Category</th><th>Notes</th><th>Amount</th></tr></thead><tbody>'+(expRows||'<tr><td colspan="4" style="text-align:center;">Koi expense nahi</td></tr>')+'<tr class="total-row"><td colspan="3" style="text-align:right;">Total expenses</td><td style="text-align:right;">'+fmt(totals.expenses)+'</td></tr></tbody></table></body></html>';
 }
 
 function previewAndShareEditableReport(){
