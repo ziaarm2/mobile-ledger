@@ -4753,7 +4753,8 @@ function openEdit(id){
     box: e.box || 'No', packing: e.packing || 'No pack', charger: e.charger || 'Original charger',
     faceid: e.faceid || 'No', truetone: e.truetone || 'No',
     customFields: Object.assign({}, e.customFields || {}),
-    isSold: !!e.sold
+    isSold: !!e.sold,
+    originalBuy: e.buy != null ? Number(e.buy) : null
   };
   formPhotos = (e.photos || []).slice();
   renderPhotoStrip();
@@ -4777,7 +4778,11 @@ function openEdit(id){
   if(e.sold){
     document.getElementById('saleFieldsWrap').classList.add('show');
     document.getElementById('f-sellprice').value = e.sell != null ? e.sell : '';
+    // Keep both visible Buy fields synchronized while editing a Sold entry.
+    document.getElementById('f-buy').value = e.buy != null ? e.buy : '';
     document.getElementById('f-buy-insale').value = e.buy != null ? e.buy : '';
+    document.getElementById('f-buy').oninput = function(){ document.getElementById('f-buy-insale').value = this.value; };
+    document.getElementById('f-buy-insale').oninput = function(){ document.getElementById('f-buy').value = this.value; };
     document.getElementById('f-customer').value = e.customer || '';
     document.getElementById('f-customer-number').value = e.customerNumber || '';
     document.getElementById('f-payment').value = e.payment || '';
@@ -4874,12 +4879,16 @@ function saveEntry(){
   if(formState.isSold){
     data.sold = true;
     const sellVal = document.getElementById('f-sellprice').value.trim();
-    const buyVal = document.getElementById('f-buy-insale').value.trim();
+    const buyVal = document.getElementById('f-buy-insale').value.trim() || document.getElementById('f-buy').value.trim();
     if(sellVal !== '' && parsePrice(sellVal)===null){ alert('Sale price samajh nahi aaya. "45000" ya "45k" jese likhein.'); return; }
     if(buyVal === ''){ alert('Buy price zaroori hai. "40000" ya "40k" jese likhein.'); document.getElementById('f-buy-insale').focus(); return; }
-    if(parsePrice(buyVal)===null || parsePrice(buyVal)<=0){ alert('Buy price sahi likhein. "40000" ya "40k" jese likhein.'); document.getElementById('f-buy-insale').focus(); return; }
+    const parsedSoldBuy = parsePrice(buyVal);
+    if(parsedSoldBuy===null || parsedSoldBuy<=0){ alert('Buy price sahi likhein. "40000" ya "40k" jese likhein.'); document.getElementById('f-buy-insale').focus(); return; }
     data.sell = sellVal === '' ? null : parsePrice(sellVal);
-    data.buy = parsePrice(buyVal);
+    data.buy = parsedSoldBuy;
+    if(rangeInputMode==='auto') data.range = autoSellRangeForBuy(parsedSoldBuy);
+    document.getElementById('f-buy').value = String(parsedSoldBuy);
+    document.getElementById('f-buy-insale').value = String(parsedSoldBuy);
     data.customer = document.getElementById('f-customer').value.trim();
     data.customerNumber = document.getElementById('f-customer-number').value.trim();
     data.payment = document.getElementById('f-payment').value.trim();
