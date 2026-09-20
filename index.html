@@ -448,6 +448,27 @@
   .app-lock-direct-note{display:none;}
   .app-lock-other-btn{margin-top:12px;}
 
+
+  /* ===== Admin Report Draft Editor ===== */
+  .report-draft-list{display:flex;flex-direction:column;gap:9px;margin-top:10px;}
+  .report-draft-card{background:var(--surface-2);border:1px solid var(--border);border-radius:11px;padding:10px;}
+  .report-draft-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;margin-bottom:8px;}
+  .report-draft-title{font-size:13px;font-weight:800;}
+  .report-draft-sub{font-size:10.5px;color:var(--text-dim);margin-top:2px;}
+  .report-draft-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+  .report-draft-grid .field{margin-bottom:0;}
+  .report-draft-grid input{font-size:13px;padding:8px 9px;}
+  .report-draft-expense-row{display:grid;grid-template-columns:1.1fr .75fr;gap:7px;}
+  .report-draft-expense-row + .report-draft-expense-row{margin-top:7px;}
+  .report-draft-expense-row input{width:100%;background:var(--surface-3);border:1px solid var(--border);border-radius:8px;padding:8px 9px;color:var(--text);font-size:12.5px;}
+  .report-draft-expense-meta{display:grid;grid-template-columns:1fr 1fr auto;gap:7px;margin-top:7px;}
+  .report-draft-expense-meta input{width:100%;background:var(--surface-3);border:1px solid var(--border);border-radius:8px;padding:8px 9px;color:var(--text);font-size:12px;}
+  .report-draft-remove{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--danger);font-size:17px;}
+  .report-draft-toolbar{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;}
+  .report-draft-toolbar input{flex:1 1 140px;min-width:0;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:9px 10px;color:var(--text);font-size:13px;}
+  .report-draft-toolbar button{padding:9px 11px;border-radius:9px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:12px;font-weight:700;}
+  .report-draft-note{font-size:10.5px;color:var(--text-faint);line-height:1.35;margin-top:7px;}
+  #reportEditOverlay .sheet{max-height:94vh;}
   /* Admin Shop Context */
   #adminShopContextBanner{display:none;align-items:center;justify-content:space-between;gap:8px;background:var(--jv-bg);border:1px solid var(--jv);color:var(--jv);border-radius:10px;padding:9px 11px;margin:8px 16px 0;font-size:12px;}
   #adminShopContextBanner.show{display:flex;}
@@ -997,6 +1018,37 @@
     <div class="sheet-actions">
       <button class="btn-cancel" id="btnReportsClose">Band karein</button>
       <button class="btn-save" id="btnReportsPdf">PDF banayein</button>
+      <button class="btn-save" id="btnReportsEditShare" style="display:none;">✏️ Edit & Share</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="reportEditOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>✏️ Editable Report</h2>
+    <div class="settings-note" style="margin-top:0;">Ye report draft hai. Yahan ki koi bhi edit actual inventory, sale ya expense data ko change nahi karegi.</div>
+    <div class="report-summary" style="margin-top:12px;">
+      <span>Draft Net Profit</span>
+      <span class="v" id="reportDraftNetProfit">0</span>
+    </div>
+    <div class="sec-label" style="margin-top:15px;">Buy price adjustment — har mobile</div>
+    <div class="report-draft-toolbar">
+      <input id="reportDraftBuyAdjust" type="number" inputmode="numeric" step="500" placeholder="e.g. 5000">
+      <button type="button" id="reportDraftApplyBuyAdjust">Apply to all</button>
+    </div>
+    <div class="report-draft-note">Amount draft mein har sold mobile ke Buy price mein add hoga. Original data par koi asar nahi hoga.</div>
+
+    <div class="sec-label" style="margin-top:15px;">Sales</div>
+    <div class="report-draft-list" id="reportDraftSalesList"></div>
+
+    <div class="sec-label" style="margin-top:15px;">Expenses</div>
+    <div class="report-draft-list" id="reportDraftExpensesList"></div>
+    <button type="button" class="add-extra-buy" id="reportDraftAddExpense">+ Expense add karein</button>
+
+    <div class="sheet-actions">
+      <button class="btn-cancel" id="btnReportDraftCancel">Cancel</button>
+      <button class="btn-save" id="btnReportDraftShare">📤 Preview & Share</button>
     </div>
   </div>
 </div>
@@ -1509,7 +1561,7 @@ let rangeInputMode = 'auto'; // 'auto' until the user manually edits the sell-ra
 // closes the topmost open overlay instead of leaving the app. If nothing is
 // open, there's nothing pushed, so back behaves normally (exits/leaves as
 // before).
-const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','imeiScanOverlay','adminShopsOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','expensesOverlay','accountOverlay','rateBookOverlay','rateAddOverlay','shopSetupOverlay'];
+const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','imeiScanOverlay','adminShopsOverlay','dashboardOverlay','reportsOverlay','reportEditOverlay','contactsOverlay','settingsOverlay','expensesOverlay','accountOverlay','rateBookOverlay','rateAddOverlay','shopSetupOverlay'];
 let overlayHistoryStack = [];
 
 // Keep the app on its main route when the phone/browser Back gesture is used.
@@ -5718,6 +5770,7 @@ document.getElementById('btnReports').onclick = function(){
   document.getElementById('rp-to').value = '';
   document.getElementById('rp-customer').value = '';
   renderReports();
+  updateReportsAdminAction();
   document.getElementById('reportsOverlay').classList.remove('hidden');
   pushOverlayHistory('reportsOverlay');
 };
@@ -5731,6 +5784,159 @@ document.getElementById('rp-from').onchange = renderReports;
 document.getElementById('rp-to').onchange = renderReports;
 document.getElementById('rp-brand').onchange = renderReports;
 document.getElementById('rp-customer').oninput = renderReports;
+
+
+// ---------- Admin editable report draft ----------
+let reportDraftEntries = [];
+let reportDraftExpenses = [];
+
+function isCurrentUserAdmin(){ return typeof userRole !== 'undefined' && userRole === 'admin'; }
+
+function updateReportsAdminAction(){
+  const b=document.getElementById('btnReportsEditShare');
+  if(b) b.style.display=isCurrentUserAdmin()?'inline-block':'none';
+}
+
+function cloneReportEntryForDraft(e){
+  return {
+    id:String(e.id||''),
+    saleDate:e.saleDate||todayISO(),
+    brand:e.brand||'', model:e.model||'',
+    customer:e.customer||'', customerNumber:e.customerNumber||'',
+    buy:e.buy==null?'':Number(e.buy), sell:e.sell==null?'':Number(e.sell),
+    quantity:Math.max(1,Number(e.quantity)||1),
+    returned:!!isReturnedSale(e)
+  };
+}
+
+function cloneReportExpenseForDraft(x){
+  return {
+    id:String(x.id||('draft_'+Date.now()+'_'+Math.random().toString(36).slice(2,7))),
+    category:x.category||'', amount:Number(x.amount)||0, date:dateOnly(x.date)||todayISO(),
+    notes:x.notes||'', source:x.source||'shop'
+  };
+}
+
+function calcReportDraftTotals(){
+  let gross=0;
+  reportDraftEntries.forEach(function(e){
+    if(e.returned) return;
+    if(e.buy!=='' && e.sell!=='') gross += (Number(e.sell)-Number(e.buy))*(e.quantity||1);
+  });
+  const expenses=reportDraftExpenses.reduce(function(sum,x){return sum+(Number(x.amount)||0);},0);
+  return {gross:gross,expenses:expenses,net:gross-expenses};
+}
+
+function renderReportDraftEditor(){
+  const salesEl=document.getElementById('reportDraftSalesList');
+  const expEl=document.getElementById('reportDraftExpensesList');
+  const totals=calcReportDraftTotals();
+  const netEl=document.getElementById('reportDraftNetProfit');
+  if(netEl){netEl.textContent=displayProfitHtml(totals.net);netEl.style.color=totals.net>=0?'var(--pta)':'var(--danger)';}
+  if(salesEl){
+    salesEl.innerHTML=reportDraftEntries.map(function(e,i){
+      const title=escapeHtml((e.brand||'')+' '+(e.model||'')+(e.quantity>1?' x'+e.quantity:''));
+      const ret=e.returned?' • Returned':'';
+      return '<div class="report-draft-card" data-draft-sale="'+i+'">'+
+        '<div class="report-draft-head"><div><div class="report-draft-title">'+title+'</div><div class="report-draft-sub">'+escapeHtml(formatDateDisplay(dateOnly(e.saleDate)))+ret+(e.customer?' • '+escapeHtml(e.customer):'')+'</div></div></div>'+
+        '<div class="report-draft-grid">'+
+          '<div class="field"><label>Buy</label><input class="draft-sale-buy" type="number" inputmode="numeric" value="'+(e.buy===''?'':escapeHtml(String(e.buy)))+'"></div>'+
+          '<div class="field"><label>Sell</label><input class="draft-sale-sell" type="number" inputmode="numeric" value="'+(e.sell===''?'':escapeHtml(String(e.sell)))+'"></div>'+
+        '</div>'+
+        '<div class="report-draft-sub" style="margin-top:7px;">Draft profit: '+displayProfitHtml(e.returned?0:((e.buy!==''&&e.sell!=='')?(Number(e.sell)-Number(e.buy))*(e.quantity||1):0))+'</div>'+
+      '</div>';
+    }).join('') || '<div class="rr-sub" style="text-align:center;padding:20px 0;">Koi sale entry nahi.</div>';
+    salesEl.querySelectorAll('.report-draft-card').forEach(function(card){
+      const i=Number(card.getAttribute('data-draft-sale'));
+      const buy=card.querySelector('.draft-sale-buy');
+      const sell=card.querySelector('.draft-sale-sell');
+      if(buy) buy.oninput=function(){ reportDraftEntries[i].buy=buy.value===''?'':Number(buy.value); updateReportDraftTotalsOnly(); };
+      if(sell) sell.oninput=function(){ reportDraftEntries[i].sell=sell.value===''?'':Number(sell.value); updateReportDraftTotalsOnly(); };
+    });
+  }
+  if(expEl){
+    expEl.innerHTML=reportDraftExpenses.map(function(x,i){
+      return '<div class="report-draft-card" data-draft-exp="'+i+'">'+
+        '<div class="report-draft-expense-row">'+
+          '<input class="draft-exp-cat" placeholder="Category" value="'+escapeHtml(x.category)+'">'+
+          '<input class="draft-exp-amt" type="number" inputmode="numeric" placeholder="Amount" value="'+(Number(x.amount)||0)+'">'+
+        '</div>'+
+        '<div class="report-draft-expense-meta">'+
+          '<input class="draft-exp-date" type="date" value="'+escapeHtml(dateOnly(x.date)||todayISO())+'">'+
+          '<input class="draft-exp-notes" placeholder="Notes" value="'+escapeHtml(x.notes||'')+'">'+
+          '<button type="button" class="report-draft-remove" title="Remove">✕</button>'+
+        '</div>'+
+      '</div>';
+    }).join('') || '<div class="rr-sub" style="text-align:center;padding:16px 0;">Koi expense nahi.</div>';
+    expEl.querySelectorAll('.report-draft-card').forEach(function(card){
+      const i=Number(card.getAttribute('data-draft-exp'));
+      const cat=card.querySelector('.draft-exp-cat'), amt=card.querySelector('.draft-exp-amt'), dt=card.querySelector('.draft-exp-date'), notes=card.querySelector('.draft-exp-notes'), rem=card.querySelector('.report-draft-remove');
+      if(cat) cat.oninput=function(){reportDraftExpenses[i].category=cat.value;};
+      if(amt) amt.oninput=function(){reportDraftExpenses[i].amount=Number(amt.value)||0;updateReportDraftTotalsOnly();};
+      if(dt) dt.oninput=function(){reportDraftExpenses[i].date=dt.value||todayISO();};
+      if(notes) notes.oninput=function(){reportDraftExpenses[i].notes=notes.value;};
+      if(rem) rem.onclick=function(){reportDraftExpenses.splice(i,1);renderReportDraftEditor();};
+    });
+  }
+}
+
+function updateReportDraftTotalsOnly(){
+  const t=calcReportDraftTotals();
+  const el=document.getElementById('reportDraftNetProfit');
+  if(el){el.textContent=displayProfitHtml(t.net);el.style.color=t.net>=0?'var(--pta)':'var(--danger)';}
+}
+
+function openEditableReport(){
+  if(!isCurrentUserAdmin()){alert('Ye option sirf Admin ke liye hai.');return;}
+  reportDraftEntries=getFilteredSoldEntries().map(cloneReportEntryForDraft);
+  reportDraftExpenses=getFilteredReportExpenses().map(cloneReportExpenseForDraft);
+  const adjust=document.getElementById('reportDraftBuyAdjust'); if(adjust) adjust.value='';
+  renderReportDraftEditor();
+  document.getElementById('reportEditOverlay').classList.remove('hidden');
+  pushOverlayHistory('reportEditOverlay');
+}
+
+function closeEditableReport(){ reportDraftEntries=[];reportDraftExpenses=[];requestOverlayClose(); }
+
+function applyDraftBuyAdjustment(){
+  const input=document.getElementById('reportDraftBuyAdjust');
+  let amount=Number(input&&input.value||0);
+  if(!isFinite(amount) || amount===0){showToast('Koi adjustment amount nahi diya.');return;}
+  reportDraftEntries.forEach(function(e){ if(e.buy!=='' && e.buy!=null) e.buy=Math.max(0,Number(e.buy)+amount); });
+  if(input) input.value='';
+  renderReportDraftEditor();
+  showToast('✓ Draft Buy price adjustment apply ho gaya.');
+}
+
+function buildDraftReportHtml(){
+  const totals=calcReportDraftTotals();
+  const from=document.getElementById('rp-from').value;
+  const to=document.getElementById('rp-to').value;
+  const brand=document.getElementById('rp-brand').value;
+  const rows=reportDraftEntries.map(function(e){
+    const profit=e.returned?0:((e.buy!==''&&e.sell!=='')?(Number(e.sell)-Number(e.buy))*(e.quantity||1):0);
+    return '<tr><td>'+escapeHtml(formatDateDisplay(dateOnly(e.saleDate)))+'</td><td>'+escapeHtml((e.brand||'')+' '+(e.model||'')+(e.quantity>1?' x'+e.quantity:''))+(e.returned?' (RETURNED)':'')+'</td><td>'+escapeHtml(e.customer||'')+(e.customerNumber?'<br>'+escapeHtml(e.customerNumber):'')+'</td><td style="text-align:right;">'+fmt(e.buy)+'</td><td style="text-align:right;">'+fmt(e.sell)+'</td><td style="text-align:right;">'+fmt(profit)+'</td></tr>';
+  }).join('');
+  const expRows=reportDraftExpenses.map(function(x){return '<tr><td>'+escapeHtml(formatDateDisplay(dateOnly(x.date)))+'</td><td>'+escapeHtml(x.category||'')+(x.source==='phone'?' (Phone)':'')+'</td><td>'+escapeHtml(x.notes||'')+'</td><td style="text-align:right;">'+fmt(x.amount)+'</td></tr>';}).join('');
+  const rangeLabel=(from||to)?((from?formatDateDisplay(from):'shuru')+' se '+(to?formatDateDisplay(to):'ab tak')):'Sab tareekhein';
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Mobile Hisab Report</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#111}h1{font-size:20px;margin-bottom:2px}h2{font-size:15px;margin:22px 0 8px}.sub{color:#555;font-size:12px;margin-bottom:18px}table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:left}th{background:#f0f0f0}.total-row td{font-weight:bold;background:#fafafa}.summary-table{width:auto;min-width:280px;margin-top:8px}.summary-table td{border:none;padding:4px 8px}.summary-table .net td{border-top:2px solid #333;font-weight:bold;font-size:14px}@media print{body{padding:0}}</style></head><body><h1>Mobile Hisab — Sales Report</h1><div class="sub">'+escapeHtml(rangeLabel)+(brand!=='all'?(' • Brand: '+escapeHtml(brand)):'')+' • Customized draft</div><h2>Sales</h2><table><thead><tr><th>Date</th><th>Item</th><th>Customer</th><th>Buy</th><th>Sell</th><th>Profit</th></tr></thead><tbody>'+(rows||'<tr><td colspan="6" style="text-align:center;">Koi entry nahi mili</td></tr>')+'<tr class="total-row"><td colspan="5" style="text-align:right;">Sales profit (gross)</td><td style="text-align:right;">'+fmt(totals.gross)+'</td></tr></tbody></table><h2>Expenses</h2><table><thead><tr><th>Date</th><th>Category</th><th>Notes</th><th>Amount</th></tr></thead><tbody>'+(expRows||'<tr><td colspan="4" style="text-align:center;">Koi expense nahi</td></tr>')+'<tr class="total-row"><td colspan="3" style="text-align:right;">Total expenses</td><td style="text-align:right;">'+fmt(totals.expenses)+'</td></tr></tbody></table><table class="summary-table"><tr><td>Sales profit (gross)</td><td style="text-align:right;">'+fmt(totals.gross)+'</td></tr><tr><td>Total expenses</td><td style="text-align:right;">-'+fmt(totals.expenses)+'</td></tr><tr class="net"><td>Net profit</td><td style="text-align:right;">'+fmt(totals.net)+'</td></tr></table></body></html>';
+}
+
+function previewAndShareEditableReport(){
+  if(!isCurrentUserAdmin()){alert('Ye option sirf Admin ke liye hai.');return;}
+  const html=buildDraftReportHtml();
+  const w=window.open('','_blank');
+  if(!w){alert('Popup block ho gaya — browser settings mein popups allow karein aur dobara koshish karein.');return;}
+  w.document.open();w.document.write(html);w.document.close();
+  setTimeout(function(){w.print();},300);
+}
+
+document.getElementById('btnReportsEditShare').onclick=openEditableReport;
+document.getElementById('btnReportDraftCancel').onclick=closeEditableReport;
+document.getElementById('reportEditOverlay').onclick=function(e){if(e.target.id==='reportEditOverlay')closeEditableReport();};
+document.getElementById('reportDraftApplyBuyAdjust').onclick=applyDraftBuyAdjustment;
+document.getElementById('reportDraftAddExpense').onclick=function(){reportDraftExpenses.push({id:'draft_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),category:'',amount:0,date:todayISO(),notes:'',source:'shop'});renderReportDraftEditor();};
+document.getElementById('btnReportDraftShare').onclick=previewAndShareEditableReport;
 
 // PDF export: builds a printable HTML report in a new tab and opens the
 // browser's print dialog, where the person picks "Save as PDF". This needs
