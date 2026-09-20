@@ -1029,6 +1029,10 @@
     <h2>✏️ Editable Report</h2>
     <div class="settings-note" style="margin-top:0;">Ye report draft hai. Yahan ki koi bhi edit actual inventory, sale ya expense data ko change nahi karegi.</div>
     <div class="report-summary" style="margin-top:12px;">
+      <span>Sales profit (gross)</span>
+      <span class="v" id="reportDraftGrossProfit" style="color:var(--pta);">0</span>
+    </div>
+    <div class="report-summary" style="margin-top:8px;">
       <span>Draft Net Profit</span>
       <span class="v" id="reportDraftNetProfit">0</span>
     </div>
@@ -5831,8 +5835,10 @@ function renderReportDraftEditor(){
   const salesEl=document.getElementById('reportDraftSalesList');
   const expEl=document.getElementById('reportDraftExpensesList');
   const totals=calcReportDraftTotals();
+  const grossEl=document.getElementById('reportDraftGrossProfit');
+  if(grossEl){grossEl.innerHTML=displayProfitHtml(totals.gross);grossEl.style.color=totals.gross>=0?'var(--pta)':'var(--danger)';}
   const netEl=document.getElementById('reportDraftNetProfit');
-  if(netEl){netEl.textContent=displayProfitHtml(totals.net);netEl.style.color=totals.net>=0?'var(--pta)':'var(--danger)';}
+  if(netEl){netEl.innerHTML=displayProfitHtml(totals.net);netEl.style.color=totals.net>=0?'var(--pta)':'var(--danger)';}
   if(salesEl){
     salesEl.innerHTML=reportDraftEntries.map(function(e,i){
       const title=escapeHtml((e.brand||'')+' '+(e.model||'')+(e.quantity>1?' x'+e.quantity:''));
@@ -5843,7 +5849,7 @@ function renderReportDraftEditor(){
           '<div class="field"><label>Buy</label><input class="draft-sale-buy" type="number" inputmode="numeric" value="'+(e.buy===''?'':escapeHtml(String(e.buy)))+'"></div>'+
           '<div class="field"><label>Sell</label><input class="draft-sale-sell" type="number" inputmode="numeric" value="'+(e.sell===''?'':escapeHtml(String(e.sell)))+'"></div>'+
         '</div>'+
-        '<div class="report-draft-sub" style="margin-top:7px;">Draft profit: '+displayProfitHtml(e.returned?0:((e.buy!==''&&e.sell!=='')?(Number(e.sell)-Number(e.buy))*(e.quantity||1):0))+'</div>'+
+        '<div class="report-draft-sub" style="margin-top:7px;">Profit: <span class="draft-profit-value">'+displayProfitHtml(e.returned?0:((e.buy!==''&&e.sell!=='')?(Number(e.sell)-Number(e.buy))*(e.quantity||1):0))+'</span></div>'+
       '</div>';
     }).join('') || '<div class="rr-sub" style="text-align:center;padding:20px 0;">Koi sale entry nahi.</div>';
     salesEl.querySelectorAll('.report-draft-card').forEach(function(card){
@@ -5882,8 +5888,18 @@ function renderReportDraftEditor(){
 
 function updateReportDraftTotalsOnly(){
   const t=calcReportDraftTotals();
+  const grossEl=document.getElementById('reportDraftGrossProfit');
+  if(grossEl){grossEl.innerHTML=displayProfitHtml(t.gross);grossEl.style.color=t.gross>=0?'var(--pta)':'var(--danger)';}
   const el=document.getElementById('reportDraftNetProfit');
-  if(el){el.textContent=displayProfitHtml(t.net);el.style.color=t.net>=0?'var(--pta)':'var(--danger)';}
+  if(el){el.innerHTML=displayProfitHtml(t.net);el.style.color=t.net>=0?'var(--pta)':'var(--danger)';}
+  document.querySelectorAll('#reportDraftSalesList .report-draft-card').forEach(function(card){
+    const i=Number(card.getAttribute('data-draft-sale'));
+    const profitEl=card.querySelector('.draft-profit-value');
+    const e=reportDraftEntries[i];
+    if(!profitEl || !e) return;
+    const profit=e.returned?0:((e.buy!==''&&e.sell!=='')?(Number(e.sell)-Number(e.buy))*(e.quantity||1):0);
+    profitEl.innerHTML=displayProfitHtml(profit);
+  });
 }
 
 function openEditableReport(){
@@ -5919,7 +5935,7 @@ function buildDraftReportHtml(){
   }).join('');
   const expRows=reportDraftExpenses.map(function(x){return '<tr><td>'+escapeHtml(formatDateDisplay(dateOnly(x.date)))+'</td><td>'+escapeHtml(x.category||'')+(x.source==='phone'?' (Phone)':'')+'</td><td>'+escapeHtml(x.notes||'')+'</td><td style="text-align:right;">'+fmt(x.amount)+'</td></tr>';}).join('');
   const rangeLabel=(from||to)?((from?formatDateDisplay(from):'shuru')+' se '+(to?formatDateDisplay(to):'ab tak')):'Sab tareekhein';
-  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Mobile Hisab Report</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#111}h1{font-size:20px;margin-bottom:2px}h2{font-size:15px;margin:22px 0 8px}.sub{color:#555;font-size:12px;margin-bottom:18px}table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:left}th{background:#f0f0f0}.total-row td{font-weight:bold;background:#fafafa}.summary-table{width:auto;min-width:280px;margin-top:8px}.summary-table td{border:none;padding:4px 8px}.summary-table .net td{border-top:2px solid #333;font-weight:bold;font-size:14px}@media print{body{padding:0}}</style></head><body><h1>Mobile Hisab — Sales Report</h1><div class="sub">'+escapeHtml(rangeLabel)+(brand!=='all'?(' • Brand: '+escapeHtml(brand)):'')+' • Customized draft</div><h2>Sales</h2><table><thead><tr><th>Date</th><th>Item</th><th>Customer</th><th>Buy</th><th>Sell</th><th>Profit</th></tr></thead><tbody>'+(rows||'<tr><td colspan="6" style="text-align:center;">Koi entry nahi mili</td></tr>')+'<tr class="total-row"><td colspan="5" style="text-align:right;">Sales profit (gross)</td><td style="text-align:right;">'+fmt(totals.gross)+'</td></tr></tbody></table><h2>Expenses</h2><table><thead><tr><th>Date</th><th>Category</th><th>Notes</th><th>Amount</th></tr></thead><tbody>'+(expRows||'<tr><td colspan="4" style="text-align:center;">Koi expense nahi</td></tr>')+'<tr class="total-row"><td colspan="3" style="text-align:right;">Total expenses</td><td style="text-align:right;">'+fmt(totals.expenses)+'</td></tr></tbody></table><table class="summary-table"><tr><td>Sales profit (gross)</td><td style="text-align:right;">'+fmt(totals.gross)+'</td></tr><tr><td>Total expenses</td><td style="text-align:right;">-'+fmt(totals.expenses)+'</td></tr><tr class="net"><td>Net profit</td><td style="text-align:right;">'+fmt(totals.net)+'</td></tr></table></body></html>';
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Mobile Hisab Report</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#111}h1{font-size:20px;margin-bottom:2px}h2{font-size:15px;margin:22px 0 8px}.sub{color:#555;font-size:12px;margin-bottom:18px}table{width:100%;border-collapse:collapse;font-size:12.5px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:left}th{background:#f0f0f0}.total-row td{font-weight:bold;background:#fafafa}.summary-table{width:auto;min-width:300px;margin:8px 0 16px}.summary-table td{border:none;padding:4px 8px}.summary-table .net td{border-top:2px solid #333;font-weight:bold;font-size:14px}@media print{body{padding:0}}</style></head><body><h1>Mobile Hisab — Sales Report</h1><div class="sub">'+escapeHtml(rangeLabel)+(brand!=='all'?(' • Brand: '+escapeHtml(brand)):'')+' • Customized draft</div><table class="summary-table"><tr><td>Sales profit (gross)</td><td style="text-align:right;font-weight:bold;">'+fmt(totals.gross)+'</td></tr><tr><td>Total expenses</td><td style="text-align:right;">-'+fmt(totals.expenses)+'</td></tr><tr class="net"><td>Net profit</td><td style="text-align:right;">'+fmt(totals.net)+'</td></tr></table><h2>Sales</h2><table><thead><tr><th>Date</th><th>Item</th><th>Customer</th><th>Buy</th><th>Sell</th><th>Profit</th></tr></thead><tbody>'+(rows||'<tr><td colspan="6" style="text-align:center;">Koi entry nahi mili</td></tr>')+'<tr class="total-row"><td colspan="5" style="text-align:right;">Sales profit (gross)</td><td style="text-align:right;">'+fmt(totals.gross)+'</td></tr></tbody></table><h2>Expenses</h2><table><thead><tr><th>Date</th><th>Category</th><th>Notes</th><th>Amount</th></tr></thead><tbody>'+(expRows||'<tr><td colspan="4" style="text-align:center;">Koi expense nahi</td></tr>')+'<tr class="total-row"><td colspan="3" style="text-align:right;">Total expenses</td><td style="text-align:right;">'+fmt(totals.expenses)+'</td></tr></tbody></table></body></html>';
 }
 
 function previewAndShareEditableReport(){
