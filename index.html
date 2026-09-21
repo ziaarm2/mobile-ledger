@@ -1654,6 +1654,9 @@ const PLAIN_FIELD_LABELS = {box:'Box', faceid:'Face ID', truetone:'True Tone', c
 const DEFAULT_BADGE_ORDER = ['display','battery','touch','camera','body','openrepair','ram','storage','network','packing','charger','box','faceid','truetone'];
 
 let customOptionData = {extra:{}, hidden:{}, globalCustomFields:[]};
+const RAM_STORAGE_FIELD_KEY = 'ramStorage';
+const RAM_STORAGE_FIELD_LABEL = 'RAM/Storage';
+const RAM_STORAGE_OPTIONS = ['3/32','4/64','4/128','6/128','8/128','8/256','12/256','12/512'];
 const LS_CUSTOM_OPTIONS_KEY = 'mobileLedger_customOptions';
 const LS_UI_SCALE_KEY = 'mobileLedger_uiScale_v1';
 let uiScaleMode = 'normal';
@@ -1759,6 +1762,51 @@ function loadCustomOptionData(){
     });
     p.customFields=[];
   });
+  if(ensureRamStorageFieldDefinition()){
+    try{ localStorage.setItem(shopStorageKey(LS_CUSTOM_OPTIONS_KEY),JSON.stringify(customOptionData)); }catch(e){}
+  }
+}
+
+function ensureRamStorageFieldDefinition(){
+  let changed=false;
+  if(!Array.isArray(customOptionData.globalCustomFields)) customOptionData.globalCustomFields=[];
+  let field=customOptionData.globalCustomFields.find(function(f){
+    return f && (f.key===RAM_STORAGE_FIELD_KEY || String(f.label||'').trim().toLowerCase()===RAM_STORAGE_FIELD_LABEL.toLowerCase());
+  });
+  if(!field){
+    field={
+      key:RAM_STORAGE_FIELD_KEY,
+      label:RAM_STORAGE_FIELD_LABEL,
+      options:RAM_STORAGE_OPTIONS.slice(),
+      optionsByPlatform:{android:RAM_STORAGE_OPTIONS.slice(),iphone:RAM_STORAGE_OPTIONS.slice()},
+      platforms:['android','iphone'],
+      ramStorageSpecial:true
+    };
+    customOptionData.globalCustomFields.push(field);
+    changed=true;
+  }else{
+    if(field.key!==RAM_STORAGE_FIELD_KEY){ field.key=RAM_STORAGE_FIELD_KEY; changed=true; }
+    if(field.label!==RAM_STORAGE_FIELD_LABEL){ field.label=RAM_STORAGE_FIELD_LABEL; changed=true; }
+    if(!field.optionsByPlatform) field.optionsByPlatform={android:(field.options||[]).slice(),iphone:(field.options||[]).slice()};
+    ['android','iphone'].forEach(function(pl){
+      if(!Array.isArray(field.optionsByPlatform[pl])) field.optionsByPlatform[pl]=(field.options||[]).slice();
+      RAM_STORAGE_OPTIONS.forEach(function(o){ if(field.optionsByPlatform[pl].indexOf(o)===-1){ field.optionsByPlatform[pl].push(o); changed=true; } });
+    });
+    field.options=Array.from(new Set([].concat(field.options||[],field.optionsByPlatform.android||[],field.optionsByPlatform.iphone||[],RAM_STORAGE_OPTIONS)));
+    if(!Array.isArray(field.platforms) || field.platforms.length!==2 || field.platforms.indexOf('android')===-1 || field.platforms.indexOf('iphone')===-1){ field.platforms=['android','iphone']; changed=true; }
+    if(field.ramStorageSpecial!==true){field.ramStorageSpecial=true;changed=true;}
+  }
+  ['android','iphone'].forEach(function(pl){
+    const plat=ensurePlatformOptionData(pl);
+    if(!Object.prototype.hasOwnProperty.call(plat.defaults,RAM_STORAGE_FIELD_KEY)){ plat.defaults[RAM_STORAGE_FIELD_KEY]=''; changed=true; }
+    if(!plat.entryLayout.hidden.includes(RAM_STORAGE_FIELD_KEY) && plat.entryLayout.main.indexOf(RAM_STORAGE_FIELD_KEY)===-1 && plat.entryLayout.more.indexOf(RAM_STORAGE_FIELD_KEY)===-1){
+      const idx=plat.entryLayout.main.indexOf('model');
+      if(idx!==-1){ plat.entryLayout.main.splice(idx+1,0,RAM_STORAGE_FIELD_KEY); }
+      else plat.entryLayout.main.push(RAM_STORAGE_FIELD_KEY);
+      changed=true;
+    }
+  });
+  return changed;
 }
 
 function saveCustomOptionData(){
@@ -1848,6 +1896,8 @@ function applyPlatformDefaultsToForm(platform){
     const opts=getEntryFieldOptionsForPlatform(platform,f.key);
     formState.customFields[f.key]=(d && opts.indexOf(d)!==-1) ? d : '';
   });
+  if(!Object.prototype.hasOwnProperty.call(formState,'ramStorageAutoSelected')) formState.ramStorageAutoSelected=false;
+  if(!formState.customFields[RAM_STORAGE_FIELD_KEY]) formState.ramStorageAutoSelected=false;
   formState.__platform=platform;
 }
 function getCustomFieldOptionsForPlatform(platform, fieldKey){
@@ -1899,7 +1949,7 @@ function loadGlobalModelsForBrand(brand){
     snap.forEach(function(doc){
       const d=doc.data()||{};
       const model=String(d.model||'').trim();
-      if(model) globalModelLibrary[brand][model]={useCount:Number(d.useCount)||0,updatedAt:d.updatedAt||null};
+      if(model) globalModelLibrary[brand][model]={useCount:Number(d.useCount)||0,variantCounts:Object.assign({},d.variantCounts||{}),updatedAt:d.updatedAt||null};
     });
     globalModelLibraryLoaded[brand]=true;
     const input=document.getElementById('f-model-other');
@@ -1909,23 +1959,33 @@ function loadGlobalModelsForBrand(brand){
   });
 }
 
-function saveModelToGlobalLibrary(brand, model){
+function saveModelToGlobalLibrary(brand, model, ramStorage){
   brand=String(brand||'').trim();
   model=String(model||'').trim();
+  ramStorage=String(ramStorage||'').trim();
   if(!brand || !model || !fbDb || !fbUser || isAdminShopView()) return Promise.resolve(false);
-  // Also track built-in/catalog models so popularity can be learned across shops.
   const ref=fbDb.collection('modelLibrary').doc(getGlobalModelDocId(brand,model));
-  return ref.set({
-    brand:brand,
-    model:model,
-    normalized:model.toLowerCase(),
-    useCount:firebase.firestore.FieldValue.increment(1),
-    updatedBy:fbUser.uid,
-    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-  },{merge:true}).then(function(){
+  return fbDb.runTransaction(function(tx){
+    return tx.get(ref).then(function(snap){
+      const d=snap.exists ? (snap.data()||{}) : {};
+      const variants=Object.assign({},d.variantCounts||{});
+      if(ramStorage) variants[ramStorage]=(Number(variants[ramStorage])||0)+1;
+      const payload={
+        brand:brand,
+        model:model,
+        normalized:model.toLowerCase(),
+        useCount:(Number(d.useCount)||0)+1,
+        variantCounts:variants,
+        updatedBy:fbUser.uid,
+        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      };
+      tx.set(ref,payload,{merge:true});
+      return {useCount:payload.useCount,variantCounts:variants};
+    });
+  }).then(function(result){
     if(!globalModelLibrary[brand]) globalModelLibrary[brand]={};
     const old=globalModelLibrary[brand][model]||{};
-    globalModelLibrary[brand][model]={useCount:(Number(old.useCount)||0)+1,updatedAt:new Date()};
+    globalModelLibrary[brand][model]={useCount:Number(result&&result.useCount)||((Number(old.useCount)||0)+1),variantCounts:Object.assign({},(old.variantCounts||{}),(result&&result.variantCounts)||{}),updatedAt:new Date()};
     globalModelLibraryLoaded[brand]=true;
     return true;
   }).catch(function(err){
@@ -1933,6 +1993,56 @@ function saveModelToGlobalLibrary(brand, model){
     return false;
   });
 }
+
+function getRamStorageVariantCounts(brand, model){
+  const info=(globalModelLibrary[brand]&&globalModelLibrary[brand][model])||{};
+  return Object.assign({},info.variantCounts||{});
+}
+function getPopularRamStorageForModel(brand, model){
+  brand=String(brand||'').trim(); model=String(model||'').trim();
+  if(!brand || !model) return '';
+  const counts=getRamStorageVariantCounts(brand,model);
+  let best=''; let bestCount=0;
+  RAM_STORAGE_OPTIONS.forEach(function(o){
+    const c=Number(counts[o])||0;
+    if(c>bestCount){best=o;bestCount=c;}
+  });
+  Object.keys(counts).forEach(function(o){
+    if(RAM_STORAGE_OPTIONS.indexOf(o)!==-1) return;
+    const c=Number(counts[o])||0;
+    if(c>bestCount){best=o;bestCount=c;}
+  });
+  return bestCount>0 ? best : '';
+}
+function getRamStorageOptionsSortedForModel(brand, model, options){
+  const list=(options||[]).slice();
+  const counts=getRamStorageVariantCounts(brand,model);
+  return list.sort(function(a,b){
+    const ca=Number(counts[a])||0, cb=Number(counts[b])||0;
+    if(ca!==cb) return cb-ca;
+    return 0;
+  });
+}
+function applyPopularRamStorageForModel(brand, model, force){
+  const platform=getEntryPlatform(brand);
+  const field=getCustomFieldDef(platform,RAM_STORAGE_FIELD_KEY);
+  if(!field || !formState || !formState.customFields) return;
+  const options=getCustomFieldOptionsForPlatform(platform,RAM_STORAGE_FIELD_KEY);
+  const popular=getPopularRamStorageForModel(brand,model);
+  const current=String(formState.customFields[RAM_STORAGE_FIELD_KEY]||'');
+  const autoSelected=!!formState.ramStorageAutoSelected;
+  if(!force && current && !autoSelected) return;
+  if(popular && options.indexOf(popular)!==-1){
+    formState.customFields[RAM_STORAGE_FIELD_KEY]=popular;
+    formState.ramStorageAutoSelected=true;
+  }else if(force || !current || autoSelected){
+    formState.customFields[RAM_STORAGE_FIELD_KEY]='';
+    formState.ramStorageAutoSelected=false;
+  }
+  renderCustomEntryFields();
+  applyEntryLayoutToDOM(platform);
+}
+
 
 async function deleteGlobalModel(brand, model){
   if(userRole!=='admin' || !fbDb || !brand || !model || isAdminShopView()) return false;
@@ -2091,7 +2201,7 @@ function loadLastModelByBrand(){ try{ return JSON.parse(localStorage.getItem(sho
 function saveLastModelForBrand(brand,model){ if(!brand||!model)return; try{ const m=loadLastModelByBrand(); m[brand]=model; localStorage.setItem(shopStorageKey(LS_LAST_MODEL_BY_BRAND_KEY),JSON.stringify(m)); }catch(e){} }
 function getLastModelForBrand(brand){ const m=loadLastModelByBrand(); return m[brand]||''; }
 
-function addCustomModelIfNew(brand, model){
+function addCustomModelIfNew(brand, model, ramStorage){
   if(!brand || !model) return Promise.resolve(false);
   const base = MODEL_CATALOG[brand] || [];
   if(base.indexOf(model)===-1){
@@ -2101,8 +2211,9 @@ function addCustomModelIfNew(brand, model){
       saveCustomModels();
     }
   }
-  // Count every used model globally, including built-in/catalog models.
-  return saveModelToGlobalLibrary(brand,model);
+  // Count every used model globally, including built-in/catalog models,
+  // and record the selected RAM/Storage variant when available.
+  return saveModelToGlobalLibrary(brand,model,ramStorage);
 }
 
 let formState = {};
@@ -4657,6 +4768,8 @@ function renderChipGroup(containerId, options, groupKey, extraClass){
         renderModelSuggestions('');
         const platform=getEntryPlatform(c.dataset.val);
         if(formState.__platform!==platform) applyPlatformDefaultsToForm(platform);
+        if(formState.customFields){ formState.customFields[RAM_STORAGE_FIELD_KEY]=''; formState.ramStorageAutoSelected=false; }
+        renderCustomEntryFields();
         applyEntryLayoutToDOM(platform);
       }
       renderAllChips();
@@ -4674,7 +4787,8 @@ function renderCustomEntryFields(){
   // can control each custom field independently instead of moving one
   // combined 'Custom fields' block.
   box.innerHTML=fields.map(function(f){
-    const opts=getEntryFieldOptionsForPlatform(platform,f.key);
+    let opts=getEntryFieldOptionsForPlatform(platform,f.key);
+    if(f.key===RAM_STORAGE_FIELD_KEY){ opts=getRamStorageOptionsSortedForModel(formState.brand,formState.model||document.getElementById('f-model-other').value,opts); }
     const groupKey=String(f.key||'');
     return '<div class="entry-layout-group custom-entry-field-group" data-entry-group="'+escapeHtml(groupKey)+'">'+
       '<div class="sec-label">'+escapeHtml(f.label)+'</div>'+ 
@@ -4686,7 +4800,12 @@ function renderCustomEntryFields(){
   box.querySelectorAll('[data-custom-field]').forEach(function(row){
     const key=row.dataset.customField;
     row.querySelectorAll('.chip-opt').forEach(function(c){
-      c.onclick=function(){ formState.customFields[key]=c.dataset.val; renderCustomEntryFields(); applyEntryLayoutToDOM(platform); };
+      c.onclick=function(){
+        formState.customFields[key]=c.dataset.val;
+        if(key===RAM_STORAGE_FIELD_KEY) formState.ramStorageAutoSelected=false;
+        renderCustomEntryFields();
+        applyEntryLayoutToDOM(platform);
+      };
     });
   });
 }
@@ -4814,6 +4933,7 @@ function renderModelSuggestions(typedVal){
       const input=document.getElementById('f-model-other');
       if(input) input.value = c.dataset.val;
       box.innerHTML = '';
+      Promise.resolve(loadGlobalModelsForBrand(brand)).then(function(){ applyPopularRamStorageForModel(brand,c.dataset.val,false); });
     };
     const clearPressTimer=function(){
       if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; }
@@ -4870,6 +4990,15 @@ document.getElementById('f-model-other').addEventListener('input', function(){
   // but keep the field fully manual so a brand-new model can be entered freely.
   renderModelSuggestions(this.value);
 });
+document.getElementById('f-model-other').addEventListener('change', function(){
+  applyPopularRamStorageForModel(formState.brand,this.value.trim(),false);
+});
+document.getElementById('f-model-other').addEventListener('blur', function(){
+  const value=this.value.trim();
+  if(value){
+    Promise.resolve(loadGlobalModelsForBrand(formState.brand)).then(function(){ applyPopularRamStorageForModel(formState.brand,value,false); });
+  }
+});
 
 document.getElementById('modelDropdownBtn').addEventListener('click', function(){
   const wrap = document.getElementById('modelSelectWrap');
@@ -4892,6 +5021,7 @@ document.getElementById('f-model-select').addEventListener('change', function(){
   if(this.value){
     document.getElementById('f-model-other').value = this.value;
     document.getElementById('modelSuggestions').innerHTML = '';
+    Promise.resolve(loadGlobalModelsForBrand(formState.brand)).then(function(){ applyPopularRamStorageForModel(formState.brand,document.getElementById('f-model-other').value.trim(),false); });
   }
   document.getElementById('modelSelectWrap').style.display = 'none';
   document.getElementById('modelDropdownBtn').classList.remove('on');
@@ -4905,7 +5035,7 @@ function openAdd(){
   rangeInputMode = 'auto';
   document.getElementById('sheetTitle').textContent = 'Nayi stock entry';
   document.getElementById('qtyLabel').textContent = 'Quantity (kitne piece)';
-  formState = {brand:'', status:'PTA', ram:'', storage:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'No', packing:'No pack', charger:'Original charger', faceid:'No', truetone:'No', customFields:{}, isSold:false, __platform:'android'};
+  formState = {brand:'', status:'PTA', ram:'', storage:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'No', packing:'No pack', charger:'Original charger', faceid:'No', truetone:'No', customFields:{}, ramStorageAutoSelected:false, isSold:false, __platform:'android'};
   applyPlatformDefaultsToForm('android');
   formPhotos = [];
   renderPhotoStrip();
@@ -4981,6 +5111,7 @@ function openEdit(id){
     box: e.box || 'No', packing: e.packing || 'No pack', charger: e.charger || 'Original charger',
     faceid: e.faceid || 'No', truetone: e.truetone || 'No',
     customFields: Object.assign({}, e.customFields || {}),
+    ramStorageAutoSelected: false,
     isSold: !!e.sold,
     originalBuy: e.buy != null ? Number(e.buy) : null
   };
@@ -5235,7 +5366,19 @@ function saveEntry(){
     });
   }
 
-  addCustomModelIfNew(brand, model);
+  const mainVariant=data.customFields && data.customFields[RAM_STORAGE_FIELD_KEY] || '';
+  const previousEntry=editingId ? inventory.find(function(x){return String(x.id)===String(editingId);}) : null;
+  const previousVariant=previousEntry && previousEntry.customFields ? String(previousEntry.customFields[RAM_STORAGE_FIELD_KEY]||'') : '';
+  const shouldRecordPopularity=!editingId || !previousEntry || previousEntry.brand!==brand || previousEntry.model!==model || previousVariant!==mainVariant;
+  if(shouldRecordPopularity){
+    addCustomModelIfNew(brand, model, mainVariant);
+    if(!editingId && mainVariant){
+      const extraCount=document.querySelectorAll('#extraBuyList .extra-piece-block').length;
+      for(let vi=0;vi<extraCount;vi++) saveModelToGlobalLibrary(brand,model,mainVariant);
+    }
+  }else if(!editingId){
+    addCustomModelIfNew(brand, model, mainVariant);
+  }
   saveLastModelForBrand(brand, model);
   closeSheet();
   render();
