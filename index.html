@@ -7401,10 +7401,12 @@ function setAuthGateView(mode){ // 'checking' | 'locked' | 'unlocked'
   const appEl = document.querySelector('.app');
   const fab = document.getElementById('fabAdd');
   if(mode === 'checking'){
-    overlay.classList.remove('hidden');
-    checking.style.display = 'block'; loggedOut.style.display = 'none'; loggedIn.style.display = 'none'; if(accessView) accessView.style.display='none';
+    // Keep the legacy checking mode available for compatibility, but do not
+    // expose the intermediate session-checking screen to the user.
+    overlay.classList.add('hidden');
+    checking.style.display = 'none'; loggedOut.style.display = 'none'; loggedIn.style.display = 'none'; if(accessView) accessView.style.display='none';
     if(closeRow) closeRow.style.display = 'none'; if(topbar) topbar.style.display='none'; if(note) note.style.display='none';
-    if(appEl) appEl.style.visibility = 'hidden'; if(fab) fab.style.display = 'none';
+    if(appEl) appEl.style.visibility = 'visible'; if(fab) fab.style.display = 'flex';
   } else if(mode === 'locked'){
     overlay.classList.remove('hidden');
     checking.style.display = 'none'; loggedOut.style.display = 'block'; loggedIn.style.display = 'none'; if(accessView) accessView.style.display='none';
