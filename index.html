@@ -1656,7 +1656,7 @@ const DEFAULT_BADGE_ORDER = ['display','battery','touch','camera','body','openre
 let customOptionData = {extra:{}, hidden:{}, globalCustomFields:[]};
 const RAM_STORAGE_FIELD_KEY = 'ramStorage';
 const RAM_STORAGE_FIELD_LABEL = 'RAM/Storage';
-const RAM_STORAGE_OPTIONS = ['3/32','4/64','4/128','6/128','8/128','8/256','12/256','12/512'];
+const RAM_STORAGE_OPTIONS = ['3/32','3/64','4/64','4/128','6/128','6/256','8/128','8/256','8/512','12/256','12/512','16/256','16/512','16/1TB'];
 const LS_CUSTOM_OPTIONS_KEY = 'mobileLedger_customOptions';
 const LS_UI_SCALE_KEY = 'mobileLedger_uiScale_v1';
 let uiScaleMode = 'normal';
@@ -2015,13 +2015,41 @@ function getPopularRamStorageForModel(brand, model){
   return bestCount>0 ? best : '';
 }
 function getRamStorageOptionsSortedForModel(brand, model, options){
-  const list=(options||[]).slice();
   const counts=getRamStorageVariantCounts(brand,model);
-  return list.sort(function(a,b){
+  const merged=[];
+  (options||[]).forEach(function(o){ if(o && merged.indexOf(o)===-1) merged.push(o); });
+  RAM_STORAGE_OPTIONS.forEach(function(o){ if(o && merged.indexOf(o)===-1) merged.push(o); });
+  Object.keys(counts).forEach(function(o){ if(o && merged.indexOf(o)===-1) merged.push(o); });
+  return merged.sort(function(a,b){
     const ca=Number(counts[a])||0, cb=Number(counts[b])||0;
     if(ca!==cb) return cb-ca;
-    return 0;
+    const ai=RAM_STORAGE_OPTIONS.indexOf(a), bi=RAM_STORAGE_OPTIONS.indexOf(b);
+    if(ai!==-1 && bi!==-1) return ai-bi;
+    if(ai!==-1) return -1;
+    if(bi!==-1) return 1;
+    return String(a).localeCompare(String(b));
   });
+}
+
+function setRamStorageFormValue(value){
+  const v=String(value||'').trim();
+  if(!formState.customFields) formState.customFields={};
+  formState.customFields[RAM_STORAGE_FIELD_KEY]=v;
+  const parts=v.split('/');
+  const ramEl=document.getElementById('ramStorageManualRam');
+  const storageEl=document.getElementById('ramStorageManualStorage');
+  if(ramEl) ramEl.value=parts[0]||'';
+  if(storageEl) storageEl.value=parts.slice(1).join('/')||'';
+}
+
+function getRamStorageManualValue(){
+  const ramEl=document.getElementById('ramStorageManualRam');
+  const storageEl=document.getElementById('ramStorageManualStorage');
+  const ram=String(ramEl&&ramEl.value||'').trim();
+  const storage=String(storageEl&&storageEl.value||'').trim();
+  if(!ram && !storage) return '';
+  if(ram && storage) return ram+'/'+storage;
+  return '';
 }
 function applyPopularRamStorageForModel(brand, model, force){
   const platform=getEntryPlatform(brand);
@@ -2033,10 +2061,10 @@ function applyPopularRamStorageForModel(brand, model, force){
   const autoSelected=!!formState.ramStorageAutoSelected;
   if(!force && current && !autoSelected) return;
   if(popular && options.indexOf(popular)!==-1){
-    formState.customFields[RAM_STORAGE_FIELD_KEY]=popular;
+    setRamStorageFormValue(popular);
     formState.ramStorageAutoSelected=true;
   }else if(force || !current || autoSelected){
-    formState.customFields[RAM_STORAGE_FIELD_KEY]='';
+    setRamStorageFormValue('');
     formState.ramStorageAutoSelected=false;
   }
   renderCustomEntryFields();
@@ -4768,7 +4796,7 @@ function renderChipGroup(containerId, options, groupKey, extraClass){
         renderModelSuggestions('');
         const platform=getEntryPlatform(c.dataset.val);
         if(formState.__platform!==platform) applyPlatformDefaultsToForm(platform);
-        if(formState.customFields){ formState.customFields[RAM_STORAGE_FIELD_KEY]=''; formState.ramStorageAutoSelected=false; }
+        if(formState.customFields){ setRamStorageFormValue(''); formState.ramStorageAutoSelected=false; }
         renderCustomEntryFields();
         applyEntryLayoutToDOM(platform);
       }
@@ -4783,31 +4811,71 @@ function renderCustomEntryFields(){
   const platform=getEntryPlatform(formState && formState.brand);
   const fields=getPlatformCustomFields(platform);
   if(!formState.customFields) formState.customFields={};
-  // Render every custom field as its own layout group so Main / More / Hide
-  // can control each custom field independently instead of moving one
-  // combined 'Custom fields' block.
   box.innerHTML=fields.map(function(f){
     let opts=getEntryFieldOptionsForPlatform(platform,f.key);
-    if(f.key===RAM_STORAGE_FIELD_KEY){ opts=getRamStorageOptionsSortedForModel(formState.brand,formState.model||document.getElementById('f-model-other').value,opts); }
     const groupKey=String(f.key||'');
+    const isRamStorage=f.key===RAM_STORAGE_FIELD_KEY;
+    if(isRamStorage){
+      opts=getRamStorageOptionsSortedForModel(formState.brand,formState.model||document.getElementById('f-model-other').value,opts);
+    }
+    const chipHtml=opts.map(function(o){
+      return '<div class="chip-opt '+(formState.customFields[f.key]===o?'on':'')+'" data-val="'+escapeHtml(o)+'">'+escapeHtml(o)+'</div>';
+    }).join('');
+    const manualHtml=isRamStorage ?
+      '<div class="settings-note" style="margin:7px 0 6px;font-size:11px;">Manual variant</div>'+ 
+      '<div class="two-col" style="margin-bottom:4px;align-items:end;">'+
+        '<div class="field" style="margin:0;"><label>RAM</label><input id="ramStorageManualRam" type="text" inputmode="numeric" placeholder="e.g. 12"></div>'+ 
+        '<div class="field" style="margin:0;position:relative;"><label>Storage</label><input id="ramStorageManualStorage" type="text" placeholder="e.g. 1TB"><div style="position:absolute;left:calc(50% - 8px);bottom:9px;color:var(--text-dim);font-weight:800;">/</div></div>'+ 
+      '</div>' : '';
     return '<div class="entry-layout-group custom-entry-field-group" data-entry-group="'+escapeHtml(groupKey)+'">'+
       '<div class="sec-label">'+escapeHtml(f.label)+'</div>'+ 
-      '<div class="chip-row custom-entry-chip-row" data-custom-field="'+escapeHtml(groupKey)+'">'+opts.map(function(o){
-        return '<div class="chip-opt '+(formState.customFields[f.key]===o?'on':'')+'" data-val="'+escapeHtml(o)+'">'+escapeHtml(o)+'</div>';
-      }).join('')+'</div>'+
+      '<div class="chip-row custom-entry-chip-row" data-custom-field="'+escapeHtml(groupKey)+'">'+chipHtml+'</div>'+manualHtml+
     '</div>';
   }).join('');
+
+  // Populate manual RAM/Storage from the currently selected combined value.
+  const currentRamValue=String(formState.customFields[RAM_STORAGE_FIELD_KEY]||'');
+  if(currentRamValue && fields.some(function(f){return f.key===RAM_STORAGE_FIELD_KEY;})) setRamStorageFormValue(currentRamValue);
+
   box.querySelectorAll('[data-custom-field]').forEach(function(row){
     const key=row.dataset.customField;
     row.querySelectorAll('.chip-opt').forEach(function(c){
       c.onclick=function(){
-        formState.customFields[key]=c.dataset.val;
-        if(key===RAM_STORAGE_FIELD_KEY) formState.ramStorageAutoSelected=false;
+        if(key===RAM_STORAGE_FIELD_KEY){
+          setRamStorageFormValue(c.dataset.val);
+          formState.ramStorageAutoSelected=false;
+        }else{
+          formState.customFields[key]=c.dataset.val;
+        }
         renderCustomEntryFields();
         applyEntryLayoutToDOM(platform);
       };
     });
   });
+
+  const manualRam=document.getElementById('ramStorageManualRam');
+  const manualStorage=document.getElementById('ramStorageManualStorage');
+  if(manualRam && manualStorage){
+    manualRam.addEventListener('input',function(){
+      const value=getRamStorageManualValue();
+      formState.customFields[RAM_STORAGE_FIELD_KEY]=value;
+      formState.ramStorageAutoSelected=false;
+      renderCustomEntryFieldsManualSync();
+    });
+    manualStorage.addEventListener('input',function(){
+      const value=getRamStorageManualValue();
+      formState.customFields[RAM_STORAGE_FIELD_KEY]=value;
+      formState.ramStorageAutoSelected=false;
+      renderCustomEntryFieldsManualSync();
+    });
+  }
+}
+
+function renderCustomEntryFieldsManualSync(){
+  const row=document.querySelector('[data-custom-field="'+RAM_STORAGE_FIELD_KEY+'"]');
+  if(!row) return;
+  const value=String(formState.customFields[RAM_STORAGE_FIELD_KEY]||'');
+  row.querySelectorAll('.chip-opt').forEach(function(c){ c.classList.toggle('on',c.dataset.val===value); });
 }
 
 function renderAllChips(){
@@ -5366,6 +5434,11 @@ function saveEntry(){
     });
   }
 
+  if(!data.customFields) data.customFields={};
+  if(!String(data.customFields[RAM_STORAGE_FIELD_KEY]||'').trim()){
+    const manualVariant=getRamStorageManualValue();
+    if(manualVariant) data.customFields[RAM_STORAGE_FIELD_KEY]=manualVariant;
+  }
   const mainVariant=data.customFields && data.customFields[RAM_STORAGE_FIELD_KEY] || '';
   const previousEntry=editingId ? inventory.find(function(x){return String(x.id)===String(editingId);}) : null;
   const previousVariant=previousEntry && previousEntry.customFields ? String(previousEntry.customFields[RAM_STORAGE_FIELD_KEY]||'') : '';
