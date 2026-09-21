@@ -4566,13 +4566,45 @@ function applyEntryLayoutToDOM(platform){
   const L=getEntryLayout(platform);
   const mainWrap=document.getElementById('entryLayoutMainWrap');
   const more=document.getElementById('moreSection');
-  const mainGroups={}; if(mainWrap) mainWrap.querySelectorAll(':scope > .entry-layout-group').forEach(function(g){mainGroups[g.dataset.entryGroup]=g;});
-  const moreGroups={}; if(more) more.querySelectorAll(':scope > .entry-layout-group').forEach(function(g){moreGroups[g.dataset.entryGroup]=g;});
-  if(mainWrap){ L.main.forEach(function(k,i){const g=mainGroups[k];if(g){g.style.display='block';g.style.order=String(i);mainWrap.appendChild(g);}}); }
-  if(more){ L.more.forEach(function(k,i){const g=moreGroups[k];if(g){g.style.display='block';g.style.order=String(i);more.appendChild(g);}}); }
-  (L.hidden||[]).forEach(function(k){ const g=mainGroups[k]||moreGroups[k]; if(g) g.style.display='none'; });
-  // The More-details toggle and extra-piece action are now normal
-  // configurable layout groups. Do not force either one to a fixed position.
+  const mainGroups={};
+  const moreGroups={};
+  if(mainWrap) mainWrap.querySelectorAll(':scope > .entry-layout-group').forEach(function(g){mainGroups[g.dataset.entryGroup]=g;});
+  if(more) more.querySelectorAll(':scope > .entry-layout-group').forEach(function(g){moreGroups[g.dataset.entryGroup]=g;});
+
+  // A field that originally belongs to More can be moved to Main (and back).
+  // Keep one shared lookup so changing the setting never makes the field
+  // disappear just because its original DOM parent was the More section.
+  const groups={};
+  Object.keys(mainGroups).forEach(function(k){groups[k]=mainGroups[k];});
+  Object.keys(moreGroups).forEach(function(k){groups[k]=moreGroups[k];});
+
+  // Reset all known groups first. This prevents a field from remaining visible
+  // in its previous section after the user changes Main / More / Hide.
+  Object.keys(groups).forEach(function(k){groups[k].style.display='none';});
+
+  if(mainWrap){
+    L.main.forEach(function(k,i){
+      const g=groups[k];
+      if(g){
+        g.style.display='block';
+        g.style.order=String(i);
+        mainWrap.appendChild(g);
+      }
+    });
+  }
+  if(more){
+    L.more.forEach(function(k,i){
+      const g=groups[k];
+      if(g){
+        g.style.display='block';
+        g.style.order=String(i);
+        more.appendChild(g);
+      }
+    });
+  }
+  // Hidden fields stay display:none wherever their group currently lives.
+  // The More-details toggle and extra-piece action remain normal configurable
+  // layout groups and are not forced to a fixed position.
 }
 
 function renderChipGroup(containerId, options, groupKey, extraClass){
