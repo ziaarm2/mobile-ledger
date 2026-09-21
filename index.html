@@ -1940,10 +1940,89 @@ function getGlobalModelDocId(brand, model){
   return encodeURIComponent(String(brand||'').trim()) + '__' + encodeURIComponent(String(model||'').trim());
 }
 
+function normalizeRamStorageVariant(value){
+  let v=String(value||'').trim();
+  if(!v) return '';
+  v=v.replace(/\s+/g,'');
+  const m=v.match(/^(\d+)GB?\/(\d+(?:GB|TB))$/i);
+  if(m) return m[1]+'/'+m[2].toUpperCase();
+  const m2=v.match(/^(\d+)GB?[-_](\d+(?:GB|TB))$/i);
+  if(m2) return m2[1]+'/'+m2[2].toUpperCase();
+  return v.replace(/GB$/i,'GB');
+}
+
+function getEntryRamStorageVariant(entry){
+  if(!entry) return '';
+  const cf=entry.customFields||{};
+  const direct=normalizeRamStorageVariant(cf[RAM_STORAGE_FIELD_KEY]||'');
+  if(direct) return direct;
+  const ram=String(entry.ram||'').trim().replace(/GB$/i,'');
+  const storage=String(entry.storage||'').trim();
+  if(ram && storage) return normalizeRamStorageVariant(ram+'/'+storage);
+  return '';
+}
+
+function getLocalModelUsage(brand, model){
+  brand=String(brand||'').trim(); model=String(model||'').trim();
+  if(!brand || !model) return 0;
+  return inventory.filter(function(e){
+    return e && String(e.brand||'').trim()===brand && String(e.model||'').trim()===model;
+  }).reduce(function(n,e){
+    return n+Math.max(1,Number(e.quantity)||1);
+  },0);
+}
+
+function getLocalVariantCounts(brand, model){
+  brand=String(brand||'').trim(); model=String(model||'').trim();
+  const counts={};
+  if(!brand || !model) return counts;
+  inventory.forEach(function(e){
+    if(!e || String(e.brand||'').trim()!==brand || String(e.model||'').trim()!==model) return;
+    const variant=getEntryRamStorageVariant(e);
+    if(!variant) return;
+    counts[variant]=(counts[variant]||0)+Math.max(1,Number(e.quantity)||1);
+  });
+  return counts;
+}
+
+function mergeExistingLocalUsageIntoLibrary(brand){
+  brand=String(brand||'').trim();
+  if(!brand) return;
+  if(!globalModelLibrary[brand]) globalModelLibrary[brand]={};
+  inventory.forEach(function(e){
+    if(!e || String(e.brand||'').trim()!==brand || !String(e.model||'').trim()) return;
+    const model=String(e.model).trim();
+    const qty=Math.max(1,Number(e.quantity)||1);
+    const old=globalModelLibrary[brand][model]||{};
+    const variants=Object.assign({},old.variantCounts||{});
+    const v=getEntryRamStorageVariant(e);
+    if(v) variants[v]=Math.max(Number(variants[v])||0, Number(getLocalVariantCounts(brand,model)[v])||0);
+    globalModelLibrary[brand][model]={
+      useCount:Math.max(Number(old.useCount)||0,getLocalModelUsage(brand,model),qty),
+      variantCounts:variants,
+      updatedAt:old.updatedAt||null
+    };
+  });
+  (customModels[brand]||[]).forEach(function(model){
+    if(!globalModelLibrary[brand][model]) globalModelLibrary[brand][model]={useCount:1,variantCounts:{},updatedAt:null};
+  });
+}
+
 function loadGlobalModelsForBrand(brand){
   brand=String(brand||'').trim();
-  if(!brand || !fbDb || !fbUser || isAdminShopView()) return Promise.resolve();
-  if(globalModelLibraryLoaded[brand]) return Promise.resolve();
+  if(!brand) return Promise.resolve();
+  if(globalModelLibraryLoaded[brand]){
+    mergeExistingLocalUsageIntoLibrary(brand);
+    const input=document.getElementById('f-model-other');
+    if(input && formState && formState.brand===brand) renderModelSuggestions(input.value||'');
+    return Promise.resolve();
+  }
+  if(!fbDb || !fbUser || isAdminShopView()){
+    globalModelLibrary[brand]=globalModelLibrary[brand]||{};
+    mergeExistingLocalUsageIntoLibrary(brand);
+    globalModelLibraryLoaded[brand]=true;
+    return Promise.resolve();
+  }
   return fbDb.collection('modelLibrary').where('brand','==',brand).get().then(function(snap){
     globalModelLibrary[brand]={};
     snap.forEach(function(doc){
@@ -1951,11 +2030,17 @@ function loadGlobalModelsForBrand(brand){
       const model=String(d.model||'').trim();
       if(model) globalModelLibrary[brand][model]={useCount:Number(d.useCount)||0,variantCounts:Object.assign({},d.variantCounts||{}),updatedAt:d.updatedAt||null};
     });
+    mergeExistingLocalUsageIntoLibrary(brand);
     globalModelLibraryLoaded[brand]=true;
     const input=document.getElementById('f-model-other');
     if(input && formState && formState.brand===brand) renderModelSuggestions(input.value||'');
   }).catch(function(err){
     console.warn('Global model library load failed',err);
+    globalModelLibrary[brand]=globalModelLibrary[brand]||{};
+    mergeExistingLocalUsageIntoLibrary(brand);
+    globalModelLibraryLoaded[brand]=true;
+    const input=document.getElementById('f-model-other');
+    if(input && formState && formState.brand===brand) renderModelSuggestions(input.value||'');
   });
 }
 
@@ -1996,7 +2081,10 @@ function saveModelToGlobalLibrary(brand, model, ramStorage){
 
 function getRamStorageVariantCounts(brand, model){
   const info=(globalModelLibrary[brand]&&globalModelLibrary[brand][model])||{};
-  return Object.assign({},info.variantCounts||{});
+  const out=Object.assign({},info.variantCounts||{});
+  const local=getLocalVariantCounts(brand,model);
+  Object.keys(local).forEach(function(v){ out[v]=Math.max(Number(out[v])||0,Number(local[v])||0); });
+  return out;
 }
 function getPopularRamStorageForModel(brand, model){
   brand=String(brand||'').trim(); model=String(model||'').trim();
@@ -2098,8 +2186,9 @@ function getBrandModels(brand){
   const counts={};
   inventory.forEach(function(e){
     if(e && e.brand===brand && e.model){
+      const key=String(e.model).trim();
       const qty=Math.max(1, Number(e.quantity)||1);
-      counts[e.model]=(counts[e.model]||0)+qty;
+      counts[key]=(counts[key]||0)+qty;
     }
   });
   const globalCounts=globalModelLibrary[brand]||{};
@@ -2108,6 +2197,9 @@ function getBrandModels(brand){
     if(remembered===a && remembered!==b) return -1;
     if(remembered===b && remembered!==a) return 1;
     const ca=counts[a]||0, cb=counts[b]||0;
+    const aUsed=ca>0 || (custom.indexOf(a)!==-1);
+    const bUsed=cb>0 || (custom.indexOf(b)!==-1);
+    if(aUsed!==bUsed) return aUsed ? -1 : 1;
     if(ca!==cb) return cb-ca;
     const ga=Number(globalCounts[a]&&globalCounts[a].useCount)||0;
     const gb=Number(globalCounts[b]&&globalCounts[b].useCount)||0;
@@ -4929,15 +5021,20 @@ function modelSuggestionScore(model, query, brand){
   const qWords=q.split(/\s+/).filter(Boolean);
   const globalInfo=(globalModelLibrary[brand]&&globalModelLibrary[brand][raw])||{};
   const globalUse=Math.max(0,Number(globalInfo.useCount)||0);
-  const localUse=inventory.filter(function(e){return e&&e.brand===brand&&String(e.model||'').trim()===raw;}).reduce(function(n,e){return n+Math.max(1,Number(e.quantity)||1);},0);
+  const localUse=getLocalModelUsage(brand,raw);
+  const wasUsedBefore=localUse>0 || (customModels[brand]||[]).indexOf(raw)!==-1;
   const remembered=getLastModelForBrand(brand);
   let score=0;
-  if(!q){
-    score += globalUse*50 + localUse*35;
-    if(remembered===raw) score+=500;
-    return score;
-  }
-  if(ml===q) score+=12000;
+
+  // Existing user history must outrank untouched catalog models. This is
+  // especially important for cases like typing GO1 after several GO1 models
+  // were already entered in this shop before the global library was added.
+  if(wasUsedBefore) score += 6000;
+  score += localUse*120 + globalUse*55;
+  if(remembered===raw) score+=800;
+
+  if(!q) return score;
+  if(ml===q) score+=14000;
   if(ml.indexOf(q)===0) score+=9000-Math.max(0,ml.length-q.length);
   if(qc && compact.indexOf(qc)===0) score+=8000-Math.max(0,compact.length-qc.length);
   if(ml.indexOf(q)!==-1) score+=5200;
@@ -4954,8 +5051,6 @@ function modelSuggestionScore(model, query, brand){
     for(let j=0;j<compact.length && i<qc.length;j++) if(compact[j]===qc[i]) i++;
     if(i===qc.length) score+=1200;
   }
-  score += globalUse*45 + localUse*30;
-  if(remembered===raw) score+=300;
   return score;
 }
 
