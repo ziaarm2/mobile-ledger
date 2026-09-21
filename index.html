@@ -4566,45 +4566,74 @@ function applyEntryLayoutToDOM(platform){
   const L=getEntryLayout(platform);
   const mainWrap=document.getElementById('entryLayoutMainWrap');
   const more=document.getElementById('moreSection');
-  const mainGroups={};
-  const moreGroups={};
-  if(mainWrap) mainWrap.querySelectorAll(':scope > .entry-layout-group').forEach(function(g){mainGroups[g.dataset.entryGroup]=g;});
-  if(more) more.querySelectorAll(':scope > .entry-layout-group').forEach(function(g){moreGroups[g.dataset.entryGroup]=g;});
+  const sheet=document.querySelector('#overlay .sheet');
+  if(!sheet || !mainWrap || !more) return;
 
-  // A field that originally belongs to More can be moved to Main (and back).
-  // Keep one shared lookup so changing the setting never makes the field
-  // disappear just because its original DOM parent was the More section.
+  // Build the lookup from the whole entry sheet, not only direct children.
+  // This is important because a field may originally live inside #moreSection
+  // and later be moved to Main. A direct-child-only lookup could leave it
+  // trapped in its original section or make it appear missing.
   const groups={};
-  Object.keys(mainGroups).forEach(function(k){groups[k]=mainGroups[k];});
-  Object.keys(moreGroups).forEach(function(k){groups[k]=moreGroups[k];});
+  sheet.querySelectorAll('.entry-layout-group').forEach(function(g){
+    const key=g.dataset.entryGroup;
+    if(key && !groups[key]) groups[key]=g;
+  });
 
-  // Reset all known groups first. This prevents a field from remaining visible
-  // in its previous section after the user changes Main / More / Hide.
-  Object.keys(groups).forEach(function(k){groups[k].style.display='none';});
+  // First detach all configurable groups from their current parent.
+  // We only detach groups that are actually known to the layout system.
+  Object.keys(groups).forEach(function(key){
+    const g=groups[key];
+    if(g.parentNode) g.parentNode.removeChild(g);
+    g.style.order='';
+    g.style.display='none';
+    g.classList.remove('is-hidden');
+  });
 
-  if(mainWrap){
-    L.main.forEach(function(k,i){
-      const g=groups[k];
-      if(g){
-        g.style.display='block';
-        g.style.order=String(i);
-        mainWrap.appendChild(g);
+  // Put Main groups in the Main wrapper in the saved order.
+  L.main.forEach(function(key,i){
+    const g=groups[key];
+    if(!g) return;
+    g.style.display='block';
+    g.style.order=String(i);
+    mainWrap.appendChild(g);
+
+    // Some legacy groups contain their own .more-section wrapper (notably
+    // Sale details). When the outer group is moved to Main, the inner legacy
+    // display:none must not hide the field. Keep the sold-state behavior of
+    // saleFieldsWrap while allowing the layout container itself to move.
+    g.querySelectorAll('.more-section').forEach(function(inner){
+      if(inner.id==='saleFieldsWrap'){
+        inner.style.display=inner.classList.contains('show')?'block':'none';
+      }else{
+        inner.style.display='block';
       }
     });
-  }
-  if(more){
-    L.more.forEach(function(k,i){
-      const g=groups[k];
-      if(g){
-        g.style.display='block';
-        g.style.order=String(i);
-        more.appendChild(g);
+  });
+
+  // Put More groups back into the actual More section in the saved order.
+  L.more.forEach(function(key,i){
+    const g=groups[key];
+    if(!g) return;
+    g.style.display='block';
+    g.style.order=String(i);
+    more.appendChild(g);
+    g.querySelectorAll('.more-section').forEach(function(inner){
+      if(inner.id==='saleFieldsWrap'){
+        inner.style.display=inner.classList.contains('show')?'block':'none';
+      }else{
+        inner.style.display='block';
       }
     });
-  }
-  // Hidden fields stay display:none wherever their group currently lives.
-  // The More-details toggle and extra-piece action remain normal configurable
-  // layout groups and are not forced to a fixed position.
+  });
+
+  // Hidden groups remain detached from the visible sections and are explicitly
+  // hidden. This makes Main / More / Hide deterministic on every refresh/open.
+  L.hidden.forEach(function(key){
+    const g=groups[key];
+    if(!g) return;
+    g.style.display='none';
+    g.classList.add('is-hidden');
+  });
 }
 
 function renderChipGroup(containerId, options, groupKey, extraClass){
