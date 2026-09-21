@@ -1880,12 +1880,83 @@ const MODEL_CATALOG = {
 const OTHER_MODEL_VAL = '__other__';
 
 let customModels = {};
+// Global Model Library: shared across all approved shops through Firestore.
+// The shop-specific `customModels` object remains as a legacy/offline cache,
+// while newly used models are also registered in this shared library.
+let globalModelLibrary = {};
+let globalModelLibraryLoaded = {};
+
+function getGlobalModelDocId(brand, model){
+  return encodeURIComponent(String(brand||'').trim()) + '__' + encodeURIComponent(String(model||'').trim());
+}
+
+function loadGlobalModelsForBrand(brand){
+  brand=String(brand||'').trim();
+  if(!brand || !fbDb || !fbUser || isAdminShopView()) return Promise.resolve();
+  if(globalModelLibraryLoaded[brand]) return Promise.resolve();
+  return fbDb.collection('modelLibrary').where('brand','==',brand).get().then(function(snap){
+    globalModelLibrary[brand]={};
+    snap.forEach(function(doc){
+      const d=doc.data()||{};
+      const model=String(d.model||'').trim();
+      if(model) globalModelLibrary[brand][model]={useCount:Number(d.useCount)||0,updatedAt:d.updatedAt||null};
+    });
+    globalModelLibraryLoaded[brand]=true;
+    const input=document.getElementById('f-model-other');
+    if(input && formState && formState.brand===brand) renderModelSuggestions(input.value||'');
+  }).catch(function(err){
+    console.warn('Global model library load failed',err);
+  });
+}
+
+function saveModelToGlobalLibrary(brand, model){
+  brand=String(brand||'').trim();
+  model=String(model||'').trim();
+  if(!brand || !model || !fbDb || !fbUser || isAdminShopView()) return Promise.resolve(false);
+  // Also track built-in/catalog models so popularity can be learned across shops.
+  const ref=fbDb.collection('modelLibrary').doc(getGlobalModelDocId(brand,model));
+  return ref.set({
+    brand:brand,
+    model:model,
+    normalized:model.toLowerCase(),
+    useCount:firebase.firestore.FieldValue.increment(1),
+    updatedBy:fbUser.uid,
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true}).then(function(){
+    if(!globalModelLibrary[brand]) globalModelLibrary[brand]={};
+    const old=globalModelLibrary[brand][model]||{};
+    globalModelLibrary[brand][model]={useCount:(Number(old.useCount)||0)+1,updatedAt:new Date()};
+    globalModelLibraryLoaded[brand]=true;
+    return true;
+  }).catch(function(err){
+    console.warn('Global model library save failed',err);
+    return false;
+  });
+}
+
+async function deleteGlobalModel(brand, model){
+  if(userRole!=='admin' || !fbDb || !brand || !model || isAdminShopView()) return false;
+  try{
+    await fbDb.collection('modelLibrary').doc(getGlobalModelDocId(brand,model)).delete();
+    if(globalModelLibrary[brand]) delete globalModelLibrary[brand][model];
+    if(customModels[brand]){
+      customModels[brand]=customModels[brand].filter(function(x){ return x!==model; });
+      saveCustomModels();
+    }
+    return true;
+  }catch(err){
+    console.warn('Global model library delete failed',err);
+    showToast('Model delete nahi ho saka — internet / Firebase Rules check karein.');
+    return false;
+  }
+}
 
 function getBrandModels(brand){
   const base = MODEL_CATALOG[brand] || [];
+  const global = Object.keys(globalModelLibrary[brand] || {});
   const custom = customModels[brand] || [];
   const inventoryModels = inventory.filter(function(e){ return e && e.brand===brand && e.model; }).map(function(e){ return String(e.model).trim(); });
-  const source = base.concat(custom).concat(inventoryModels);
+  const source = base.concat(global).concat(custom).concat(inventoryModels);
   const counts={};
   inventory.forEach(function(e){
     if(e && e.brand===brand && e.model){
@@ -1893,12 +1964,16 @@ function getBrandModels(brand){
       counts[e.model]=(counts[e.model]||0)+qty;
     }
   });
+  const globalCounts=globalModelLibrary[brand]||{};
   const remembered=getLastModelForBrand(brand);
   return source.filter(function(m,i){return m && source.indexOf(m)===i;}).sort(function(a,b){
     if(remembered===a && remembered!==b) return -1;
     if(remembered===b && remembered!==a) return 1;
     const ca=counts[a]||0, cb=counts[b]||0;
     if(ca!==cb) return cb-ca;
+    const ga=Number(globalCounts[a]&&globalCounts[a].useCount)||0;
+    const gb=Number(globalCounts[b]&&globalCounts[b].useCount)||0;
+    if(ga!==gb) return gb-ga;
     return a.localeCompare(b);
   });
 }
@@ -2017,14 +2092,17 @@ function saveLastModelForBrand(brand,model){ if(!brand||!model)return; try{ cons
 function getLastModelForBrand(brand){ const m=loadLastModelByBrand(); return m[brand]||''; }
 
 function addCustomModelIfNew(brand, model){
-  if(!brand || !model) return;
+  if(!brand || !model) return Promise.resolve(false);
   const base = MODEL_CATALOG[brand] || [];
-  if(base.indexOf(model)!==-1) return;
-  if(!customModels[brand]) customModels[brand] = [];
-  if(customModels[brand].indexOf(model)===-1){
-    customModels[brand].push(model);
-    saveCustomModels();
+  if(base.indexOf(model)===-1){
+    if(!customModels[brand]) customModels[brand] = [];
+    if(customModels[brand].indexOf(model)===-1){
+      customModels[brand].push(model);
+      saveCustomModels();
+    }
   }
+  // Count every used model globally, including built-in/catalog models.
+  return saveModelToGlobalLibrary(brand,model);
 }
 
 let formState = {};
@@ -4508,6 +4586,7 @@ function renderChipGroup(containerId, options, groupKey, extraClass){
       if(groupKey==='brand'){
         document.getElementById('brandOtherWrap').style.display = (c.dataset.val==='Other') ? 'block' : 'none';
         updateModelField(c.dataset.val);
+        loadGlobalModelsForBrand(c.dataset.val);
         const remembered=getLastModelForBrand(c.dataset.val);
         const modelInput=document.getElementById('f-model-other');
         if(modelInput && !modelInput.value.trim() && remembered){ modelInput.value=remembered; renderModelSuggestions(remembered); }
@@ -4573,10 +4652,52 @@ function renderAllChips(){
 }
 
 function updateModelField(brand){
-  // Manual input stays the primary field for every brand; just refresh suggestions/dropdown list.
+  // Manual input stays the primary field. Suggestions use the built-in catalog,
+  // current shop inventory, and the shared Model Library.
   renderModelSuggestions('');
   document.getElementById('modelSelectWrap').style.display = 'none';
   document.getElementById('modelDropdownBtn').classList.remove('on');
+  loadGlobalModelsForBrand(brand);
+}
+
+function modelSuggestionScore(model, query, brand){
+  const raw=String(model||'').trim();
+  const q=String(query||'').trim().toLowerCase();
+  const ml=raw.toLowerCase();
+  const compact=ml.replace(/[^a-z0-9]+/g,'');
+  const qc=q.replace(/[^a-z0-9]+/g,'');
+  const words=ml.split(/\s+/).filter(Boolean);
+  const qWords=q.split(/\s+/).filter(Boolean);
+  const globalInfo=(globalModelLibrary[brand]&&globalModelLibrary[brand][raw])||{};
+  const globalUse=Math.max(0,Number(globalInfo.useCount)||0);
+  const localUse=inventory.filter(function(e){return e&&e.brand===brand&&String(e.model||'').trim()===raw;}).reduce(function(n,e){return n+Math.max(1,Number(e.quantity)||1);},0);
+  const remembered=getLastModelForBrand(brand);
+  let score=0;
+  if(!q){
+    score += globalUse*50 + localUse*35;
+    if(remembered===raw) score+=500;
+    return score;
+  }
+  if(ml===q) score+=12000;
+  if(ml.indexOf(q)===0) score+=9000-Math.max(0,ml.length-q.length);
+  if(qc && compact.indexOf(qc)===0) score+=8000-Math.max(0,compact.length-qc.length);
+  if(ml.indexOf(q)!==-1) score+=5200;
+  if(qc && compact.indexOf(qc)!==-1) score+=4400;
+  if(qWords.length){
+    qWords.forEach(function(qw){
+      if(words.some(function(w){return w.indexOf(qw)===0;})) score+=1800;
+      else if(words.some(function(w){return w.indexOf(qw)!==-1;})) score+=900;
+    });
+  }
+  // Loose subsequence match catches natural variants/typos such as "a15s" vs "a15".
+  if(qc && qc.length>=2){
+    let i=0;
+    for(let j=0;j<compact.length && i<qc.length;j++) if(compact[j]===qc[i]) i++;
+    if(i===qc.length) score+=1200;
+  }
+  score += globalUse*45 + localUse*30;
+  if(remembered===raw) score+=300;
+  return score;
 }
 
 function renderModelSuggestions(typedVal){
@@ -4584,19 +4705,28 @@ function renderModelSuggestions(typedVal){
   const brand = formState.brand;
   const list = getBrandModels(brand);
   const q = (typedVal||'').trim().toLowerCase();
-  const remembered = getLastModelForBrand(brand);
-  let matches = q ? list.filter(function(m){ return m.toLowerCase().indexOf(q)!==-1; }) : list.slice(0, 8);
-  if(remembered){
-    matches = [remembered].concat(matches.filter(function(m){return m!==remembered;}));
+  let matches = list.map(function(m){return {model:m,score:modelSuggestionScore(m,q,brand)};});
+  if(q){
+    matches = matches.filter(function(x){
+      const ml=x.model.toLowerCase(), compact=ml.replace(/[^a-z0-9]+/g,''), qc=q.replace(/[^a-z0-9]+/g,'');
+      return ml.indexOf(q)!==-1 || (qc && compact.indexOf(qc)!==-1) || x.score>=1200;
+    });
   }
+  matches.sort(function(a,b){
+    if(b.score!==a.score) return b.score-a.score;
+    return a.model.localeCompare(b.model);
+  });
   matches = matches.slice(0, 8);
   if(!matches.length){
     box.innerHTML = '';
     return;
   }
-  box.innerHTML = matches.map(function(m){
-    const isCustom = (customModels[brand]||[]).indexOf(m)!==-1;
-    return '<div class="model-suggestion-chip '+(isCustom?'is-custom-model':'')+'" data-val="'+m+'" data-custom-model="'+(isCustom?'1':'0')+'">'+m+'</div>';
+  box.innerHTML = matches.map(function(item){
+    const m=item.model;
+    const isLegacyCustom = (customModels[brand]||[]).indexOf(m)!==-1;
+    const isGlobal = !!(globalModelLibrary[brand] && globalModelLibrary[brand][m]);
+    const cls = (isLegacyCustom || isGlobal) ? 'is-custom-model' : '';
+    return '<div class="model-suggestion-chip '+cls+'" data-val="'+escapeHtml(m)+'" data-custom-model="'+(isLegacyCustom?'1':'0')+'" data-global-model="'+(isGlobal?'1':'0')+'">'+escapeHtml(m)+'</div>';
   }).join('');
   box.querySelectorAll('.model-suggestion-chip').forEach(function(c){
     let pressTimer=null;
@@ -4619,18 +4749,26 @@ function renderModelSuggestions(typedVal){
     const startPress=function(e){
       clearPressTimer();
       didLongPress=false;
-      if(c.dataset.customModel!=='1' || userRole!=='admin' || isAdminShopView()) return;
+      const isGlobal=c.dataset.globalModel==='1';
+      const isLegacyCustom=c.dataset.customModel==='1';
+      if((!isGlobal && !isLegacyCustom) || userRole!=='admin' || isAdminShopView()) return;
       if(e && e.cancelable) e.preventDefault();
       pressTimer=setTimeout(function(){
         pressTimer=null;
         didLongPress=true;
         suppressClickUntil=Date.now()+900;
         const model=c.dataset.val;
-        if(confirm('"'+model+'" custom model ko delete kar dein?')){
+        if(!confirm('"'+model+'" ko Model Library se delete kar dein?')) return;
+        if(isGlobal){
+          deleteGlobalModel(brand,model).then(function(ok){
+            renderModelSuggestions(document.getElementById('f-model-other').value);
+            if(ok) showToast('✓ Global Model Library se model delete ho gaya');
+          });
+        }else{
           customModels[brand]=(customModels[brand]||[]).filter(function(x){return x!==model;});
           saveCustomModels();
           renderModelSuggestions(document.getElementById('f-model-other').value);
-          showToast('✓ Model delete ho gaya');
+          showToast('✓ Legacy custom model delete ho gaya');
         }
       },650);
     };
@@ -4656,26 +4794,9 @@ function getFormModel(){
 }
 
 document.getElementById('f-model-other').addEventListener('input', function(){
+  // Never replace what the user is typing. Show smart suggestions underneath,
+  // but keep the field fully manual so a brand-new model can be entered freely.
   renderModelSuggestions(this.value);
-  const v=this.value.trim().toLowerCase();
-  this.removeAttribute('data-autofill-candidate');
-  if(v.length>=2){
-    const list=getBrandModels(formState.brand).filter(function(m){return m.toLowerCase().indexOf(v)===0;});
-    if(list.length){
-      const candidate=list[0];
-      if(candidate.toLowerCase()!==v){
-        this.value=candidate;
-        this.setSelectionRange(v.length,candidate.length);
-        this.setAttribute('data-autofill-candidate',candidate);
-      }
-    }
-  }
-});
-document.getElementById('f-model-other').addEventListener('keydown', function(ev){
-  if(ev.key==='Enter'){
-    const candidate=this.getAttribute('data-autofill-candidate');
-    if(candidate){ ev.preventDefault(); this.value=candidate; document.getElementById('modelSuggestions').innerHTML=''; this.removeAttribute('data-autofill-candidate'); }
-  }
 });
 
 document.getElementById('modelDropdownBtn').addEventListener('click', function(){
@@ -7497,6 +7618,8 @@ function activateShopStorage(shopId){
     try{ lastPushedVersion=Number(localStorage.getItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY))||0)||0; }catch(e){ lastPushedVersion=0; }
 
     loadInventory();
+    globalModelLibrary={};
+    globalModelLibraryLoaded={};
     loadPersistentHistory();
     try{ activityCurrentState=appStateSnapshot(); }catch(e){ activityCurrentState=null; }
     updateHistoryButtons();
@@ -7703,6 +7826,8 @@ function enterAdminShop(shopId){
   const d=x.data||{};
   adminViewActive=true;
   adminViewShopId=shopId;
+  globalModelLibrary={};
+  globalModelLibraryLoaded={};
   inventory=cloneAdminData(Array.isArray(d.inventory)?d.inventory:[]);
   expenses=cloneAdminData(Array.isArray(d.expenses)?d.expenses:[]);
   customModels=cloneAdminData(d.customModels||{});
@@ -7807,6 +7932,8 @@ function initFirebaseSync(){
         resolveUserRoleAndShop(user).then(function(){
           activateShopStorage(userShopId);
           updateAccountUI();
+          globalModelLibrary={};
+          globalModelLibraryLoaded={};
           if(accessStatusAllowsUse()){
             setAuthGateView('unlocked');
             subscribeUserNotifications();
