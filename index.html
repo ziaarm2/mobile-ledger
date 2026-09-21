@@ -794,7 +794,7 @@
     <div class="add-extra-buy" id="addExtraBuyBtn">+ Isi model ka aur piece, alag price/condition par, add karein</div>
 
     <div class="sec-label" style="margin-top:14px;">📱 Is mobile par hua extra kharcha</div>
-    <div class="settings-note" style="margin-top:0;">Jelly/protector, repair ya koi bhi phone-specific kharcha yahan add karein. Ye isi mobile ke profit se minus hoga.</div>
+    
     <div id="f-phone-expenses" class="phone-expense-list"></div>
     <div class="add-expense-inline" id="addPhoneExpenseInline" role="button" tabindex="0" aria-label="Add phone expense">+</div>
 
@@ -4392,7 +4392,10 @@ function prepareEntryLayoutDOM(){
     let current=null;
     kids.forEach(function(n){
       if(n.id==='customEntryFields'){
-        const w=wrapEntryGroup('customFields',[n],more); if(w) more.appendChild(w); current=null; return;
+        // Custom fields are wrapped individually by renderCustomEntryFields().
+        // Do not create one aggregate 'customFields' group here; individual
+        // custom fields must be movable between Main / More independently.
+        current=null; return;
       }
       if(n.classList && n.classList.contains('field')){
         wrapEntryGroup('notes',[n],more); return;
@@ -4667,16 +4670,23 @@ function renderCustomEntryFields(){
   const platform=getEntryPlatform(formState && formState.brand);
   const fields=getPlatformCustomFields(platform);
   if(!formState.customFields) formState.customFields={};
+  // Render every custom field as its own layout group so Main / More / Hide
+  // can control each custom field independently instead of moving one
+  // combined 'Custom fields' block.
   box.innerHTML=fields.map(function(f){
     const opts=getEntryFieldOptionsForPlatform(platform,f.key);
-    return '<div class="sec-label">'+escapeHtml(f.label)+'</div><div class="chip-row custom-entry-chip-row" data-custom-field="'+f.key+'">'+opts.map(function(o){
-      return '<div class="chip-opt '+(formState.customFields[f.key]===o?'on':'')+'" data-val="'+escapeHtml(o)+'">'+escapeHtml(o)+'</div>';
-    }).join('')+'</div>';
+    const groupKey=String(f.key||'');
+    return '<div class="entry-layout-group custom-entry-field-group" data-entry-group="'+escapeHtml(groupKey)+'">'+
+      '<div class="sec-label">'+escapeHtml(f.label)+'</div>'+ 
+      '<div class="chip-row custom-entry-chip-row" data-custom-field="'+escapeHtml(groupKey)+'">'+opts.map(function(o){
+        return '<div class="chip-opt '+(formState.customFields[f.key]===o?'on':'')+'" data-val="'+escapeHtml(o)+'">'+escapeHtml(o)+'</div>';
+      }).join('')+'</div>'+
+    '</div>';
   }).join('');
   box.querySelectorAll('[data-custom-field]').forEach(function(row){
     const key=row.dataset.customField;
     row.querySelectorAll('.chip-opt').forEach(function(c){
-      c.onclick=function(){ formState.customFields[key]=c.dataset.val; renderCustomEntryFields(); };
+      c.onclick=function(){ formState.customFields[key]=c.dataset.val; renderCustomEntryFields(); applyEntryLayoutToDOM(platform); };
     });
   });
 }
