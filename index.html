@@ -794,6 +794,7 @@
     <div class="add-extra-buy" id="addExtraBuyBtn">+ Isi model ka aur piece, alag price/condition par, add karein</div>
 
     <div class="sec-label" style="margin-top:14px;">📱 Is mobile par hua extra kharcha</div>
+    <div class="settings-note" style="margin-top:0;">Jelly/protector, repair ya koi bhi phone-specific kharcha yahan add karein. Ye isi mobile ke profit se minus hoga.</div>
     <div id="f-phone-expenses" class="phone-expense-list"></div>
     <div class="add-expense-inline" id="addPhoneExpenseInline" role="button" tabindex="0" aria-label="Add phone expense">+</div>
 
@@ -1436,6 +1437,40 @@
 
 <script>
 let inventory = [];
+
+// ---------- Per-shop local storage isolation ----------
+// Business data must never be shared between different signed-in shops on the
+// same browser/device. Before login, these keys continue to use their legacy
+// names so the existing app can boot normally. Once a user/shop is resolved,
+// the same keys are transparently namespaced with that shopId.
+const LS_ACTIVE_SHOP_STORAGE_KEY = 'mobileLedger_activeShopStorageId_v1';
+const SHOP_SCOPED_STORAGE_NAMES = new Set([
+  'mobileLedger_inventory',
+  'mobileLedger_customModels',
+  'mobileLedger_customOptions',
+  'mobileLedger_expenses',
+  'mobileLedger_rateBook',
+  'mobileLedger_lastModelByBrand',
+  'mobileLedger_cardDisplaySettings',
+  'mobileLedger_shopProfile',
+  'mobileLedger_undoStack_v15',
+  'mobileLedger_redoStack_v15',
+  'mobileLedger_activityHistory',
+  'mobileLedger_localVersion',
+  'mobileLedger_lastPushedVersion',
+  'mobileLedger_waTemplate'
+]);
+let activeShopStorageId = '';
+let shopStorageSwitching = false;
+
+function shopScopedStorageKeyForId(key, shopId){
+  if(!shopId || !SHOP_SCOPED_STORAGE_NAMES.has(key)) return key;
+  return 'mobileLedger.shop.' + encodeURIComponent(String(shopId)) + '.' + key;
+}
+function shopStorageKey(key){
+  return shopScopedStorageKeyForId(key, activeShopStorageId);
+}
+
 let editingId = null;
 let currentFilter = 'available';
 let currentBrandFilter = 'all';
@@ -1695,7 +1730,7 @@ function ensurePlatformOptionData(platform){
 
 function loadCustomOptionData(){
   try{
-    const raw = localStorage.getItem(LS_CUSTOM_OPTIONS_KEY);
+    const raw = localStorage.getItem(shopStorageKey(LS_CUSTOM_OPTIONS_KEY));
     customOptionData = raw ? JSON.parse(raw) : {extra:{}, hidden:{}, issueOverrides:{}, cardVisibility:{}, badgeColor:{}, badgeProminent:{}};
   }catch(err){ customOptionData = {extra:{}, hidden:{}, issueOverrides:{}, cardVisibility:{}, badgeColor:{}, badgeProminent:{}, platforms:{}, globalCustomFields:[]}; }
   if(!customOptionData.extra) customOptionData.extra = {};
@@ -1729,13 +1764,13 @@ function loadCustomOptionData(){
 function saveCustomOptionData(){
   if(settingsDraftActive){ settingsDraftMarkDirty(); return; }
   if(isAdminShopView()) return;
-  let oldRaw=null; try{oldRaw=localStorage.getItem(LS_CUSTOM_OPTIONS_KEY);}catch(e){}
+  let oldRaw=null; try{oldRaw=localStorage.getItem(shopStorageKey(LS_CUSTOM_OPTIONS_KEY));}catch(e){}
   const newRaw=JSON.stringify(customOptionData);
   if(oldRaw!==newRaw){
     try{const st=appStateSnapshot();st.customOptionData=oldRaw||'{}';activityBeforeState=st;}catch(e){activityBeforeFromCurrentMutation();}
     pushUndoHistory('Entry options');
   }
-  try{ localStorage.setItem(LS_CUSTOM_OPTIONS_KEY,newRaw); }catch(err){return;}
+  try{ localStorage.setItem(shopStorageKey(LS_CUSTOM_OPTIONS_KEY),newRaw); }catch(err){return;}
   schedulePush();
   if(oldRaw!==newRaw) logActivity('settings','Entry options update','');
 }
@@ -1902,7 +1937,7 @@ function setExpenseRefundMode(on){
 
 async function loadExpenses(){
   try{
-    const raw = localStorage.getItem(LS_EXPENSES_KEY);
+    const raw = localStorage.getItem(shopStorageKey(LS_EXPENSES_KEY));
     expenses = raw ? JSON.parse(raw) : [];
   }catch(e){
     expenses = [];
@@ -1920,8 +1955,8 @@ function tryCommitExpenses(candidateExpenses){
   }
   const json = JSON.stringify(candidateExpenses);
   try{
-    localStorage.setItem(LS_EXPENSES_KEY, json);
-    const check = localStorage.getItem(LS_EXPENSES_KEY);
+    localStorage.setItem(shopStorageKey(LS_EXPENSES_KEY), json);
+    const check = localStorage.getItem(shopStorageKey(LS_EXPENSES_KEY));
     if(check !== json) return false;
   }catch(e){
     console.error('Storage error', e);
@@ -1959,7 +1994,7 @@ function expensesInRange(from, to){
 
 async function loadCustomModels(){
   try{
-    const raw = localStorage.getItem(LS_CUSTOM_MODELS_KEY);
+    const raw = localStorage.getItem(shopStorageKey(LS_CUSTOM_MODELS_KEY));
     customModels = raw ? JSON.parse(raw) : {};
   }catch(e){
     customModels = {};
@@ -1969,7 +2004,7 @@ async function loadCustomModels(){
 async function saveCustomModels(){
   if(isAdminShopView()) return;
   try{
-    localStorage.setItem(LS_CUSTOM_MODELS_KEY, JSON.stringify(customModels));
+    localStorage.setItem(shopStorageKey(LS_CUSTOM_MODELS_KEY), JSON.stringify(customModels));
   }catch(e){
     console.error('Storage error', e);
   }
@@ -1977,8 +2012,8 @@ async function saveCustomModels(){
 }
 
 const LS_LAST_MODEL_BY_BRAND_KEY='mobileLedger_lastModelByBrand';
-function loadLastModelByBrand(){ try{ return JSON.parse(localStorage.getItem(LS_LAST_MODEL_BY_BRAND_KEY)||'{}')||{}; }catch(e){return {};} }
-function saveLastModelForBrand(brand,model){ if(!brand||!model)return; try{ const m=loadLastModelByBrand(); m[brand]=model; localStorage.setItem(LS_LAST_MODEL_BY_BRAND_KEY,JSON.stringify(m)); }catch(e){} }
+function loadLastModelByBrand(){ try{ return JSON.parse(localStorage.getItem(shopStorageKey(LS_LAST_MODEL_BY_BRAND_KEY))||'{}')||{}; }catch(e){return {};} }
+function saveLastModelForBrand(brand,model){ if(!brand||!model)return; try{ const m=loadLastModelByBrand(); m[brand]=model; localStorage.setItem(shopStorageKey(LS_LAST_MODEL_BY_BRAND_KEY),JSON.stringify(m)); }catch(e){} }
 function getLastModelForBrand(brand){ const m=loadLastModelByBrand(); return m[brand]||''; }
 
 function addCustomModelIfNew(brand, model){
@@ -2314,12 +2349,12 @@ function escapeHtml(v){
 
 function rateBookStatusOptions(){ return ['PTA','Non-PTA','JV','CPID','Patch','MDM','Bypass/MDM']; }
 function loadRateBook(){
-  try{ const raw=localStorage.getItem(LS_RATE_BOOK_KEY); rateBook=raw?JSON.parse(raw):[]; if(!Array.isArray(rateBook)) rateBook=[]; }
+  try{ const raw=localStorage.getItem(shopStorageKey(LS_RATE_BOOK_KEY)); rateBook=raw?JSON.parse(raw):[]; if(!Array.isArray(rateBook)) rateBook=[]; }
   catch(e){ rateBook=[]; }
 }
 function saveRateBook(){
   if(isAdminShopView()) return false;
-  try{ localStorage.setItem(LS_RATE_BOOK_KEY, JSON.stringify(rateBook)); }
+  try{ localStorage.setItem(shopStorageKey(LS_RATE_BOOK_KEY), JSON.stringify(rateBook)); }
   catch(e){ console.error('Rate Book storage error',e); return false; }
   schedulePush(); return true;
 }
@@ -2334,7 +2369,7 @@ function migrateInventoryToRateBook(){
   if(!Array.isArray(inventory)||!inventory.length) return;
   const existing={}; rateBook.forEach(function(r){existing[String(r.sourceInventoryId||'')+'|'+String(r.rate)+'|'+String(r.date)]=true;}); let changed=false;
   inventory.forEach(function(e){ if(e.buy==null||Number(e.buy)<=0||!e.brand||!e.model)return; const sig=String(e.id)+'|'+String(Number(e.buy))+'|'+String(e.buyDate||todayISO()); if(existing[sig])return; rateBook.push({id:'rb_m_'+String(e.id),sourceInventoryId:e.id,brand:e.brand,model:e.model,variant:e.storage||'',status:e.status||'',rate:Number(e.buy),quantity:Math.max(1,Number(e.quantity)||1),date:e.buyDate||todayISO(),seller:e.sellerName||'',notes:e.notes||'',source:'stock-migration'}); changed=true; });
-  if(changed){try{localStorage.setItem(LS_RATE_BOOK_KEY,JSON.stringify(rateBook));}catch(e){}}
+  if(changed){try{localStorage.setItem(shopStorageKey(LS_RATE_BOOK_KEY),JSON.stringify(rateBook));}catch(e){}}
 }
 function renderRateBook(){
   const list=document.getElementById('rateBookList'); if(!list)return;
@@ -2354,7 +2389,7 @@ function saveManualRate(){
 
 async function loadInventory(){
   try{
-    const raw = localStorage.getItem(LS_INVENTORY_KEY);
+    const raw = localStorage.getItem(shopStorageKey(LS_INVENTORY_KEY));
     // raw === null sirf tab hota hai jab ye key kabhi save hi nahi hui (bilkul
     // pehli dafa app khuli ho) — tab hi demo seed data dikhana theek hai.
     // Agar raw ek khali array "[]" hai (jaise Clear data ke baad), to usay
@@ -2412,10 +2447,10 @@ function tryCommitInventory(candidateInventory){
   }
   const json = JSON.stringify(candidateInventory);
   try{
-    localStorage.setItem(LS_INVENTORY_KEY, json);
+    localStorage.setItem(shopStorageKey(LS_INVENTORY_KEY), json);
     // Read back to be sure the browser actually persisted it (some browsers
     // silently ignore writes in private/incognito mode instead of throwing).
-    const check = localStorage.getItem(LS_INVENTORY_KEY);
+    const check = localStorage.getItem(shopStorageKey(LS_INVENTORY_KEY));
     if(check !== json){
       return false;
     }
@@ -2433,7 +2468,7 @@ function tryCommitInventory(candidateInventory){
 async function saveInventory(){
   if(isAdminShopView()) return;
   try{
-    localStorage.setItem(LS_INVENTORY_KEY, JSON.stringify(inventory));
+    localStorage.setItem(shopStorageKey(LS_INVENTORY_KEY), JSON.stringify(inventory));
   }catch(e){
     console.error('Storage error', e);
   }
@@ -2873,7 +2908,7 @@ function normalizeInventoryHistory(){
     if(!e.availableDate && !e.sold){ e.availableDate=dateOnly(e.buyDate)||todayISO(); changed=true; }
   });
   if(changed){
-    try{ localStorage.setItem(LS_INVENTORY_KEY,JSON.stringify(inventory)); }catch(err){}
+    try{ localStorage.setItem(shopStorageKey(LS_INVENTORY_KEY),JSON.stringify(inventory)); }catch(err){}
     schedulePush();
   }
 }
@@ -3055,11 +3090,11 @@ function renderStats(){
 function getStorageUsageInfo(){
   let chars = 0;
   try{
-    chars += (localStorage.getItem(LS_INVENTORY_KEY) || '').length;
-    chars += (localStorage.getItem(LS_CUSTOM_MODELS_KEY) || '').length;
-    chars += (localStorage.getItem(LS_CUSTOM_OPTIONS_KEY) || '').length;
-    chars += (localStorage.getItem(LS_CARD_DISPLAY_KEY) || '').length;
-    chars += (localStorage.getItem(LS_EXPENSES_KEY) || '').length;
+    chars += (localStorage.getItem(shopStorageKey(LS_INVENTORY_KEY)) || '').length;
+    chars += (localStorage.getItem(shopStorageKey(LS_CUSTOM_MODELS_KEY)) || '').length;
+    chars += (localStorage.getItem(shopStorageKey(LS_CUSTOM_OPTIONS_KEY)) || '').length;
+    chars += (localStorage.getItem(shopStorageKey(LS_CARD_DISPLAY_KEY)) || '').length;
+    chars += (localStorage.getItem(shopStorageKey(LS_EXPENSES_KEY)) || '').length;
   }catch(e){}
   const bytes = chars * 2;
   const assumedQuota = 5 * 1024 * 1024;
@@ -3259,6 +3294,7 @@ let cardDisplaySettings = {
     buyMarkupAmount: 2000   // when on, this fixed amount is added to any buy/purchase price shown on screen so the real cost stays private
   }
 };
+const INITIAL_CARD_DISPLAY_SETTINGS = JSON.parse(JSON.stringify(cardDisplaySettings));
 const LS_CARD_DISPLAY_KEY = 'mobileLedger_cardDisplaySettings';
 const LS_APP_LOCK_KEY = 'mobileLedger_appLock_v1';
 const LS_APP_LOCK_SESSION_KEY = 'mobileLedger_appLockSession_v1';
@@ -3293,7 +3329,7 @@ function enforceAppLock(){ if(!shouldRequireAppLock()){ hideAppLockOverlay(false
 
 function loadCardDisplaySettings(){
   try{
-    const raw = localStorage.getItem(LS_CARD_DISPLAY_KEY);
+    const raw = localStorage.getItem(shopStorageKey(LS_CARD_DISPLAY_KEY));
     if(raw){
       const parsed = JSON.parse(raw);
       if(parsed.showFields) Object.assign(cardDisplaySettings.showFields, parsed.showFields);
@@ -3314,13 +3350,13 @@ function loadCardDisplaySettings(){
 function saveCardDisplaySettings(){
   if(settingsDraftActive){ settingsDraftMarkDirty(); return; }
   if(isAdminShopView()) return;
-  let oldRaw=null; try{oldRaw=localStorage.getItem(LS_CARD_DISPLAY_KEY);}catch(e){}
+  let oldRaw=null; try{oldRaw=localStorage.getItem(shopStorageKey(LS_CARD_DISPLAY_KEY));}catch(e){}
   const newRaw=JSON.stringify(cardDisplaySettings);
   if(oldRaw!==newRaw){
     try{const st=appStateSnapshot();st.cardDisplaySettings=oldRaw||'{}';activityBeforeState=st;}catch(e){activityBeforeFromCurrentMutation();}
     pushUndoHistory('Card settings');
   }
-  try{ localStorage.setItem(LS_CARD_DISPLAY_KEY,newRaw); }catch(err){return;}
+  try{ localStorage.setItem(shopStorageKey(LS_CARD_DISPLAY_KEY),newRaw); }catch(err){return;}
   schedulePush();
   if(oldRaw!==newRaw) logActivity('settings','Card / WhatsApp settings update','');
 }
@@ -3665,7 +3701,7 @@ function returnSoldItem(soldId){
   sale.returnOf=original?String(original.id):String(soldId);
 
   try{
-    localStorage.setItem(LS_INVENTORY_KEY,JSON.stringify(inventory));
+    localStorage.setItem(shopStorageKey(LS_INVENTORY_KEY),JSON.stringify(inventory));
     schedulePush();
   }catch(err){
     console.error(err);
@@ -5160,18 +5196,19 @@ let redoStack=[];
 let historyApplying=false;
 const LS_UNDO_STACK='mobileLedger_undoStack_v15';
 const LS_REDO_STACK='mobileLedger_redoStack_v15';
+const LS_WA_TEMPLATE_KEY='mobileLedger_waTemplate';
 function appStateSnapshot(){
-  return {inventory:JSON.stringify(inventory),expenses:JSON.stringify(expenses),customOptionData:JSON.stringify(customOptionData),cardDisplaySettings:JSON.stringify(cardDisplaySettings),customModels:JSON.stringify(customModels||{}),rateBook:JSON.stringify(rateBook||[]),waTemplate:localStorage.getItem(LS_WA_TEMPLATE_KEY)||'',shopProfile:JSON.stringify(shopProfile||{}),uiScaleMode:uiScaleMode||'normal'};
+  return {inventory:JSON.stringify(inventory),expenses:JSON.stringify(expenses),customOptionData:JSON.stringify(customOptionData),cardDisplaySettings:JSON.stringify(cardDisplaySettings),customModels:JSON.stringify(customModels||{}),rateBook:JSON.stringify(rateBook||[]),waTemplate:localStorage.getItem(shopStorageKey(LS_WA_TEMPLATE_KEY))||'',shopProfile:JSON.stringify(shopProfile||{}),uiScaleMode:uiScaleMode||'normal'};
 }
 function loadPersistentHistory(){
-  try{undoStack=JSON.parse(localStorage.getItem(LS_UNDO_STACK)||'[]')||[];}catch(e){undoStack=[];}
-  try{redoStack=JSON.parse(localStorage.getItem(LS_REDO_STACK)||'[]')||[];}catch(e){redoStack=[];}
+  try{undoStack=JSON.parse(localStorage.getItem(shopStorageKey(LS_UNDO_STACK))||'[]')||[];}catch(e){undoStack=[];}
+  try{redoStack=JSON.parse(localStorage.getItem(shopStorageKey(LS_REDO_STACK))||'[]')||[];}catch(e){redoStack=[];}
   if(!Array.isArray(undoStack))undoStack=[]; if(!Array.isArray(redoStack))redoStack=[];
   updateHistoryButtons();
 }
 function persistHistory(){
-  try{localStorage.setItem(LS_UNDO_STACK,JSON.stringify(undoStack.slice(-60)));}catch(e){}
-  try{localStorage.setItem(LS_REDO_STACK,JSON.stringify(redoStack.slice(-60)));}catch(e){}
+  try{localStorage.setItem(shopStorageKey(LS_UNDO_STACK),JSON.stringify(undoStack.slice(-60)));}catch(e){}
+  try{localStorage.setItem(shopStorageKey(LS_REDO_STACK),JSON.stringify(redoStack.slice(-60)));}catch(e){}
 }
 function pushUndoState(label,state){
   if(historyApplying||!state)return;
@@ -5194,14 +5231,14 @@ function applyAppState(st){
     cardDisplaySettings=JSON.parse(st.cardDisplaySettings||'{}');
     customModels=JSON.parse(st.customModels||'{}');
     rateBook=JSON.parse(st.rateBook||'[]');
-    localStorage.setItem(LS_INVENTORY_KEY,JSON.stringify(inventory));
-    localStorage.setItem(LS_EXPENSES_KEY,JSON.stringify(expenses));
-    localStorage.setItem(LS_CUSTOM_OPTIONS_KEY,JSON.stringify(customOptionData));
-    localStorage.setItem(LS_CARD_DISPLAY_KEY,JSON.stringify(cardDisplaySettings));
-    localStorage.setItem(LS_CUSTOM_MODELS_KEY,JSON.stringify(customModels));
-    localStorage.setItem(LS_RATE_BOOK_KEY,JSON.stringify(rateBook));
-    localStorage.setItem(LS_WA_TEMPLATE_KEY,st.waTemplate||'');
-    if(st.shopProfile!==undefined){ try{ shopProfile=JSON.parse(st.shopProfile||'{}'); localStorage.setItem(LS_SHOP_PROFILE_KEY,JSON.stringify(shopProfile)); }catch(e){} }
+    localStorage.setItem(shopStorageKey(LS_INVENTORY_KEY),JSON.stringify(inventory));
+    localStorage.setItem(shopStorageKey(LS_EXPENSES_KEY),JSON.stringify(expenses));
+    localStorage.setItem(shopStorageKey(LS_CUSTOM_OPTIONS_KEY),JSON.stringify(customOptionData));
+    localStorage.setItem(shopStorageKey(LS_CARD_DISPLAY_KEY),JSON.stringify(cardDisplaySettings));
+    localStorage.setItem(shopStorageKey(LS_CUSTOM_MODELS_KEY),JSON.stringify(customModels));
+    localStorage.setItem(shopStorageKey(LS_RATE_BOOK_KEY),JSON.stringify(rateBook));
+    localStorage.setItem(shopStorageKey(LS_WA_TEMPLATE_KEY),st.waTemplate||'');
+    if(st.shopProfile!==undefined){ try{ shopProfile=JSON.parse(st.shopProfile||'{}'); localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY),JSON.stringify(shopProfile)); }catch(e){} }
     if(st.uiScaleMode!==undefined){ uiScaleMode=st.uiScaleMode||'normal'; applyUiScale(); renderUiScaleToggles(); }
     schedulePush(); render(); renderAllChips(); renderWaMessageEditor(); renderExpensesList();
     return true;
@@ -5291,8 +5328,11 @@ function openActivityStateDB(){
   });
   return activityDbPromise;
 }
+function activityStateStorageKey(id){ return (activeShopStorageId ? ('shop::'+activeShopStorageId+'::') : 'legacy::') + String(id); }
+function activityStateFallbackKey(id){ return 'mobileLedger_activityState_'+encodeURIComponent(activityStateStorageKey(id)); }
 function putActivityState(id,before,after){
-  const payload={id:id,before:before,after:after,savedAt:Date.now()};
+  const stateKey=activityStateStorageKey(id);
+  const payload={id:stateKey,activityId:id,shopId:activeShopStorageId||'',before:before,after:after,savedAt:Date.now()};
   return openActivityStateDB().then(function(db){return new Promise(function(resolve,reject){
     let tx;
     try{tx=db.transaction(ACTIVITY_STORE,'readwrite');}catch(e){reject(e);return;}
@@ -5303,13 +5343,15 @@ function putActivityState(id,before,after){
   });});
 }
 function getActivityState(id){
+  const stateKey=activityStateStorageKey(id);
+  const fallbackKey=activityStateFallbackKey(id);
   try{
-    const raw=localStorage.getItem('mobileLedger_activityState_'+id);
+    const raw=localStorage.getItem(fallbackKey);
     if(raw){const parsed=JSON.parse(raw);if(parsed&&parsed.before&&parsed.after)return Promise.resolve(parsed);}
   }catch(e){}
   return openActivityStateDB().then(function(db){return new Promise(function(resolve,reject){
     let tx;try{tx=db.transaction(ACTIVITY_STORE,'readonly');}catch(e){reject(e);return;}
-    const req=tx.objectStore(ACTIVITY_STORE).get(id);
+    const req=tx.objectStore(ACTIVITY_STORE).get(stateKey);
     req.onsuccess=function(){resolve(req.result||null);};
     req.onerror=function(){reject(req.error||new Error('Activity state read failed'));};
   });});
@@ -5324,21 +5366,21 @@ function logActivity(type,title,detail){
   const hasState=!!(before&&after);
   activityCurrentState=after||activityCurrentState;
   try{
-    const arr=JSON.parse(localStorage.getItem(LS_ACTIVITY_KEY)||'[]');
+    const arr=JSON.parse(localStorage.getItem(shopStorageKey(LS_ACTIVITY_KEY))||'[]');
     arr.unshift({id:id,time:new Date().toISOString(),type:type||'info',title:title||'',detail:detail||'',hasState:hasState});
-    localStorage.setItem(LS_ACTIVITY_KEY,JSON.stringify(arr.slice(0,300)));
+    localStorage.setItem(shopStorageKey(LS_ACTIVITY_KEY),JSON.stringify(arr.slice(0,300)));
   }catch(e){}
   if(before&&after){
     // Keep a small local fallback as well. This makes Activity History usable
     // even on browsers where IndexedDB is blocked or temporarily unavailable.
     try{
       const fallback=JSON.stringify({id:id,before:before,after:after,savedAt:Date.now()});
-      if(fallback.length<=2500000) localStorage.setItem('mobileLedger_activityState_'+id,fallback);
+      if(fallback.length<=2500000) localStorage.setItem(activityStateFallbackKey(id),fallback);
     }catch(e){}
     putActivityState(id,before,after).catch(function(err){console.error('Activity state save error',err);});
   }
 }
-function readActivityList(){try{return JSON.parse(localStorage.getItem(LS_ACTIVITY_KEY)||'[]');}catch(e){return [];}}
+function readActivityList(){try{return JSON.parse(localStorage.getItem(shopStorageKey(LS_ACTIVITY_KEY))||'[]');}catch(e){return [];}}
 let activityRestoreBusy=false;
 function activityRestore(index,direction){
   if(activityRestoreBusy)return;
@@ -5488,7 +5530,7 @@ function restoreData(file){
         alert('Restore save nahi ho saka — phone ki storage full hai. Purana data abhi bhi jaisa tha waisa hi hai, kuch nahi badla.');
         return;
       }
-      if(Array.isArray(parsed.rateBook)){ rateBook=parsed.rateBook; try{localStorage.setItem(LS_RATE_BOOK_KEY,JSON.stringify(rateBook));}catch(e){} }
+      if(Array.isArray(parsed.rateBook)){ rateBook=parsed.rateBook; try{localStorage.setItem(shopStorageKey(LS_RATE_BOOK_KEY),JSON.stringify(rateBook));}catch(e){} }
       else { loadRateBook(); migrateInventoryToRateBook(); }
       customModels = parsed.customModels && typeof parsed.customModels === 'object' ? parsed.customModels : {};
       saveCustomModels();
@@ -6801,10 +6843,10 @@ function settingsDraftSave(){
   if(isAdminShopView()){ alert('Admin Shop view read-only hai.'); return; }
   const before=settingsDraftBaseline.app;
   try{
-    localStorage.setItem(LS_CUSTOM_OPTIONS_KEY,JSON.stringify(customOptionData));
-    localStorage.setItem(LS_CARD_DISPLAY_KEY,JSON.stringify(cardDisplaySettings));
-    localStorage.setItem(LS_WA_TEMPLATE_KEY,getWaMessageTemplate());
-    localStorage.setItem(LS_SHOP_PROFILE_KEY,JSON.stringify(shopProfile||{}));
+    localStorage.setItem(shopStorageKey(LS_CUSTOM_OPTIONS_KEY),JSON.stringify(customOptionData));
+    localStorage.setItem(shopStorageKey(LS_CARD_DISPLAY_KEY),JSON.stringify(cardDisplaySettings));
+    localStorage.setItem(shopStorageKey(LS_WA_TEMPLATE_KEY),getWaMessageTemplate());
+    localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY),JSON.stringify(shopProfile||{}));
     localStorage.setItem(LS_UI_SCALE_KEY,uiScaleMode||'normal');
     schedulePush();
     pushUndoState('Settings change',before);
@@ -6899,7 +6941,7 @@ document.getElementById('settingsSaveShopProfile').onclick=function(){
   if(!shopName){ alert('Shop Name likhein.'); return; }
   shopProfile={shopName:shopName,ownerName:document.getElementById('settings-ownername').value.trim(),shopPhone:document.getElementById('settings-shopphone').value.trim()};
   if(settingsDraftActive){ settingsDraftMarkDirty(); updateAccountUI(); renderSettingsHomeSummaries(); return; }
-  try{localStorage.setItem(LS_SHOP_PROFILE_KEY,JSON.stringify(shopProfile));}catch(e){}
+  try{localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY),JSON.stringify(shopProfile));}catch(e){}
   schedulePush(); updateAccountUI(); renderSettingsHomeSummaries(); showToast('✓ Shop profile save ho gaya.');
 };
 
@@ -7107,7 +7149,7 @@ document.getElementById('btnClearData').onclick = function(){
   if(!ok){ alert('Clear nahi ho saka — storage mein masla hua, dobara try karein.'); return; }
   tryCommitExpenses([]);
   rateBook=[];
-  try{localStorage.setItem(LS_RATE_BOOK_KEY,'[]');}catch(e){}
+  try{localStorage.setItem(shopStorageKey(LS_RATE_BOOK_KEY),'[]');}catch(e){}
   schedulePush();
   customModels = {};
   saveCustomModels();
@@ -7293,8 +7335,8 @@ const LS_LOCAL_VERSION_KEY = 'mobileLedger_localVersion';
 const LS_LAST_PUSHED_VERSION_KEY = 'mobileLedger_lastPushedVersion';
 let localVersion = 0;
 let lastPushedVersion = 0;
-try{ localVersion = Number(localStorage.getItem(LS_LOCAL_VERSION_KEY)||0) || 0; }catch(e){}
-try{ lastPushedVersion = Number(localStorage.getItem(LS_LAST_PUSHED_VERSION_KEY)||0) || 0; }catch(e){}
+try{ localVersion = Number(localStorage.getItem(shopStorageKey(LS_LOCAL_VERSION_KEY))||0) || 0; }catch(e){}
+try{ lastPushedVersion = Number(localStorage.getItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY))||0) || 0; }catch(e){}
 function hasPendingLocalChanges(){ return localVersion > lastPushedVersion; }
 let shopProfile = {shopName:"", ownerName:""};
 // Multi-user foundation: every account has a role + a shopId (the Firestore
@@ -7334,7 +7376,7 @@ const LS_SHOP_PROFILE_KEY = 'mobileLedger_shopProfile';
 // reason to expect the same person is still logged in here.
 const LS_WAS_LOGGED_IN_KEY = 'mobileLedger_wasLoggedIn';
 try{
-  const rawProfile = localStorage.getItem(LS_SHOP_PROFILE_KEY);
+  const rawProfile = localStorage.getItem(shopStorageKey(LS_SHOP_PROFILE_KEY));
   if(rawProfile) shopProfile = Object.assign(shopProfile, JSON.parse(rawProfile));
 }catch(e){}
 
@@ -7398,6 +7440,71 @@ function ensureAccessTemplatesLoaded(){
     if(snap.exists){ accessTemplates=Object.assign({},DEFAULT_ACCESS_TEMPLATES,snap.data()||{}); }
   }).catch(function(e){ console.warn('Access templates load failed',e); });
 }
+function activateShopStorage(shopId){
+  const next=String(shopId||'').trim();
+  if(!next) return;
+  let previous='';
+  try{ previous=localStorage.getItem(LS_ACTIVE_SHOP_STORAGE_KEY)||''; }catch(e){}
+  if(activeShopStorageId===next){
+    return;
+  }
+
+  shopStorageSwitching=true;
+  try{
+    // First ever login on this browser: migrate the old unscoped business
+    // data once into this shop's namespace. Future account switches never
+    // reuse that legacy data, which closes the cross-shop leakage path.
+    if(!previous){
+      SHOP_SCOPED_STORAGE_NAMES.forEach(function(rawKey){
+        try{
+          const legacy=localStorage.getItem(rawKey);
+          const scoped=shopScopedStorageKeyForId(rawKey,next);
+          if(legacy!==null && localStorage.getItem(scoped)===null) localStorage.setItem(scoped,legacy);
+        }catch(e){}
+      });
+    }
+
+    activeShopStorageId=next;
+    try{ localStorage.setItem(LS_ACTIVE_SHOP_STORAGE_KEY,next); }catch(e){}
+
+    // Never carry another shop's in-memory business state across an account
+    // switch. Device-only preferences (UI scale, app lock, etc.) are left alone.
+    inventory=[];
+    expenses=[];
+    customModels={};
+    customOptionData={extra:{},hidden:{},globalCustomFields:[]};
+    cardDisplaySettings=JSON.parse(JSON.stringify(INITIAL_CARD_DISPLAY_SETTINGS));
+    rateBook=[];
+    shopProfile={shopName:'',ownerName:''};
+    localVersion=0;
+    lastPushedVersion=0;
+    undoStack=[];
+    redoStack=[];
+    activeShopStorageId=next;
+
+    loadCustomOptionData();
+    loadCustomModels();
+    loadExpenses();
+    loadRateBook();
+    loadCardDisplaySettings();
+    try{
+      const rawProfile=localStorage.getItem(shopStorageKey(LS_SHOP_PROFILE_KEY));
+      if(rawProfile) shopProfile=Object.assign({shopName:'',ownerName:''},JSON.parse(rawProfile));
+    }catch(e){}
+    try{ localVersion=Number(localStorage.getItem(shopStorageKey(LS_LOCAL_VERSION_KEY))||0)||0; }catch(e){ localVersion=0; }
+    try{ lastPushedVersion=Number(localStorage.getItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY))||0)||0; }catch(e){ lastPushedVersion=0; }
+
+    loadInventory();
+    loadPersistentHistory();
+    try{ activityCurrentState=appStateSnapshot(); }catch(e){ activityCurrentState=null; }
+    updateHistoryButtons();
+    render();
+    updateAccountUI();
+  }finally{
+    shopStorageSwitching=false;
+  }
+}
+
 function resolveUserRoleAndShop(user){
   const admin=isOwnerAdminUser(user);
   return fbDb.collection('users').doc(user.uid).get().then(function(snap){
@@ -7679,24 +7786,16 @@ function initFirebaseSync(){
         }
       }).catch(function(err){ console.warn('Google redirect result', err); });
     }
-    if(wasLoggedInBefore){
-      // This device has logged in successfully before — Firebase's own
-      // session persistence means we're almost certainly still logged in,
-      // so open straight into the app with whatever's already cached
-      // locally instead of blocking on a network round-trip every single
-      // time the app is opened. onAuthStateChanged below resolves quietly
-      // in the background and only interrupts if it turns out we really
-      // are logged out (e.g. the person signed out elsewhere).
-      setAuthGateView('unlocked');
-    } else {
-      setAuthGateView('checking');
-      // Safety net: never let the checking screen hang indefinitely (e.g.
-      // a slow/blocked network on first open) — fall through to the login
-      // screen so the person isn't stuck waiting forever.
-      var checkingTimeout = setTimeout(function(){
-        if(!fbUser) setAuthGateView('locked');
-      }, 6000);
-    }
+    // Always resolve the signed-in shop context before revealing the main UI.
+    // This prevents a previously cached shop's local data from flashing on
+    // screen when a different account is about to be restored or signed in.
+    setAuthGateView('checking');
+    // Safety net: never let the checking screen hang indefinitely (e.g.
+    // a slow/blocked network on first open) — fall through to the login
+    // screen so the person isn't stuck waiting forever.
+    var checkingTimeout = setTimeout(function(){
+      if(!fbUser) setAuthGateView('locked');
+    }, 6000);
     fbAuth.onAuthStateChanged(function(user){
       clearTimeout(checkingTimeout);
       fbUser = user;
@@ -7704,6 +7803,7 @@ function initFirebaseSync(){
       if(user){
         try{ localStorage.setItem(LS_WAS_LOGGED_IN_KEY, '1'); }catch(e){}
         resolveUserRoleAndShop(user).then(function(){
+          activateShopStorage(userShopId);
           updateAccountUI();
           if(accessStatusAllowsUse()){
             setAuthGateView('unlocked');
@@ -7727,6 +7827,7 @@ function initFirebaseSync(){
         try{ localStorage.removeItem(LS_WAS_LOGGED_IN_KEY); }catch(e){}
         userRole = 'owner';
         userShopId = null;
+        activeShopStorageId = '';
         userAccessStatus = 'active';
         userAccessReason = '';
         updateAccountUI();
@@ -7954,7 +8055,7 @@ function buildCloudPayload(){
 }
 
 function attemptPush(){
-  if(!fbUser || !userShopId || applyingRemoteUpdate) return;
+  if(!fbUser || !userShopId || applyingRemoteUpdate || shopStorageSwitching || (userRole!=='admin' && userAccessStatus!=='active')) return;
   clearTimeout(pushDebounceTimer);
   setAccountSyncStatus('save ho raha hai…', 'saving');
   pushDebounceTimer = setTimeout(function(){
@@ -7963,7 +8064,7 @@ function attemptPush(){
       .then(function(){
         if(versionAtSchedule > lastPushedVersion){
           lastPushedVersion = versionAtSchedule;
-          try{ localStorage.setItem(LS_LAST_PUSHED_VERSION_KEY, String(lastPushedVersion)); }catch(e){}
+          try{ localStorage.setItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY), String(lastPushedVersion)); }catch(e){}
         }
         setAccountSyncStatus('sab devices par sync ho gaya ✓', 'ok');
       })
@@ -7972,13 +8073,13 @@ function attemptPush(){
 }
 
 function schedulePush(){
-  if(isAdminShopView()) return;
+  if(isAdminShopView() || shopStorageSwitching) return;
   // Mark that local data now has a change the cloud hasn't confirmed yet.
   // Persisted immediately, and done unconditionally (even if we can't reach
   // the cloud right now, or login hasn't finished resolving) so this device
   // always knows it's "ahead" until a push actually confirms otherwise.
   localVersion++;
-  try{ localStorage.setItem(LS_LOCAL_VERSION_KEY, String(localVersion)); }catch(e){}
+  try{ localStorage.setItem(shopStorageKey(LS_LOCAL_VERSION_KEY), String(localVersion)); }catch(e){}
   attemptPush();
 }
 // If the connection drops mid-save, the entry is already safe on the phone
@@ -7990,6 +8091,9 @@ window.addEventListener('online', function(){
 });
 
 function startCloudSync(uid){
+  const syncShopId=String(userShopId||'').trim();
+  if(!syncShopId) return;
+  if(uid && String(uid)!==syncShopId){ console.warn('Cloud sync requested for a different shop id; using resolved userShopId only.'); }
   if(userRole==='admin'){
     // Admin must never attach the normal owner listener or push data into an
     // admin shop document. Admin reads selected shop documents explicitly.
@@ -7997,7 +8101,7 @@ function startCloudSync(uid){
     return;
   }
   setAccountSyncStatus('data la rahe hain…', 'saving');
-  cloudUnsub = fbDb.collection('shops').doc(uid).onSnapshot(function(snap){
+  cloudUnsub = fbDb.collection('shops').doc(syncShopId).onSnapshot(function(snap){
     if(!snap.exists){
       // Brand-new account: seed the cloud with whatever's already on this device.
       setAccountSyncStatus('nayi account — is device ka data upload ho raha hai', 'saving');
@@ -8022,31 +8126,31 @@ function startCloudSync(uid){
       const localPhotosById = {};
       inventory.forEach(function(e){ if(e.photos && e.photos.length) localPhotosById[e.id] = e.photos; });
       inventory = data.inventory.map(function(e){ const c = Object.assign({}, e); c.photos = localPhotosById[e.id] || []; return c; });
-      try{ localStorage.setItem(LS_INVENTORY_KEY, JSON.stringify(inventory)); }catch(err){}
+      try{ localStorage.setItem(shopStorageKey(LS_INVENTORY_KEY), JSON.stringify(inventory)); }catch(err){}
     }
     if(Array.isArray(data.expenses)){
       expenses = data.expenses;
-      try{ localStorage.setItem(LS_EXPENSES_KEY, JSON.stringify(expenses)); }catch(err){}
+      try{ localStorage.setItem(shopStorageKey(LS_EXPENSES_KEY), JSON.stringify(expenses)); }catch(err){}
     }
     if(data.customModels){
       customModels = data.customModels;
-      try{ localStorage.setItem(LS_CUSTOM_MODELS_KEY, JSON.stringify(customModels)); }catch(err){}
+      try{ localStorage.setItem(shopStorageKey(LS_CUSTOM_MODELS_KEY), JSON.stringify(customModels)); }catch(err){}
     }
     if(data.customOptionData){
       customOptionData = data.customOptionData;
-      try{ localStorage.setItem(LS_CUSTOM_OPTIONS_KEY, JSON.stringify(customOptionData)); }catch(err){}
+      try{ localStorage.setItem(shopStorageKey(LS_CUSTOM_OPTIONS_KEY), JSON.stringify(customOptionData)); }catch(err){}
     }
     if(data.cardDisplaySettings){
       Object.assign(cardDisplaySettings, data.cardDisplaySettings);
-      try{ localStorage.setItem(LS_CARD_DISPLAY_KEY, JSON.stringify(cardDisplaySettings)); }catch(err){}
+      try{ localStorage.setItem(shopStorageKey(LS_CARD_DISPLAY_KEY), JSON.stringify(cardDisplaySettings)); }catch(err){}
     }
     if(Array.isArray(data.rateBook)){
       rateBook=data.rateBook;
-      try{localStorage.setItem(LS_RATE_BOOK_KEY,JSON.stringify(rateBook));}catch(err){}
+      try{localStorage.setItem(shopStorageKey(LS_RATE_BOOK_KEY),JSON.stringify(rateBook));}catch(err){}
     }
     if(data.shopProfile){
       shopProfile = Object.assign({shopName:"", ownerName:""}, data.shopProfile);
-      try{ localStorage.setItem(LS_SHOP_PROFILE_KEY, JSON.stringify(shopProfile)); }catch(err){}
+      try{ localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY), JSON.stringify(shopProfile)); }catch(err){}
     }
     applyingRemoteUpdate = false;
     render();
@@ -8141,7 +8245,7 @@ document.getElementById('btnAccountSignup').onclick = function(){
   fbAuth.createUserWithEmailAndPassword(email, pass)
     .then(function(){
       shopProfile = {shopName:shopName, ownerName:ownerName, shopPhone:''};
-      try{ localStorage.setItem(LS_SHOP_PROFILE_KEY, JSON.stringify(shopProfile)); }catch(e){}
+      try{ localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY), JSON.stringify(shopProfile)); }catch(e){}
       const u=fbAuth.currentUser; if(!u) return;
       const payload={role:'shop',shopId:u.uid,accessStatus:'pending',accessReason:'',email:u.email||email,shopName:shopName,ownerName:ownerName,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
       return fbDb.collection('users').doc(u.uid).set(payload,{merge:true}).then(function(){
@@ -8187,7 +8291,7 @@ document.getElementById('btnSaveShopProfile').onclick = function(){
     ownerName: document.getElementById('edit-ownername').value.trim(),
     shopPhone: document.getElementById('edit-shopphone').value.trim()
   };
-  try{ localStorage.setItem(LS_SHOP_PROFILE_KEY, JSON.stringify(shopProfile)); }catch(e){}
+  try{ localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY), JSON.stringify(shopProfile)); }catch(e){}
   schedulePush();
   updateAccountUI();
   document.getElementById('editShopProfileBlock').style.display = 'none';
@@ -8250,7 +8354,7 @@ document.getElementById('btnCompleteShopSetup').onclick=function(){
   const err=document.getElementById('shopSetupError');
   if(!shopName){ err.textContent='Shop Name zaroor likhein.'; err.style.display='block'; return; }
   shopProfile={shopName:shopName,ownerName:ownerName,shopPhone:shopPhone};
-  try{ localStorage.setItem(LS_SHOP_PROFILE_KEY, JSON.stringify(shopProfile)); }catch(e){}
+  try{ localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY), JSON.stringify(shopProfile)); }catch(e){}
   if(fbDb && fbUser && userRole!=='admin'){
     fbDb.collection('users').doc(fbUser.uid).set({shopName:shopName,ownerName:ownerName,shopPhone:shopPhone,accessStatus:userAccessStatus||'pending',updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).then(function(){
       return fbDb.collection('shopRequests').doc(fbUser.uid).set({uid:fbUser.uid,email:fbUser.email||'',shopName:shopName,ownerName:ownerName,status:userAccessStatus||'pending',submittedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
