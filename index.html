@@ -4587,9 +4587,10 @@ function renderChipGroup(containerId, options, groupKey, extraClass){
         document.getElementById('brandOtherWrap').style.display = (c.dataset.val==='Other') ? 'block' : 'none';
         updateModelField(c.dataset.val);
         loadGlobalModelsForBrand(c.dataset.val);
-        const remembered=getLastModelForBrand(c.dataset.val);
-        const modelInput=document.getElementById('f-model-other');
-        if(modelInput && !modelInput.value.trim() && remembered){ modelInput.value=remembered; renderModelSuggestions(remembered); }
+        // Brand select must never auto-fill a model in a new entry.
+        // Show suggestions only; keep the model input completely blank until
+        // the user types something or explicitly taps a suggestion.
+        renderModelSuggestions('');
         const platform=getEntryPlatform(c.dataset.val);
         if(formState.__platform!==platform) applyPlatformDefaultsToForm(platform);
         applyEntryLayoutToDOM(platform);
