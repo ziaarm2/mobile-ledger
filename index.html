@@ -1851,11 +1851,21 @@ function fieldTargetsPlatform(field, platform){ const targets=Array.isArray(fiel
 function fieldIsHiddenOnPlatform(platform, fieldKey){ const p=ensurePlatformOptionData(platform); return !!(p.hiddenFields && p.hiddenFields[fieldKey]); }
 function ensureHiddenFields(p){ if(!p.hiddenFields) p.hiddenFields={}; return p.hiddenFields; }
 
+function normalizePlatformEntryLayoutForRuntime(platform){
+  if(platform!=='iphone') return;
+  const p=ensurePlatformOptionData(platform);
+  p.entryLayout.main=(p.entryLayout.main||[]).filter(function(k){return k!==RAM_STORAGE_FIELD_KEY;});
+  p.entryLayout.more=(p.entryLayout.more||[]).filter(function(k){return k!==RAM_STORAGE_FIELD_KEY;});
+  p.entryLayout.hidden=(p.entryLayout.hidden||[]).filter(function(k){return k!==RAM_STORAGE_FIELD_KEY;});
+}
+
 function getPlatformCustomFields(platform){
   ensurePlatformOptionData(platform);
   const all=customOptionData.globalCustomFields || [];
   return all.filter(function(f){
     const targets=Array.isArray(f.platforms) && f.platforms.length ? f.platforms : ['android','iphone'];
+    // Apple/iPhone uses the normal Storage field only; RAM/Storage is Android-only.
+    if(platform==='iphone' && f.key===RAM_STORAGE_FIELD_KEY) return false;
     return targets.indexOf(platform)!==-1 && !fieldIsHiddenOnPlatform(platform,f.key);
   });
 }
@@ -4933,8 +4943,9 @@ function renderCustomEntryFields(){
     }
     const chipHtml=opts.map(function(o){
       const selected=formState.customFields[f.key]===o;
-      const selectedMark='';
-      return '<div class="chip-opt '+(selected?'on':'')+(isRamStorage?' ram-storage-chip':'')+'" data-val="'+escapeHtml(o)+'">'+escapeHtml(o)+selectedMark+'</div>';
+      const selectedMark=selected ? ' ✓' : '';
+      const selectedStyle=selected ? ' style="background:var(--accent);border-color:var(--accent);color:var(--accent-text);font-weight:800;box-shadow:0 0 0 2px rgba(255,255,255,.45) inset,0 1px 5px rgba(0,0,0,.28);"' : '';
+      return '<div class="chip-opt '+(selected?'on':'')+(isRamStorage?' ram-storage-chip':'')+'"'+selectedStyle+' data-val="'+escapeHtml(o)+'">'+escapeHtml(o)+selectedMark+'</div>';
     }).join('');
     const manualHtml=isRamStorage ?
       '<div class="settings-note" style="margin:7px 0 6px;font-size:11px;">Manual variant</div>'+ 
