@@ -1770,19 +1770,18 @@ function loadCustomOptionData(){
   // the canonical system field exists. This prevents a deleted custom duplicate
   // from coming back after refresh.
   const ramLabel=RAM_STORAGE_FIELD_LABEL.toLowerCase();
-  let canonical=null;
-  (customOptionData.globalCustomFields||[]).forEach(function(f){
-    if(!f) return;
-    const sameLabel=String(f.label||'').trim().toLowerCase()===ramLabel;
-    if(sameLabel && !canonical){ canonical=f; }
+  // Never promote an old user-created RAM/Storage field into the system field.
+  // Remove every legacy/custom duplicate by label, then create only the canonical
+  // built-in field. This makes the user's old custom field genuinely deletable.
+  const hadRamDuplicate=(customOptionData.globalCustomFields||[]).some(function(f){
+    return f && String(f.label||'').trim().toLowerCase()===ramLabel && f.key!==RAM_STORAGE_FIELD_KEY;
   });
   customOptionData.globalCustomFields=(customOptionData.globalCustomFields||[]).filter(function(f){
     if(!f) return false;
-    return String(f.label||'').trim().toLowerCase()!==ramLabel;
+    return f.key===RAM_STORAGE_FIELD_KEY || String(f.label||'').trim().toLowerCase()!==ramLabel;
   });
-  if(canonical){ canonical.key=RAM_STORAGE_FIELD_KEY; canonical.label=RAM_STORAGE_FIELD_LABEL; canonical.ramStorageSpecial=true; customOptionData.globalCustomFields.unshift(canonical); }
   const ramChanged=ensureRamStorageFieldDefinition();
-  if(ramChanged || canonical){
+  if(ramChanged || hadRamDuplicate){
     try{ localStorage.setItem(shopStorageKey(LS_CUSTOM_OPTIONS_KEY),JSON.stringify(customOptionData)); }catch(e){}
   }
 }
