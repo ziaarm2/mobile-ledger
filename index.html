@@ -996,11 +996,25 @@
     <div class="report-list" id="rp-expense-list"></div>
     <div class="sheet-actions">
       <button class="btn-cancel" id="btnReportsClose">Band karein</button>
+      <button class="btn-secondary" id="btnCustomerTimeAnalytics">🕒 Customer Time</button>
       <button class="btn-save" id="btnReportsPdf">PDF banayein</button>
     </div>
   </div>
 </div>
 
+<div class="overlay hidden" id="customerTimeAnalyticsOverlay">
+  <div class="sheet" style="max-height:92vh;overflow:auto;">
+    <div class="sheet-head"><h3>🕒 Customer Time Analytics</h3><button class="icon-btn" id="btnCustomerTimeAnalyticsClose">×</button></div>
+    <div class="settings-note" style="margin-bottom:10px;">Har hour mein kitne customers ne mobile <b>becha</b> aur kitne ne <b>kharida</b>. Entry ke actual saved time ko use kiya jata hai.</div>
+    <div class="two-col">
+      <div class="field"><label>Se</label><input type="date" id="cta-from"></div>
+      <div class="field"><label>Tak</label><input type="date" id="cta-to"></div>
+    </div>
+    <div id="customerTimeSummary" class="stat-grid-2" style="margin-top:10px;"></div>
+    <div class="report-list" id="customerTimeHourlyList" style="margin-top:10px;"></div>
+    <div class="settings-note" id="customerTimeMissingNote" style="margin-top:10px;"></div>
+  </div>
+</div>
 <div class="overlay hidden" id="expensesOverlay">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -5186,7 +5200,7 @@ function saveEntry(){
       });
     }
 
-    const mainEntry = Object.assign({id:'e_'+Date.now(), sold:false, sell:null, customer:'', customerNumber:'', payment:''}, data);
+    const mainEntry = Object.assign({id:'e_'+Date.now(), sold:false, sell:null, customer:'', customerNumber:'', payment:'', purchaseAt:new Date().toISOString()}, data);
     candidate = [mainEntry].concat(candidate);
     extras.forEach(function(ep, i){
       const extraData = Object.assign({}, data, {
@@ -5212,7 +5226,7 @@ function saveEntry(){
         truetone: ep.truetone || data.truetone,
         notes: ep.notes !== '' ? ep.notes : data.notes
       });
-      const extraEntry = Object.assign({id:'e_'+Date.now()+'_'+i+'_'+Math.random().toString(36).slice(2,6), sold:false, sell:null, customer:'', customerNumber:'', payment:''}, extraData);
+      const extraEntry = Object.assign({id:'e_'+Date.now()+'_'+i+'_'+Math.random().toString(36).slice(2,6), sold:false, sell:null, customer:'', customerNumber:'', payment:'', purchaseAt:new Date().toISOString()}, extraData);
       candidate = [extraEntry].concat(candidate);
     });
   }
@@ -5326,6 +5340,7 @@ function confirmSell(){
     customerNumber: document.getElementById('s-customer-number').value.trim(),
     payment: document.getElementById('s-payment').value.trim(),
     saleDate: document.getElementById('s-saledate').value || todayISO(),
+    saleAt: new Date().toISOString(),
     lastUpdated: todayStr()
   });
   const updatedStockItem = Object.assign({}, e, {quantity: e.quantity - qty, lastUpdated: todayStr()});
@@ -5908,6 +5923,60 @@ function getFilteredReportExpenses(){
   const customerQ = document.getElementById('rp-customer').value.trim().toLowerCase();
   return getAllReportExpenses(from,to,brand,customerQ);
 }
+
+function entryCreatedAt(e){
+  if(!e) return null;
+  if(e.purchaseAt) return e.purchaseAt;
+  const m=String(e.id||'').match(/^e_(\d+)/);
+  return m ? new Date(Number(m[1])).toISOString() : null;
+}
+function customerHourFromISO(value){
+  if(!value) return null;
+  const d=new Date(value);
+  return isNaN(d.getTime()) ? null : d.getHours();
+}
+function customerDateFromISO(value){
+  if(!value) return '';
+  const d=new Date(value);
+  if(isNaN(d.getTime())) return '';
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function renderCustomerTimeAnalytics(){
+  const from=document.getElementById('cta-from').value;
+  const to=document.getElementById('cta-to').value;
+  const rows=Array.from({length:24},function(_,h){return {hour:h,buy:0,sell:0};});
+  let buyTotal=0,sellTotal=0,unknownSell=0;
+  inventory.forEach(function(e){
+    if(isReturnedSale(e)) return;
+    const p=entryCreatedAt(e), pd=customerDateFromISO(p);
+    if(p && (!from||pd>=from) && (!to||pd<=to)){ rows[customerHourFromISO(p)].buy++; buyTotal++; }
+    if(e.sold){
+      const sa=e.saleAt, sd=customerDateFromISO(sa);
+      if(sa && (!from||sd>=from) && (!to||sd<=to)){ rows[customerHourFromISO(sa)].sell++; sellTotal++; }
+      else if(!sa){ unknownSell++; }
+    }
+  });
+  document.getElementById('customerTimeSummary').innerHTML=
+    '<div class="stat-card"><div class="stat-label">📥 Mobile bechne wale</div><div class="stat-value">'+buyTotal+'</div></div>'+
+    '<div class="stat-card"><div class="stat-label">📤 Mobile khareedne wale</div><div class="stat-value">'+sellTotal+'</div></div>';
+  const active=rows.filter(function(r){return r.buy||r.sell;});
+  document.getElementById('customerTimeHourlyList').innerHTML=active.length?active.map(function(r){
+    const label=String(r.hour).padStart(2,'0')+':00 – '+String((r.hour+1)%24).padStart(2,'0')+':00';
+    return '<div class="report-row"><div class="rr-top"><span>'+label+'</span><span><b style="color:var(--pta);">'+r.buy+'</b> beche &nbsp; <b style="color:#7db7ff;">'+r.sell+'</b> khareede</span></div></div>';
+  }).join(''):'<div class="empty">Is date range mein koi timed customer activity nahi mili.</div>';
+  document.getElementById('customerTimeMissingNote').textContent=unknownSell?'⚠️ '+unknownSell+' purani sold entries mein exact sale time save nahi tha, isliye woh hourly sale count mein include nahi hui. Nayi sales ka exact time automatically save hoga.':'';
+}
+document.getElementById('btnCustomerTimeAnalytics').onclick=function(){
+  document.getElementById('cta-from').value=document.getElementById('rp-from').value||'';
+  document.getElementById('cta-to').value=document.getElementById('rp-to').value||'';
+  renderCustomerTimeAnalytics();
+  document.getElementById('customerTimeAnalyticsOverlay').classList.remove('hidden');
+  pushOverlayHistory('customerTimeAnalyticsOverlay');
+};
+document.getElementById('btnCustomerTimeAnalyticsClose').onclick=function(){requestOverlayClose();};
+document.getElementById('customerTimeAnalyticsOverlay').onclick=function(e){if(e.target.id==='customerTimeAnalyticsOverlay')requestOverlayClose();};
+document.getElementById('cta-from').onchange=renderCustomerTimeAnalytics;
+document.getElementById('cta-to').onchange=renderCustomerTimeAnalytics;
 
 function renderReports(){
   renderReportBrandOptions();
