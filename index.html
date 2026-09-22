@@ -1,4 +1,4 @@
-l<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ur-Latn">
 <head>
 <meta charset="UTF-8">
@@ -146,7 +146,7 @@ l<!DOCTYPE html>
   .chip-row{display:flex;gap:6px;flex-wrap:wrap;}
   .chip-opt{padding:8px 13px;border-radius:9px;background:var(--surface-2);border:1px solid var(--border);font-size:13px;color:var(--text-dim);}
   .chip-opt.on{background:var(--accent);border-color:var(--accent);color:var(--accent-text);font-weight:600;}
-  .ram-storage-chip.on{box-shadow:0 0 0 2px rgba(255,255,255,.18) inset,0 1px 4px rgba(0,0,0,.22);font-weight:800;}
+  .ram-storage-chip.on{box-shadow:0 0 0 2px rgba(255,255,255,.45) inset,0 1px 5px rgba(0,0,0,.28);font-weight:800;position:relative;} .ram-storage-chip.on::after{content:"✓";margin-left:6px;font-weight:900;}
   .chip-opt.status-opt{flex:1 1 30%;text-align:center;font-size:12.5px;padding:10px 4px;}
   .field{margin-bottom:10px;}
   .field label{display:block;font-size:11.5px;color:var(--text-dim);margin-bottom:4px;}
@@ -1765,12 +1765,24 @@ function loadCustomOptionData(){
   });
   // RAM/Storage is now a built-in system field. Remove any older manually-created
   // field with the same label so deleting the old duplicate cannot make it return.
-  customOptionData.globalCustomFields = (customOptionData.globalCustomFields||[]).filter(function(f){
-    if(!f) return false;
-    const sameLabel=String(f.label||'').trim().toLowerCase()===RAM_STORAGE_FIELD_LABEL.toLowerCase();
-    return !sameLabel || f.key===RAM_STORAGE_FIELD_KEY;
+  // RAM/Storage is a single built-in system field. Remove every legacy/custom
+  // duplicate (including old custom keys with the same label) before ensuring
+  // the canonical system field exists. This prevents a deleted custom duplicate
+  // from coming back after refresh.
+  const ramLabel=RAM_STORAGE_FIELD_LABEL.toLowerCase();
+  let canonical=null;
+  (customOptionData.globalCustomFields||[]).forEach(function(f){
+    if(!f) return;
+    const sameLabel=String(f.label||'').trim().toLowerCase()===ramLabel;
+    if(sameLabel && !canonical){ canonical=f; }
   });
-  if(ensureRamStorageFieldDefinition()){
+  customOptionData.globalCustomFields=(customOptionData.globalCustomFields||[]).filter(function(f){
+    if(!f) return false;
+    return String(f.label||'').trim().toLowerCase()!==ramLabel;
+  });
+  if(canonical){ canonical.key=RAM_STORAGE_FIELD_KEY; canonical.label=RAM_STORAGE_FIELD_LABEL; canonical.ramStorageSpecial=true; customOptionData.globalCustomFields.unshift(canonical); }
+  const ramChanged=ensureRamStorageFieldDefinition();
+  if(ramChanged || canonical){
     try{ localStorage.setItem(shopStorageKey(LS_CUSTOM_OPTIONS_KEY),JSON.stringify(customOptionData)); }catch(e){}
   }
 }
@@ -1788,7 +1800,8 @@ function ensureRamStorageFieldDefinition(){
       options:RAM_STORAGE_OPTIONS.slice(),
       optionsByPlatform:{android:RAM_STORAGE_OPTIONS.slice(),iphone:RAM_STORAGE_OPTIONS.slice()},
       platforms:['android','iphone'],
-      ramStorageSpecial:true
+      ramStorageSpecial:true,
+      systemBuiltIn:true
     };
     customOptionData.globalCustomFields.push(field);
     changed=true;
@@ -1803,6 +1816,7 @@ function ensureRamStorageFieldDefinition(){
     field.options=Array.from(new Set([].concat(field.options||[],field.optionsByPlatform.android||[],field.optionsByPlatform.iphone||[],RAM_STORAGE_OPTIONS)));
     if(!Array.isArray(field.platforms) || field.platforms.length!==2 || field.platforms.indexOf('android')===-1 || field.platforms.indexOf('iphone')===-1){ field.platforms=['android','iphone']; changed=true; }
     if(field.ramStorageSpecial!==true){field.ramStorageSpecial=true;changed=true;}
+    if(field.systemBuiltIn!==true){field.systemBuiltIn=true;changed=true;}
   }
   ['android','iphone'].forEach(function(pl){
     const plat=ensurePlatformOptionData(pl);
@@ -4920,7 +4934,7 @@ function renderCustomEntryFields(){
     }
     const chipHtml=opts.map(function(o){
       const selected=formState.customFields[f.key]===o;
-      const selectedMark=(isRamStorage && selected) ? ' ✓' : '';
+      const selectedMark='';
       return '<div class="chip-opt '+(selected?'on':'')+(isRamStorage?' ram-storage-chip':'')+'" data-val="'+escapeHtml(o)+'">'+escapeHtml(o)+selectedMark+'</div>';
     }).join('');
     const manualHtml=isRamStorage ?
@@ -7058,13 +7072,14 @@ function renderSettingsFieldOptions(){
   const actionBox=document.getElementById('settingsCustomFieldActions');
   if(actionBox){
     const targetText=settingsPlatform==='both' ? 'Android + iPhone' : platformLabel(settingsPlatform);
+    const isSystemBuiltIn=!!fieldDef.systemBuiltIn || fieldKey===RAM_STORAGE_FIELD_KEY;
     actionBox.innerHTML='<div style="display:flex;gap:7px;flex-wrap:wrap;">'+
-      '<button type="button" class="btn-cancel" id="settingsDeleteFieldBtn" style="flex:1;min-width:140px;">🗑️ Field delete</button>'+
+      (isSystemBuiltIn ? '<button type="button" class="btn-cancel" id="settingsDeleteFieldBtn" style="flex:1;min-width:140px;opacity:.55;" disabled>🔒 System field</button>' : '<button type="button" class="btn-cancel" id="settingsDeleteFieldBtn" style="flex:1;min-width:140px;">🗑️ Field delete</button>')+
       '<button type="button" class="btn-save" id="settingsApplyExistingBtn" style="flex:1;min-width:180px;">↻ Existing entries par apply</button>'+
-      '</div><div class="settings-note" style="margin-top:7px;">'+targetText+' ke liye field/options manage ho rahe hain. Field delete karne se sirf selected platform se field remove/hide hogi.</div>';
+      '</div><div class="settings-note" style="margin-top:7px;">'+(isSystemBuiltIn ? 'RAM/Storage system field hai; isay delete nahi kiya ja sakta. Purani duplicate custom field automatically remove ho jati hai.' : targetText+' ke liye field/options manage ho rahe hain. Field delete karne se sirf selected platform se field remove/hide hogi.')+'</div>';
 
     const del=document.getElementById('settingsDeleteFieldBtn');
-    if(del) del.onclick=function(){
+    if(del && !isSystemBuiltIn) del.onclick=function(){
       if(!confirm('"'+fieldDef.label+'" field ko '+targetText+' se delete/hide kar dein?')) return;
       targets.forEach(function(pl){
         const pp=ensurePlatformOptionData(pl);
