@@ -146,7 +146,6 @@
   .chip-row{display:flex;gap:6px;flex-wrap:wrap;}
   .chip-opt{padding:8px 13px;border-radius:9px;background:var(--surface-2);border:1px solid var(--border);font-size:13px;color:var(--text-dim);}
   .chip-opt.on{background:var(--accent);border-color:var(--accent);color:var(--accent-text);font-weight:600;}
-  .ram-storage-chip.on{box-shadow:0 0 0 2px rgba(255,255,255,.45) inset,0 1px 5px rgba(0,0,0,.28);font-weight:800;position:relative;} .ram-storage-chip.on::after{content:"✓";margin-left:6px;font-weight:900;}
   .chip-opt.status-opt{flex:1 1 30%;text-align:center;font-size:12.5px;padding:10px 4px;}
   .field{margin-bottom:10px;}
   .field label{display:block;font-size:11.5px;color:var(--text-dim);margin-bottom:4px;}
@@ -1655,9 +1654,6 @@ const PLAIN_FIELD_LABELS = {box:'Box', faceid:'Face ID', truetone:'True Tone', c
 const DEFAULT_BADGE_ORDER = ['display','battery','touch','camera','body','openrepair','ram','storage','network','packing','charger','box','faceid','truetone'];
 
 let customOptionData = {extra:{}, hidden:{}, globalCustomFields:[]};
-const RAM_STORAGE_FIELD_KEY = 'ramStorage';
-const RAM_STORAGE_FIELD_LABEL = 'RAM/Storage';
-const RAM_STORAGE_OPTIONS = ['3/32','3/64','4/64','4/128','6/128','6/256','8/128','8/256','8/512','12/256','12/512','16/256','16/512','16/1TB'];
 const LS_CUSTOM_OPTIONS_KEY = 'mobileLedger_customOptions';
 const LS_UI_SCALE_KEY = 'mobileLedger_uiScale_v1';
 let uiScaleMode = 'normal';
@@ -1763,71 +1759,6 @@ function loadCustomOptionData(){
     });
     p.customFields=[];
   });
-  // RAM/Storage is now a built-in system field. Remove any older manually-created
-  // field with the same label so deleting the old duplicate cannot make it return.
-  // RAM/Storage is a single built-in system field. Remove every legacy/custom
-  // duplicate (including old custom keys with the same label) before ensuring
-  // the canonical system field exists. This prevents a deleted custom duplicate
-  // from coming back after refresh.
-  const ramLabel=RAM_STORAGE_FIELD_LABEL.toLowerCase();
-  // Never promote an old user-created RAM/Storage field into the system field.
-  // Remove every legacy/custom duplicate by label, then create only the canonical
-  // built-in field. This makes the user's old custom field genuinely deletable.
-  const hadRamDuplicate=(customOptionData.globalCustomFields||[]).some(function(f){
-    return f && String(f.label||'').trim().toLowerCase()===ramLabel && f.key!==RAM_STORAGE_FIELD_KEY;
-  });
-  customOptionData.globalCustomFields=(customOptionData.globalCustomFields||[]).filter(function(f){
-    if(!f) return false;
-    return f.key===RAM_STORAGE_FIELD_KEY || String(f.label||'').trim().toLowerCase()!==ramLabel;
-  });
-  const ramChanged=ensureRamStorageFieldDefinition();
-  if(ramChanged || hadRamDuplicate){
-    try{ localStorage.setItem(shopStorageKey(LS_CUSTOM_OPTIONS_KEY),JSON.stringify(customOptionData)); }catch(e){}
-  }
-}
-
-function ensureRamStorageFieldDefinition(){
-  let changed=false;
-  if(!Array.isArray(customOptionData.globalCustomFields)) customOptionData.globalCustomFields=[];
-  let field=customOptionData.globalCustomFields.find(function(f){
-    return f && (f.key===RAM_STORAGE_FIELD_KEY || String(f.label||'').trim().toLowerCase()===RAM_STORAGE_FIELD_LABEL.toLowerCase());
-  });
-  if(!field){
-    field={
-      key:RAM_STORAGE_FIELD_KEY,
-      label:RAM_STORAGE_FIELD_LABEL,
-      options:RAM_STORAGE_OPTIONS.slice(),
-      optionsByPlatform:{android:RAM_STORAGE_OPTIONS.slice(),iphone:RAM_STORAGE_OPTIONS.slice()},
-      platforms:['android','iphone'],
-      ramStorageSpecial:true,
-      systemBuiltIn:true
-    };
-    customOptionData.globalCustomFields.push(field);
-    changed=true;
-  }else{
-    if(field.key!==RAM_STORAGE_FIELD_KEY){ field.key=RAM_STORAGE_FIELD_KEY; changed=true; }
-    if(field.label!==RAM_STORAGE_FIELD_LABEL){ field.label=RAM_STORAGE_FIELD_LABEL; changed=true; }
-    if(!field.optionsByPlatform) field.optionsByPlatform={android:(field.options||[]).slice(),iphone:(field.options||[]).slice()};
-    ['android','iphone'].forEach(function(pl){
-      if(!Array.isArray(field.optionsByPlatform[pl])) field.optionsByPlatform[pl]=(field.options||[]).slice();
-      RAM_STORAGE_OPTIONS.forEach(function(o){ if(field.optionsByPlatform[pl].indexOf(o)===-1){ field.optionsByPlatform[pl].push(o); changed=true; } });
-    });
-    field.options=Array.from(new Set([].concat(field.options||[],field.optionsByPlatform.android||[],field.optionsByPlatform.iphone||[],RAM_STORAGE_OPTIONS)));
-    if(!Array.isArray(field.platforms) || field.platforms.length!==2 || field.platforms.indexOf('android')===-1 || field.platforms.indexOf('iphone')===-1){ field.platforms=['android','iphone']; changed=true; }
-    if(field.ramStorageSpecial!==true){field.ramStorageSpecial=true;changed=true;}
-    if(field.systemBuiltIn!==true){field.systemBuiltIn=true;changed=true;}
-  }
-  ['android','iphone'].forEach(function(pl){
-    const plat=ensurePlatformOptionData(pl);
-    if(!Object.prototype.hasOwnProperty.call(plat.defaults,RAM_STORAGE_FIELD_KEY)){ plat.defaults[RAM_STORAGE_FIELD_KEY]=''; changed=true; }
-    if(!plat.entryLayout.hidden.includes(RAM_STORAGE_FIELD_KEY) && plat.entryLayout.main.indexOf(RAM_STORAGE_FIELD_KEY)===-1 && plat.entryLayout.more.indexOf(RAM_STORAGE_FIELD_KEY)===-1){
-      const idx=plat.entryLayout.main.indexOf('model');
-      if(idx!==-1){ plat.entryLayout.main.splice(idx+1,0,RAM_STORAGE_FIELD_KEY); }
-      else plat.entryLayout.main.push(RAM_STORAGE_FIELD_KEY);
-      changed=true;
-    }
-  });
-  return changed;
 }
 
 function saveCustomOptionData(){
@@ -1851,21 +1782,11 @@ function fieldTargetsPlatform(field, platform){ const targets=Array.isArray(fiel
 function fieldIsHiddenOnPlatform(platform, fieldKey){ const p=ensurePlatformOptionData(platform); return !!(p.hiddenFields && p.hiddenFields[fieldKey]); }
 function ensureHiddenFields(p){ if(!p.hiddenFields) p.hiddenFields={}; return p.hiddenFields; }
 
-function normalizePlatformEntryLayoutForRuntime(platform){
-  if(platform!=='iphone') return;
-  const p=ensurePlatformOptionData(platform);
-  p.entryLayout.main=(p.entryLayout.main||[]).filter(function(k){return k!==RAM_STORAGE_FIELD_KEY;});
-  p.entryLayout.more=(p.entryLayout.more||[]).filter(function(k){return k!==RAM_STORAGE_FIELD_KEY;});
-  p.entryLayout.hidden=(p.entryLayout.hidden||[]).filter(function(k){return k!==RAM_STORAGE_FIELD_KEY;});
-}
-
 function getPlatformCustomFields(platform){
   ensurePlatformOptionData(platform);
   const all=customOptionData.globalCustomFields || [];
   return all.filter(function(f){
     const targets=Array.isArray(f.platforms) && f.platforms.length ? f.platforms : ['android','iphone'];
-    // Apple/iPhone uses the normal Storage field only; RAM/Storage is Android-only.
-    if(platform==='iphone' && f.key===RAM_STORAGE_FIELD_KEY) return false;
     return targets.indexOf(platform)!==-1 && !fieldIsHiddenOnPlatform(platform,f.key);
   });
 }
@@ -1927,8 +1848,6 @@ function applyPlatformDefaultsToForm(platform){
     const opts=getEntryFieldOptionsForPlatform(platform,f.key);
     formState.customFields[f.key]=(d && opts.indexOf(d)!==-1) ? d : '';
   });
-  if(!Object.prototype.hasOwnProperty.call(formState,'ramStorageAutoSelected')) formState.ramStorageAutoSelected=false;
-  if(!formState.customFields[RAM_STORAGE_FIELD_KEY]) formState.ramStorageAutoSelected=false;
   formState.__platform=platform;
 }
 function getCustomFieldOptionsForPlatform(platform, fieldKey){
@@ -1971,137 +1890,42 @@ function getGlobalModelDocId(brand, model){
   return encodeURIComponent(String(brand||'').trim()) + '__' + encodeURIComponent(String(model||'').trim());
 }
 
-function normalizeRamStorageVariant(value){
-  let v=String(value||'').trim();
-  if(!v) return '';
-  v=v.replace(/\s+/g,'');
-  const m=v.match(/^(\d+)GB?\/(\d+(?:GB|TB))$/i);
-  if(m) return m[1]+'/'+m[2].toUpperCase();
-  const m2=v.match(/^(\d+)GB?[-_](\d+(?:GB|TB))$/i);
-  if(m2) return m2[1]+'/'+m2[2].toUpperCase();
-  return v.replace(/GB$/i,'GB');
-}
-
-function getEntryRamStorageVariant(entry){
-  if(!entry) return '';
-  const cf=entry.customFields||{};
-  const direct=normalizeRamStorageVariant(cf[RAM_STORAGE_FIELD_KEY]||'');
-  if(direct) return direct;
-  const ram=String(entry.ram||'').trim().replace(/GB$/i,'');
-  const storage=String(entry.storage||'').trim();
-  if(ram && storage) return normalizeRamStorageVariant(ram+'/'+storage);
-  return '';
-}
-
-function getLocalModelUsage(brand, model){
-  brand=String(brand||'').trim(); model=String(model||'').trim();
-  if(!brand || !model) return 0;
-  return inventory.filter(function(e){
-    return e && String(e.brand||'').trim()===brand && String(e.model||'').trim()===model;
-  }).reduce(function(n,e){
-    return n+Math.max(1,Number(e.quantity)||1);
-  },0);
-}
-
-function getLocalVariantCounts(brand, model){
-  brand=String(brand||'').trim(); model=String(model||'').trim();
-  const counts={};
-  if(!brand || !model) return counts;
-  inventory.forEach(function(e){
-    if(!e || String(e.brand||'').trim()!==brand || String(e.model||'').trim()!==model) return;
-    const variant=getEntryRamStorageVariant(e);
-    if(!variant) return;
-    counts[variant]=(counts[variant]||0)+Math.max(1,Number(e.quantity)||1);
-  });
-  return counts;
-}
-
-function mergeExistingLocalUsageIntoLibrary(brand){
-  brand=String(brand||'').trim();
-  if(!brand) return;
-  if(!globalModelLibrary[brand]) globalModelLibrary[brand]={};
-  inventory.forEach(function(e){
-    if(!e || String(e.brand||'').trim()!==brand || !String(e.model||'').trim()) return;
-    const model=String(e.model).trim();
-    const qty=Math.max(1,Number(e.quantity)||1);
-    const old=globalModelLibrary[brand][model]||{};
-    const variants=Object.assign({},old.variantCounts||{});
-    const v=getEntryRamStorageVariant(e);
-    if(v) variants[v]=Math.max(Number(variants[v])||0, Number(getLocalVariantCounts(brand,model)[v])||0);
-    globalModelLibrary[brand][model]={
-      useCount:Math.max(Number(old.useCount)||0,getLocalModelUsage(brand,model),qty),
-      variantCounts:variants,
-      updatedAt:old.updatedAt||null
-    };
-  });
-  (customModels[brand]||[]).forEach(function(model){
-    if(!globalModelLibrary[brand][model]) globalModelLibrary[brand][model]={useCount:1,variantCounts:{},updatedAt:null};
-  });
-}
-
 function loadGlobalModelsForBrand(brand){
   brand=String(brand||'').trim();
-  if(!brand) return Promise.resolve();
-  if(globalModelLibraryLoaded[brand]){
-    mergeExistingLocalUsageIntoLibrary(brand);
-    const input=document.getElementById('f-model-other');
-    if(input && formState && formState.brand===brand) renderModelSuggestions(input.value||'');
-    return Promise.resolve();
-  }
-  if(!fbDb || !fbUser || isAdminShopView()){
-    globalModelLibrary[brand]=globalModelLibrary[brand]||{};
-    mergeExistingLocalUsageIntoLibrary(brand);
-    globalModelLibraryLoaded[brand]=true;
-    return Promise.resolve();
-  }
+  if(!brand || !fbDb || !fbUser || isAdminShopView()) return Promise.resolve();
+  if(globalModelLibraryLoaded[brand]) return Promise.resolve();
   return fbDb.collection('modelLibrary').where('brand','==',brand).get().then(function(snap){
     globalModelLibrary[brand]={};
     snap.forEach(function(doc){
       const d=doc.data()||{};
       const model=String(d.model||'').trim();
-      if(model) globalModelLibrary[brand][model]={useCount:Number(d.useCount)||0,variantCounts:Object.assign({},d.variantCounts||{}),updatedAt:d.updatedAt||null};
+      if(model) globalModelLibrary[brand][model]={useCount:Number(d.useCount)||0,updatedAt:d.updatedAt||null};
     });
-    mergeExistingLocalUsageIntoLibrary(brand);
     globalModelLibraryLoaded[brand]=true;
     const input=document.getElementById('f-model-other');
     if(input && formState && formState.brand===brand) renderModelSuggestions(input.value||'');
   }).catch(function(err){
     console.warn('Global model library load failed',err);
-    globalModelLibrary[brand]=globalModelLibrary[brand]||{};
-    mergeExistingLocalUsageIntoLibrary(brand);
-    globalModelLibraryLoaded[brand]=true;
-    const input=document.getElementById('f-model-other');
-    if(input && formState && formState.brand===brand) renderModelSuggestions(input.value||'');
   });
 }
 
-function saveModelToGlobalLibrary(brand, model, ramStorage){
+function saveModelToGlobalLibrary(brand, model){
   brand=String(brand||'').trim();
   model=String(model||'').trim();
-  ramStorage=String(ramStorage||'').trim();
   if(!brand || !model || !fbDb || !fbUser || isAdminShopView()) return Promise.resolve(false);
+  // Also track built-in/catalog models so popularity can be learned across shops.
   const ref=fbDb.collection('modelLibrary').doc(getGlobalModelDocId(brand,model));
-  return fbDb.runTransaction(function(tx){
-    return tx.get(ref).then(function(snap){
-      const d=snap.exists ? (snap.data()||{}) : {};
-      const variants=Object.assign({},d.variantCounts||{});
-      if(ramStorage) variants[ramStorage]=(Number(variants[ramStorage])||0)+1;
-      const payload={
-        brand:brand,
-        model:model,
-        normalized:model.toLowerCase(),
-        useCount:(Number(d.useCount)||0)+1,
-        variantCounts:variants,
-        updatedBy:fbUser.uid,
-        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-      };
-      tx.set(ref,payload,{merge:true});
-      return {useCount:payload.useCount,variantCounts:variants};
-    });
-  }).then(function(result){
+  return ref.set({
+    brand:brand,
+    model:model,
+    normalized:model.toLowerCase(),
+    useCount:firebase.firestore.FieldValue.increment(1),
+    updatedBy:fbUser.uid,
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true}).then(function(){
     if(!globalModelLibrary[brand]) globalModelLibrary[brand]={};
     const old=globalModelLibrary[brand][model]||{};
-    globalModelLibrary[brand][model]={useCount:Number(result&&result.useCount)||((Number(old.useCount)||0)+1),variantCounts:Object.assign({},(old.variantCounts||{}),(result&&result.variantCounts)||{}),updatedAt:new Date()};
+    globalModelLibrary[brand][model]={useCount:(Number(old.useCount)||0)+1,updatedAt:new Date()};
     globalModelLibraryLoaded[brand]=true;
     return true;
   }).catch(function(err){
@@ -2109,87 +1933,6 @@ function saveModelToGlobalLibrary(brand, model, ramStorage){
     return false;
   });
 }
-
-function getRamStorageVariantCounts(brand, model){
-  const info=(globalModelLibrary[brand]&&globalModelLibrary[brand][model])||{};
-  const out=Object.assign({},info.variantCounts||{});
-  const local=getLocalVariantCounts(brand,model);
-  Object.keys(local).forEach(function(v){ out[v]=Math.max(Number(out[v])||0,Number(local[v])||0); });
-  return out;
-}
-function getPopularRamStorageForModel(brand, model){
-  brand=String(brand||'').trim(); model=String(model||'').trim();
-  if(!brand || !model) return '';
-  const counts=getRamStorageVariantCounts(brand,model);
-  let best=''; let bestCount=0;
-  RAM_STORAGE_OPTIONS.forEach(function(o){
-    const c=Number(counts[o])||0;
-    if(c>bestCount){best=o;bestCount=c;}
-  });
-  Object.keys(counts).forEach(function(o){
-    if(RAM_STORAGE_OPTIONS.indexOf(o)!==-1) return;
-    const c=Number(counts[o])||0;
-    if(c>bestCount){best=o;bestCount=c;}
-  });
-  return bestCount>0 ? best : '';
-}
-function getRamStorageOptionsSortedForModel(brand, model, options){
-  const counts=getRamStorageVariantCounts(brand,model);
-  const merged=[];
-  (options||[]).forEach(function(o){ if(o && merged.indexOf(o)===-1) merged.push(o); });
-  RAM_STORAGE_OPTIONS.forEach(function(o){ if(o && merged.indexOf(o)===-1) merged.push(o); });
-  Object.keys(counts).forEach(function(o){ if(o && merged.indexOf(o)===-1) merged.push(o); });
-  return merged.sort(function(a,b){
-    const ca=Number(counts[a])||0, cb=Number(counts[b])||0;
-    if(ca!==cb) return cb-ca;
-    const ai=RAM_STORAGE_OPTIONS.indexOf(a), bi=RAM_STORAGE_OPTIONS.indexOf(b);
-    if(ai!==-1 && bi!==-1) return ai-bi;
-    if(ai!==-1) return -1;
-    if(bi!==-1) return 1;
-    return String(a).localeCompare(String(b));
-  });
-}
-
-function setRamStorageFormValue(value){
-  const v=String(value||'').trim();
-  if(!formState.customFields) formState.customFields={};
-  formState.customFields[RAM_STORAGE_FIELD_KEY]=v;
-  const parts=v.split('/');
-  const ramEl=document.getElementById('ramStorageManualRam');
-  const storageEl=document.getElementById('ramStorageManualStorage');
-  if(ramEl) ramEl.value=parts[0]||'';
-  if(storageEl) storageEl.value=parts.slice(1).join('/')||'';
-}
-
-function getRamStorageManualValue(){
-  const ramEl=document.getElementById('ramStorageManualRam');
-  const storageEl=document.getElementById('ramStorageManualStorage');
-  const ram=String(ramEl&&ramEl.value||'').trim();
-  const storage=String(storageEl&&storageEl.value||'').trim();
-  if(!ram && !storage) return '';
-  if(ram && storage) return ram+'/'+storage;
-  return '';
-}
-function applyPopularRamStorageForModel(brand, model, force){
-  const platform=getEntryPlatform(brand);
-  const field=getCustomFieldDef(platform,RAM_STORAGE_FIELD_KEY);
-  if(!field || !formState || !formState.customFields) return;
-  const options=getCustomFieldOptionsForPlatform(platform,RAM_STORAGE_FIELD_KEY);
-  const popular=getPopularRamStorageForModel(brand,model);
-  const current=String(formState.customFields[RAM_STORAGE_FIELD_KEY]||'');
-  const autoSelected=!!formState.ramStorageAutoSelected;
-  if(!force && current && !autoSelected) return;
-  if(popular && options.indexOf(popular)!==-1){
-    setRamStorageFormValue(popular);
-    formState.ramStorageAutoSelected=true;
-  }else if(force || !current || autoSelected){
-    setRamStorageFormValue('');
-    formState.ramStorageAutoSelected=false;
-  }
-  renderCustomEntryFields();
-  applyEntryLayoutToDOM(platform);
-}
-
 
 async function deleteGlobalModel(brand, model){
   if(userRole!=='admin' || !fbDb || !brand || !model || isAdminShopView()) return false;
@@ -2217,9 +1960,8 @@ function getBrandModels(brand){
   const counts={};
   inventory.forEach(function(e){
     if(e && e.brand===brand && e.model){
-      const key=String(e.model).trim();
       const qty=Math.max(1, Number(e.quantity)||1);
-      counts[key]=(counts[key]||0)+qty;
+      counts[e.model]=(counts[e.model]||0)+qty;
     }
   });
   const globalCounts=globalModelLibrary[brand]||{};
@@ -2228,9 +1970,6 @@ function getBrandModels(brand){
     if(remembered===a && remembered!==b) return -1;
     if(remembered===b && remembered!==a) return 1;
     const ca=counts[a]||0, cb=counts[b]||0;
-    const aUsed=ca>0 || (custom.indexOf(a)!==-1);
-    const bUsed=cb>0 || (custom.indexOf(b)!==-1);
-    if(aUsed!==bUsed) return aUsed ? -1 : 1;
     if(ca!==cb) return cb-ca;
     const ga=Number(globalCounts[a]&&globalCounts[a].useCount)||0;
     const gb=Number(globalCounts[b]&&globalCounts[b].useCount)||0;
@@ -2352,7 +2091,7 @@ function loadLastModelByBrand(){ try{ return JSON.parse(localStorage.getItem(sho
 function saveLastModelForBrand(brand,model){ if(!brand||!model)return; try{ const m=loadLastModelByBrand(); m[brand]=model; localStorage.setItem(shopStorageKey(LS_LAST_MODEL_BY_BRAND_KEY),JSON.stringify(m)); }catch(e){} }
 function getLastModelForBrand(brand){ const m=loadLastModelByBrand(); return m[brand]||''; }
 
-function addCustomModelIfNew(brand, model, ramStorage){
+function addCustomModelIfNew(brand, model){
   if(!brand || !model) return Promise.resolve(false);
   const base = MODEL_CATALOG[brand] || [];
   if(base.indexOf(model)===-1){
@@ -2362,9 +2101,8 @@ function addCustomModelIfNew(brand, model, ramStorage){
       saveCustomModels();
     }
   }
-  // Count every used model globally, including built-in/catalog models,
-  // and record the selected RAM/Storage variant when available.
-  return saveModelToGlobalLibrary(brand,model,ramStorage);
+  // Count every used model globally, including built-in/catalog models.
+  return saveModelToGlobalLibrary(brand,model);
 }
 
 let formState = {};
@@ -4919,8 +4657,6 @@ function renderChipGroup(containerId, options, groupKey, extraClass){
         renderModelSuggestions('');
         const platform=getEntryPlatform(c.dataset.val);
         if(formState.__platform!==platform) applyPlatformDefaultsToForm(platform);
-        if(formState.customFields){ setRamStorageFormValue(''); formState.ramStorageAutoSelected=false; }
-        renderCustomEntryFields();
         applyEntryLayoutToDOM(platform);
       }
       renderAllChips();
@@ -4934,74 +4670,25 @@ function renderCustomEntryFields(){
   const platform=getEntryPlatform(formState && formState.brand);
   const fields=getPlatformCustomFields(platform);
   if(!formState.customFields) formState.customFields={};
+  // Render every custom field as its own layout group so Main / More / Hide
+  // can control each custom field independently instead of moving one
+  // combined 'Custom fields' block.
   box.innerHTML=fields.map(function(f){
-    let opts=getEntryFieldOptionsForPlatform(platform,f.key);
+    const opts=getEntryFieldOptionsForPlatform(platform,f.key);
     const groupKey=String(f.key||'');
-    const isRamStorage=f.key===RAM_STORAGE_FIELD_KEY;
-    if(isRamStorage){
-      opts=getRamStorageOptionsSortedForModel(formState.brand,formState.model||document.getElementById('f-model-other').value,opts);
-    }
-    const chipHtml=opts.map(function(o){
-      const selected=formState.customFields[f.key]===o;
-      const selectedMark=selected ? ' ✓' : '';
-      const selectedStyle=selected ? ' style="background:var(--accent);border-color:var(--accent);color:var(--accent-text);font-weight:800;box-shadow:0 0 0 2px rgba(255,255,255,.45) inset,0 1px 5px rgba(0,0,0,.28);"' : '';
-      return '<div class="chip-opt '+(selected?'on':'')+(isRamStorage?' ram-storage-chip':'')+'"'+selectedStyle+' data-val="'+escapeHtml(o)+'">'+escapeHtml(o)+selectedMark+'</div>';
-    }).join('');
-    const manualHtml=isRamStorage ?
-      '<div class="settings-note" style="margin:7px 0 6px;font-size:11px;">Manual variant</div>'+ 
-      '<div class="two-col" style="margin-bottom:4px;align-items:end;">'+
-        '<div class="field" style="margin:0;"><label>RAM</label><input id="ramStorageManualRam" type="text" inputmode="numeric" placeholder="e.g. 12"></div>'+ 
-        '<div class="field" style="margin:0;position:relative;"><label>Storage</label><input id="ramStorageManualStorage" type="text" placeholder="e.g. 1TB"><div style="position:absolute;left:calc(50% - 8px);bottom:9px;color:var(--text-dim);font-weight:800;">/</div></div>'+ 
-      '</div>' : '';
     return '<div class="entry-layout-group custom-entry-field-group" data-entry-group="'+escapeHtml(groupKey)+'">'+
       '<div class="sec-label">'+escapeHtml(f.label)+'</div>'+ 
-      '<div class="chip-row custom-entry-chip-row" data-custom-field="'+escapeHtml(groupKey)+'">'+chipHtml+'</div>'+manualHtml+
+      '<div class="chip-row custom-entry-chip-row" data-custom-field="'+escapeHtml(groupKey)+'">'+opts.map(function(o){
+        return '<div class="chip-opt '+(formState.customFields[f.key]===o?'on':'')+'" data-val="'+escapeHtml(o)+'">'+escapeHtml(o)+'</div>';
+      }).join('')+'</div>'+
     '</div>';
   }).join('');
-
-  // Populate manual RAM/Storage from the currently selected combined value.
-  const currentRamValue=String(formState.customFields[RAM_STORAGE_FIELD_KEY]||'');
-  if(currentRamValue && fields.some(function(f){return f.key===RAM_STORAGE_FIELD_KEY;})) setRamStorageFormValue(currentRamValue);
-
   box.querySelectorAll('[data-custom-field]').forEach(function(row){
     const key=row.dataset.customField;
     row.querySelectorAll('.chip-opt').forEach(function(c){
-      c.onclick=function(){
-        if(key===RAM_STORAGE_FIELD_KEY){
-          setRamStorageFormValue(c.dataset.val);
-          formState.ramStorageAutoSelected=false;
-        }else{
-          formState.customFields[key]=c.dataset.val;
-        }
-        renderCustomEntryFields();
-        applyEntryLayoutToDOM(platform);
-      };
+      c.onclick=function(){ formState.customFields[key]=c.dataset.val; renderCustomEntryFields(); applyEntryLayoutToDOM(platform); };
     });
   });
-
-  const manualRam=document.getElementById('ramStorageManualRam');
-  const manualStorage=document.getElementById('ramStorageManualStorage');
-  if(manualRam && manualStorage){
-    manualRam.addEventListener('input',function(){
-      const value=getRamStorageManualValue();
-      formState.customFields[RAM_STORAGE_FIELD_KEY]=value;
-      formState.ramStorageAutoSelected=false;
-      renderCustomEntryFieldsManualSync();
-    });
-    manualStorage.addEventListener('input',function(){
-      const value=getRamStorageManualValue();
-      formState.customFields[RAM_STORAGE_FIELD_KEY]=value;
-      formState.ramStorageAutoSelected=false;
-      renderCustomEntryFieldsManualSync();
-    });
-  }
-}
-
-function renderCustomEntryFieldsManualSync(){
-  const row=document.querySelector('[data-custom-field="'+RAM_STORAGE_FIELD_KEY+'"]');
-  if(!row) return;
-  const value=String(formState.customFields[RAM_STORAGE_FIELD_KEY]||'');
-  row.querySelectorAll('.chip-opt').forEach(function(c){ c.classList.toggle('on',c.dataset.val===value); });
 }
 
 function renderAllChips(){
@@ -5055,20 +4742,15 @@ function modelSuggestionScore(model, query, brand){
   const qWords=q.split(/\s+/).filter(Boolean);
   const globalInfo=(globalModelLibrary[brand]&&globalModelLibrary[brand][raw])||{};
   const globalUse=Math.max(0,Number(globalInfo.useCount)||0);
-  const localUse=getLocalModelUsage(brand,raw);
-  const wasUsedBefore=localUse>0 || (customModels[brand]||[]).indexOf(raw)!==-1;
+  const localUse=inventory.filter(function(e){return e&&e.brand===brand&&String(e.model||'').trim()===raw;}).reduce(function(n,e){return n+Math.max(1,Number(e.quantity)||1);},0);
   const remembered=getLastModelForBrand(brand);
   let score=0;
-
-  // Existing user history must outrank untouched catalog models. This is
-  // especially important for cases like typing GO1 after several GO1 models
-  // were already entered in this shop before the global library was added.
-  if(wasUsedBefore) score += 6000;
-  score += localUse*120 + globalUse*55;
-  if(remembered===raw) score+=800;
-
-  if(!q) return score;
-  if(ml===q) score+=14000;
+  if(!q){
+    score += globalUse*50 + localUse*35;
+    if(remembered===raw) score+=500;
+    return score;
+  }
+  if(ml===q) score+=12000;
   if(ml.indexOf(q)===0) score+=9000-Math.max(0,ml.length-q.length);
   if(qc && compact.indexOf(qc)===0) score+=8000-Math.max(0,compact.length-qc.length);
   if(ml.indexOf(q)!==-1) score+=5200;
@@ -5085,6 +4767,8 @@ function modelSuggestionScore(model, query, brand){
     for(let j=0;j<compact.length && i<qc.length;j++) if(compact[j]===qc[i]) i++;
     if(i===qc.length) score+=1200;
   }
+  score += globalUse*45 + localUse*30;
+  if(remembered===raw) score+=300;
   return score;
 }
 
@@ -5130,7 +4814,6 @@ function renderModelSuggestions(typedVal){
       const input=document.getElementById('f-model-other');
       if(input) input.value = c.dataset.val;
       box.innerHTML = '';
-      Promise.resolve(loadGlobalModelsForBrand(brand)).then(function(){ applyPopularRamStorageForModel(brand,c.dataset.val,false); });
     };
     const clearPressTimer=function(){
       if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; }
@@ -5187,15 +4870,6 @@ document.getElementById('f-model-other').addEventListener('input', function(){
   // but keep the field fully manual so a brand-new model can be entered freely.
   renderModelSuggestions(this.value);
 });
-document.getElementById('f-model-other').addEventListener('change', function(){
-  applyPopularRamStorageForModel(formState.brand,this.value.trim(),false);
-});
-document.getElementById('f-model-other').addEventListener('blur', function(){
-  const value=this.value.trim();
-  if(value){
-    Promise.resolve(loadGlobalModelsForBrand(formState.brand)).then(function(){ applyPopularRamStorageForModel(formState.brand,value,false); });
-  }
-});
 
 document.getElementById('modelDropdownBtn').addEventListener('click', function(){
   const wrap = document.getElementById('modelSelectWrap');
@@ -5218,7 +4892,6 @@ document.getElementById('f-model-select').addEventListener('change', function(){
   if(this.value){
     document.getElementById('f-model-other').value = this.value;
     document.getElementById('modelSuggestions').innerHTML = '';
-    Promise.resolve(loadGlobalModelsForBrand(formState.brand)).then(function(){ applyPopularRamStorageForModel(formState.brand,document.getElementById('f-model-other').value.trim(),false); });
   }
   document.getElementById('modelSelectWrap').style.display = 'none';
   document.getElementById('modelDropdownBtn').classList.remove('on');
@@ -5232,7 +4905,7 @@ function openAdd(){
   rangeInputMode = 'auto';
   document.getElementById('sheetTitle').textContent = 'Nayi stock entry';
   document.getElementById('qtyLabel').textContent = 'Quantity (kitne piece)';
-  formState = {brand:'', status:'PTA', ram:'', storage:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'No', packing:'No pack', charger:'Original charger', faceid:'No', truetone:'No', customFields:{}, ramStorageAutoSelected:false, isSold:false, __platform:'android'};
+  formState = {brand:'', status:'PTA', ram:'', storage:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'No', packing:'No pack', charger:'Original charger', faceid:'No', truetone:'No', customFields:{}, isSold:false, __platform:'android'};
   applyPlatformDefaultsToForm('android');
   formPhotos = [];
   renderPhotoStrip();
@@ -5308,7 +4981,6 @@ function openEdit(id){
     box: e.box || 'No', packing: e.packing || 'No pack', charger: e.charger || 'Original charger',
     faceid: e.faceid || 'No', truetone: e.truetone || 'No',
     customFields: Object.assign({}, e.customFields || {}),
-    ramStorageAutoSelected: false,
     isSold: !!e.sold,
     originalBuy: e.buy != null ? Number(e.buy) : null
   };
@@ -5563,24 +5235,7 @@ function saveEntry(){
     });
   }
 
-  if(!data.customFields) data.customFields={};
-  if(!String(data.customFields[RAM_STORAGE_FIELD_KEY]||'').trim()){
-    const manualVariant=getRamStorageManualValue();
-    if(manualVariant) data.customFields[RAM_STORAGE_FIELD_KEY]=manualVariant;
-  }
-  const mainVariant=data.customFields && data.customFields[RAM_STORAGE_FIELD_KEY] || '';
-  const previousEntry=editingId ? inventory.find(function(x){return String(x.id)===String(editingId);}) : null;
-  const previousVariant=previousEntry && previousEntry.customFields ? String(previousEntry.customFields[RAM_STORAGE_FIELD_KEY]||'') : '';
-  const shouldRecordPopularity=!editingId || !previousEntry || previousEntry.brand!==brand || previousEntry.model!==model || previousVariant!==mainVariant;
-  if(shouldRecordPopularity){
-    addCustomModelIfNew(brand, model, mainVariant);
-    if(!editingId && mainVariant){
-      const extraCount=document.querySelectorAll('#extraBuyList .extra-piece-block').length;
-      for(let vi=0;vi<extraCount;vi++) saveModelToGlobalLibrary(brand,model,mainVariant);
-    }
-  }else if(!editingId){
-    addCustomModelIfNew(brand, model, mainVariant);
-  }
+  addCustomModelIfNew(brand, model);
   saveLastModelForBrand(brand, model);
   closeSheet();
   render();
@@ -7082,14 +6737,13 @@ function renderSettingsFieldOptions(){
   const actionBox=document.getElementById('settingsCustomFieldActions');
   if(actionBox){
     const targetText=settingsPlatform==='both' ? 'Android + iPhone' : platformLabel(settingsPlatform);
-    const isSystemBuiltIn=!!fieldDef.systemBuiltIn || fieldKey===RAM_STORAGE_FIELD_KEY;
     actionBox.innerHTML='<div style="display:flex;gap:7px;flex-wrap:wrap;">'+
-      (isSystemBuiltIn ? '<button type="button" class="btn-cancel" id="settingsDeleteFieldBtn" style="flex:1;min-width:140px;opacity:.55;" disabled>🔒 System field</button>' : '<button type="button" class="btn-cancel" id="settingsDeleteFieldBtn" style="flex:1;min-width:140px;">🗑️ Field delete</button>')+
+      '<button type="button" class="btn-cancel" id="settingsDeleteFieldBtn" style="flex:1;min-width:140px;">🗑️ Field delete</button>'+
       '<button type="button" class="btn-save" id="settingsApplyExistingBtn" style="flex:1;min-width:180px;">↻ Existing entries par apply</button>'+
-      '</div><div class="settings-note" style="margin-top:7px;">'+(isSystemBuiltIn ? 'RAM/Storage system field hai; isay delete nahi kiya ja sakta. Purani duplicate custom field automatically remove ho jati hai.' : targetText+' ke liye field/options manage ho rahe hain. Field delete karne se sirf selected platform se field remove/hide hogi.')+'</div>';
+      '</div><div class="settings-note" style="margin-top:7px;">'+targetText+' ke liye field/options manage ho rahe hain. Field delete karne se sirf selected platform se field remove/hide hogi.</div>';
 
     const del=document.getElementById('settingsDeleteFieldBtn');
-    if(del && !isSystemBuiltIn) del.onclick=function(){
+    if(del) del.onclick=function(){
       if(!confirm('"'+fieldDef.label+'" field ko '+targetText+' se delete/hide kar dein?')) return;
       targets.forEach(function(pl){
         const pp=ensurePlatformOptionData(pl);
