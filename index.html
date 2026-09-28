@@ -3159,19 +3159,28 @@ function phoneExpensesInMonth(monthKey){
   }).reduce(function(s,x){ return s+(Number(x.amount)||0); },0);
 }
 function renderStats(){
-  const availableUnits = inventory.filter(function(e){return !e.sold;})
-    .reduce(function(s,e){return s+(e.quantity||0);},0);
-  const soldUnits = inventory.filter(function(e){return e.sold && !isReturnedSale(e);})
-    .reduce(function(s,e){return s+(e.quantity||0);},0);
-  const grossProfit = inventory.filter(function(e){return e.sold && !isReturnedSale(e) && e.buy!=null && e.sell!=null;})
-    .reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0);
-  // Net profit = sale margins minus all shop expenses and phone-specific expenses.
-  const totalProfit = grossProfit - totalExpensesAllTime() - totalPhoneExpensesAllTime();
-  const netProfitColor = totalProfit >= 0 ? 'var(--pta)' : 'var(--danger)';
+  const availableUnits = inventory.filter(function(e){return !e.sold && Number(e.quantity||0)>0;})
+    .reduce(function(s,e){return s+(Number(e.quantity)||0);},0);
+
+  // Main screen stats are intentionally for the current month.
+  const now = new Date();
+  const curMonthKey = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  const soldThisMonth = inventory.filter(function(e){
+    if(!e.sold || isReturnedSale(e)) return false;
+    const d = e.saleDate || e.saleAt || e.lastUpdated;
+    return d && String(d).indexOf(curMonthKey)===0;
+  });
+  const soldUnitsThisMonth = soldThisMonth.reduce(function(s,e){return s+(Number(e.quantity)||0);},0);
+  const grossProfitThisMonth = soldThisMonth.filter(function(e){return e.buy!=null && e.sell!=null;})
+    .reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(Number(e.quantity)||1));},0);
+  const monthExpenses = expensesInMonth(curMonthKey) + phoneExpensesInMonth(curMonthKey);
+  const netProfitThisMonth = grossProfitThisMonth - monthExpenses;
+  const netProfitColor = netProfitThisMonth >= 0 ? 'var(--pta)' : 'var(--danger)';
+
   document.getElementById('stats').innerHTML =
     '<div class="stat"><div class="v num">'+availableUnits+'</div><div class="l">Stock mein</div></div>'+
-    '<div class="stat"><div class="v num">'+soldUnits+'</div><div class="l">Sold</div></div>'+
-    '<div class="stat"><div class="v num" style="color:'+netProfitColor+'">'+displayProfitHtml(totalProfit)+'</div><div class="l">Net profit</div></div>';
+    '<div class="stat"><div class="v num">'+soldUnitsThisMonth+'</div><div class="l">Is mahine sold</div></div>'+
+    '<div class="stat"><div class="v num" style="color:'+netProfitColor+'">'+displayProfitHtml(netProfitThisMonth)+'</div><div class="l">Is mahine net profit</div></div>';
 }
 
 // Most browsers give roughly 5MB per site for localStorage. There's no
@@ -4952,11 +4961,15 @@ function openAdd(){
   renderPhoneExpenseRows('f-phone-expenses', [{}]);
   extraPieceCount = 0;
   document.getElementById('addExtraBuyBtn').style.display = 'block';
+  // Hydrate the latest saved field/layout configuration before the sheet is shown.
+  // This prevents built-in fields such as RAM/Storage from appearing late.
+  loadCustomOptionData();
   renderAllChips();
   applyEntryLayoutToDOM(getEntryPlatform(formState.brand));
   document.getElementById('overlay').classList.remove('hidden');
-  // Always start a new entry at the very top so the user never has to scroll back up.
   requestAnimationFrame(function(){
+    renderAllChips();
+    applyEntryLayoutToDOM(getEntryPlatform(formState.brand));
     const sheet=document.querySelector('#overlay .sheet');
     if(sheet) sheet.scrollTop=0;
   });
@@ -5817,7 +5830,7 @@ function autoBackupIfDue(){
 function renderDashboard(){
   const now = new Date();
   const curMonthKey = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  const stockItems = inventory.filter(function(e){ return !e.sold; });
+  const stockItems = inventory.filter(function(e){ return !e.sold && Number(e.quantity||0)>0; });
   const soldItems = inventory.filter(function(e){ return e.sold && !isReturnedSale(e); });
 
   const totalStockValue = stockItems.reduce(function(s,e){ return s + ((e.buy!=null?Number(e.buy):0) * (e.quantity||0)); }, 0);
@@ -7663,12 +7676,13 @@ function setAuthGateView(mode){ // 'checking' | 'locked' | 'unlocked'
   const appEl = document.querySelector('.app');
   const fab = document.getElementById('fabAdd');
   if(mode === 'checking'){
-    // Keep the legacy checking mode available for compatibility, but do not
-    // expose the intermediate session-checking screen to the user.
+    // Keep the intermediate session-checking screen hidden. The main app must
+    // also stay hidden until auth/shop context is resolved; otherwise the user
+    // can briefly interact with the app before App Lock is enforced.
     overlay.classList.add('hidden');
     checking.style.display = 'none'; loggedOut.style.display = 'none'; loggedIn.style.display = 'none'; if(accessView) accessView.style.display='none';
     if(closeRow) closeRow.style.display = 'none'; if(topbar) topbar.style.display='none'; if(note) note.style.display='none';
-    if(appEl) appEl.style.visibility = 'visible'; if(fab) fab.style.display = 'flex';
+    if(appEl) appEl.style.visibility = 'hidden'; if(fab) fab.style.display = 'none';
   } else if(mode === 'locked'){
     overlay.classList.remove('hidden');
     checking.style.display = 'none'; loggedOut.style.display = 'block'; loggedIn.style.display = 'none'; if(accessView) accessView.style.display='none';
