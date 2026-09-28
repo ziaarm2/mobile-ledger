@@ -249,7 +249,11 @@
   .save-error-banner.show{display:block;}
 
   .stat-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
-  .stat-card{background:var(--surface);border-radius:var(--radius);padding:14px 12px;}
+  
+.dashboard-period-bar{margin:0 0 12px;padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--surface-2);}
+.dashboard-period-title{font-size:12px;font-weight:700;color:var(--text-dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:.3px;}
+.dashboard-period-note{font-size:11.5px;color:var(--text-dim);margin-top:7px;line-height:1.35;}
+.stat-card{background:var(--surface);border-radius:var(--radius);padding:14px 12px;}
   .stat-card .v{font-size:20px;font-weight:700;}
   .stat-card .l{font-size:11.5px;color:var(--text-dim);margin-top:4px;}
   .report-filters{display:flex;flex-direction:column;gap:10px;margin-top:10px;}
@@ -959,6 +963,11 @@
   <div class="sheet">
     <div class="sheet-handle"></div>
     <h2>Dashboard</h2>
+    <div class="dashboard-period-bar">
+      <div class="dashboard-period-title">Report period</div>
+      <div class="chip-row" id="dashboardPeriodToggles"></div>
+      <div class="dashboard-period-note" id="dashboardPeriodNote"></div>
+    </div>
     <div class="stat-grid-2" id="dashboardGrid"></div>
     <div class="sheet-actions">
       <button class="btn-cancel" id="btnDashboardClose">Band karein</button>
@@ -1321,6 +1330,16 @@
           <div class="chip-row" id="uiScaleToggles" style="margin-top:9px;"></div>
         </div>
         <div class="settings-section-card"><div class="sec-label">Badges ka order</div><div class="settings-note">Drag karke card badges ki tarteeb set karein.</div><div class="badge-order-list" id="badgeOrderList"></div></div>
+        <div class="settings-section-card">
+          <div class="sec-label">📊 Dashboard reporting period</div>
+          <div class="settings-note">Dashboard par Sold aur Net Profit kis period ke hisaab se dikhana hai. Business month choose karein to har month isi din se naya cycle start hoga.</div>
+          <div class="chip-row" id="dashboardDefaultPeriodToggles" style="margin-top:9px;"></div>
+          <div class="settings-add-row" style="margin-top:10px;align-items:center;">
+            <label style="font-size:12px;color:var(--text-dim);white-space:nowrap;">Business month start day</label>
+            <input type="number" id="businessMonthStartDay" min="1" max="28" step="1" placeholder="1" style="max-width:90px;">
+          </div>
+          <div class="settings-note">1–28 rakhein taake har month cycle reliably repeat ho.</div>
+        </div>
       </div>
 
       <div class="settings-view" data-settings-view="fields">
@@ -3158,29 +3177,71 @@ function phoneExpensesInMonth(monthKey){
     return dateMonthKey(x.date)===monthKey;
   }).reduce(function(s,x){ return s+(Number(x.amount)||0); },0);
 }
+const LS_DASHBOARD_SETTINGS_KEY = 'mobileLedger_dashboardSettings_v1';
+let dashboardSettings = { mode:'calendar', businessStartDay:1 };
+function loadDashboardSettings(){
+  try{
+    const raw=localStorage.getItem(shopStorageKey(LS_DASHBOARD_SETTINGS_KEY));
+    if(raw){ const x=JSON.parse(raw)||{}; dashboardSettings.mode=['calendar','lifetime','business'].indexOf(x.mode)!==-1?x.mode:'calendar'; dashboardSettings.businessStartDay=Math.min(28,Math.max(1,Number(x.businessStartDay)||1)); }
+  }catch(e){ dashboardSettings={mode:'calendar',businessStartDay:1}; }
+}
+function saveDashboardSettings(){
+  if(isAdminShopView()) return;
+  try{ localStorage.setItem(shopStorageKey(LS_DASHBOARD_SETTINGS_KEY),JSON.stringify(dashboardSettings)); }catch(e){}
+}
+function isoDateLocal(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function dashboardPeriodRange(){
+  const now=new Date();
+  if(dashboardSettings.mode==='lifetime') return {from:'',to:'',label:'Lifetime',mode:'lifetime'};
+  if(dashboardSettings.mode==='business'){
+    const day=dashboardSettings.businessStartDay;
+    let start=new Date(now.getFullYear(),now.getMonth(),day);
+    if(now.getDate()<day) start=new Date(now.getFullYear(),now.getMonth()-1,day);
+    const end=new Date(start.getFullYear(),start.getMonth()+1,day-1);
+    return {from:isoDateLocal(start),to:isoDateLocal(end),label:'Business month · '+String(start.getDate()).padStart(2,'0')+' '+start.toLocaleString('en-PK',{month:'short'})+' – '+String(end.getDate()).padStart(2,'0')+' '+end.toLocaleString('en-PK',{month:'short',year:'numeric'}),mode:'business'};
+  }
+  const start=new Date(now.getFullYear(),now.getMonth(),1);
+  const end=new Date(now.getFullYear(),now.getMonth()+1,0);
+  return {from:isoDateLocal(start),to:isoDateLocal(end),label:start.toLocaleString('en-PK',{month:'long',year:'numeric'}),mode:'calendar'};
+}
+function dashboardDateInRange(value, range){
+  if(!range.from && !range.to) return true;
+  const d=dateOnly(value); if(!d) return false;
+  return (!range.from||d>=range.from)&&(!range.to||d<=range.to);
+}
+function expensesForDashboardRange(range){
+  let total=0;
+  expensesInRange(range.from,range.to).forEach(function(x){ total+=Number(x.amount)||0; });
+  allPhoneExpenseEntries().forEach(function(x){ if(dashboardDateInRange(x.date,range)) total+=Number(x.amount)||0; });
+  return total;
+}
+function renderDashboardPeriodControls(){
+  const defs=[['calendar','This month'],['business','Business month'],['lifetime','Lifetime']];
+  const html=defs.map(function(x){ return '<button type="button" class="chip '+(dashboardSettings.mode===x[0]?'active':'')+'" data-dashboard-period="'+x[0]+'">'+x[1]+'</button>'; }).join('');
+  ['dashboardPeriodToggles','dashboardDefaultPeriodToggles'].forEach(function(id){ const el=document.getElementById(id); if(el) el.innerHTML=html; });
+  document.querySelectorAll('[data-dashboard-period]').forEach(function(btn){ btn.onclick=function(){ dashboardSettings.mode=btn.dataset.dashboardPeriod; saveDashboardSettings(); renderDashboardPeriodControls(); renderDashboard(); renderStats(); }; });
+  const inp=document.getElementById('businessMonthStartDay'); if(inp){ inp.value=dashboardSettings.businessStartDay; inp.onchange=function(){ dashboardSettings.businessStartDay=Math.min(28,Math.max(1,Number(inp.value)||1)); inp.value=dashboardSettings.businessStartDay; saveDashboardSettings(); renderDashboard(); renderStats(); }; }
+}
+loadDashboardSettings();
+
 function renderStats(){
   const availableUnits = inventory.filter(function(e){return !e.sold && Number(e.quantity||0)>0;})
     .reduce(function(s,e){return s+(Number(e.quantity)||0);},0);
-
-  // Main screen stats are intentionally for the current month.
-  const now = new Date();
-  const curMonthKey = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  const soldThisMonth = inventory.filter(function(e){
+  const range=dashboardPeriodRange();
+  const soldItems=inventory.filter(function(e){
     if(!e.sold || isReturnedSale(e)) return false;
-    const d = e.saleDate || e.saleAt || e.lastUpdated;
-    return d && String(d).indexOf(curMonthKey)===0;
+    const d=e.saleDate || e.saleAt || e.lastUpdated;
+    return dashboardDateInRange(d,range);
   });
-  const soldUnitsThisMonth = soldThisMonth.reduce(function(s,e){return s+(Number(e.quantity)||0);},0);
-  const grossProfitThisMonth = soldThisMonth.filter(function(e){return e.buy!=null && e.sell!=null;})
-    .reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(Number(e.quantity)||1));},0);
-  const monthExpenses = expensesInMonth(curMonthKey) + phoneExpensesInMonth(curMonthKey);
-  const netProfitThisMonth = grossProfitThisMonth - monthExpenses;
-  const netProfitColor = netProfitThisMonth >= 0 ? 'var(--pta)' : 'var(--danger)';
-
-  document.getElementById('stats').innerHTML =
+  const soldUnits=soldItems.reduce(function(s,e){return s+(Number(e.quantity)||0);},0);
+  const grossProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(Number(e.quantity)||1));},0);
+  const netProfit=grossProfit-expensesForDashboardRange(range);
+  const netProfitColor=netProfit>=0?'var(--pta)':'var(--danger)';
+  const periodLabel=range.label;
+  document.getElementById('stats').innerHTML=
     '<div class="stat"><div class="v num">'+availableUnits+'</div><div class="l">Stock mein</div></div>'+
-    '<div class="stat"><div class="v num">'+soldUnitsThisMonth+'</div><div class="l">Is mahine sold</div></div>'+
-    '<div class="stat"><div class="v num" style="color:'+netProfitColor+'">'+displayProfitHtml(netProfitThisMonth)+'</div><div class="l">Is mahine net profit</div></div>';
+    '<div class="stat"><div class="v num">'+soldUnits+'</div><div class="l">Sold <span style="display:block;font-size:10px;color:var(--text-dim);font-weight:500;margin-top:2px;">'+escapeHtml(periodLabel)+'</span></div></div>'+
+    '<div class="stat"><div class="v num" style="color:'+netProfitColor+'">'+displayProfitHtml(netProfit)+'</div><div class="l">Net Profit <span style="display:block;font-size:10px;color:var(--text-dim);font-weight:500;margin-top:2px;">'+escapeHtml(periodLabel)+'</span></div></div>';
 }
 
 // Most browsers give roughly 5MB per site for localStorage. There's no
@@ -5419,7 +5480,7 @@ const LS_UNDO_STACK='mobileLedger_undoStack_v15';
 const LS_REDO_STACK='mobileLedger_redoStack_v15';
 const LS_WA_TEMPLATE_KEY='mobileLedger_waTemplate';
 function appStateSnapshot(){
-  return {inventory:JSON.stringify(inventory),expenses:JSON.stringify(expenses),customOptionData:JSON.stringify(customOptionData),cardDisplaySettings:JSON.stringify(cardDisplaySettings),customModels:JSON.stringify(customModels||{}),rateBook:JSON.stringify(rateBook||[]),waTemplate:localStorage.getItem(shopStorageKey(LS_WA_TEMPLATE_KEY))||'',shopProfile:JSON.stringify(shopProfile||{}),uiScaleMode:uiScaleMode||'normal'};
+  return {inventory:JSON.stringify(inventory),expenses:JSON.stringify(expenses),customOptionData:JSON.stringify(customOptionData),cardDisplaySettings:JSON.stringify(cardDisplaySettings),customModels:JSON.stringify(customModels||{}),dashboardSettings:JSON.stringify(dashboardSettings||{}),rateBook:JSON.stringify(rateBook||[]),waTemplate:localStorage.getItem(shopStorageKey(LS_WA_TEMPLATE_KEY))||'',shopProfile:JSON.stringify(shopProfile||{}),uiScaleMode:uiScaleMode||'normal',dashboardSettings:JSON.stringify(dashboardSettings||{})};
 }
 function loadPersistentHistory(){
   try{undoStack=JSON.parse(localStorage.getItem(shopStorageKey(LS_UNDO_STACK))||'[]')||[];}catch(e){undoStack=[];}
@@ -5828,56 +5889,38 @@ function autoBackupIfDue(){
 
 // ---------- Dashboard ----------
 function renderDashboard(){
-  const now = new Date();
-  const curMonthKey = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  const stockItems = inventory.filter(function(e){ return !e.sold && Number(e.quantity||0)>0; });
-  const soldItems = inventory.filter(function(e){ return e.sold && !isReturnedSale(e); });
-
-  const totalStockValue = stockItems.reduce(function(s,e){ return s + ((e.buy!=null?Number(e.buy):0) * (e.quantity||0)); }, 0);
-  const pendingUnits = stockItems.reduce(function(s,e){ return s + (e.quantity||0); }, 0);
-
-  const soldThisMonth = soldItems.filter(function(e){
-    const d = e.saleDate || e.lastUpdated;
-    return d && String(d).indexOf(curMonthKey) === 0;
-  });
-  const unitsSoldThisMonth = soldThisMonth.reduce(function(s,e){ return s + (e.quantity||0); }, 0);
-  const profitThisMonth = soldThisMonth.filter(function(e){ return e.buy!=null && e.sell!=null; })
-    .reduce(function(s,e){ return s + ((Number(e.sell)-Number(e.buy))*(e.quantity||1)); }, 0);
-
-  const allTimeProfit = soldItems.filter(function(e){ return e.buy!=null && e.sell!=null; })
-    .reduce(function(s,e){ return s + ((Number(e.sell)-Number(e.buy))*(e.quantity||1)); }, 0);
-
-  const expensesThisMonth = expensesInMonth(curMonthKey) + phoneExpensesInMonth(curMonthKey);
-  const totalExpensesAll = totalExpensesAllTime() + totalPhoneExpensesAllTime();
-  const netProfitThisMonth = profitThisMonth - expensesThisMonth;
-  const netProfitAllTime = allTimeProfit - totalExpensesAll;
-
-  const cards = [
-    {v: displayProfitHtml(totalStockValue), l:'Total stock value (khareed pe)'},
-    {v: pendingUnits, l:'Pending (stock mein)'},
-    {v: unitsSoldThisMonth, l:'Is mahine sold'},
-    {v: displayProfitHtml(netProfitThisMonth), l:'Is mahine ka net profit (kharche ke baad)'},
-    {v: displayProfitHtml(expensesThisMonth), l:'Is mahine ka kharcha'},
-    {v: displayProfitHtml(netProfitAllTime), l:'Total net profit (ab tak)'},
-    {v: displayProfitHtml(totalExpensesAll), l:'Total kharcha (ab tak)'},
-    {v: soldItems.reduce(function(s,e){return s+(e.quantity||0);},0), l:'Total sold (ab tak)'}
+  renderDashboardPeriodControls();
+  const range=dashboardPeriodRange();
+  const stockItems=inventory.filter(function(e){return !e.sold&&Number(e.quantity||0)>0;});
+  const soldItems=inventory.filter(function(e){return e.sold&&!isReturnedSale(e);});
+  const totalStockValue=stockItems.reduce(function(s,e){return s+((e.buy!=null?Number(e.buy):0)*(e.quantity||0));},0);
+  const pendingUnits=stockItems.reduce(function(s,e){return s+(e.quantity||0);},0);
+  const soldPeriod=soldItems.filter(function(e){return dashboardDateInRange(e.saleDate||e.saleAt||e.lastUpdated,range);});
+  const unitsSold=soldPeriod.reduce(function(s,e){return s+(e.quantity||0);},0);
+  const grossProfit=soldPeriod.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0);
+  const periodExpenses=expensesForDashboardRange(range);
+  const netProfit=grossProfit-periodExpenses;
+  const totalExpensesAll=totalExpensesAllTime()+totalPhoneExpensesAllTime();
+  const allTimeProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0);
+  const netProfitAllTime=allTimeProfit-totalExpensesAll;
+  const cards=[
+    {v:displayProfitHtml(totalStockValue),l:'Total stock value'},
+    {v:pendingUnits,l:'Pending stock'},
+    {v:unitsSold,l:'Sold · '+range.label},
+    {v:displayProfitHtml(netProfit),l:'Net Profit · '+range.label},
+    {v:displayProfitHtml(periodExpenses),l:'Expenses · '+range.label},
+    {v:displayProfitHtml(netProfitAllTime),l:'Lifetime Net Profit'},
+    {v:displayProfitHtml(totalExpensesAll),l:'Lifetime Expenses'},
+    {v:soldItems.reduce(function(s,e){return s+(e.quantity||0);},0),l:'Lifetime Sold'}
   ];
   const dead=stockItems.filter(function(e){
-    const d=e.buyDate||e.availableDate||e.lastUpdated;
-    if(!d) return false;
-    const days=(Date.now()-new Date(d).getTime())/86400000;
-    return days>=30;
+    const d=e.buyDate||e.availableDate||e.lastUpdated; if(!d)return false;
+    const days=(Date.now()-new Date(d).getTime())/86400000; return days>=30;
   }).sort(function(a,b){return new Date(a.buyDate||a.availableDate||a.lastUpdated)-new Date(b.buyDate||b.availableDate||b.lastUpdated);}).slice(0,8);
   let deadHtml='';
-  if(dead.length){
-    deadHtml='<div class="dead-stock-card"><div class="dead-stock-title">⚠️ Dead Stock — 30+ din se unsold</div>'+dead.map(function(e){
-      const d=e.buyDate||e.availableDate||e.lastUpdated; const days=Math.max(0,Math.floor((Date.now()-new Date(d).getTime())/86400000));
-      return '<div class="dead-stock-row"><span>'+escapeHtml((e.brand||'')+' '+(e.model||''))+'<br><span style="color:var(--text-dim)">'+days+' din · '+(e.quantity||0)+' pcs</span></span><span class="num">'+(e.buy!=null?fmt(e.buy):'-')+'</span></div>';
-    }).join('')+'</div>';
-  }
-  document.getElementById('dashboardGrid').innerHTML = cards.map(function(c){
-    return '<div class="stat-card"><div class="v num">'+c.v+'</div><div class="l">'+c.l+'</div></div>';
-  }).join('') + deadHtml;
+  if(dead.length){ deadHtml='<div class="dead-stock-card"><div class="dead-stock-title">⚠️ Dead Stock — 30+ din se unsold</div>'+dead.map(function(e){const d=e.buyDate||e.availableDate||e.lastUpdated;const days=Math.max(0,Math.floor((Date.now()-new Date(d).getTime())/86400000));return '<div class="dead-stock-row"><span>'+escapeHtml((e.brand||'')+' '+(e.model||''))+'<br><span style="color:var(--text-dim)">'+days+' din · '+(e.quantity||0)+' pcs</span></span><span class="num">'+(e.buy!=null?fmt(e.buy):'-')+'</span></div>';}).join('')+'</div>'; }
+  document.getElementById('dashboardGrid').innerHTML=cards.map(function(c){return '<div class="stat-card"><div class="v num">'+c.v+'</div><div class="l">'+escapeHtml(c.l)+'</div></div>';}).join('')+deadHtml;
+  const note=document.getElementById('dashboardPeriodNote'); if(note) note.textContent=range.mode==='lifetime'?'All records':(dashboardSettings.mode==='business'?'Har month isi selected start day se period calculate hota hai.':'Calendar month: 1st se month ke last day tak.');
 }
 
 document.getElementById('btnDashboard').onclick = function(){
@@ -7043,6 +7086,8 @@ document.getElementById('settingsAddBrandBtn').onclick = function(){
 const SETTINGS_PAGE_TITLES={home:'Settings',account:'Account',shop:'Shop',inventory:'Stock & Pricing',appearance:'Appearance',fields:'Fields & Options',whatsapp:'WhatsApp',privacy:'Privacy & Security',applock:'App Lock',backup:'Backup & Sync',data:'Data Management',about:'About',shopaccess:'Shop Access'};
 let currentSettingsPage='home';
 function renderSettingsHomeSummaries(){
+  loadDashboardSettings();
+  renderDashboardPeriodControls();
   const a=document.getElementById('settingsSummaryAccount');
   if(a) a.textContent=fbUser ? ((fbUser.email||fbUser.displayName||'Signed in')+' • sync ON') : 'Sign in required';
   const s=document.getElementById('settingsSummaryShop'); if(s) s.textContent=shopProfile.shopName ? (shopProfile.shopName+(shopProfile.shopPhone?' • '+shopProfile.shopPhone:'')) : 'Shop profile set karein';
@@ -8071,7 +8116,20 @@ function initFirebaseSync(){
     // Always resolve the signed-in shop context before revealing the main UI.
     // This prevents a previously cached shop's local data from flashing on
     // screen when a different account is about to be restored or signed in.
-    setAuthGateView('checking');
+    // Do not make the user wait on every refresh. If this device already has
+    // a known signed-in session, reveal the app immediately. App Lock (if
+    // enabled) is enforced immediately from local session state; Firebase
+    // continues resolving the account/shop context in the background.
+    if(wasLoggedInBefore){
+      if(shouldRequireAppLock() && !appLockSessionIsUnlocked()) showAppLockOverlay(false);
+      else { const appEl=document.querySelector('.app'); if(appEl) appEl.style.visibility='visible'; const fab=document.getElementById('fabAdd'); if(fab) fab.style.display='flex'; }
+      setAuthGateView('checking');
+      const appEl=document.querySelector('.app');
+      if(appEl && (!shouldRequireAppLock() || appLockSessionIsUnlocked())) appEl.style.visibility='visible';
+      const fab=document.getElementById('fabAdd'); if(fab && (!shouldRequireAppLock() || appLockSessionIsUnlocked())) fab.style.display='flex';
+    } else {
+      setAuthGateView('checking');
+    }
     // Safety net: never let the checking screen hang indefinitely (e.g.
     // a slow/blocked network on first open) — fall through to the login
     // screen so the person isn't stuck waiting forever.
