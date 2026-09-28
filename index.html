@@ -250,7 +250,9 @@
 
   .stat-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
   
-.dashboard-period-bar{margin:0 0 12px;padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--surface-2);}
+ .dashboard-period-bar{margin:0 0 12px;padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--surface-2);}
+.stats-period-pill{display:flex;justify-content:center;align-items:center;margin:0 0 8px;}
+.stats-period-pill span{display:inline-flex;align-items:center;padding:4px 10px;border:1px solid var(--border);border-radius:999px;background:var(--surface-2);color:var(--text-dim);font-size:10.5px;font-weight:700;line-height:1.2;}
 .dashboard-period-title{font-size:12px;font-weight:700;color:var(--text-dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:.3px;}
 .dashboard-period-note{font-size:11.5px;color:var(--text-dim);margin-top:7px;line-height:1.35;}
 .stat-card{background:var(--surface);border-radius:var(--radius);padding:14px 12px;}
@@ -688,7 +690,6 @@
       <option value="qty-asc">Kam quantity pehle</option>
     </select>
   </div>
-  <div class="long-press-hint">Mobile ko long-press karke multiple selection shuru karein</div>
   <div class="chips-scroll" id="brandFilterChips"></div>
   <div class="chips-scroll" id="filterChips"></div>
   <div class="activity-filter-row">
@@ -723,6 +724,7 @@
 </div>
 <div class="multi-share-bar" id="multiShareBar">
   <div class="multi-share-count" id="multiShareCount">0 selected</div>
+  <button type="button" id="multiShareSelectAll">Select all</button>
   <button type="button" id="multiShareCancel">Cancel</button>
   <button type="button" class="danger" id="multiShareDelete">🗑 Delete</button>
   <button type="button" class="primary" id="multiShareSend">📤 Share</button>
@@ -3239,9 +3241,10 @@ function renderStats(){
   const netProfitColor=netProfit>=0?'var(--pta)':'var(--danger)';
   const periodLabel=range.label;
   document.getElementById('stats').innerHTML=
+    '<div class="stats-period-pill"><span>📅 '+escapeHtml(periodLabel)+'</span></div>'+
     '<div class="stat"><div class="v num">'+availableUnits+'</div><div class="l">Stock mein</div></div>'+
-    '<div class="stat"><div class="v num">'+soldUnits+'</div><div class="l">Sold <span style="display:block;font-size:10px;color:var(--text-dim);font-weight:500;margin-top:2px;">'+escapeHtml(periodLabel)+'</span></div></div>'+
-    '<div class="stat"><div class="v num" style="color:'+netProfitColor+'">'+displayProfitHtml(netProfit)+'</div><div class="l">Net Profit <span style="display:block;font-size:10px;color:var(--text-dim);font-weight:500;margin-top:2px;">'+escapeHtml(periodLabel)+'</span></div></div>';
+    '<div class="stat"><div class="v num">'+soldUnits+'</div><div class="l">Sold</div></div>'+
+    '<div class="stat"><div class="v num" style="color:'+netProfitColor+'">'+displayProfitHtml(netProfit)+'</div><div class="l">Net Profit</div></div>';
 }
 
 // Most browsers give roughly 5MB per site for localStorage. There's no
@@ -3916,6 +3919,8 @@ function updateMultiShareBar(){
   const count=document.getElementById('multiShareCount');
   if(!bar || !count) return;
   count.textContent=selectedShareIds.length+' selected';
+  const allBtn=document.getElementById('multiShareSelectAll');
+  if(allBtn) allBtn.textContent=(inventory.length && selectedShareIds.length===inventory.length)?'All selected':'Select all';
   bar.classList.toggle('show',shareSelectMode);
 }
 
@@ -3942,6 +3947,19 @@ function toggleShareSelection(id){
   updateMultiShareBar();
   clearSelectionVisuals();
 }
+
+function selectAllShareEntries(){
+  const ids=inventory.map(function(e){return String(e.id);}).filter(Boolean);
+  if(!ids.length){ return; }
+  shareSelectMode=true;
+  document.body.classList.add('share-select-mode');
+  selectedShareIds=ids;
+  updateMultiShareBar();
+  clearSelectionVisuals();
+}
+
+const multiShareSelectAllBtn=document.getElementById('multiShareSelectAll');
+if(multiShareSelectAllBtn){ multiShareSelectAllBtn.onclick=function(){ selectAllShareEntries(); }; }
 
 function bindLongPressSelection(){
   document.querySelectorAll('[data-multi-select-card]').forEach(function(el){
@@ -8496,6 +8514,16 @@ function startCloudSync(uid){
     }
     applyingRemoteUpdate = false;
     render();
+    // Entry UI depends on cloud-synced custom fields/options/layout. Refresh it
+    // immediately when the latest shop snapshot arrives so a newly opened entry
+    // does not show an incomplete set of fields until a manual page refresh.
+    try{
+      loadCustomOptionData();
+      renderAllChips();
+      prepareEntryLayoutDOM();
+      applyEntryLayoutToDOM(getEntryPlatform(formState && formState.brand));
+      renderEntryLayoutSettings();
+    }catch(e){}
     updateAccountUI();
     setAccountSyncStatus('sab devices par sync ho gaya ✓', 'ok');
   }, function(err){
