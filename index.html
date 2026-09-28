@@ -47,8 +47,10 @@
 
   header{position:sticky;top:0;z-index:10;background:var(--bg);padding:16px 16px 12px;border-bottom:1px solid var(--border);}
   header h1{font-size:19px;font-weight:600;margin:0 0 12px;letter-spacing:-0.2px;}
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-  .stat{background:var(--surface);border-radius:var(--radius);padding:10px 8px;text-align:center;}
+  .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch;}
+  .stats-period-pill{grid-column:1 / -1;justify-content:flex-start;margin:0 0 0;}
+  .stats-period-pill span{white-space:nowrap;}
+  .stat{background:var(--surface);border-radius:var(--radius);padding:10px 8px;text-align:center;min-width:0;}
   .stat .v{font-size:16px;font-weight:600;}
   .stat .l{font-size:10.5px;color:var(--text-dim);margin-top:2px;}
 
@@ -3239,9 +3241,16 @@ function renderStats(){
   const grossProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(Number(e.quantity)||1));},0);
   const netProfit=grossProfit-expensesForDashboardRange(range);
   const netProfitColor=netProfit>=0?'var(--pta)':'var(--danger)';
-  const periodLabel=range.label;
+  let periodLabel=range.label;
+  if(range.mode==='calendar'){
+    periodLabel='This month · '+new Date().toLocaleString('en-PK',{month:'short',year:'numeric'});
+  }else if(range.mode==='business'){
+    periodLabel='Business month · '+String(range.from||'').slice(5)+' → '+String(range.to||'').slice(5);
+  }else if(range.mode==='lifetime'){
+    periodLabel='Lifetime';
+  }
   document.getElementById('stats').innerHTML=
-    '<div class="stats-period-pill"><span>📅 '+escapeHtml(periodLabel)+'</span></div>'+
+    '<div class="stats-period-pill"><span>'+escapeHtml(periodLabel)+'</span></div>'+
     '<div class="stat"><div class="v num">'+availableUnits+'</div><div class="l">Stock mein</div></div>'+
     '<div class="stat"><div class="v num">'+soldUnits+'</div><div class="l">Sold</div></div>'+
     '<div class="stat"><div class="v num" style="color:'+netProfitColor+'">'+displayProfitHtml(netProfit)+'</div><div class="l">Net Profit</div></div>';
@@ -4999,6 +5008,26 @@ document.getElementById('f-model-select').addEventListener('change', function(){
   document.getElementById('modelDropdownBtn').classList.remove('on');
 });
 
+function refreshEntryFormUI(){
+  // Always rebuild the entry UI from the latest shop-scoped configuration.
+  try{
+    loadCustomOptionData();
+    renderAllChips();
+    prepareEntryLayoutDOM();
+    applyEntryLayoutToDOM(getEntryPlatform(formState && formState.brand));
+  }catch(err){ console.warn('Entry UI refresh failed',err); }
+}
+function settleEntryFormUI(){
+  // Cloud sync may finish just after the sheet opens. Re-check briefly so the
+  // first open and the post-refresh open show the same fields/options.
+  [0,120,300,700,1200].forEach(function(ms){
+    setTimeout(function(){
+      const ov=document.getElementById('overlay');
+      if(ov && !ov.classList.contains('hidden')) refreshEntryFormUI();
+    },ms);
+  });
+}
+
 function openAdd(){
   prepareEntryLayoutDOM();
   if(isAdminShopView()){ alert('Admin Shop view read-only hai — nayi entry add nahi ki ja sakti.'); return; }
@@ -5040,18 +5069,16 @@ function openAdd(){
   renderPhoneExpenseRows('f-phone-expenses', [{}]);
   extraPieceCount = 0;
   document.getElementById('addExtraBuyBtn').style.display = 'block';
-  // Hydrate the latest saved field/layout configuration before the sheet is shown.
-  // This prevents built-in fields such as RAM/Storage from appearing late.
-  loadCustomOptionData();
-  renderAllChips();
-  applyEntryLayoutToDOM(getEntryPlatform(formState.brand));
+  // Render immediately from the latest local snapshot, then quietly settle
+  // against any cloud snapshot that arrives just after the sheet opens.
+  refreshEntryFormUI();
   document.getElementById('overlay').classList.remove('hidden');
   requestAnimationFrame(function(){
-    renderAllChips();
-    applyEntryLayoutToDOM(getEntryPlatform(formState.brand));
+    refreshEntryFormUI();
     const sheet=document.querySelector('#overlay .sheet');
     if(sheet) sheet.scrollTop=0;
   });
+  settleEntryFormUI();
   pushOverlayHistory('overlay');
 }
 
