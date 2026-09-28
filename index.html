@@ -5008,6 +5008,29 @@ document.getElementById('f-model-select').addEventListener('change', function(){
   document.getElementById('modelDropdownBtn').classList.remove('on');
 });
 
+function preloadLatestShopEntryConfig(){
+  // Do not block opening the entry sheet. Fetch the latest cloud entry-layout
+  // configuration in the background so a very fast tap on + cannot show the
+  // older/default layout for a moment. The normal onSnapshot listener remains
+  // the source of truth; this is only a fast hydration path for the entry UI.
+  if(shopConfigReady || shopConfigFetchPromise || !fbDb || !fbUser || userRole==='admin' || !userShopId) return;
+  const shopId=String(userShopId);
+  shopConfigFetchPromise=fbDb.collection('shops').doc(shopId).get().then(function(snap){
+    if(!snap.exists) return;
+    const data=snap.data()||{};
+    if(data.customOptionData){
+      customOptionData=data.customOptionData;
+      try{ localStorage.setItem(shopStorageKey(LS_CUSTOM_OPTIONS_KEY), JSON.stringify(customOptionData)); }catch(e){}
+      shopConfigReady=true;
+      refreshEntryFormUI();
+    }
+  }).catch(function(err){
+    console.warn('Entry config preload failed',err);
+  }).finally(function(){
+    shopConfigFetchPromise=null;
+  });
+}
+
 function refreshEntryFormUI(){
   // Always rebuild the entry UI from the latest shop-scoped configuration.
   try{
@@ -5030,6 +5053,7 @@ function settleEntryFormUI(){
 
 function openAdd(){
   prepareEntryLayoutDOM();
+  preloadLatestShopEntryConfig();
   if(isAdminShopView()){ alert('Admin Shop view read-only hai — nayi entry add nahi ki ja sakti.'); return; }
   hideSaveError('saveErrorBanner');
   editingId = null;
@@ -7688,6 +7712,8 @@ const firebaseConfig = {
 let fbAuth = null, fbDb = null, fbUser = null;
 let cloudUnsub = null;
 let applyingRemoteUpdate = false; // true while a cloud update is being written locally, so we don't immediately re-push it
+let shopConfigReady = false;
+let shopConfigFetchPromise = null;
 let pushDebounceTimer = null;
 // Guards against the "offline entry disappears" bug: every local save bumps
 // localVersion; a push only advances lastPushedVersion (persisted, so it
@@ -7849,6 +7875,8 @@ function activateShopStorage(shopId){
     undoStack=[];
     redoStack=[];
     activeShopStorageId=next;
+    shopConfigReady=false;
+    shopConfigFetchPromise=null;
 
     loadCustomOptionData();
     loadCustomModels();
@@ -8526,6 +8554,7 @@ function startCloudSync(uid){
     if(data.customOptionData){
       customOptionData = data.customOptionData;
       try{ localStorage.setItem(shopStorageKey(LS_CUSTOM_OPTIONS_KEY), JSON.stringify(customOptionData)); }catch(err){}
+      shopConfigReady = true;
     }
     if(data.cardDisplaySettings){
       Object.assign(cardDisplaySettings, data.cardDisplaySettings);
