@@ -411,6 +411,18 @@
   .app-lock-other-btn{margin-top:14px;width:auto;border:0;background:transparent;color:var(--accent);font-weight:800;font-size:12px;padding:7px 10px;}
   .app-lock-change-note{margin:0 auto 10px;color:var(--text-dim);font-size:11.5px;line-height:1.35;}
   .app-lock-forgot-btn{margin-top:8px;width:auto;border:0;background:transparent;color:var(--text-dim);font-weight:800;font-size:11.5px;padding:7px 10px;text-decoration:underline;}
+  #sessionSplash{position:fixed;inset:0;z-index:2600;display:none;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 38%,rgba(47,54,70,.92),rgba(9,10,14,.985) 68%);color:var(--text);padding:24px;box-sizing:border-box;}
+  #sessionSplash.show{display:flex;}
+  .session-splash-card{width:min(330px,88vw);text-align:center;display:flex;flex-direction:column;align-items:center;animation:sessionSplashIn .28s ease-out;}
+  .session-splash-logo{width:88px;height:88px;border-radius:24px;overflow:hidden;border:1px solid rgba(255,255,255,.13);box-shadow:0 16px 40px rgba(0,0,0,.38);background:var(--surface-2);margin-bottom:22px;}
+  .session-splash-logo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .session-splash-title{font-size:29px;font-weight:900;letter-spacing:-.6px;}
+  .session-splash-by{margin-top:3px;font-size:14px;color:var(--text-dim);font-weight:700;}
+  .session-splash-status{margin-top:28px;font-size:13px;color:var(--text-dim);}
+  .session-splash-loader{width:180px;height:4px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden;margin-top:12px;}
+  .session-splash-loader i{display:block;width:42%;height:100%;border-radius:99px;background:var(--accent);animation:sessionSplashLoad 1.15s ease-in-out infinite;}
+  @keyframes sessionSplashLoad{0%{transform:translateX(-120%)}50%{transform:translateX(90%)}100%{transform:translateX(300%)}}
+  @keyframes sessionSplashIn{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:none}}
   #appLockOverlay{z-index:2500;background:var(--bg);align-items:center;padding:18px;}
   #appLockOverlay.hidden{display:none;}
   #appLockSetupOverlay{z-index:2600;align-items:center;padding:18px;}
@@ -1066,6 +1078,16 @@
     <div class="sheet-actions">
       <button class="btn-cancel" id="btnExpensesClose">Band karein</button>
     </div>
+  </div>
+</div>
+
+<div id="sessionSplash" aria-hidden="true">
+  <div class="session-splash-card">
+    <div class="session-splash-logo"><img src="icon-192.png" alt="Mobile Hisab"></div>
+    <div class="session-splash-title">Mobile Hisab</div>
+    <div class="session-splash-by">by Z Mobile</div>
+    <div class="session-splash-status">Secure session check ho raha hai…</div>
+    <div class="session-splash-loader"><i></i></div>
   </div>
 </div>
 
@@ -7783,6 +7805,13 @@ function firebaseReady(){
 // The whole app is behind login now. accountOverlay doubles as the gate:
 // while we don't know/have a signed-in user, it's forced open with no way
 // to close it. Once signed in, it hides and the app becomes usable.
+function setSessionSplash(show){
+  const el=document.getElementById('sessionSplash');
+  if(!el) return;
+  if(show){ el.classList.add('show'); el.setAttribute('aria-hidden','false'); }
+  else { el.classList.remove('show'); el.setAttribute('aria-hidden','true'); }
+}
+
 function setAuthGateView(mode){ // 'checking' | 'locked' | 'unlocked'
   const overlay = document.getElementById('accountOverlay');
   const checking = document.getElementById('accountCheckingView');
@@ -7796,20 +7825,23 @@ function setAuthGateView(mode){ // 'checking' | 'locked' | 'unlocked'
   const appEl = document.querySelector('.app');
   const fab = document.getElementById('fabAdd');
   if(mode === 'checking'){
-    // Keep the intermediate session-checking screen hidden. The main app must
-    // also stay hidden until auth/shop context is resolved; otherwise the user
-    // can briefly interact with the app before App Lock is enforced.
+    // Never expose a half-rendered dashboard while Firebase restores the
+    // session. Show a clean branded splash instead. App Lock can be placed
+    // above it immediately when local lock state requires authentication.
     overlay.classList.add('hidden');
     checking.style.display = 'none'; loggedOut.style.display = 'none'; loggedIn.style.display = 'none'; if(accessView) accessView.style.display='none';
     if(closeRow) closeRow.style.display = 'none'; if(topbar) topbar.style.display='none'; if(note) note.style.display='none';
     if(appEl) appEl.style.visibility = 'hidden'; if(fab) fab.style.display = 'none';
+    setSessionSplash(true);
   } else if(mode === 'locked'){
+    setSessionSplash(false);
     overlay.classList.remove('hidden');
     checking.style.display = 'none'; loggedOut.style.display = 'block'; loggedIn.style.display = 'none'; if(accessView) accessView.style.display='none';
     if(closeRow) closeRow.style.display = 'none'; if(topbar) topbar.style.display='none'; if(note) note.style.display='none';
     if(appEl) appEl.style.visibility = 'hidden'; if(fab) fab.style.display = 'none';
     setAccEmailMode('login');
   } else {
+    setSessionSplash(false);
     checking.style.display = 'none';
     if(accessView) accessView.style.display='none';
     if(closeRow) closeRow.style.display = 'flex';
@@ -8198,16 +8230,18 @@ function initFirebaseSync(){
     // enabled) is enforced immediately from local session state; Firebase
     // continues resolving the account/shop context in the background.
     if(wasLoggedInBefore){
-      // Known session: show the already-cached, shop-scoped state immediately.
-      // The active shop id was restored before the first render, so this no
-      // longer flashes the previous/legacy shop and then changes 3–4 seconds
-      // later when Firebase resolves. App Lock still takes priority.
-      if(shouldRequireAppLock() && !appLockSessionIsUnlocked()) showAppLockOverlay(false);
-      else {
+      // Known session: keep the cached app available immediately. If App Lock
+      // is required, show the lock directly — do not put the auth-check splash
+      // on top of it and do not briefly expose the dashboard.
+      if(shouldRequireAppLock() && !appLockSessionIsUnlocked()){
+        setAuthGateView('checking');
+        showAppLockOverlay(false);
+      } else {
+        setAuthGateView('checking');
         const appEl=document.querySelector('.app'); if(appEl) appEl.style.visibility='visible';
         const fab=document.getElementById('fabAdd'); if(fab) fab.style.display='flex';
+        setSessionSplash(false);
       }
-      setAuthGateView('checking');
     } else {
       setAuthGateView('checking');
     }
