@@ -8908,8 +8908,18 @@ if('serviceWorker' in navigator){
     var lock=document.getElementById('appLockOverlay');
     var account=document.getElementById('accountOverlay');
     if(app && app.style.visibility==='visible'){ hideStartup(); return true; }
-    /* If the real lock/login/checking overlay is active, let it take over. */
-    if((lock && !lock.classList.contains('hidden')) || (account && !account.classList.contains('hidden'))){ hideStartup(); return true; }
+    /* Keep the branded splash visible while Firebase is only checking the
+       session. The old version hid the splash as soon as accountOverlay
+       appeared, which exposed the plain 'Session check ho raha hai...' view.
+       Only hand over to the real UI once the session check has finished
+       (locked/login screen, app-lock, or main app). */
+    if(account && !account.classList.contains('hidden')){
+      var checking=document.getElementById('accountCheckingView');
+      var isChecking=checking && getComputedStyle(checking).display!=='none';
+      if(isChecking) return false;
+      hideStartup(); return true;
+    }
+    if(lock && !lock.classList.contains('hidden')){ hideStartup(); return true; }
     return false;
   }
   document.addEventListener('DOMContentLoaded',function(){
@@ -8919,12 +8929,14 @@ if('serviceWorker' in navigator){
     /* Branding splash must never wait for Firebase/cloud sync. The actual
        session gate underneath continues resolving safely in the background. */
     setTimeout(function(){
-      if(!checkReady()) hideStartup();
+      /* Do not force-hide here: if Firebase is still checking, keep the
+         branded splash until the real account/app state is ready. */
+      checkReady();
     },1400);
     var timer=setInterval(function(){
       if(checkReady()) clearInterval(timer);
     },120);
-    setTimeout(function(){ clearInterval(timer); },5000);
+    setTimeout(function(){ clearInterval(timer); },30000);
   });
 })();
 </script>
