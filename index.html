@@ -10,31 +10,31 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
 <link rel="manifest" href="manifest.json?v=25">
-<meta name="theme-color" content="#0f1115">
+<meta name="theme-color" content="#263548">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mobile Hisab">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
   :root{
-    --bg:#0f1115;
-    --surface:#171a21;
-    --surface-2:#1f232c;
-    --surface-3:#262b36;
-    --border:#2a2f3a;
-    --border-strong:#3a4150;
-    --text:#e8eaed;
-    --text-dim:#9aa0ab;
-    --text-faint:#666d7a;
-    --accent:#2dd4bf;
-    --accent-text:#052e2b;
+    --bg:#ffffff;
+    --surface:#ffffff;
+    --surface-2:#f5f7fa;
+    --surface-3:#eef1f5;
+    --border:#d5dbe3;
+    --border-strong:#b9c2cf;
+    --text:#172033;
+    --text-dim:#667085;
+    --text-faint:#98a2b3;
+    --accent:#ef1d2d;
+    --accent-text:#ffffff;
     --pta:#4ade80; --pta-bg:#132a1c;
     --nonpta:#fbbf24; --nonpta-bg:#2a2213;
     --cpid:#f87171; --cpid-bg:#2a1616;
     --jv:#60a5fa; --jv-bg:#131f2e;
     --bypass:#fb7185; --bypass-bg:#2a1420;
-    --danger:#f87171;
-    --sale:#c084fc;
+    --danger:#ef1d2d;
+    --sale:#ef1d2d;
     --radius:12px;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   }
@@ -47,8 +47,10 @@
 
   header{position:sticky;top:0;z-index:10;background:var(--bg);padding:16px 16px 12px;border-bottom:1px solid var(--border);}
   header h1{font-size:19px;font-weight:600;margin:0 0 12px;letter-spacing:-0.2px;}
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-  .stat{background:var(--surface);border-radius:var(--radius);padding:10px 8px;text-align:center;}
+  .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch;}
+  .stats-period-pill{grid-column:1 / -1;justify-content:flex-start;margin:0 0 0;}
+  .stats-period-pill span{white-space:nowrap;}
+  .stat{background:var(--surface);border-radius:var(--radius);padding:10px 8px;text-align:center;min-width:0;}
   .stat .v{font-size:16px;font-weight:600;}
   .stat .l{font-size:10.5px;color:var(--text-dim);margin-top:2px;}
 
@@ -249,7 +251,13 @@
   .save-error-banner.show{display:block;}
 
   .stat-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
-  .stat-card{background:var(--surface);border-radius:var(--radius);padding:14px 12px;}
+  
+ .dashboard-period-bar{margin:0 0 12px;padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--surface-2);}
+.stats-period-pill{display:flex;justify-content:center;align-items:center;margin:0 0 8px;}
+.stats-period-pill span{display:inline-flex;align-items:center;padding:4px 10px;border:1px solid var(--border);border-radius:999px;background:var(--surface-2);color:var(--text-dim);font-size:10.5px;font-weight:700;line-height:1.2;}
+.dashboard-period-title{font-size:12px;font-weight:700;color:var(--text-dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:.3px;}
+.dashboard-period-note{font-size:11.5px;color:var(--text-dim);margin-top:7px;line-height:1.35;}
+.stat-card{background:var(--surface);border-radius:var(--radius);padding:14px 12px;}
   .stat-card .v{font-size:20px;font-weight:700;}
   .stat-card .l{font-size:11.5px;color:var(--text-dim);margin-top:4px;}
   .report-filters{display:flex;flex-direction:column;gap:10px;margin-top:10px;}
@@ -403,6 +411,18 @@
   .app-lock-other-btn{margin-top:14px;width:auto;border:0;background:transparent;color:var(--accent);font-weight:800;font-size:12px;padding:7px 10px;}
   .app-lock-change-note{margin:0 auto 10px;color:var(--text-dim);font-size:11.5px;line-height:1.35;}
   .app-lock-forgot-btn{margin-top:8px;width:auto;border:0;background:transparent;color:var(--text-dim);font-weight:800;font-size:11.5px;padding:7px 10px;text-decoration:underline;}
+  #sessionSplash{position:fixed;inset:0;z-index:2600;display:none;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 38%,rgba(47,54,70,.92),rgba(9,10,14,.985) 68%);color:var(--text);padding:24px;box-sizing:border-box;}
+  #sessionSplash.show{display:flex;}
+  .session-splash-card{width:min(330px,88vw);text-align:center;display:flex;flex-direction:column;align-items:center;animation:sessionSplashIn .28s ease-out;}
+  .session-splash-logo{width:88px;height:88px;border-radius:24px;overflow:hidden;border:1px solid rgba(255,255,255,.13);box-shadow:0 16px 40px rgba(0,0,0,.38);background:var(--surface-2);margin-bottom:22px;}
+  .session-splash-logo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .session-splash-title{font-size:29px;font-weight:900;letter-spacing:-.6px;}
+  .session-splash-by{margin-top:3px;font-size:14px;color:var(--text-dim);font-weight:700;}
+  .session-splash-status{margin-top:28px;font-size:13px;color:var(--text-dim);}
+  .session-splash-loader{width:180px;height:4px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden;margin-top:12px;}
+  .session-splash-loader i{display:block;width:42%;height:100%;border-radius:99px;background:var(--accent);animation:sessionSplashLoad 1.15s ease-in-out infinite;}
+  @keyframes sessionSplashLoad{0%{transform:translateX(-120%)}50%{transform:translateX(90%)}100%{transform:translateX(300%)}}
+  @keyframes sessionSplashIn{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:none}}
   #appLockOverlay{z-index:2500;background:var(--bg);align-items:center;padding:18px;}
   #appLockOverlay.hidden{display:none;}
   #appLockSetupOverlay{z-index:2600;align-items:center;padding:18px;}
@@ -603,134 +623,24 @@
   .access-tab.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
   @media(min-width:700px){.settings-shell,.account-shell{height:calc(100vh - 40px);max-height:900px;margin:20px auto;border:1px solid var(--border);border-radius:18px;box-shadow:0 20px 55px rgba(0,0,0,.35)}#accountOverlay{background:rgba(0,0,0,.58);padding:0 12px;}}
 
+
+/* Z Mobile official-form visual refresh: layout/features preserved */
+body{background:#fff!important;color:#172033!important;}
+.app{background:#fff;}
+.header,.topbar,.app-header{background:#263548!important;color:#fff!important;}
+button,.chip,.chip-opt,.settings-category,.settings-toggle-chip,.model-suggestion-chip{border-radius:4px!important;}
+input,select,textarea{background:#fff!important;color:#172033!important;border:1px solid #c9d1dc!important;border-radius:4px!important;}
+input::placeholder,textarea::placeholder{color:#b0b8c4!important;}
+.card,.stock-card,.entry-card,.modal-card,.panel,.settings-panel{background:#fff!important;border:1px solid #d5dbe3!important;border-radius:4px!important;box-shadow:0 2px 8px rgba(23,32,51,.06)!important;}
+.primary,.btn-primary,.save-btn,.submit-btn{background:#ef1d2d!important;color:#fff!important;border-color:#ef1d2d!important;}
+.fab{background:#ef1d2d!important;color:#fff!important;}
+.accent,.link,.add-link{color:#ef1d2d!important;}
+.tab.active,.chip.active,.filter.active{background:#ef1d2d!important;color:#fff!important;border-color:#ef1d2d!important;}
+.nav,.drawer,.menu-panel{background:#fff!important;color:#172033!important;}
+hr{border-color:#e1e5ea!important;}
 </style>
-
-<style id="zmobile-egadget-theme-v2">
-/* Presentation-only theme. Business logic, IDs and handlers are inherited from locked baseline. */
-:root{
-  --bg:#f5f6f8;
-  --surface:#ffffff;
-  --surface-2:#f8f9fb;
-  --surface-3:#eef1f5;
-  --border:#d8dde5;
-  --border-strong:#c5ccd6;
-  --text:#242a33;
-  --text-dim:#68717e;
-  --text-faint:#8a929d;
-  --accent:#e91f2b;
-  --accent-text:#fff;
-  --danger:#e91f2b;
-  --sale:#c03fa4;
-  --radius:8px;
-  font-family:Arial,Helvetica,sans-serif;
-}
-html,body{background:#f5f6f8!important;color:var(--text)!important;}
-body{font-size:14px;}
-.app{max-width:480px!important;background:#f5f6f8!important;min-height:100vh;box-shadow:0 0 0 1px rgba(0,0,0,.03);}
-header{background:#273446!important;color:#fff!important;border-bottom:0!important;padding:0 14px 12px!important;}
-.header-top{height:60px!important;margin:0 -14px!important;padding:0 12px!important;background:#273446!important;align-items:center!important;}
-.header-top h1{font-size:18px!important;font-weight:600!important;color:#fff!important;}
-.app-brand-by{color:#d7dce3!important;font-size:11px!important;}
-.header-top .history-icon-btn{width:38px!important;height:38px!important;border:0!important;background:transparent!important;color:#fff!important;border-radius:7px!important;}
-.menu-btn{width:44px!important;height:40px!important;padding:0!important;border:0!important;background:transparent!important;color:#fff!important;font-size:0!important;border-radius:7px!important;}
-.menu-btn::before{content:'☰';font-size:22px;}
-.stats{margin:12px 0 0!important;gap:7px!important;}
-.stat{background:#fff!important;border:1px solid #e0e4ea!important;border-radius:7px!important;box-shadow:0 1px 2px rgba(0,0,0,.04)!important;padding:10px 6px!important;}
-.stat .v{font-size:17px!important;color:#20252d!important;}
-.stat .l{font-size:10.5px!important;color:#707987!important;}
-.storage-bar-wrap{background:transparent!important;color:#d7dce3!important;}
-.storage-bar-track{height:5px!important;background:#dfe4eb!important;border-radius:3px!important;}
-.storage-bar-fill{background:#e91f2b!important;}
-.storage-bar-label{color:#d7dce3!important;font-size:11px!important;}
-.search-row{background:#f5f6f8!important;padding:12px 14px 0!important;}
-.search-row input,.search-row select{background:#fff!important;border:1px solid #d4dae2!important;border-radius:6px!important;color:#27303a!important;}
-.chips-scroll{background:#f5f6f8!important;gap:6px!important;padding:9px 14px 4px!important;}
-.chip{background:#fff!important;border:1px solid #d4dae2!important;color:#58616e!important;border-radius:6px!important;padding:7px 11px!important;}
-.chip.active{background:#e91f2b!important;border-color:#e91f2b!important;color:#fff!important;}
-.list{background:#f5f6f8!important;padding:8px 14px 100px!important;}
-.card{background:#fff!important;border:1px solid #d8dde5!important;border-radius:8px!important;box-shadow:0 1px 3px rgba(0,0,0,.05)!important;}
-.card h3,.card .model-name{color:#20252d!important;}
-.badge{border-radius:5px!important;}
-.badge.spec,.badge.qty{background:#eef1f5!important;color:#5f6875!important;}
-.card button{border-radius:6px!important;}
-.fab{background:#e91f2b!important;color:#fff!important;box-shadow:0 3px 10px rgba(0,0,0,.22)!important;}
-.fab-expense{background:#273446!important;color:#fff!important;box-shadow:0 3px 10px rgba(0,0,0,.22)!important;}
-
-/* eGadget-like drawer: white, simple, familiar. */
-.menu-dropdown{position:fixed!important;left:0!important;top:0!important;right:auto!important;width:min(330px,88vw)!important;height:100dvh!important;max-height:none!important;margin:0!important;padding:0 10px 18px!important;background:#fff!important;color:#20252d!important;border:0!important;border-radius:0!important;box-shadow:8px 0 30px rgba(0,0,0,.22)!important;overflow-y:auto!important;z-index:2000!important;}
-.menu-dropdown::after{content:'';position:fixed;left:min(330px,88vw);top:0;right:0;bottom:0;background:rgba(0,0,0,.38);z-index:-1;pointer-events:none;}
-.menu-dropdown.hidden{display:none!important;}
-.z-drawer-head{display:flex;align-items:center;gap:12px;padding:20px 10px 15px;border-bottom:1px solid #e1e5ea;}
-.z-drawer-logo{width:48px;height:48px;border-radius:8px;background:#273446;color:#fff;display:flex;align-items:center;justify-content:center;font-size:27px;font-weight:800;}
-.z-drawer-brand strong{display:block;font-size:17px;color:#20252d;}
-.z-drawer-brand span{display:block;font-size:13px;color:#58616e;margin-top:3px;}
-.z-drawer-brand small{display:block;font-size:10px;color:#89919c;margin-top:4px;}
-.z-drawer-account{display:flex;align-items:center;gap:10px;padding:13px 10px;border-bottom:1px solid #e1e5ea;}
-.z-avatar{width:38px;height:38px;border-radius:50%;background:#eef1f5;color:#273446;display:flex;align-items:center;justify-content:center;font-weight:700;}
-.z-drawer-account strong{display:block;font-size:13px;color:#20252d;}
-.z-drawer-account small{display:block;color:#7b8490;font-size:11px;margin-top:2px;}
-.menu-section-label{color:#7b8490!important;padding:13px 10px 5px!important;font-size:10px!important;font-weight:700!important;letter-spacing:.08em!important;}
-.menu-item{display:flex!important;align-items:center!important;gap:9px!important;color:#303742!important;background:#fff!important;border:0!important;border-radius:6px!important;padding:11px 10px!important;font-size:14px!important;font-weight:500!important;}
-.menu-item:hover,.menu-item:active{background:#f2f4f7!important;}
-.menu-item.danger{color:#e91f2b!important;}
-.menu-divider{background:#e1e5ea!important;margin:7px 8px!important;}
-
-/* Bottom sheets/forms: white professional form look. */
-.overlay{background:rgba(25,31,40,.48)!important;}
-.sheet{background:#fff!important;color:#20252d!important;border-radius:10px 10px 0 0!important;box-shadow:0 -2px 16px rgba(0,0,0,.12)!important;}
-.sheet-handle{background:#c4cad2!important;}
-.sheet h2{color:#20252d!important;font-size:18px!important;}
-.sec-label{color:#68717e!important;font-weight:600!important;}
-.chip-opt{background:#f4f6f8!important;border:1px solid #d6dce4!important;color:#505966!important;border-radius:6px!important;}
-.chip-opt.on{background:#e91f2b!important;border-color:#e91f2b!important;color:#fff!important;}
-.field input,.field select,.model-input-row input{background:#fff!important;border:1px solid #cfd5dd!important;color:#20252d!important;border-radius:6px!important;}
-.model-dropdown-btn{background:#fff!important;border:1px solid #cfd5dd!important;color:#5e6773!important;border-radius:6px!important;}
-.model-suggestion-chip{background:#f5f7f9!important;border:1px solid #d6dce4!important;color:#505966!important;border-radius:6px!important;}
-.model-suggestion-chip.new-tag{color:#e91f2b!important;border-color:#e91f2b!important;}
-.btn-cancel{background:#eef1f4!important;color:#4e5763!important;border:1px solid #d4dae2!important;border-radius:6px!important;}
-.btn-save,.btn-primary{background:#e91f2b!important;color:#fff!important;border-radius:6px!important;}
-
-.settings-shell,.account-shell{background:#f5f6f8!important;color:#20252d!important;}
-.settings-shell h1,.account-shell h1,.settings-shell h2,.account-shell h2{color:#20252d!important;}
-.settings-section-card,.settings-category,.settings-row,.report-summary,.auth-card{background:#fff!important;border-color:#d8dde5!important;color:#20252d!important;border-radius:7px!important;}
-.settings-note,.settings-subtitle,.settings-help{color:#68717e!important;}
-.auth-primary{background:#e91f2b!important;}
-.auth-google{background:#fff!important;border:1px solid #d6dce4!important;color:#20252d!important;}
-
-/* Hide the old long-press helper text; selection still works through existing handlers. */
-.long-press-hint{display:none!important;}
-</style>
-
-
-<style id="zmobile-startup-style">
-/* Startup splash is only branding; Firebase/session loading is handled by the
-   real account gate underneath it. Never let the splash become an infinite
-   loading screen. */
-#zStartupScreen .z-startup-line span{animation-duration:.8s;}
-
-#zStartupScreen{position:fixed;inset:0;z-index:99999;background:#273446;display:flex;align-items:center;justify-content:center;color:#fff;transition:opacity .22s ease,visibility .22s ease;}
-#zStartupScreen.z-hide{opacity:0;visibility:hidden;pointer-events:none;}
-.z-startup-card{text-align:center;width:min(320px,84vw);}
-.z-startup-logo{width:78px;height:78px;margin:0 auto 18px;border-radius:18px;background:#fff;color:#273446;display:flex;align-items:center;justify-content:center;font-size:46px;font-weight:800;box-shadow:0 8px 30px rgba(0,0,0,.22);}
-.z-startup-title{font-size:27px;font-weight:700;letter-spacing:.2px;}
-.z-startup-sub{font-size:14px;color:#d5dbe3;margin-top:4px;}
-.z-startup-line{height:4px;background:rgba(255,255,255,.18);border-radius:4px;margin:28px auto 12px;overflow:hidden;width:180px;}
-.z-startup-line span{display:block;width:38%;height:100%;background:#e91f2b;border-radius:4px;animation:zload 1.05s ease-in-out infinite;}
-.z-startup-status{font-size:12px;color:#cbd2dc;}
-@keyframes zload{0%{transform:translateX(-120%)}50%{transform:translateX(100%)}100%{transform:translateX(300%)}}
-</style>
-
 </head>
 <body>
-<div id="zStartupScreen" aria-live="polite">
-  <div class="z-startup-card">
-    <div class="z-startup-logo">Z</div>
-    <div class="z-startup-title">Mobile Hisab</div>
-    <div class="z-startup-sub">by Z Mobile</div>
-    <div class="z-startup-line"><span></span></div>
-    <div class="z-startup-status">Shop data tayyar ho raha hai…</div>
-  </div>
-</div>
 <div class="app" style="visibility:hidden;">
   <header style="position:relative;">
     <div class="header-top">
@@ -770,11 +680,6 @@ header{background:#273446!important;color:#fff!important;border-bottom:0!importa
     </div>
 
     <div class="menu-dropdown hidden" id="menuDropdown">
-      <div class="z-drawer-head">
-        <div class="z-drawer-logo">Z</div>
-        <div class="z-drawer-brand"><strong>Z MOBILE</strong><span>Mobile Hisab</span><small>BUY • SELL • EXCHANGE</small></div>
-      </div>
-      <div class="z-drawer-account"><div class="z-avatar">Z</div><div><strong id="zDrawerAccountName">Z Mobile</strong><small id="zDrawerAccountSub">Mobile Hisab</small></div></div>
       <div class="menu-section-label">Business</div>
       <button class="menu-item" id="btnAdminShops" style="display:none !important;">🏢 All Shops (Admin)</button>
       <button class="menu-item" id="btnExitAdminShop" style="display:none !important;">↩ Apni Shop par wapas</button>
@@ -814,7 +719,6 @@ header{background:#273446!important;color:#fff!important;border-bottom:0!importa
       <option value="qty-asc">Kam quantity pehle</option>
     </select>
   </div>
-  <div class="long-press-hint">Mobile ko long-press karke multiple selection shuru karein</div>
   <div class="chips-scroll" id="brandFilterChips"></div>
   <div class="chips-scroll" id="filterChips"></div>
   <div class="activity-filter-row">
@@ -849,6 +753,7 @@ header{background:#273446!important;color:#fff!important;border-bottom:0!importa
 </div>
 <div class="multi-share-bar" id="multiShareBar">
   <div class="multi-share-count" id="multiShareCount">0 selected</div>
+  <button type="button" id="multiShareSelectAll">Select all</button>
   <button type="button" id="multiShareCancel">Cancel</button>
   <button type="button" class="danger" id="multiShareDelete">🗑 Delete</button>
   <button type="button" class="primary" id="multiShareSend">📤 Share</button>
@@ -1089,6 +994,11 @@ header{background:#273446!important;color:#fff!important;border-bottom:0!importa
   <div class="sheet">
     <div class="sheet-handle"></div>
     <h2>Dashboard</h2>
+    <div class="dashboard-period-bar">
+      <div class="dashboard-period-title">Report period</div>
+      <div class="chip-row" id="dashboardPeriodToggles"></div>
+      <div class="dashboard-period-note" id="dashboardPeriodNote"></div>
+    </div>
     <div class="stat-grid-2" id="dashboardGrid"></div>
     <div class="sheet-actions">
       <button class="btn-cancel" id="btnDashboardClose">Band karein</button>
@@ -1183,6 +1093,16 @@ header{background:#273446!important;color:#fff!important;border-bottom:0!importa
     <div class="sheet-actions">
       <button class="btn-cancel" id="btnExpensesClose">Band karein</button>
     </div>
+  </div>
+</div>
+
+<div id="sessionSplash" aria-hidden="true">
+  <div class="session-splash-card">
+    <div class="session-splash-logo"><img src="icon-192.png" alt="Mobile Hisab"></div>
+    <div class="session-splash-title">Mobile Hisab</div>
+    <div class="session-splash-by">by Z Mobile</div>
+    <div class="session-splash-status">Secure session check ho raha hai…</div>
+    <div class="session-splash-loader"><i></i></div>
   </div>
 </div>
 
@@ -1451,6 +1371,16 @@ header{background:#273446!important;color:#fff!important;border-bottom:0!importa
           <div class="chip-row" id="uiScaleToggles" style="margin-top:9px;"></div>
         </div>
         <div class="settings-section-card"><div class="sec-label">Badges ka order</div><div class="settings-note">Drag karke card badges ki tarteeb set karein.</div><div class="badge-order-list" id="badgeOrderList"></div></div>
+        <div class="settings-section-card">
+          <div class="sec-label">📊 Dashboard reporting period</div>
+          <div class="settings-note">Dashboard par Sold aur Net Profit kis period ke hisaab se dikhana hai. Business month choose karein to har month isi din se naya cycle start hoga.</div>
+          <div class="chip-row" id="dashboardDefaultPeriodToggles" style="margin-top:9px;"></div>
+          <div class="settings-add-row" style="margin-top:10px;align-items:center;">
+            <label style="font-size:12px;color:var(--text-dim);white-space:nowrap;">Business month start day</label>
+            <input type="number" id="businessMonthStartDay" min="1" max="28" step="1" placeholder="1" style="max-width:90px;">
+          </div>
+          <div class="settings-note">1–28 rakhein taake har month cycle reliably repeat ho.</div>
+        </div>
       </div>
 
       <div class="settings-view" data-settings-view="fields">
@@ -1588,7 +1518,6 @@ let inventory = [];
 // names so the existing app can boot normally. Once a user/shop is resolved,
 // the same keys are transparently namespaced with that shopId.
 const LS_ACTIVE_SHOP_STORAGE_KEY = 'mobileLedger_activeShopStorageId_v1';
-const LS_CLOUD_CACHE_KEY = 'mobileLedger_cloudCache_v1';
 const SHOP_SCOPED_STORAGE_NAMES = new Set([
   'mobileLedger_inventory',
   'mobileLedger_customModels',
@@ -1603,10 +1532,13 @@ const SHOP_SCOPED_STORAGE_NAMES = new Set([
   'mobileLedger_activityHistory',
   'mobileLedger_localVersion',
   'mobileLedger_lastPushedVersion',
-  'mobileLedger_waTemplate',
-  LS_CLOUD_CACHE_KEY
+  'mobileLedger_waTemplate'
 ]);
 let activeShopStorageId = '';
+// Restore the last confirmed shop namespace before any inventory/settings are
+// loaded. This prevents the startup render from briefly using legacy/old-shop
+// data and then switching to the correct shop a few seconds later.
+try{ activeShopStorageId = localStorage.getItem(LS_ACTIVE_SHOP_STORAGE_KEY) || ''; }catch(e){ activeShopStorageId = ''; }
 let shopStorageSwitching = false;
 
 function shopScopedStorageKeyForId(key, shopId){
@@ -2651,9 +2583,7 @@ async function loadInventory(){
   });
   if(migratedAutoRanges) tryCommitInventory(inventory);
   migrateInventoryToRateBook();
-  // For signed-in shop users, the first visible render must come from the
-  // cloud snapshot, not from a potentially stale local copy.
-  if(!(fbUser && userRole!=='admin' && !cloudInitialSyncReady)) render();
+  render();
 }
 
 // Tries to write a candidate inventory array to storage WITHOUT touching the
@@ -3292,20 +3222,79 @@ function phoneExpensesInMonth(monthKey){
     return dateMonthKey(x.date)===monthKey;
   }).reduce(function(s,x){ return s+(Number(x.amount)||0); },0);
 }
+const LS_DASHBOARD_SETTINGS_KEY = 'mobileLedger_dashboardSettings_v1';
+let dashboardSettings = { mode:'calendar', businessStartDay:1 };
+function loadDashboardSettings(){
+  try{
+    const raw=localStorage.getItem(shopStorageKey(LS_DASHBOARD_SETTINGS_KEY));
+    if(raw){ const x=JSON.parse(raw)||{}; dashboardSettings.mode=['calendar','lifetime','business'].indexOf(x.mode)!==-1?x.mode:'calendar'; dashboardSettings.businessStartDay=Math.min(28,Math.max(1,Number(x.businessStartDay)||1)); }
+  }catch(e){ dashboardSettings={mode:'calendar',businessStartDay:1}; }
+}
+function saveDashboardSettings(){
+  if(isAdminShopView()) return;
+  try{ localStorage.setItem(shopStorageKey(LS_DASHBOARD_SETTINGS_KEY),JSON.stringify(dashboardSettings)); }catch(e){}
+}
+function isoDateLocal(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function dashboardPeriodRange(){
+  const now=new Date();
+  if(dashboardSettings.mode==='lifetime') return {from:'',to:'',label:'Lifetime',mode:'lifetime'};
+  if(dashboardSettings.mode==='business'){
+    const day=dashboardSettings.businessStartDay;
+    let start=new Date(now.getFullYear(),now.getMonth(),day);
+    if(now.getDate()<day) start=new Date(now.getFullYear(),now.getMonth()-1,day);
+    const end=new Date(start.getFullYear(),start.getMonth()+1,day-1);
+    return {from:isoDateLocal(start),to:isoDateLocal(end),label:'Business month · '+String(start.getDate()).padStart(2,'0')+' '+start.toLocaleString('en-PK',{month:'short'})+' – '+String(end.getDate()).padStart(2,'0')+' '+end.toLocaleString('en-PK',{month:'short',year:'numeric'}),mode:'business'};
+  }
+  const start=new Date(now.getFullYear(),now.getMonth(),1);
+  const end=new Date(now.getFullYear(),now.getMonth()+1,0);
+  return {from:isoDateLocal(start),to:isoDateLocal(end),label:start.toLocaleString('en-PK',{month:'long',year:'numeric'}),mode:'calendar'};
+}
+function dashboardDateInRange(value, range){
+  if(!range.from && !range.to) return true;
+  const d=dateOnly(value); if(!d) return false;
+  return (!range.from||d>=range.from)&&(!range.to||d<=range.to);
+}
+function expensesForDashboardRange(range){
+  let total=0;
+  expensesInRange(range.from,range.to).forEach(function(x){ total+=Number(x.amount)||0; });
+  allPhoneExpenseEntries().forEach(function(x){ if(dashboardDateInRange(x.date,range)) total+=Number(x.amount)||0; });
+  return total;
+}
+function renderDashboardPeriodControls(){
+  const defs=[['calendar','This month'],['business','Business month'],['lifetime','Lifetime']];
+  const html=defs.map(function(x){ return '<button type="button" class="chip '+(dashboardSettings.mode===x[0]?'active':'')+'" data-dashboard-period="'+x[0]+'">'+x[1]+'</button>'; }).join('');
+  ['dashboardPeriodToggles','dashboardDefaultPeriodToggles'].forEach(function(id){ const el=document.getElementById(id); if(el) el.innerHTML=html; });
+  document.querySelectorAll('[data-dashboard-period]').forEach(function(btn){ btn.onclick=function(){ dashboardSettings.mode=btn.dataset.dashboardPeriod; saveDashboardSettings(); renderDashboardPeriodControls(); renderDashboard(); renderStats(); }; });
+  const inp=document.getElementById('businessMonthStartDay'); if(inp){ inp.value=dashboardSettings.businessStartDay; inp.onchange=function(){ dashboardSettings.businessStartDay=Math.min(28,Math.max(1,Number(inp.value)||1)); inp.value=dashboardSettings.businessStartDay; saveDashboardSettings(); renderDashboard(); renderStats(); }; }
+}
+loadDashboardSettings();
+
 function renderStats(){
-  const availableUnits = inventory.filter(function(e){return !e.sold;})
-    .reduce(function(s,e){return s+(e.quantity||0);},0);
-  const soldUnits = inventory.filter(function(e){return e.sold && !isReturnedSale(e);})
-    .reduce(function(s,e){return s+(e.quantity||0);},0);
-  const grossProfit = inventory.filter(function(e){return e.sold && !isReturnedSale(e) && e.buy!=null && e.sell!=null;})
-    .reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0);
-  // Net profit = sale margins minus all shop expenses and phone-specific expenses.
-  const totalProfit = grossProfit - totalExpensesAllTime() - totalPhoneExpensesAllTime();
-  const netProfitColor = totalProfit >= 0 ? 'var(--pta)' : 'var(--danger)';
-  document.getElementById('stats').innerHTML =
+  const availableUnits = inventory.filter(function(e){return !e.sold && Number(e.quantity||0)>0;})
+    .reduce(function(s,e){return s+(Number(e.quantity)||0);},0);
+  const range=dashboardPeriodRange();
+  const soldItems=inventory.filter(function(e){
+    if(!e.sold || isReturnedSale(e)) return false;
+    const d=e.saleDate || e.saleAt || e.lastUpdated;
+    return dashboardDateInRange(d,range);
+  });
+  const soldUnits=soldItems.reduce(function(s,e){return s+(Number(e.quantity)||0);},0);
+  const grossProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(Number(e.quantity)||1));},0);
+  const netProfit=grossProfit-expensesForDashboardRange(range);
+  const netProfitColor=netProfit>=0?'var(--pta)':'var(--danger)';
+  let periodLabel=range.label;
+  if(range.mode==='calendar'){
+    periodLabel='This month · '+new Date().toLocaleString('en-PK',{month:'short',year:'numeric'});
+  }else if(range.mode==='business'){
+    periodLabel='Business month · '+String(range.from||'').slice(5)+' → '+String(range.to||'').slice(5);
+  }else if(range.mode==='lifetime'){
+    periodLabel='Lifetime';
+  }
+  document.getElementById('stats').innerHTML=
+    '<div class="stats-period-pill"><span>'+escapeHtml(periodLabel)+'</span></div>'+
     '<div class="stat"><div class="v num">'+availableUnits+'</div><div class="l">Stock mein</div></div>'+
     '<div class="stat"><div class="v num">'+soldUnits+'</div><div class="l">Sold</div></div>'+
-    '<div class="stat"><div class="v num" style="color:'+netProfitColor+'">'+displayProfitHtml(totalProfit)+'</div><div class="l">Net profit</div></div>';
+    '<div class="stat"><div class="v num" style="color:'+netProfitColor+'">'+displayProfitHtml(netProfit)+'</div><div class="l">Net Profit</div></div>';
 }
 
 // Most browsers give roughly 5MB per site for localStorage. There's no
@@ -3980,6 +3969,8 @@ function updateMultiShareBar(){
   const count=document.getElementById('multiShareCount');
   if(!bar || !count) return;
   count.textContent=selectedShareIds.length+' selected';
+  const allBtn=document.getElementById('multiShareSelectAll');
+  if(allBtn) allBtn.textContent=(inventory.length && selectedShareIds.length===inventory.length)?'All selected':'Select all';
   bar.classList.toggle('show',shareSelectMode);
 }
 
@@ -4006,6 +3997,19 @@ function toggleShareSelection(id){
   updateMultiShareBar();
   clearSelectionVisuals();
 }
+
+function selectAllShareEntries(){
+  const ids=inventory.map(function(e){return String(e.id);}).filter(Boolean);
+  if(!ids.length){ return; }
+  shareSelectMode=true;
+  document.body.classList.add('share-select-mode');
+  selectedShareIds=ids;
+  updateMultiShareBar();
+  clearSelectionVisuals();
+}
+
+const multiShareSelectAllBtn=document.getElementById('multiShareSelectAll');
+if(multiShareSelectAllBtn){ multiShareSelectAllBtn.onclick=function(){ selectAllShareEntries(); }; }
 
 function bindLongPressSelection(){
   document.querySelectorAll('[data-multi-select-card]').forEach(function(el){
@@ -5045,8 +5049,52 @@ document.getElementById('f-model-select').addEventListener('change', function(){
   document.getElementById('modelDropdownBtn').classList.remove('on');
 });
 
+function preloadLatestShopEntryConfig(){
+  // Do not block opening the entry sheet. Fetch the latest cloud entry-layout
+  // configuration in the background so a very fast tap on + cannot show the
+  // older/default layout for a moment. The normal onSnapshot listener remains
+  // the source of truth; this is only a fast hydration path for the entry UI.
+  if(shopConfigReady || shopConfigFetchPromise || !fbDb || !fbUser || userRole==='admin' || !userShopId) return;
+  const shopId=String(userShopId);
+  shopConfigFetchPromise=fbDb.collection('shops').doc(shopId).get().then(function(snap){
+    if(!snap.exists) return;
+    const data=snap.data()||{};
+    if(data.customOptionData){
+      customOptionData=data.customOptionData;
+      try{ localStorage.setItem(shopStorageKey(LS_CUSTOM_OPTIONS_KEY), JSON.stringify(customOptionData)); }catch(e){}
+      shopConfigReady=true;
+      refreshEntryFormUI();
+    }
+  }).catch(function(err){
+    console.warn('Entry config preload failed',err);
+  }).finally(function(){
+    shopConfigFetchPromise=null;
+  });
+}
+
+function refreshEntryFormUI(){
+  // Always rebuild the entry UI from the latest shop-scoped configuration.
+  try{
+    loadCustomOptionData();
+    renderAllChips();
+    prepareEntryLayoutDOM();
+    applyEntryLayoutToDOM(getEntryPlatform(formState && formState.brand));
+  }catch(err){ console.warn('Entry UI refresh failed',err); }
+}
+function settleEntryFormUI(){
+  // Cloud sync may finish just after the sheet opens. Re-check briefly so the
+  // first open and the post-refresh open show the same fields/options.
+  [0,120,300,700,1200].forEach(function(ms){
+    setTimeout(function(){
+      const ov=document.getElementById('overlay');
+      if(ov && !ov.classList.contains('hidden')) refreshEntryFormUI();
+    },ms);
+  });
+}
+
 function openAdd(){
   prepareEntryLayoutDOM();
+  preloadLatestShopEntryConfig();
   if(isAdminShopView()){ alert('Admin Shop view read-only hai — nayi entry add nahi ki ja sakti.'); return; }
   hideSaveError('saveErrorBanner');
   editingId = null;
@@ -5086,14 +5134,16 @@ function openAdd(){
   renderPhoneExpenseRows('f-phone-expenses', [{}]);
   extraPieceCount = 0;
   document.getElementById('addExtraBuyBtn').style.display = 'block';
-  renderAllChips();
-  applyEntryLayoutToDOM(getEntryPlatform(formState.brand));
+  // Render immediately from the latest local snapshot, then quietly settle
+  // against any cloud snapshot that arrives just after the sheet opens.
+  refreshEntryFormUI();
   document.getElementById('overlay').classList.remove('hidden');
-  // Always start a new entry at the very top so the user never has to scroll back up.
   requestAnimationFrame(function(){
+    refreshEntryFormUI();
     const sheet=document.querySelector('#overlay .sheet');
     if(sheet) sheet.scrollTop=0;
   });
+  settleEntryFormUI();
   pushOverlayHistory('overlay');
 }
 
@@ -5540,7 +5590,7 @@ const LS_UNDO_STACK='mobileLedger_undoStack_v15';
 const LS_REDO_STACK='mobileLedger_redoStack_v15';
 const LS_WA_TEMPLATE_KEY='mobileLedger_waTemplate';
 function appStateSnapshot(){
-  return {inventory:JSON.stringify(inventory),expenses:JSON.stringify(expenses),customOptionData:JSON.stringify(customOptionData),cardDisplaySettings:JSON.stringify(cardDisplaySettings),customModels:JSON.stringify(customModels||{}),rateBook:JSON.stringify(rateBook||[]),waTemplate:localStorage.getItem(shopStorageKey(LS_WA_TEMPLATE_KEY))||'',shopProfile:JSON.stringify(shopProfile||{}),uiScaleMode:uiScaleMode||'normal'};
+  return {inventory:JSON.stringify(inventory),expenses:JSON.stringify(expenses),customOptionData:JSON.stringify(customOptionData),cardDisplaySettings:JSON.stringify(cardDisplaySettings),customModels:JSON.stringify(customModels||{}),dashboardSettings:JSON.stringify(dashboardSettings||{}),rateBook:JSON.stringify(rateBook||[]),waTemplate:localStorage.getItem(shopStorageKey(LS_WA_TEMPLATE_KEY))||'',shopProfile:JSON.stringify(shopProfile||{}),uiScaleMode:uiScaleMode||'normal',dashboardSettings:JSON.stringify(dashboardSettings||{})};
 }
 function loadPersistentHistory(){
   try{undoStack=JSON.parse(localStorage.getItem(shopStorageKey(LS_UNDO_STACK))||'[]')||[];}catch(e){undoStack=[];}
@@ -5949,56 +5999,38 @@ function autoBackupIfDue(){
 
 // ---------- Dashboard ----------
 function renderDashboard(){
-  const now = new Date();
-  const curMonthKey = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  const stockItems = inventory.filter(function(e){ return !e.sold; });
-  const soldItems = inventory.filter(function(e){ return e.sold && !isReturnedSale(e); });
-
-  const totalStockValue = stockItems.reduce(function(s,e){ return s + ((e.buy!=null?Number(e.buy):0) * (e.quantity||0)); }, 0);
-  const pendingUnits = stockItems.reduce(function(s,e){ return s + (e.quantity||0); }, 0);
-
-  const soldThisMonth = soldItems.filter(function(e){
-    const d = e.saleDate || e.lastUpdated;
-    return d && String(d).indexOf(curMonthKey) === 0;
-  });
-  const unitsSoldThisMonth = soldThisMonth.reduce(function(s,e){ return s + (e.quantity||0); }, 0);
-  const profitThisMonth = soldThisMonth.filter(function(e){ return e.buy!=null && e.sell!=null; })
-    .reduce(function(s,e){ return s + ((Number(e.sell)-Number(e.buy))*(e.quantity||1)); }, 0);
-
-  const allTimeProfit = soldItems.filter(function(e){ return e.buy!=null && e.sell!=null; })
-    .reduce(function(s,e){ return s + ((Number(e.sell)-Number(e.buy))*(e.quantity||1)); }, 0);
-
-  const expensesThisMonth = expensesInMonth(curMonthKey) + phoneExpensesInMonth(curMonthKey);
-  const totalExpensesAll = totalExpensesAllTime() + totalPhoneExpensesAllTime();
-  const netProfitThisMonth = profitThisMonth - expensesThisMonth;
-  const netProfitAllTime = allTimeProfit - totalExpensesAll;
-
-  const cards = [
-    {v: displayProfitHtml(totalStockValue), l:'Total stock value (khareed pe)'},
-    {v: pendingUnits, l:'Pending (stock mein)'},
-    {v: unitsSoldThisMonth, l:'Is mahine sold'},
-    {v: displayProfitHtml(netProfitThisMonth), l:'Is mahine ka net profit (kharche ke baad)'},
-    {v: displayProfitHtml(expensesThisMonth), l:'Is mahine ka kharcha'},
-    {v: displayProfitHtml(netProfitAllTime), l:'Total net profit (ab tak)'},
-    {v: displayProfitHtml(totalExpensesAll), l:'Total kharcha (ab tak)'},
-    {v: soldItems.reduce(function(s,e){return s+(e.quantity||0);},0), l:'Total sold (ab tak)'}
+  renderDashboardPeriodControls();
+  const range=dashboardPeriodRange();
+  const stockItems=inventory.filter(function(e){return !e.sold&&Number(e.quantity||0)>0;});
+  const soldItems=inventory.filter(function(e){return e.sold&&!isReturnedSale(e);});
+  const totalStockValue=stockItems.reduce(function(s,e){return s+((e.buy!=null?Number(e.buy):0)*(e.quantity||0));},0);
+  const pendingUnits=stockItems.reduce(function(s,e){return s+(e.quantity||0);},0);
+  const soldPeriod=soldItems.filter(function(e){return dashboardDateInRange(e.saleDate||e.saleAt||e.lastUpdated,range);});
+  const unitsSold=soldPeriod.reduce(function(s,e){return s+(e.quantity||0);},0);
+  const grossProfit=soldPeriod.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0);
+  const periodExpenses=expensesForDashboardRange(range);
+  const netProfit=grossProfit-periodExpenses;
+  const totalExpensesAll=totalExpensesAllTime()+totalPhoneExpensesAllTime();
+  const allTimeProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0);
+  const netProfitAllTime=allTimeProfit-totalExpensesAll;
+  const cards=[
+    {v:displayProfitHtml(totalStockValue),l:'Total stock value'},
+    {v:pendingUnits,l:'Pending stock'},
+    {v:unitsSold,l:'Sold · '+range.label},
+    {v:displayProfitHtml(netProfit),l:'Net Profit · '+range.label},
+    {v:displayProfitHtml(periodExpenses),l:'Expenses · '+range.label},
+    {v:displayProfitHtml(netProfitAllTime),l:'Lifetime Net Profit'},
+    {v:displayProfitHtml(totalExpensesAll),l:'Lifetime Expenses'},
+    {v:soldItems.reduce(function(s,e){return s+(e.quantity||0);},0),l:'Lifetime Sold'}
   ];
   const dead=stockItems.filter(function(e){
-    const d=e.buyDate||e.availableDate||e.lastUpdated;
-    if(!d) return false;
-    const days=(Date.now()-new Date(d).getTime())/86400000;
-    return days>=30;
+    const d=e.buyDate||e.availableDate||e.lastUpdated; if(!d)return false;
+    const days=(Date.now()-new Date(d).getTime())/86400000; return days>=30;
   }).sort(function(a,b){return new Date(a.buyDate||a.availableDate||a.lastUpdated)-new Date(b.buyDate||b.availableDate||b.lastUpdated);}).slice(0,8);
   let deadHtml='';
-  if(dead.length){
-    deadHtml='<div class="dead-stock-card"><div class="dead-stock-title">⚠️ Dead Stock — 30+ din se unsold</div>'+dead.map(function(e){
-      const d=e.buyDate||e.availableDate||e.lastUpdated; const days=Math.max(0,Math.floor((Date.now()-new Date(d).getTime())/86400000));
-      return '<div class="dead-stock-row"><span>'+escapeHtml((e.brand||'')+' '+(e.model||''))+'<br><span style="color:var(--text-dim)">'+days+' din · '+(e.quantity||0)+' pcs</span></span><span class="num">'+(e.buy!=null?fmt(e.buy):'-')+'</span></div>';
-    }).join('')+'</div>';
-  }
-  document.getElementById('dashboardGrid').innerHTML = cards.map(function(c){
-    return '<div class="stat-card"><div class="v num">'+c.v+'</div><div class="l">'+c.l+'</div></div>';
-  }).join('') + deadHtml;
+  if(dead.length){ deadHtml='<div class="dead-stock-card"><div class="dead-stock-title">⚠️ Dead Stock — 30+ din se unsold</div>'+dead.map(function(e){const d=e.buyDate||e.availableDate||e.lastUpdated;const days=Math.max(0,Math.floor((Date.now()-new Date(d).getTime())/86400000));return '<div class="dead-stock-row"><span>'+escapeHtml((e.brand||'')+' '+(e.model||''))+'<br><span style="color:var(--text-dim)">'+days+' din · '+(e.quantity||0)+' pcs</span></span><span class="num">'+(e.buy!=null?fmt(e.buy):'-')+'</span></div>';}).join('')+'</div>'; }
+  document.getElementById('dashboardGrid').innerHTML=cards.map(function(c){return '<div class="stat-card"><div class="v num">'+c.v+'</div><div class="l">'+escapeHtml(c.l)+'</div></div>';}).join('')+deadHtml;
+  const note=document.getElementById('dashboardPeriodNote'); if(note) note.textContent=range.mode==='lifetime'?'All records':(dashboardSettings.mode==='business'?'Har month isi selected start day se period calculate hota hai.':'Calendar month: 1st se month ke last day tak.');
 }
 
 document.getElementById('btnDashboard').onclick = function(){
@@ -7164,6 +7196,8 @@ document.getElementById('settingsAddBrandBtn').onclick = function(){
 const SETTINGS_PAGE_TITLES={home:'Settings',account:'Account',shop:'Shop',inventory:'Stock & Pricing',appearance:'Appearance',fields:'Fields & Options',whatsapp:'WhatsApp',privacy:'Privacy & Security',applock:'App Lock',backup:'Backup & Sync',data:'Data Management',about:'About',shopaccess:'Shop Access'};
 let currentSettingsPage='home';
 function renderSettingsHomeSummaries(){
+  loadDashboardSettings();
+  renderDashboardPeriodControls();
   const a=document.getElementById('settingsSummaryAccount');
   if(a) a.textContent=fbUser ? ((fbUser.email||fbUser.displayName||'Signed in')+' • sync ON') : 'Sign in required';
   const s=document.getElementById('settingsSummaryShop'); if(s) s.textContent=shopProfile.shopName ? (shopProfile.shopName+(shopProfile.shopPhone?' • '+shopProfile.shopPhone:'')) : 'Shop profile set karein';
@@ -7719,6 +7753,8 @@ const firebaseConfig = {
 let fbAuth = null, fbDb = null, fbUser = null;
 let cloudUnsub = null;
 let applyingRemoteUpdate = false; // true while a cloud update is being written locally, so we don't immediately re-push it
+let shopConfigReady = false;
+let shopConfigFetchPromise = null;
 let pushDebounceTimer = null;
 // Guards against the "offline entry disappears" bug: every local save bumps
 // localVersion; a push only advances lastPushedVersion (persisted, so it
@@ -7734,45 +7770,6 @@ let lastPushedVersion = 0;
 try{ localVersion = Number(localStorage.getItem(shopStorageKey(LS_LOCAL_VERSION_KEY))||0) || 0; }catch(e){}
 try{ lastPushedVersion = Number(localStorage.getItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY))||0) || 0; }catch(e){}
 function hasPendingLocalChanges(){ return localVersion > lastPushedVersion; }
-
-// The phone's working localStorage can be one sync behind another device.
-// Keep the last cloud-confirmed snapshot separately so app startup never
-// needs to show an older working copy first. Firestore will refresh this
-// snapshot again immediately when the listener starts.
-let cloudInitialSyncReady = false;
-function saveCloudCache(data){
-  try{
-    const cache = {
-      inventory: Array.isArray(data && data.inventory) ? data.inventory : [],
-      expenses: Array.isArray(data && data.expenses) ? data.expenses : [],
-      customModels: data && data.customModels ? data.customModels : {},
-      customOptionData: data && data.customOptionData ? data.customOptionData : null,
-      cardDisplaySettings: data && data.cardDisplaySettings ? data.cardDisplaySettings : null,
-      shopProfile: data && data.shopProfile ? data.shopProfile : null,
-      rateBook: Array.isArray(data && data.rateBook) ? data.rateBook : []
-    };
-    localStorage.setItem(shopStorageKey(LS_CLOUD_CACHE_KEY), JSON.stringify(cache));
-  }catch(e){}
-}
-function loadCloudCache(){
-  try{
-    const raw=localStorage.getItem(shopStorageKey(LS_CLOUD_CACHE_KEY));
-    if(!raw) return null;
-    const d=JSON.parse(raw);
-    return d && typeof d==='object' ? d : null;
-  }catch(e){ return null; }
-}
-function applyCloudCacheToMemory(cache){
-  if(!cache || hasPendingLocalChanges()) return false;
-  if(Array.isArray(cache.inventory)) inventory=cache.inventory;
-  if(Array.isArray(cache.expenses)) expenses=cache.expenses;
-  if(cache.customModels) customModels=cache.customModels;
-  if(cache.customOptionData) customOptionData=cache.customOptionData;
-  if(cache.cardDisplaySettings) cardDisplaySettings=Object.assign({}, INITIAL_CARD_DISPLAY_SETTINGS, cache.cardDisplaySettings);
-  if(cache.shopProfile) shopProfile=Object.assign({shopName:'',ownerName:''}, cache.shopProfile);
-  if(Array.isArray(cache.rateBook)) rateBook=cache.rateBook;
-  return true;
-}
 let shopProfile = {shopName:"", ownerName:""};
 // Multi-user foundation: every account has a role + a shopId (the Firestore
 // doc under /shops/ that their data lives in). Right now every account is
@@ -7823,6 +7820,13 @@ function firebaseReady(){
 // The whole app is behind login now. accountOverlay doubles as the gate:
 // while we don't know/have a signed-in user, it's forced open with no way
 // to close it. Once signed in, it hides and the app becomes usable.
+function setSessionSplash(show){
+  const el=document.getElementById('sessionSplash');
+  if(!el) return;
+  if(show){ el.classList.add('show'); el.setAttribute('aria-hidden','false'); }
+  else { el.classList.remove('show'); el.setAttribute('aria-hidden','true'); }
+}
+
 function setAuthGateView(mode){ // 'checking' | 'locked' | 'unlocked'
   const overlay = document.getElementById('accountOverlay');
   const checking = document.getElementById('accountCheckingView');
@@ -7836,20 +7840,23 @@ function setAuthGateView(mode){ // 'checking' | 'locked' | 'unlocked'
   const appEl = document.querySelector('.app');
   const fab = document.getElementById('fabAdd');
   if(mode === 'checking'){
-    // Show a proper, non-blocking session-check screen while Firebase resolves.
-    // The main app stays hidden so stale local data can never flash first.
-    overlay.classList.remove('hidden');
-    checking.style.display = 'block'; loggedOut.style.display = 'none'; loggedIn.style.display = 'none'; if(accessView) accessView.style.display='none';
+    // Never expose a half-rendered dashboard while Firebase restores the
+    // session. Show a clean branded splash instead. App Lock can be placed
+    // above it immediately when local lock state requires authentication.
+    overlay.classList.add('hidden');
+    checking.style.display = 'none'; loggedOut.style.display = 'none'; loggedIn.style.display = 'none'; if(accessView) accessView.style.display='none';
     if(closeRow) closeRow.style.display = 'none'; if(topbar) topbar.style.display='none'; if(note) note.style.display='none';
-    if(title) title.textContent = 'Mobile Hisab';
     if(appEl) appEl.style.visibility = 'hidden'; if(fab) fab.style.display = 'none';
+    setSessionSplash(true);
   } else if(mode === 'locked'){
+    setSessionSplash(false);
     overlay.classList.remove('hidden');
     checking.style.display = 'none'; loggedOut.style.display = 'block'; loggedIn.style.display = 'none'; if(accessView) accessView.style.display='none';
     if(closeRow) closeRow.style.display = 'none'; if(topbar) topbar.style.display='none'; if(note) note.style.display='none';
     if(appEl) appEl.style.visibility = 'hidden'; if(fab) fab.style.display = 'none';
     setAccEmailMode('login');
   } else {
+    setSessionSplash(false);
     checking.style.display = 'none';
     if(accessView) accessView.style.display='none';
     if(closeRow) closeRow.style.display = 'flex';
@@ -7919,16 +7926,14 @@ function activateShopStorage(shopId){
     undoStack=[];
     redoStack=[];
     activeShopStorageId=next;
+    shopConfigReady=false;
+    shopConfigFetchPromise=null;
 
     loadCustomOptionData();
     loadCustomModels();
     loadExpenses();
     loadRateBook();
     loadCardDisplaySettings();
-    // Prefer the last cloud-confirmed state on startup when there are no
-    // unpushed local changes. This prevents stale local data from flashing
-    // before Firestore delivers the current shop snapshot.
-    applyCloudCacheToMemory(loadCloudCache());
     try{
       const rawProfile=localStorage.getItem(shopStorageKey(LS_SHOP_PROFILE_KEY));
       if(rawProfile) shopProfile=Object.assign({shopName:'',ownerName:''},JSON.parse(rawProfile));
@@ -8224,9 +8229,6 @@ function initFirebaseSync(){
     firebase.initializeApp(firebaseConfig);
     fbAuth = firebase.auth();
     fbDb = firebase.firestore();
-    // Use Firestore's local cache so the first snapshot on a returning device
-    // is available immediately instead of waiting for a network round-trip.
-    try{ fbDb.enablePersistence({synchronizeTabs:true}).catch(function(err){ console.warn('Firestore persistence unavailable',err); }); }catch(e){}
     if(firebaseAuthEnvironmentSupported()){
       fbAuth.getRedirectResult().then(function(result){
         if(result && result.user && result.additionalUserInfo && result.additionalUserInfo.isNewUser){
@@ -8238,7 +8240,26 @@ function initFirebaseSync(){
     // Always resolve the signed-in shop context before revealing the main UI.
     // This prevents a previously cached shop's local data from flashing on
     // screen when a different account is about to be restored or signed in.
-    setAuthGateView('checking');
+    // Do not make the user wait on every refresh. If this device already has
+    // a known signed-in session, reveal the app immediately. App Lock (if
+    // enabled) is enforced immediately from local session state; Firebase
+    // continues resolving the account/shop context in the background.
+    if(wasLoggedInBefore){
+      // Known session: keep the cached app available immediately. If App Lock
+      // is required, show the lock directly — do not put the auth-check splash
+      // on top of it and do not briefly expose the dashboard.
+      if(shouldRequireAppLock() && !appLockSessionIsUnlocked()){
+        setAuthGateView('checking');
+        showAppLockOverlay(false);
+      } else {
+        setAuthGateView('checking');
+        const appEl=document.querySelector('.app'); if(appEl) appEl.style.visibility='visible';
+        const fab=document.getElementById('fabAdd'); if(fab) fab.style.display='flex';
+        setSessionSplash(false);
+      }
+    } else {
+      setAuthGateView('checking');
+    }
     // Safety net: never let the checking screen hang indefinitely (e.g.
     // a slow/blocked network on first open) — fall through to the login
     // screen so the person isn't stuck waiting forever.
@@ -8257,16 +8278,15 @@ function initFirebaseSync(){
           globalModelLibrary={};
           globalModelLibraryLoaded={};
           if(accessStatusAllowsUse()){
+            setAuthGateView('unlocked');
             subscribeUserNotifications();
             if(userRole==='admin'){
               updateAdminShopContextUI();
-              startCloudSync(userShopId, function(){ setAuthGateView('unlocked'); });
+              startCloudSync(userShopId);
               subscribeAdminNotifications();
             }else{
-              startCloudSync(userShopId, function(){
-                setAuthGateView('unlocked');
-                setTimeout(function(){ if(pendingGoogleShopSetup) maybeOpenShopSetup(true); }, 450);
-              });
+              startCloudSync(userShopId);
+              setTimeout(function(){ if(pendingGoogleShopSetup) maybeOpenShopSetup(true); }, 450);
             }
           }else{
             setAccessGate(userAccessStatus,userAccessReason);
@@ -8542,7 +8562,7 @@ window.addEventListener('online', function(){
   if(fbUser) attemptPush();
 });
 
-function startCloudSync(uid, onInitialReady){
+function startCloudSync(uid){
   const syncShopId=String(userShopId||'').trim();
   if(!syncShopId) return;
   if(uid && String(uid)!==syncShopId){ console.warn('Cloud sync requested for a different shop id; using resolved userShopId only.'); }
@@ -8550,11 +8570,8 @@ function startCloudSync(uid, onInitialReady){
     // Admin must never attach the normal owner listener or push data into an
     // admin shop document. Admin reads selected shop documents explicitly.
     setAccountSyncStatus('sync ON', 'ok');
-    cloudInitialSyncReady=true;
-    if(typeof onInitialReady==='function') onInitialReady();
     return;
   }
-  cloudInitialSyncReady=false;
   setAccountSyncStatus('data la rahe hain…', 'saving');
   cloudUnsub = fbDb.collection('shops').doc(syncShopId).onSnapshot(function(snap){
     if(!snap.exists){
@@ -8594,6 +8611,7 @@ function startCloudSync(uid, onInitialReady){
     if(data.customOptionData){
       customOptionData = data.customOptionData;
       try{ localStorage.setItem(shopStorageKey(LS_CUSTOM_OPTIONS_KEY), JSON.stringify(customOptionData)); }catch(err){}
+      shopConfigReady = true;
     }
     if(data.cardDisplaySettings){
       Object.assign(cardDisplaySettings, data.cardDisplaySettings);
@@ -8608,12 +8626,19 @@ function startCloudSync(uid, onInitialReady){
       try{ localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY), JSON.stringify(shopProfile)); }catch(err){}
     }
     applyingRemoteUpdate = false;
-    saveCloudCache(data);
-    cloudInitialSyncReady=true;
     render();
+    // Entry UI depends on cloud-synced custom fields/options/layout. Refresh it
+    // immediately when the latest shop snapshot arrives so a newly opened entry
+    // does not show an incomplete set of fields until a manual page refresh.
+    try{
+      loadCustomOptionData();
+      renderAllChips();
+      prepareEntryLayoutDOM();
+      applyEntryLayoutToDOM(getEntryPlatform(formState && formState.brand));
+      renderEntryLayoutSettings();
+    }catch(e){}
     updateAccountUI();
     setAccountSyncStatus('sab devices par sync ho gaya ✓', 'ok');
-    if(typeof onInitialReady==='function') onInitialReady();
   }, function(err){
     console.error('Cloud sync listen failed', err);
     setAccountSyncStatus('sync connect nahi ho saka — internet check karein', 'error');
@@ -8891,55 +8916,5 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
-
-<script id="zmobile-professional-ui-v2-script">
-(function(){
-  function hideStartup(){
-    var s=document.getElementById('zStartupScreen');
-    if(s) s.classList.add('z-hide');
-  }
-  function syncDrawer(){
-    var src=document.getElementById('accountStatusLabel');
-    var name=document.getElementById('zDrawerAccountName');
-    if(src && name){ var t=(src.textContent||'').trim(); if(t && t!=='Sign in nahi hai') name.textContent=t; }
-  }
-  function checkReady(){
-    var app=document.querySelector('.app');
-    var lock=document.getElementById('appLockOverlay');
-    var account=document.getElementById('accountOverlay');
-    if(app && app.style.visibility==='visible'){ hideStartup(); return true; }
-    /* Keep the branded splash visible while Firebase is only checking the
-       session. The old version hid the splash as soon as accountOverlay
-       appeared, which exposed the plain 'Session check ho raha hai...' view.
-       Only hand over to the real UI once the session check has finished
-       (locked/login screen, app-lock, or main app). */
-    if(account && !account.classList.contains('hidden')){
-      var checking=document.getElementById('accountCheckingView');
-      var isChecking=checking && getComputedStyle(checking).display!=='none';
-      if(isChecking) return false;
-      hideStartup(); return true;
-    }
-    if(lock && !lock.classList.contains('hidden')){ hideStartup(); return true; }
-    return false;
-  }
-  document.addEventListener('DOMContentLoaded',function(){
-    syncDrawer();
-    setTimeout(syncDrawer,500);
-    setTimeout(syncDrawer,1200);
-    /* Branding splash must never wait for Firebase/cloud sync. The actual
-       session gate underneath continues resolving safely in the background. */
-    setTimeout(function(){
-      /* Do not force-hide here: if Firebase is still checking, keep the
-         branded splash until the real account/app state is ready. */
-      checkReady();
-    },1400);
-    var timer=setInterval(function(){
-      if(checkReady()) clearInterval(timer);
-    },120);
-    setTimeout(function(){ clearInterval(timer); },30000);
-  });
-})();
-</script>
-
 </body>
 </html>
