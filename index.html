@@ -703,6 +703,11 @@ header{background:#273446!important;color:#fff!important;border-bottom:0!importa
 
 
 <style id="zmobile-startup-style">
+/* Startup splash is only branding; Firebase/session loading is handled by the
+   real account gate underneath it. Never let the splash become an infinite
+   loading screen. */
+#zStartupScreen .z-startup-line span{animation-duration:.8s;}
+
 #zStartupScreen{position:fixed;inset:0;z-index:99999;background:#273446;display:flex;align-items:center;justify-content:center;color:#fff;transition:opacity .22s ease,visibility .22s ease;}
 #zStartupScreen.z-hide{opacity:0;visibility:hidden;pointer-events:none;}
 .z-startup-card{text-align:center;width:min(320px,84vw);}
@@ -7831,14 +7836,12 @@ function setAuthGateView(mode){ // 'checking' | 'locked' | 'unlocked'
   const appEl = document.querySelector('.app');
   const fab = document.getElementById('fabAdd');
   if(mode === 'checking'){
-    // Keep the legacy checking mode available for compatibility, but do not
-    // expose the intermediate session-checking screen to the user.
-    overlay.classList.add('hidden');
-    checking.style.display = 'none'; loggedOut.style.display = 'none'; loggedIn.style.display = 'none'; if(accessView) accessView.style.display='none';
+    // Show a proper, non-blocking session-check screen while Firebase resolves.
+    // The main app stays hidden so stale local data can never flash first.
+    overlay.classList.remove('hidden');
+    checking.style.display = 'block'; loggedOut.style.display = 'none'; loggedIn.style.display = 'none'; if(accessView) accessView.style.display='none';
     if(closeRow) closeRow.style.display = 'none'; if(topbar) topbar.style.display='none'; if(note) note.style.display='none';
-    // Keep the actual app hidden while the first cloud snapshot is being
-    // resolved. The old behavior showed stale local dashboard data for a few
-    // seconds and then replaced it with the real synced data.
+    if(title) title.textContent = 'Mobile Hisab';
     if(appEl) appEl.style.visibility = 'hidden'; if(fab) fab.style.display = 'none';
   } else if(mode === 'locked'){
     overlay.classList.remove('hidden');
@@ -8904,16 +8907,24 @@ if('serviceWorker' in navigator){
     var app=document.querySelector('.app');
     var lock=document.getElementById('appLockOverlay');
     var account=document.getElementById('accountOverlay');
-    if(app && app.style.visibility==='visible'){ hideStartup(); return; }
-    /* If the real lock/login overlay is already active, the startup screen should not cover it. */
-    if((lock && !lock.classList.contains('hidden')) || (account && !account.classList.contains('hidden'))){ hideStartup(); return; }
+    if(app && app.style.visibility==='visible'){ hideStartup(); return true; }
+    /* If the real lock/login/checking overlay is active, let it take over. */
+    if((lock && !lock.classList.contains('hidden')) || (account && !account.classList.contains('hidden'))){ hideStartup(); return true; }
+    return false;
   }
   document.addEventListener('DOMContentLoaded',function(){
     syncDrawer();
-    setTimeout(syncDrawer,800);
-    setTimeout(syncDrawer,1800);
-    var timer=setInterval(function(){ checkReady(); },120);
-    setTimeout(function(){ clearInterval(timer); checkReady(); },10000);
+    setTimeout(syncDrawer,500);
+    setTimeout(syncDrawer,1200);
+    /* Branding splash must never wait for Firebase/cloud sync. The actual
+       session gate underneath continues resolving safely in the background. */
+    setTimeout(function(){
+      if(!checkReady()) hideStartup();
+    },1400);
+    var timer=setInterval(function(){
+      if(checkReady()) clearInterval(timer);
+    },120);
+    setTimeout(function(){ clearInterval(timer); },5000);
   });
 })();
 </script>
