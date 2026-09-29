@@ -10,31 +10,31 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
 <link rel="manifest" href="manifest.json?v=25">
-<meta name="theme-color" content="#263548">
+<meta name="theme-color" content="#27384b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mobile Hisab">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
   :root{
-    --bg:#ffffff;
-    --surface:#ffffff;
-    --surface-2:#f5f7fa;
-    --surface-3:#eef1f5;
-    --border:#d5dbe3;
-    --border-strong:#b9c2cf;
-    --text:#172033;
-    --text-dim:#667085;
-    --text-faint:#98a2b3;
-    --accent:#ef1d2d;
-    --accent-text:#ffffff;
+    --bg:#0f1115;
+    --surface:#171a21;
+    --surface-2:#1f232c;
+    --surface-3:#262b36;
+    --border:#2a2f3a;
+    --border-strong:#3a4150;
+    --text:#e8eaed;
+    --text-dim:#9aa0ab;
+    --text-faint:#666d7a;
+    --accent:#2dd4bf;
+    --accent-text:#052e2b;
     --pta:#4ade80; --pta-bg:#132a1c;
     --nonpta:#fbbf24; --nonpta-bg:#2a2213;
     --cpid:#f87171; --cpid-bg:#2a1616;
     --jv:#60a5fa; --jv-bg:#131f2e;
     --bypass:#fb7185; --bypass-bg:#2a1420;
-    --danger:#ef1d2d;
-    --sale:#ef1d2d;
+    --danger:#f87171;
+    --sale:#c084fc;
     --radius:12px;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   }
@@ -624,20 +624,185 @@
   @media(min-width:700px){.settings-shell,.account-shell{height:calc(100vh - 40px);max-height:900px;margin:20px auto;border:1px solid var(--border);border-radius:18px;box-shadow:0 20px 55px rgba(0,0,0,.35)}#accountOverlay{background:rgba(0,0,0,.58);padding:0 12px;}}
 
 
-/* Z Mobile official-form visual refresh: layout/features preserved */
-body{background:#fff!important;color:#172033!important;}
-.app{background:#fff;}
-.header,.topbar,.app-header{background:#263548!important;color:#fff!important;}
-button,.chip,.chip-opt,.settings-category,.settings-toggle-chip,.model-suggestion-chip{border-radius:4px!important;}
-input,select,textarea{background:#fff!important;color:#172033!important;border:1px solid #c9d1dc!important;border-radius:4px!important;}
-input::placeholder,textarea::placeholder{color:#b0b8c4!important;}
-.card,.stock-card,.entry-card,.modal-card,.panel,.settings-panel{background:#fff!important;border:1px solid #d5dbe3!important;border-radius:4px!important;box-shadow:0 2px 8px rgba(23,32,51,.06)!important;}
-.primary,.btn-primary,.save-btn,.submit-btn{background:#ef1d2d!important;color:#fff!important;border-color:#ef1d2d!important;}
-.fab{background:#ef1d2d!important;color:#fff!important;}
-.accent,.link,.add-link{color:#ef1d2d!important;}
-.tab.active,.chip.active,.filter.active{background:#ef1d2d!important;color:#fff!important;border-color:#ef1d2d!important;}
-.nav,.drawer,.menu-panel{background:#fff!important;color:#172033!important;}
-hr{border-color:#e1e5ea!important;}
+/* =========================================================
+   Z MOBILE — eGadget-inspired interface skin
+   Functionality intentionally untouched.
+   ========================================================= */
+:root{
+  --bg:#ffffff;
+  --surface:#ffffff;
+  --surface-2:#f6f7f9;
+  --surface-3:#eef1f5;
+  --border:#d8dde5;
+  --border-strong:#c7ced8;
+  --text:#172033;
+  --text-dim:#687180;
+  --text-faint:#9aa2ae;
+  --accent:#ed1c24;
+  --accent-text:#ffffff;
+  --pta:#19a963; --pta-bg:#e8f7ef;
+  --nonpta:#c58a00; --nonpta-bg:#fff5d8;
+  --cpid:#d83b45; --cpid-bg:#fdebed;
+  --jv:#4876b7; --jv-bg:#edf3fb;
+  --bypass:#b54a6a; --bypass-bg:#fbeaf0;
+  --danger:#d9303e;
+  --sale:#c52d3b;
+  --radius:7px;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+}
+html,body{background:#fff;color:var(--text);}
+body{font-family:inherit;}
+.app{background:#fff;max-width:480px;min-height:100vh;}
+
+/* App bar: dark government/enterprise-style strip, while preserving all controls. */
+header{
+  position:sticky !important;
+  top:0 !important;
+  background:linear-gradient(to bottom,#27384b 0,#27384b 78px,#fff 78px,#fff 100%) !important;
+  border-bottom:1px solid #d9dde3 !important;
+  padding:0 0 16px !important;
+  box-shadow:none !important;
+}
+.header-top{
+  min-height:78px;
+  padding:10px 16px 10px;
+  margin:0 !important;
+  align-items:center !important;
+}
+.header-top h1{
+  color:#fff !important;
+  font-size:18px !important;
+  line-height:1.08 !important;
+  font-weight:600 !important;
+  margin:0 !important;
+}
+.app-brand-by{color:#dbe3eb !important;font-size:10px !important;margin-top:4px !important;}
+.account-status-line{color:#dbe3eb !important;}
+.history-icon-btn,.menu-btn{
+  background:rgba(255,255,255,.08) !important;
+  border:1px solid rgba(255,255,255,.28) !important;
+  color:#fff !important;
+  border-radius:6px !important;
+}
+.history-icon-btn{width:43px !important;height:43px !important;font-size:19px !important;}
+.menu-btn{padding:10px 12px !important;font-size:13px !important;font-weight:600 !important;}
+
+/* Stats become a clean white eGadget-like information strip. */
+.stats{padding:15px 16px 0;gap:7px;}
+.stat{background:#fff !important;border:0 !important;border-radius:0 !important;padding:7px 5px 9px !important;}
+.stat .v{font-size:18px !important;color:#111827 !important;font-weight:500 !important;}
+.stat .l{font-size:10.5px !important;color:#6b7280 !important;}
+.stats-period-pill{padding:0 16px !important;}
+.stats-period-pill span{display:inline-flex !important;background:#f4f6f8 !important;border:1px solid #d5dae1 !important;color:#657080 !important;border-radius:20px !important;padding:6px 13px !important;font-weight:600 !important;}
+.storage-bar-wrap{margin:0 16px !important;}
+.storage-bar-track{background:#eef1f4 !important;height:8px !important;border-radius:2px !important;}
+.storage-bar-fill{background:#49c98b !important;border-radius:2px !important;}
+.storage-bar-label{color:#5ac88d !important;font-size:10.5px !important;}
+
+/* Search / filters: rectangular, outlined, simple. */
+.search-row{padding:16px 16px 4px !important;border-top:1px solid #e1e4e8;}
+.search-row input,.search-row select{
+  background:#fff !important;
+  color:#1c2535 !important;
+  border:1px solid #cfd5dc !important;
+  border-radius:6px !important;
+  min-height:48px;
+  font-size:14px !important;
+}
+.search-row input::placeholder{color:#a4abb5 !important;}
+.search-row input:focus,.search-row select:focus{border-color:#9fa7b2 !important;box-shadow:none !important;}
+.chips-scroll{padding:9px 16px 4px !important;gap:9px !important;}
+.chip{
+  background:#fff !important;
+  border:1px solid #d0d6de !important;
+  border-radius:6px !important;
+  color:#6a7280 !important;
+  font-size:13px !important;
+  padding:10px 16px !important;
+}
+.chip.active{background:#ed1c24 !important;border-color:#ed1c24 !important;color:#fff !important;}
+.activity-filter-row{padding:8px 16px 0 !important;gap:8px !important;}
+.activity-filter-row select,.activity-filter-row input{
+  background:#fff !important;color:#1e2736 !important;border:1px solid #cfd5dc !important;border-radius:6px !important;padding:12px 10px !important;font-size:12px !important;
+}
+.activity-filter-row button{background:#fff !important;color:#6c7480 !important;border:1px solid #cfd5dc !important;border-radius:6px !important;padding:10px !important;}
+
+/* Stock cards: white form-card appearance rather than dark dashboard cards. */
+.list{padding:14px 16px 30px !important;gap:12px !important;}
+.card{background:#fff !important;border:1px solid #d8dde4 !important;border-radius:8px !important;padding:14px !important;box-shadow:0 1px 3px rgba(24,34,48,.06) !important;}
+.card-title{font-size:16px !important;color:#182033 !important;font-weight:650 !important;}
+.card-sub{color:#727b88 !important;}
+.card.group-card{padding:14px !important;}
+.piece-row{background:#f8f9fb !important;border:1px solid #dfe3e8 !important;border-radius:7px !important;padding:11px !important;}
+.badge.spec,.badge.qty,.badge.sold-badge{background:#eef1f5 !important;color:#667080 !important;}
+.badge.pta{background:#e6f7ed !important;color:#17965a !important;}
+.badge.nonpta{background:#fff4d4 !important;color:#a97800 !important;}
+.badge.cpid{background:#fde8ea !important;color:#c93443 !important;}
+.badge.jv{background:#eaf1fb !important;color:#4876b7 !important;}
+.sell-range-prominent .range-value{color:#27ae68 !important;}
+.sell-range-prominent .range-label{color:#687180 !important;}
+.sale-meta{color:#6e7785 !important;}
+.card-actions{gap:8px !important;}
+.card-actions button{background:#fff !important;border:1px solid #cbd2db !important;color:#394352 !important;border-radius:6px !important;padding:9px 7px !important;}
+.card-actions button.sell-btn{color:#c93443 !important;border-color:#c93443 !important;}
+.card-actions button.del-btn{color:#d84a54 !important;border-color:#cbd2db !important;}
+
+/* Floating actions retain functionality but visually match the red accent. */
+.fab{width:58px !important;height:58px !important;border-radius:7px !important;background:#ed1c24 !important;color:#fff !important;box-shadow:0 3px 10px rgba(0,0,0,.14) !important;font-size:31px !important;}
+.fab-expense{background:#ed1c24 !important;border-radius:7px !important;}
+
+/* eGadget-style side menu. */
+.menu-dropdown{
+  position:fixed !important;
+  left:0 !important;right:auto !important;top:0 !important;
+  width:min(84vw,390px) !important;
+  max-width:none !important;
+  height:100vh !important;
+  max-height:none !important;
+  margin:0 !important;
+  padding:76px 18px 24px !important;
+  overflow-y:auto !important;
+  background:#fff !important;
+  border:0 !important;
+  border-right:1px solid #d8dde4 !important;
+  border-radius:0 !important;
+  box-shadow:8px 0 28px rgba(0,0,0,.22) !important;
+  z-index:5000 !important;
+}
+.menu-section-label{color:#777f8b !important;font-size:11px !important;font-weight:700 !important;letter-spacing:.05em !important;padding:13px 10px 6px !important;}
+.menu-item{color:#252d3a !important;background:#fff !important;border:0 !important;border-radius:4px !important;padding:13px 10px !important;font-size:14px !important;}
+.menu-item:active,.menu-item:hover{background:#f1f3f5 !important;}
+.menu-item.danger{color:#d93443 !important;}
+.menu-divider{background:#e0e4e8 !important;margin:9px 4px !important;}
+
+/* Entry sheets / forms follow the same white outlined language. */
+.overlay{background:rgba(23,31,42,.58) !important;}
+.sheet{background:#fff !important;color:#1c2534 !important;border-radius:14px 14px 0 0 !important;border:1px solid #d7dce2 !important;box-shadow:0 -4px 18px rgba(0,0,0,.12) !important;}
+.sheet-handle{background:#c8ced6 !important;}
+.sheet h2,.sheet h3{color:#1b2432 !important;}
+.sec-label,.field label{color:#707987 !important;}
+.chip-opt,.model-input-row input,.model-dropdown-btn,.field input,.field select,.phone-expense-row input{
+  background:#fff !important;color:#202938 !important;border:1px solid #cfd5dc !important;border-radius:6px !important;
+}
+.chip-opt.on{background:#ed1c24 !important;border-color:#ed1c24 !important;color:#fff !important;}
+.chip-opt.status-opt{background:#fff !important;color:#687180 !important;}
+.chip-opt.status-opt.on{background:#ed1c24 !important;color:#fff !important;}
+.model-suggestion-chip{background:#f5f6f8 !important;border:1px solid #d4d9df !important;color:#596474 !important;border-radius:5px !important;}
+.btn-primary{background:#ed1c24 !important;border-color:#ed1c24 !important;color:#fff !important;border-radius:5px !important;}
+.btn-secondary{background:#fff !important;border-color:#cfd5dc !important;color:#596474 !important;border-radius:5px !important;}
+.add-extra-buy{color:#ed1c24 !important;border-color:#d2d7de !important;background:#fff !important;}
+.add-expense-inline{color:#ed1c24 !important;background:#fff !important;border-color:#d0d6de !important;}
+
+/* Auth/loading surfaces: clean navy + white, no black flash. */
+.auth-overlay,.auth-card,.app-lock-screen{background:#27384b !important;}
+.app-lock-card{background:#fff !important;color:#1b2432 !important;border-radius:10px !important;}
+.app-lock-card h1,.app-lock-card h2{color:#1b2432 !important;}
+
+/* Admin/context and secondary panels. */
+#adminShopContextBanner{background:#f0f7f3 !important;border:1px solid #bfe4ce !important;color:#278453 !important;}
+
+/* Keep hidden state behavior intact; never force visibility from the skin. */
+
 </style>
 </head>
 <body>
