@@ -10,7 +10,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
 <link rel="manifest" href="manifest.json?v=25">
-<meta name="theme-color" content="#27384b">
+<meta name="theme-color" content="#0f1115">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mobile Hisab">
@@ -624,185 +624,109 @@
   @media(min-width:700px){.settings-shell,.account-shell{height:calc(100vh - 40px);max-height:900px;margin:20px auto;border:1px solid var(--border);border-radius:18px;box-shadow:0 20px 55px rgba(0,0,0,.35)}#accountOverlay{background:rgba(0,0,0,.58);padding:0 12px;}}
 
 
-/* =========================================================
-   Z MOBILE — eGadget-inspired interface skin
-   Functionality intentionally untouched.
-   ========================================================= */
+/* ===== Z MOBILE UI REDESIGN v31 ===== */
 :root{
   --bg:#ffffff;
   --surface:#ffffff;
-  --surface-2:#f6f7f9;
-  --surface-3:#eef1f5;
-  --border:#d8dde5;
-  --border-strong:#c7ced8;
+  --surface-2:#f6f8fb;
+  --surface-3:#eef2f7;
+  --border:#d9dee7;
+  --border-strong:#c8d0dc;
   --text:#172033;
-  --text-dim:#687180;
-  --text-faint:#9aa2ae;
-  --accent:#ed1c24;
+  --text-dim:#687386;
+  --text-faint:#9aa4b2;
+  --accent:#ef1f2f;
   --accent-text:#ffffff;
-  --pta:#19a963; --pta-bg:#e8f7ef;
-  --nonpta:#c58a00; --nonpta-bg:#fff5d8;
-  --cpid:#d83b45; --cpid-bg:#fdebed;
-  --jv:#4876b7; --jv-bg:#edf3fb;
-  --bypass:#b54a6a; --bypass-bg:#fbeaf0;
-  --danger:#d9303e;
-  --sale:#c52d3b;
-  --radius:7px;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  --pta:#20b66a; --pta-bg:#e9f8f0;
+  --nonpta:#c67a00; --nonpta-bg:#fff5df;
+  --cpid:#d84a4a; --cpid-bg:#fff0f0;
+  --jv:#3977c8; --jv-bg:#edf4ff;
+  --bypass:#c94d79; --bypass-bg:#fff0f5;
+  --danger:#df3d48;
+  --sale:#ef1f2f;
+  --radius:10px;
 }
 html,body{background:#fff;color:var(--text);}
-body{font-family:inherit;}
-.app{background:#fff;max-width:480px;min-height:100vh;}
-
-/* App bar: dark government/enterprise-style strip, while preserving all controls. */
-header{
-  position:sticky !important;
-  top:0 !important;
-  background:linear-gradient(to bottom,#27384b 0,#27384b 78px,#fff 78px,#fff 100%) !important;
-  border-bottom:1px solid #d9dde3 !important;
-  padding:0 0 16px !important;
-  box-shadow:none !important;
+.app{background:#fff;min-height:100vh;padding-bottom:90px;}
+header{background:#fff;border-bottom:1px solid #e2e6ec;padding:0 16px 14px;box-shadow:0 1px 0 rgba(16,24,40,.03);}
+.header-top{margin:0 -16px 14px;padding:13px 16px 11px;background:#24364b;color:#fff;min-height:76px;}
+.header-top h1{color:#fff;font-size:21px;font-weight:750;line-height:1.05;letter-spacing:-.35px;}
+.app-brand-by{color:#e8edf4!important;font-size:12px!important;margin-top:4px!important;}
+.account-status-line{color:#65d394!important;font-weight:650;}
+.header-top>div:first-child{min-width:120px;}
+.header-top>div:last-child{gap:6px!important;}
+.history-icon-btn{width:38px;height:38px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:8px;font-size:17px;}
+.menu-btn{height:42px;background:#fff;border:1px solid #d6dce5;color:#24364b;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:750;}
+.stats{gap:8px;margin-top:0;}
+.stats-period-pill span{background:#f4f7fa;border:1px solid #dce2ea;color:#667085;padding:7px 12px;font-size:11.5px;}
+.stat{background:#f7f9fc;border:1px solid #edf0f4;border-radius:10px;padding:11px 7px;box-shadow:none;}
+.stat .v{font-size:19px;color:#172033;font-weight:700;}
+.stat .l{font-size:11px;color:#6b7483;}
+.storage-bar-wrap{margin-top:10px;}
+.storage-bar-track{background:#edf1f5!important;height:5px!important;}
+.storage-bar-fill{background:#58cf8a!important;}
+.storage-bar-label{color:#58bf82!important;font-size:11.5px;}
+.search-row{padding:12px 16px 0;}
+.search-row input,.search-row select{background:#fff;border:1px solid #cfd6df;color:#243047;border-radius:8px;padding:11px 12px;font-size:13.5px;}
+.search-row input::placeholder{color:#a1a9b5;}
+.search-row input:focus,.search-row select:focus{border-color:#ef1f2f;}
+.chips-scroll{padding:10px 16px 3px;gap:8px;}
+.chip{background:#fff;border:1px solid #d3d9e1;color:#667085;border-radius:8px;padding:8px 13px;font-size:12.5px;}
+.chip.active{background:#ef1f2f;border-color:#ef1f2f;color:#fff;font-weight:750;}
+.activity-filter-row{padding:8px 16px 0;gap:8px;}
+.activity-filter-row select,.activity-filter-row input{background:#fff;border:1px solid #cfd6df;color:#344054;border-radius:8px;padding:9px 8px;font-size:11.5px;}
+.activity-filter-row button{background:#fff;border:1px solid #cfd6df;color:#667085;border-radius:8px;padding:8px;font-size:11.5px;}
+.list{padding:12px 16px 20px;gap:10px;}
+.card{background:#fff;border:1px solid #d9dee7;border-radius:11px;padding:13px 14px;box-shadow:0 2px 7px rgba(16,24,40,.04);}
+.card-title{font-size:16px;font-weight:750;color:#172033;}
+.card-sub{color:#7a8494;}
+.card.group-card{padding:13px 14px 7px;}
+.piece-row{background:#f7f9fc;border:1px solid #e0e5ec;border-radius:10px;padding:10px 11px;}
+.badge.spec,.badge.qty{background:#eef2f6;color:#596579;}
+.badge.pta{background:#e4f8ed;color:#159b58;}
+.sell-range-prominent .range-label{color:#6b7483;}
+.sell-range-prominent .range-value{color:#17ad62;}
+.card-actions{gap:8px;}
+.card-actions button{background:#fff;border:1px solid #bfc8d5;color:#4c5a6e;border-radius:8px;padding:8px;font-size:12.5px;}
+.card-actions button.sell-btn{color:#ef1f2f;border-color:#ef1f2f;}
+.card-actions button.del-btn{color:#df3d48;border-color:#cbd3de;}
+.fab{width:58px;height:58px;background:#ef1f2f;color:#fff;box-shadow:0 6px 18px rgba(239,31,47,.28);font-size:29px;}
+.fab-expense{background:#ef1f2f!important;color:#fff!important;border:0!important;box-shadow:0 5px 15px rgba(239,31,47,.25)!important;}
+/* Menu drawer: same familiar navigation pattern, while keeping every existing action/ID intact. */
+.menu-dropdown{position:fixed!important;top:0!important;left:0!important;right:auto!important;bottom:0!important;width:min(86vw,360px)!important;max-width:none!important;height:100vh!important;margin:0!important;background:#fff!important;border:0!important;border-right:1px solid #d9dee7!important;border-radius:0!important;box-shadow:12px 0 35px rgba(16,24,40,.18)!important;padding:0 12px 18px!important;z-index:2500!important;max-height:none!important;overflow-y:auto!important;}
+.menu-dropdown.hidden{display:none!important;}
+.menu-dropdown::before{content:"";position:fixed;top:0;left:100%;width:100vw;height:100vh;background:rgba(15,23,42,.42);z-index:-1;}
+.menu-dropdown::after{content:"Z Mobile\A Mobile Hisab";white-space:pre;display:block;padding:22px 12px 18px;margin:0 -12px 8px;background:#24364b;color:#fff;font-size:20px;font-weight:750;line-height:1.35;}
+.menu-section-label{font-size:10px;color:#98a2b3;padding:9px 10px 5px;text-transform:uppercase;letter-spacing:.08em;}
+.menu-item{color:#263449!important;background:#fff!important;padding:12px 12px!important;border-radius:7px!important;font-size:14px!important;font-weight:600!important;}
+.menu-item:active{background:#fff1f2!important;}
+.menu-item.danger{color:#df3d48!important;}
+.menu-divider{height:1px;background:#e5e9ef;margin:8px 4px;}
+.overlay{background:rgba(15,23,42,.48);}
+.sheet{background:#fff;color:#172033;border:1px solid #d9dee7;box-shadow:0 -10px 30px rgba(16,24,40,.12);}
+.sheet-handle{background:#c7ced8;}
+.field input,.field select,.model-input-row input,.model-dropdown-btn{background:#fff;color:#172033;border:1px solid #cbd3de;}
+.chip-opt{background:#f6f8fb;border:1px solid #d5dbe4;color:#596579;}
+.chip-opt.on{background:#ef1f2f;border-color:#ef1f2f;color:#fff;}
+.btn-primary,.btn-save{background:#ef1f2f!important;border-color:#ef1f2f!important;color:#fff!important;}
+.btn-secondary,.btn-cancel{background:#fff!important;border:1px solid #cbd3de!important;color:#536174!important;}
+#sessionSplash{background:#24364b!important;}
+.session-splash-card{color:#fff;}
+.session-splash-logo{background:#fff;border-radius:20px;box-shadow:0 8px 25px rgba(0,0,0,.18);padding:10px;}
+.session-splash-title{font-weight:800!important;font-size:34px!important;}
+.session-splash-by{font-size:17px!important;color:#e9edf3!important;}
+.session-splash-status{color:#d6dee8!important;}
+.session-splash-loader{background:#627286!important;}
+.session-splash-loader i{background:#ef1f2f!important;}
+/* Keep existing app-lock/auth/settings functionality; only restyle its surfaces. */
+.app-lock-shell,.account-shell,.settings-shell{background:#fff!important;color:#172033!important;border-color:#d9dee7!important;}
+@media(max-width:520px){
+  .header-top{min-height:72px;}
+  .header-top .quick-privacy-amount-btn{display:none;}
+  .header-top .quick-privacy-btn{display:flex;}
+  .menu-btn{font-size:0;width:52px;position:relative;}
+  .menu-btn::after{content:'☰';font-size:22px;}
 }
-.header-top{
-  min-height:78px;
-  padding:10px 16px 10px;
-  margin:0 !important;
-  align-items:center !important;
-}
-.header-top h1{
-  color:#fff !important;
-  font-size:18px !important;
-  line-height:1.08 !important;
-  font-weight:600 !important;
-  margin:0 !important;
-}
-.app-brand-by{color:#dbe3eb !important;font-size:10px !important;margin-top:4px !important;}
-.account-status-line{color:#dbe3eb !important;}
-.history-icon-btn,.menu-btn{
-  background:rgba(255,255,255,.08) !important;
-  border:1px solid rgba(255,255,255,.28) !important;
-  color:#fff !important;
-  border-radius:6px !important;
-}
-.history-icon-btn{width:43px !important;height:43px !important;font-size:19px !important;}
-.menu-btn{padding:10px 12px !important;font-size:13px !important;font-weight:600 !important;}
-
-/* Stats become a clean white eGadget-like information strip. */
-.stats{padding:15px 16px 0;gap:7px;}
-.stat{background:#fff !important;border:0 !important;border-radius:0 !important;padding:7px 5px 9px !important;}
-.stat .v{font-size:18px !important;color:#111827 !important;font-weight:500 !important;}
-.stat .l{font-size:10.5px !important;color:#6b7280 !important;}
-.stats-period-pill{padding:0 16px !important;}
-.stats-period-pill span{display:inline-flex !important;background:#f4f6f8 !important;border:1px solid #d5dae1 !important;color:#657080 !important;border-radius:20px !important;padding:6px 13px !important;font-weight:600 !important;}
-.storage-bar-wrap{margin:0 16px !important;}
-.storage-bar-track{background:#eef1f4 !important;height:8px !important;border-radius:2px !important;}
-.storage-bar-fill{background:#49c98b !important;border-radius:2px !important;}
-.storage-bar-label{color:#5ac88d !important;font-size:10.5px !important;}
-
-/* Search / filters: rectangular, outlined, simple. */
-.search-row{padding:16px 16px 4px !important;border-top:1px solid #e1e4e8;}
-.search-row input,.search-row select{
-  background:#fff !important;
-  color:#1c2535 !important;
-  border:1px solid #cfd5dc !important;
-  border-radius:6px !important;
-  min-height:48px;
-  font-size:14px !important;
-}
-.search-row input::placeholder{color:#a4abb5 !important;}
-.search-row input:focus,.search-row select:focus{border-color:#9fa7b2 !important;box-shadow:none !important;}
-.chips-scroll{padding:9px 16px 4px !important;gap:9px !important;}
-.chip{
-  background:#fff !important;
-  border:1px solid #d0d6de !important;
-  border-radius:6px !important;
-  color:#6a7280 !important;
-  font-size:13px !important;
-  padding:10px 16px !important;
-}
-.chip.active{background:#ed1c24 !important;border-color:#ed1c24 !important;color:#fff !important;}
-.activity-filter-row{padding:8px 16px 0 !important;gap:8px !important;}
-.activity-filter-row select,.activity-filter-row input{
-  background:#fff !important;color:#1e2736 !important;border:1px solid #cfd5dc !important;border-radius:6px !important;padding:12px 10px !important;font-size:12px !important;
-}
-.activity-filter-row button{background:#fff !important;color:#6c7480 !important;border:1px solid #cfd5dc !important;border-radius:6px !important;padding:10px !important;}
-
-/* Stock cards: white form-card appearance rather than dark dashboard cards. */
-.list{padding:14px 16px 30px !important;gap:12px !important;}
-.card{background:#fff !important;border:1px solid #d8dde4 !important;border-radius:8px !important;padding:14px !important;box-shadow:0 1px 3px rgba(24,34,48,.06) !important;}
-.card-title{font-size:16px !important;color:#182033 !important;font-weight:650 !important;}
-.card-sub{color:#727b88 !important;}
-.card.group-card{padding:14px !important;}
-.piece-row{background:#f8f9fb !important;border:1px solid #dfe3e8 !important;border-radius:7px !important;padding:11px !important;}
-.badge.spec,.badge.qty,.badge.sold-badge{background:#eef1f5 !important;color:#667080 !important;}
-.badge.pta{background:#e6f7ed !important;color:#17965a !important;}
-.badge.nonpta{background:#fff4d4 !important;color:#a97800 !important;}
-.badge.cpid{background:#fde8ea !important;color:#c93443 !important;}
-.badge.jv{background:#eaf1fb !important;color:#4876b7 !important;}
-.sell-range-prominent .range-value{color:#27ae68 !important;}
-.sell-range-prominent .range-label{color:#687180 !important;}
-.sale-meta{color:#6e7785 !important;}
-.card-actions{gap:8px !important;}
-.card-actions button{background:#fff !important;border:1px solid #cbd2db !important;color:#394352 !important;border-radius:6px !important;padding:9px 7px !important;}
-.card-actions button.sell-btn{color:#c93443 !important;border-color:#c93443 !important;}
-.card-actions button.del-btn{color:#d84a54 !important;border-color:#cbd2db !important;}
-
-/* Floating actions retain functionality but visually match the red accent. */
-.fab{width:58px !important;height:58px !important;border-radius:7px !important;background:#ed1c24 !important;color:#fff !important;box-shadow:0 3px 10px rgba(0,0,0,.14) !important;font-size:31px !important;}
-.fab-expense{background:#ed1c24 !important;border-radius:7px !important;}
-
-/* eGadget-style side menu. */
-.menu-dropdown{
-  position:fixed !important;
-  left:0 !important;right:auto !important;top:0 !important;
-  width:min(84vw,390px) !important;
-  max-width:none !important;
-  height:100vh !important;
-  max-height:none !important;
-  margin:0 !important;
-  padding:76px 18px 24px !important;
-  overflow-y:auto !important;
-  background:#fff !important;
-  border:0 !important;
-  border-right:1px solid #d8dde4 !important;
-  border-radius:0 !important;
-  box-shadow:8px 0 28px rgba(0,0,0,.22) !important;
-  z-index:5000 !important;
-}
-.menu-section-label{color:#777f8b !important;font-size:11px !important;font-weight:700 !important;letter-spacing:.05em !important;padding:13px 10px 6px !important;}
-.menu-item{color:#252d3a !important;background:#fff !important;border:0 !important;border-radius:4px !important;padding:13px 10px !important;font-size:14px !important;}
-.menu-item:active,.menu-item:hover{background:#f1f3f5 !important;}
-.menu-item.danger{color:#d93443 !important;}
-.menu-divider{background:#e0e4e8 !important;margin:9px 4px !important;}
-
-/* Entry sheets / forms follow the same white outlined language. */
-.overlay{background:rgba(23,31,42,.58) !important;}
-.sheet{background:#fff !important;color:#1c2534 !important;border-radius:14px 14px 0 0 !important;border:1px solid #d7dce2 !important;box-shadow:0 -4px 18px rgba(0,0,0,.12) !important;}
-.sheet-handle{background:#c8ced6 !important;}
-.sheet h2,.sheet h3{color:#1b2432 !important;}
-.sec-label,.field label{color:#707987 !important;}
-.chip-opt,.model-input-row input,.model-dropdown-btn,.field input,.field select,.phone-expense-row input{
-  background:#fff !important;color:#202938 !important;border:1px solid #cfd5dc !important;border-radius:6px !important;
-}
-.chip-opt.on{background:#ed1c24 !important;border-color:#ed1c24 !important;color:#fff !important;}
-.chip-opt.status-opt{background:#fff !important;color:#687180 !important;}
-.chip-opt.status-opt.on{background:#ed1c24 !important;color:#fff !important;}
-.model-suggestion-chip{background:#f5f6f8 !important;border:1px solid #d4d9df !important;color:#596474 !important;border-radius:5px !important;}
-.btn-primary{background:#ed1c24 !important;border-color:#ed1c24 !important;color:#fff !important;border-radius:5px !important;}
-.btn-secondary{background:#fff !important;border-color:#cfd5dc !important;color:#596474 !important;border-radius:5px !important;}
-.add-extra-buy{color:#ed1c24 !important;border-color:#d2d7de !important;background:#fff !important;}
-.add-expense-inline{color:#ed1c24 !important;background:#fff !important;border-color:#d0d6de !important;}
-
-/* Auth/loading surfaces: clean navy + white, no black flash. */
-.auth-overlay,.auth-card,.app-lock-screen{background:#27384b !important;}
-.app-lock-card{background:#fff !important;color:#1b2432 !important;border-radius:10px !important;}
-.app-lock-card h1,.app-lock-card h2{color:#1b2432 !important;}
-
-/* Admin/context and secondary panels. */
-#adminShopContextBanner{background:#f0f7f3 !important;border:1px solid #bfe4ce !important;color:#278453 !important;}
-
-/* Keep hidden state behavior intact; never force visibility from the skin. */
-
 </style>
 </head>
 <body>
