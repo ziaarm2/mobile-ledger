@@ -649,14 +649,28 @@
 html,body{background:#fff;color:var(--text);}
 .app{background:#fff;min-height:100vh;padding-bottom:90px;}
 header{background:#fff;border-bottom:1px solid #e2e6ec;padding:0 16px 14px;box-shadow:0 1px 0 rgba(16,24,40,.03);}
-.header-top{margin:0 -16px 14px;padding:13px 16px 11px;background:#24364b;color:#fff;min-height:76px;}
-.header-top h1{color:#fff;font-size:21px;font-weight:750;line-height:1.05;letter-spacing:-.35px;}
-.app-brand-by{color:#e8edf4!important;font-size:12px!important;margin-top:4px!important;}
+.header-top{display:flex;align-items:center;gap:12px;justify-content:flex-start;}
+.header-top .brand-block{flex:1;min-width:0;}
+.header-top{margin:0 -16px 14px;padding:12px 16px;background:#24364b;color:#fff;min-height:82px;}
+.header-top h1{color:#fff;font-size:25px;font-weight:800;line-height:1;letter-spacing:-.55px;margin:0;}
+.header-top h1::after{content:'';display:block;width:34px;height:3px;background:#ef1f2f;border-radius:3px;margin-top:7px;}
+.app-brand-by{color:#dbe4ef!important;font-size:13px!important;font-weight:600!important;margin-top:6px!important;}
 .account-status-line{color:#65d394!important;font-weight:650;}
-.header-top>div:first-child{min-width:120px;}
-.header-top>div:last-child{gap:6px!important;}
-.history-icon-btn{width:38px;height:38px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:8px;font-size:17px;}
-.menu-btn{height:42px;background:#fff;border:1px solid #d6dce5;color:#24364b;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:750;}
+.header-top>div:first-child{min-width:0;}
+.header-top>div:last-child{gap:4px!important;align-items:center!important;}
+.history-icon-btn{width:42px;height:42px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.20);color:#fff;border-radius:12px;font-size:18px;display:inline-flex;align-items:center;justify-content:center;}
+#globalUndoBtn,#globalRedoBtn{display:none!important;}
+#adminNotificationBtn{display:inline-flex!important;position:relative!important;background:transparent!important;border:0!important;width:42px;height:42px;font-size:0;}
+#adminNotificationBtn::before{content:'🔔';font-size:22px;filter:grayscale(1) brightness(4);}
+#adminNotificationBtn[style*="display:none"]{display:none!important;}
+#quickPrivacyHeaderBtn{background:transparent;border:0;width:46px;height:42px;font-size:0;position:relative;}
+#quickPrivacyHeaderBtn::before{content:'';width:29px;height:18px;border:2px solid rgba(255,255,255,.95);border-radius:18px/13px;display:block;}
+#quickPrivacyHeaderBtn::after{content:'';position:absolute;width:7px;height:7px;background:#fff;border-radius:50%;left:19.5px;top:17.5px;box-shadow:0 0 0 2px #24364b;}
+#quickPrivacyHeaderBtn.is-on::before{border-color:#ef1f2f;}
+#quickPrivacyHeaderBtn.is-on::after{background:#ef1f2f;}
+.menu-btn{order:-1;height:46px!important;width:46px!important;background:transparent!important;border:0!important;color:#fff!important;border-radius:12px!important;padding:0!important;font-size:0!important;font-weight:750;position:relative;}
+.menu-btn::after{content:'☰';font-size:29px;line-height:1;font-weight:400;}
+.header-top>div:last-child .menu-btn{flex:0 0 46px;}
 .stats{gap:8px;margin-top:0;}
 .stats-period-pill span{background:#f4f7fa;border:1px solid #dce2ea;color:#667085;padding:7px 12px;font-size:11.5px;}
 .stat{background:#f7f9fc;border:1px solid #edf0f4;border-radius:10px;padding:11px 7px;box-shadow:none;}
@@ -720,12 +734,12 @@ header{background:#fff;border-bottom:1px solid #e2e6ec;padding:0 16px 14px;box-s
 .session-splash-loader i{background:#ef1f2f!important;}
 /* Keep existing app-lock/auth/settings functionality; only restyle its surfaces. */
 .app-lock-shell,.account-shell,.settings-shell{background:#fff!important;color:#172033!important;border-color:#d9dee7!important;}
+#quickPrivacyAmountBtn{display:none!important;}
 @media(max-width:520px){
-  .header-top{min-height:72px;}
-  .header-top .quick-privacy-amount-btn{display:none;}
+  .header-top{min-height:78px;padding:10px 12px;gap:8px;}
+  .header-top .quick-privacy-amount-btn{display:none!important;}
   .header-top .quick-privacy-btn{display:flex;}
-  .menu-btn{font-size:0;width:52px;position:relative;}
-  .menu-btn::after{content:'☰';font-size:22px;}
+  .menu-btn{width:44px!important;height:44px!important;}
 }
 </style>
 </head>
@@ -733,17 +747,17 @@ header{background:#fff;border-bottom:1px solid #e2e6ec;padding:0 16px 14px;box-s
 <div class="app" style="visibility:hidden;">
   <header style="position:relative;">
     <div class="header-top">
-      <div>
-        <h1>Mobile Hisab</h1><div class="app-brand-by">by Z Mobile</div>
+      <button class="menu-btn" id="btnMenu" aria-label="Menu" title="Menu">☰</button>
+      <div class="brand-block">
+        <h1>Z Mobile</h1><div class="app-brand-by">Mobile Hisab</div>
         <div class="account-status-line" id="accountStatusLine" style="display:none;font-size:11.5px;color:var(--text-dim);margin-top:2px;"></div>
       </div>
       <div style="display:flex;align-items:center;gap:6px;">
         <button class="history-icon-btn" id="globalUndoBtn" title="Undo" aria-label="Undo">↶</button>
         <button class="history-icon-btn" id="globalRedoBtn" title="Redo" aria-label="Redo">↷</button>
-        <button class="history-icon-btn" id="adminNotificationBtn" title="Notifications" aria-label="Notifications" style="display:none;position:relative;">🔔<span id="adminNotificationBadge" class="shop-access-badge" style="position:absolute;right:-2px;top:-3px;display:none;margin:0;min-width:17px;height:17px;padding:0 4px;"></span></button>
-        <button class="history-icon-btn quick-privacy-btn" id="quickPrivacyHeaderBtn" title="Privacy: tap = ON/OFF, long-press = amount" aria-label="Quick Privacy">🙈</button>
+        <button class="history-icon-btn" id="adminNotificationBtn" title="Notifications" aria-label="Notifications" style="display:none;position:relative;"><span id="adminNotificationBadge" class="shop-access-badge" style="position:absolute;right:2px;top:2px;display:none;margin:0;min-width:17px;height:17px;padding:0 4px;"></span></button>
+        <button class="history-icon-btn quick-privacy-btn" id="quickPrivacyHeaderBtn" title="Privacy: tap = ON/OFF, long-press = amount" aria-label="Quick Privacy"></button>
         <button class="history-icon-btn quick-privacy-amount-btn" id="quickPrivacyAmountBtn" title="Privacy amount" aria-label="Privacy amount">⚙</button>
-        <button class="menu-btn" id="btnMenu">☰ Menu</button>
       </div>
     </div>
     <div class="privacy-amount-popover" id="privacyAmountPopover" aria-hidden="true">
