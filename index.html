@@ -1894,18 +1894,26 @@ function cancelExitConfirm(){
   }
 }
 function confirmExitApp(){
+  // User explicitly confirmed exit. First remove our root history guard so
+  // the next Back action is a real navigation instead of another app-level
+  // popstate confirmation.
   hideExitConfirm();
   mainHistoryGuardActive=false;
   try{ saveUIState(); }catch(e){}
 
-  // In an installed PWA / browser tab, JavaScript is not universally allowed
-  // to terminate the host window. Try every supported close path immediately.
-  let closed=false;
-  try{ window.open('', '_self'); window.close(); closed=true; }catch(e){}
-  if(!closed){ try{ window.close(); }catch(e){} }
-  // If the host blocks programmatic close, do NOT call history.back() here:
-  // that only navigates and leaves the app visible, which is the behavior we
-  // must avoid after pressing OK.
+  // Native wrappers (if the app is ever packaged in one) can provide a real
+  // process exit. Use those bridges first.
+  try{ if(window.Android && typeof window.Android.exitApp==='function'){ window.Android.exitApp(); return; } }catch(e){}
+  try{ if(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.exitApp){ window.webkit.messageHandlers.exitApp.postMessage({}); return; } }catch(e){}
+  try{ if(window.navigator && window.navigator.app && typeof window.navigator.app.exitApp==='function'){ window.navigator.app.exitApp(); return; } }catch(e){}
+
+  // For a standalone PWA/browser context, window.close() is normally blocked
+  // unless this window was script-created. The reliable web fallback is to
+  // leave the current document immediately with the browser's real Back
+  // navigation, now that our history guard is disabled. This is deliberately
+  // NOT another app-level confirmation.
+  try{ history.back(); return; }catch(e){}
+  try{ window.close(); }catch(e){}
 }
 
 document.getElementById('exitConfirmCancel').onclick=cancelExitConfirm;
