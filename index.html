@@ -876,7 +876,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v43<br><span>Updated 30 Sep 2026</span><span>Time 03:16 PM PKT</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v44<br><span>Updated 30 Sep 2026</span><span>Time 03:28 PM PKT</span></div>
         </div>
       </div>
     </div>
@@ -1676,7 +1676,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v43 • Updated 30 Sep 2026 • 03:16 PM PKT</div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v44 • Updated 30 Sep 2026 • 03:28 PM PKT</div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1692,8 +1692,8 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 <button class="fab-expense" id="btnQuickExpense" title="Expense add karein">💵</button>
 
 <script>
-const APP_INDEX_VERSION = 'v43';
-const APP_INDEX_UPDATED = '30 Sep 2026 • 03:16 PM PKT';
+const APP_INDEX_VERSION = 'v44';
+const APP_INDEX_UPDATED = '30 Sep 2026 • 03:28 PM PKT';
 
 let inventory = [];
 
@@ -1894,6 +1894,9 @@ function cancelExitConfirm(){
   if(!mainHistoryGuardActive){ armMainHistoryGuard(); }
 }
 function confirmExitApp(){
+  // OK must consume the app's guard entry first, then immediately leave the
+  // actual document. Native wrappers get a real process-exit call when one
+  // is available; otherwise the browser/PWA receives a genuine Back sequence.
   hideExitConfirm();
   exitConfirmed=true;
   mainHistoryGuardActive=false;
@@ -1904,22 +1907,17 @@ function confirmExitApp(){
   try{ if(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.exitApp){ window.webkit.messageHandlers.exitApp.postMessage({}); return; } }catch(e){}
   try{ if(window.navigator && window.navigator.app && typeof window.navigator.app.exitApp==='function'){ window.navigator.app.exitApp(); return; } }catch(e){}
 
-  // Try the platform close API first. Browsers only permit this for
-  // script-closable windows; Android PWAs may reject it for security.
-  try{ window.close(); }catch(e){}
-
-  // Consume BOTH same-document entries created by the exit guard in one
-  // navigation. This avoids the old behaviour where OK removed only one
-  // history entry and left the app visible.
+  // A normal browser/PWA cannot be forcibly killed by JavaScript. The safest
+  // possible web behaviour is to remove the synthetic guard entry and then
+  // immediately perform the real Back navigation. In an installed Android
+  // PWA this returns to the launcher when the app has no previous document.
   try{
-    if(history.length >= 3){
-      history.go(-2);
-    }else{
-      history.back();
-      setTimeout(function(){ try{ history.back(); }catch(e){} },80);
-    }
+    history.back();
+    setTimeout(function(){
+      try{ history.back(); }catch(e){}
+    }, 60);
   }catch(e){
-    try{ history.back(); }catch(e2){}
+    try{ window.close(); }catch(e2){}
   }
 }
 document.getElementById('exitConfirmCancel').onclick=cancelExitConfirm;
@@ -9189,7 +9187,7 @@ restoreUIScroll(savedUIState);
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
-    const SW_VERSION = '43';
+    const SW_VERSION = '44';
     // The previous build could stay active because the service worker was
     // serving an older cached index. First ask the registration to update
     // without using its HTTP cache, then activate any waiting worker.
