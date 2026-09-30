@@ -761,9 +761,39 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
   .header-top .quick-privacy-btn{display:flex;}
   .menu-btn{width:44px!important;height:44px!important;}
 }
+
+/* Native-style exit confirmation: shown only when Back is pressed on the main screen. */
+.exit-confirm-overlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.56);display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;}
+.exit-confirm-overlay.hidden{display:none!important;}
+.exit-confirm-card{width:min(100%,596px);background:#fff;border-radius:3px;box-shadow:0 16px 45px rgba(0,0,0,.32);padding:28px 30px 20px;color:#202124;box-sizing:border-box;}
+.exit-confirm-title{font-size:24px;line-height:1.25;font-weight:500;margin-bottom:24px;}
+.exit-confirm-message{font-size:18px;line-height:1.35;color:#303134;max-width:520px;}
+.exit-confirm-actions{display:flex;justify-content:flex-end;align-items:center;gap:28px;margin-top:26px;}
+.exit-confirm-btn{border:0;background:transparent;font-size:14px;font-weight:800;letter-spacing:.12em;padding:12px 6px;min-width:58px;cursor:pointer;}
+.exit-confirm-btn.cancel{color:#6b625e;}
+.exit-confirm-btn.ok{color:#6b625e;}
+.exit-confirm-btn:active{opacity:.65;}
+.menu-footer-version{text-align:right;line-height:1.35;}
+.menu-footer-version span{font-size:10px;color:#98a2b3;}
+@media(max-width:520px){
+  .exit-confirm-card{width:min(100%,596px);padding:26px 26px 18px;}
+  .exit-confirm-title{font-size:23px;}
+  .exit-confirm-message{font-size:17px;}
+}
 </style>
 </head>
 <body>
+<div class="exit-confirm-overlay hidden" id="exitConfirmOverlay" aria-hidden="true">
+  <div class="exit-confirm-card" role="dialog" aria-modal="true" aria-labelledby="exitConfirmTitle">
+    <div class="exit-confirm-title" id="exitConfirmTitle">Mobile Hisab</div>
+    <div class="exit-confirm-message">Are you sure to exit Mobile Hisab?</div>
+    <div class="exit-confirm-actions">
+      <button type="button" class="exit-confirm-btn cancel" id="exitConfirmCancel">CANCEL</button>
+      <button type="button" class="exit-confirm-btn ok" id="exitConfirmOk">OK</button>
+    </div>
+  </div>
+</div>
+
 <div class="app" style="visibility:hidden;">
   <header style="position:relative;">
     <div class="header-top">
@@ -843,7 +873,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version">v1.0.0</div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v38<br><span>Updated 30 Sep 2026</span></div>
         </div>
       </div>
     </div>
@@ -1643,7 +1673,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">Professional settings UI • v25</div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v38 • Updated 30 Sep 2026</div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1832,24 +1862,52 @@ window.addEventListener('popstate', function(){
     return;
   }
   if(mainHistoryGuardActive){
-    // Main screen: ask before allowing the app to be left, like a native
-    // Android app. CANCEL restores the guard; OK releases it and lets the
-    // browser/WebView perform its normal back/exit action.
-    let shouldExit = false;
-    try{
-      shouldExit = window.confirm('Are you sure to exit Mobile Hisab?');
-    }catch(e){}
-    if(shouldExit){
-      mainHistoryGuardActive = false;
-      try{ saveUIState(); }catch(e){}
-      // We are already one history entry back (the guard entry was consumed).
-      // Going back once more reaches the page/app that opened Mobile Hisab.
-      try{ history.back(); }catch(e){}
-    }else{
-      try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){}
-    }
+    // Main screen: show a real in-app confirmation dialog instead of
+    // window.confirm, matching the native-style dialog the user expects.
+    showExitConfirm();
   }
 });
+
+let exitConfirmPending = false;
+function showExitConfirm(){
+  exitConfirmPending = true;
+  const ov=document.getElementById('exitConfirmOverlay');
+  if(!ov) return;
+  ov.classList.remove('hidden');
+  ov.setAttribute('aria-hidden','false');
+  setTimeout(function(){
+    const btn=document.getElementById('exitConfirmCancel');
+    if(btn) btn.focus();
+  },0);
+}
+function hideExitConfirm(){
+  const ov=document.getElementById('exitConfirmOverlay');
+  if(!ov) return;
+  ov.classList.add('hidden');
+  ov.setAttribute('aria-hidden','true');
+  exitConfirmPending=false;
+}
+function cancelExitConfirm(){
+  hideExitConfirm();
+  if(mainHistoryGuardActive){
+    try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){}
+  }
+}
+function confirmExitApp(){
+  hideExitConfirm();
+  mainHistoryGuardActive=false;
+  try{ saveUIState(); }catch(e){}
+  // The guard entry was consumed by the Back gesture. One more Back reaches
+  // the page/app that opened Mobile Hisab, allowing the normal exit behavior.
+  try{ history.back(); }catch(e){}
+}
+
+document.getElementById('exitConfirmCancel').onclick=cancelExitConfirm;
+document.getElementById('exitConfirmOk').onclick=confirmExitApp;
+document.getElementById('exitConfirmOverlay').addEventListener('click',function(e){
+  if(e.target===this) cancelExitConfirm();
+});
+
 
 const BRANDS = ['Samsung','Google','iPhone','OnePlus','Vivo','Oppo','Realme','Infinix','Tecno','Xiaomi','Motorola','Other'];
 const STATUS_OPTS = ['PTA','Non-PTA','CPID','JV','Bypass/MDM'];
