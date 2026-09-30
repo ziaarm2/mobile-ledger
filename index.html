@@ -735,7 +735,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 .menu-footer-logo img{width:100%;height:100%;object-fit:cover;display:block;}
 .menu-footer-name{font-size:17px;font-weight:800;color:#263449;line-height:1.15;}
 .menu-footer-sub{font-size:12px;color:#8993a2;margin-top:4px;}
-.menu-footer-version{font-size:12px;color:#98a2b3;margin-left:auto;white-space:nowrap;}
+.menu-footer-version{font-size:12px;color:#98a2b3;margin-left:auto;white-space:normal;text-align:right;line-height:1.35;min-width:118px;max-width:150px;}
 .overlay{background:rgba(15,23,42,.48);}
 .sheet{background:#fff;color:#172033;border:1px solid #d9dee7;box-shadow:0 -10px 30px rgba(16,24,40,.12);}
 .sheet-handle{background:#c7ced8;}
@@ -774,7 +774,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 .exit-confirm-btn.ok{color:#6b625e;}
 .exit-confirm-btn:active{opacity:.65;}
 .menu-footer-version{text-align:right;line-height:1.35;}
-.menu-footer-version span{font-size:10px;color:#98a2b3;}
+.menu-footer-version span{font-size:10px;color:#98a2b3;display:block;}
 @media(max-width:520px){
   .exit-confirm-card{width:min(100%,596px);padding:26px 26px 18px;}
   .exit-confirm-title{font-size:23px;}
@@ -873,7 +873,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v39<br><span>Updated 30 Sep 2026 • 02:07 PM PKT</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v40<br><span>Updated 30 Sep 2026</span><span>Time 02:14 PM PKT</span></div>
         </div>
       </div>
     </div>
@@ -1673,7 +1673,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v39 • Updated 30 Sep 2026 • 02:07 PM PKT</div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v40 • Updated 30 Sep 2026 • 02:14 PM PKT</div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1898,20 +1898,14 @@ function confirmExitApp(){
   mainHistoryGuardActive=false;
   try{ saveUIState(); }catch(e){}
 
-  // Try to close the current app/window immediately. Browsers only allow
-  // window.close() in contexts they permit to be closed, so keep a history
-  // fallback for installed/browser app contexts where direct close is blocked.
-  let closeAttempted=false;
-  try{
-    window.open('', '_self');
-    window.close();
-    closeAttempted=true;
-  }catch(e){}
-  setTimeout(function(){
-    if(document.visibilityState==='visible'){
-      try{ history.back(); }catch(e){}
-    }
-  },120);
+  // In an installed PWA / browser tab, JavaScript is not universally allowed
+  // to terminate the host window. Try every supported close path immediately.
+  let closed=false;
+  try{ window.open('', '_self'); window.close(); closed=true; }catch(e){}
+  if(!closed){ try{ window.close(); }catch(e){} }
+  // If the host blocks programmatic close, do NOT call history.back() here:
+  // that only navigates and leaves the app visible, which is the behavior we
+  // must avoid after pressing OK.
 }
 
 document.getElementById('exitConfirmCancel').onclick=cancelExitConfirm;
@@ -9181,9 +9175,26 @@ restoreUIScroll(savedUIState);
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
-    navigator.serviceWorker.register('service-worker.js').catch(function(err){
+    const SW_VERSION = '40';
+    navigator.serviceWorker.register('service-worker.js?v='+SW_VERSION, {updateViaCache:'none'}).then(function(reg){
+      try{ reg.update(); }catch(e){}
+      if(reg.waiting){ try{ reg.waiting.postMessage({type:'SKIP_WAITING'}); }catch(e){} }
+      reg.addEventListener('updatefound', function(){
+        const nw=reg.installing;
+        if(nw) nw.addEventListener('statechange', function(){
+          if(nw.state==='installed' && navigator.serviceWorker.controller){
+            try{ nw.postMessage({type:'SKIP_WAITING'}); }catch(e){}
+          }
+        });
+      });
+    }).catch(function(err){
       console.error('Service worker register failed', err);
     });
+  });
+  navigator.serviceWorker.addEventListener('controllerchange', function(){
+    if(window.__swReloaded) return;
+    window.__swReloaded=true;
+    window.location.reload();
   });
 }
 </script>
