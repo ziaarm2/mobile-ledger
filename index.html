@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
 <meta name="application-name" content="Mobile Hisab">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
@@ -873,7 +876,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v42<br><span>Updated 30 Sep 2026</span><span>Time 02:31 PM PKT</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v43<br><span>Updated 30 Sep 2026</span><span>Time 03:16 PM PKT</span></div>
         </div>
       </div>
     </div>
@@ -1673,7 +1676,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v42 • Updated 30 Sep 2026 • 02:31 PM PKT</div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v43 • Updated 30 Sep 2026 • 03:16 PM PKT</div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1689,6 +1692,9 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 <button class="fab-expense" id="btnQuickExpense" title="Expense add karein">💵</button>
 
 <script>
+const APP_INDEX_VERSION = 'v43';
+const APP_INDEX_UPDATED = '30 Sep 2026 • 03:16 PM PKT';
+
 let inventory = [];
 
 // ---------- Per-shop local storage isolation ----------
@@ -1792,135 +1798,129 @@ window.addEventListener('beforeunload', saveUIState);
 let rangeInputMode = 'auto'; // 'auto' until the user manually edits the sell-range field
 
 // ---------- Back-gesture / browser-back handling ----------
-// Without this, every overlay (Add entry, Sell, Dashboard, Reports,
-// Settings, photo crop, etc.) is "invisible" to the phone's back button —
-// so a back gesture doesn't close the open sheet, it closes/exits the whole
-// app instead. Fix: every time an overlay opens, push a history entry.
-// A real back gesture then triggers our popstate handler first, which just
-// closes the topmost open overlay instead of leaving the app. If nothing is
-// open, there's nothing pushed, so back behaves normally (exits/leaves as
-// before).
+// Main-screen Back uses a single same-document history trap. The important
+// detail is that the trap is re-armed immediately when popstate fires. This
+// makes the custom confirmation reliable on Android/PWA back gestures.
 const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','imeiScanOverlay','adminShopsOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','expensesOverlay','accountOverlay','rateBookOverlay','rateAddOverlay','shopSetupOverlay'];
 let overlayHistoryStack = [];
-
-// Keep the app on its main route when the phone/browser Back gesture is used.
-// Overlay history still works normally above this guard.
 let mainHistoryGuardActive = false;
-try{
-  history.replaceState({mlMain:true}, '', location.href);
-  history.pushState({mlMainGuard:true}, '', location.href);
-  mainHistoryGuardActive = true;
-}catch(e){}
-setTimeout(function(){
-  if(mainHistoryGuardActive) return;
-  try{ history.pushState({mlMainGuard:true}, '', location.href); mainHistoryGuardActive=true; }catch(e){}
-}, 250);
+let exitConfirmed = false;
+
+function armMainHistoryGuard(){
+  try{
+    history.replaceState({mlMain:true}, '', location.href);
+    history.pushState({mlMainGuard:true}, '', location.href);
+    mainHistoryGuardActive = true;
+  }catch(e){
+    mainHistoryGuardActive = false;
+  }
+}
+armMainHistoryGuard();
 
 function pushOverlayHistory(id){
   overlayHistoryStack.push(id);
   try{ history.pushState({mlOverlay:id}, '', location.href); }catch(e){}
 }
 
-// Every Cancel/×/"Band karein" button and every backdrop-tap should call
-// this instead of hiding the overlay directly, so tapping Close and using
-// the back gesture behave identically and never get out of sync.
 function requestOverlayClose(){
-  if(overlayHistoryStack.length){
-    history.back();
-  }
+  if(overlayHistoryStack.length) history.back();
 }
 
 window.addEventListener('popstate', function(){
-  // Back priority follows the way normal Android apps behave:
-  // 1) close the top-most sheet, 2) exit multi-selection, 3) close the menu,
-  // 4) otherwise stay on the app's main screen.
   if(overlayHistoryStack.length){
-    const id = overlayHistoryStack.pop();
-    const el = document.getElementById(id);
+    const id=overlayHistoryStack.pop();
+    const el=document.getElementById(id);
     if(el) el.classList.add('hidden');
-    if(id==='sellOverlay') sellingId = null;
+    if(id==='sellOverlay') sellingId=null;
     if(id==='cropOverlay'){
-      document.getElementById('cropImg').src = '';
+      document.getElementById('cropImg').src='';
       processNextCropFile();
     }
     if(id==='imeiScanOverlay') stopImeiScan();
-    if(id==='waSharePreviewOverlay'){ const mb=document.getElementById('multiShareBar'); if(mb) updateMultiShareBar(); }
+    if(id==='waSharePreviewOverlay'){
+      const mb=document.getElementById('multiShareBar'); if(mb) updateMultiShareBar();
+    }
     if(mainHistoryGuardActive){
       try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){}
     }
     return;
   }
+
   if(typeof shareSelectMode!=='undefined' && shareSelectMode){
     setShareSelectMode(false);
-    if(mainHistoryGuardActive){
-      try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){}
-    }
+    if(mainHistoryGuardActive){ try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){} }
     return;
   }
-  const menu = document.getElementById('menuDropdown');
+
+  const menu=document.getElementById('menuDropdown');
   if(menu && !menu.classList.contains('hidden')){
     menu.classList.add('hidden');
-    if(mainHistoryGuardActive){
-      try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){}
-    }
+    if(mainHistoryGuardActive){ try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){} }
     return;
   }
+
+  // If OK was pressed, this popstate is intentionally allowed to leave.
+  if(exitConfirmed){
+    mainHistoryGuardActive=false;
+    return;
+  }
+
   if(mainHistoryGuardActive){
-    // Main screen: always show the in-app confirmation. Re-arm the guard only
-    // after Cancel; OK deliberately disables it and leaves the app.
+    // Re-arm FIRST, then show the dialog. This is the key fix: the Android
+    // back gesture can never consume our only guard entry before the user
+    // chooses CANCEL or OK.
+    try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){}
     showExitConfirm();
   }
 });
 
-let exitConfirmPending = false;
+let exitConfirmPending=false;
 function showExitConfirm(){
-  exitConfirmPending = true;
+  exitConfirmPending=true;
   const ov=document.getElementById('exitConfirmOverlay');
   if(!ov) return;
   ov.classList.remove('hidden');
   ov.setAttribute('aria-hidden','false');
-  setTimeout(function(){
-    const btn=document.getElementById('exitConfirmCancel');
-    if(btn) btn.focus();
-  },0);
 }
 function hideExitConfirm(){
   const ov=document.getElementById('exitConfirmOverlay');
-  if(!ov) return;
-  ov.classList.add('hidden');
-  ov.setAttribute('aria-hidden','true');
+  if(ov){ ov.classList.add('hidden'); ov.setAttribute('aria-hidden','true'); }
   exitConfirmPending=false;
 }
 function cancelExitConfirm(){
+  exitConfirmed=false;
   hideExitConfirm();
-  if(mainHistoryGuardActive){
-    try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){}
-  }
+  // Guard was already re-armed when popstate fired.
+  if(!mainHistoryGuardActive){ armMainHistoryGuard(); }
 }
 function confirmExitApp(){
-  // Confirmed: remove the app's history guard and leave the current document.
-  // Do not call history.back() first because it can be swallowed by the same
-  // popstate guard on some Android/PWA builds.
   hideExitConfirm();
+  exitConfirmed=true;
   mainHistoryGuardActive=false;
-  exitConfirmPending=false;
   try{ saveUIState(); }catch(e){}
 
-  // Native wrappers (if ever packaged) can close the real app process.
+  // Native wrappers can close the real app process immediately.
   try{ if(window.Android && typeof window.Android.exitApp==='function'){ window.Android.exitApp(); return; } }catch(e){}
   try{ if(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.exitApp){ window.webkit.messageHandlers.exitApp.postMessage({}); return; } }catch(e){}
   try{ if(window.navigator && window.navigator.app && typeof window.navigator.app.exitApp==='function'){ window.navigator.app.exitApp(); return; } }catch(e){}
 
-  // Browser/PWA: first ask the platform to close a script-created window.
-  // Android Chrome may reject this by design; in that case leave the current
-  // history entry immediately so the normal browser/PWA back stack is used.
-  let closed=false;
-  try{ window.close(); closed=true; }catch(e){}
-  if(closed) return;
-  try{ history.back(); }catch(e){}
-  setTimeout(function(){
-    try{ if(document.visibilityState==='visible' && history.length>1) history.go(-1); }catch(e){}
-  },120);
+  // Try the platform close API first. Browsers only permit this for
+  // script-closable windows; Android PWAs may reject it for security.
+  try{ window.close(); }catch(e){}
+
+  // Consume BOTH same-document entries created by the exit guard in one
+  // navigation. This avoids the old behaviour where OK removed only one
+  // history entry and left the app visible.
+  try{
+    if(history.length >= 3){
+      history.go(-2);
+    }else{
+      history.back();
+      setTimeout(function(){ try{ history.back(); }catch(e){} },80);
+    }
+  }catch(e){
+    try{ history.back(); }catch(e2){}
+  }
 }
 document.getElementById('exitConfirmCancel').onclick=cancelExitConfirm;
 document.getElementById('exitConfirmOk').onclick=confirmExitApp;
@@ -9189,7 +9189,13 @@ restoreUIScroll(savedUIState);
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
-    const SW_VERSION = '42';
+    const SW_VERSION = '43';
+    // The previous build could stay active because the service worker was
+    // serving an older cached index. First ask the registration to update
+    // without using its HTTP cache, then activate any waiting worker.
+    navigator.serviceWorker.getRegistration().then(function(existing){
+      if(existing){ try{ existing.update(); }catch(e){} }
+    }).catch(function(){});
     navigator.serviceWorker.register('service-worker.js?v='+SW_VERSION, {updateViaCache:'none'}).then(function(reg){
       try{ reg.update(); }catch(e){}
       if(reg.waiting){ try{ reg.waiting.postMessage({type:'SKIP_WAITING'}); }catch(e){} }
