@@ -7538,7 +7538,11 @@ function syncQuickPrivacyHeader(){
   if(btn){
     const on=isPrivacyOn();
     btn.classList.toggle('is-on',on);
-    btn.textContent=on?'🙈':'👁';
+    // Keep a real SVG icon in the button. Do not use textContent here because
+    // that removes the SVG from the DOM and makes the privacy eye disappear.
+    btn.innerHTML=on
+      ? '<svg viewBox="0 0 36 28" fill="none" aria-hidden="true"><path d="M3 14s4.5-9 15-9 15 9 15 9-4.5 9-15 9S3 14 3 14Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M12.5 14a5.5 5.5 0 0 0 11 0 5.5 5.5 0 0 0-11 0Z" stroke="currentColor" stroke-width="2.2"/><path d="M9 5 27 23" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>'
+      : '<svg viewBox="0 0 36 28" fill="none" aria-hidden="true"><path d="M3 14s4.5-9 15-9 15 9 15 9-4.5 9-15 9S3 14 3 14Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18" cy="14" r="4.2" fill="currentColor"/></svg>';
     btn.title='Privacy '+(on?'ON':'OFF')+' — tap to toggle';
   }
   if(amountBtn){
