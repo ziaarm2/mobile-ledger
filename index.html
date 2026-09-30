@@ -735,7 +735,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 .menu-footer-logo img{width:100%;height:100%;object-fit:cover;display:block;}
 .menu-footer-name{font-size:17px;font-weight:800;color:#263449;line-height:1.15;}
 .menu-footer-sub{font-size:12px;color:#8993a2;margin-top:4px;}
-.menu-footer-version{font-size:12px;color:#98a2b3;margin-left:auto;white-space:normal;text-align:right;line-height:1.35;min-width:118px;max-width:150px;}
+.menu-footer-version{font-size:12px;color:#98a2b3;margin-left:auto;white-space:normal;text-align:right;line-height:1.35;min-width:138px;max-width:180px;flex:0 0 138px;}
 .overlay{background:rgba(15,23,42,.48);}
 .sheet{background:#fff;color:#172033;border:1px solid #d9dee7;box-shadow:0 -10px 30px rgba(16,24,40,.12);}
 .sheet-handle{background:#c7ced8;}
@@ -873,7 +873,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v40<br><span>Updated 30 Sep 2026</span><span>Time 02:14 PM PKT</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v42<br><span>Updated 30 Sep 2026</span><span>Time 02:31 PM PKT</span></div>
         </div>
       </div>
     </div>
@@ -1673,7 +1673,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v40 • Updated 30 Sep 2026 • 02:14 PM PKT</div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v42 • Updated 30 Sep 2026 • 02:31 PM PKT</div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1811,6 +1811,10 @@ try{
   history.pushState({mlMainGuard:true}, '', location.href);
   mainHistoryGuardActive = true;
 }catch(e){}
+setTimeout(function(){
+  if(mainHistoryGuardActive) return;
+  try{ history.pushState({mlMainGuard:true}, '', location.href); mainHistoryGuardActive=true; }catch(e){}
+}, 250);
 
 function pushOverlayHistory(id){
   overlayHistoryStack.push(id);
@@ -1862,8 +1866,8 @@ window.addEventListener('popstate', function(){
     return;
   }
   if(mainHistoryGuardActive){
-    // Main screen: show a real in-app confirmation dialog instead of
-    // window.confirm, matching the native-style dialog the user expects.
+    // Main screen: always show the in-app confirmation. Re-arm the guard only
+    // after Cancel; OK deliberately disables it and leaves the app.
     showExitConfirm();
   }
 });
@@ -1894,28 +1898,30 @@ function cancelExitConfirm(){
   }
 }
 function confirmExitApp(){
-  // User explicitly confirmed exit. First remove our root history guard so
-  // the next Back action is a real navigation instead of another app-level
-  // popstate confirmation.
+  // Confirmed: remove the app's history guard and leave the current document.
+  // Do not call history.back() first because it can be swallowed by the same
+  // popstate guard on some Android/PWA builds.
   hideExitConfirm();
   mainHistoryGuardActive=false;
+  exitConfirmPending=false;
   try{ saveUIState(); }catch(e){}
 
-  // Native wrappers (if the app is ever packaged in one) can provide a real
-  // process exit. Use those bridges first.
+  // Native wrappers (if ever packaged) can close the real app process.
   try{ if(window.Android && typeof window.Android.exitApp==='function'){ window.Android.exitApp(); return; } }catch(e){}
   try{ if(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.exitApp){ window.webkit.messageHandlers.exitApp.postMessage({}); return; } }catch(e){}
   try{ if(window.navigator && window.navigator.app && typeof window.navigator.app.exitApp==='function'){ window.navigator.app.exitApp(); return; } }catch(e){}
 
-  // For a standalone PWA/browser context, window.close() is normally blocked
-  // unless this window was script-created. The reliable web fallback is to
-  // leave the current document immediately with the browser's real Back
-  // navigation, now that our history guard is disabled. This is deliberately
-  // NOT another app-level confirmation.
-  try{ history.back(); return; }catch(e){}
-  try{ window.close(); }catch(e){}
+  // Browser/PWA: first ask the platform to close a script-created window.
+  // Android Chrome may reject this by design; in that case leave the current
+  // history entry immediately so the normal browser/PWA back stack is used.
+  let closed=false;
+  try{ window.close(); closed=true; }catch(e){}
+  if(closed) return;
+  try{ history.back(); }catch(e){}
+  setTimeout(function(){
+    try{ if(document.visibilityState==='visible' && history.length>1) history.go(-1); }catch(e){}
+  },120);
 }
-
 document.getElementById('exitConfirmCancel').onclick=cancelExitConfirm;
 document.getElementById('exitConfirmOk').onclick=confirmExitApp;
 document.getElementById('exitConfirmOverlay').addEventListener('click',function(e){
@@ -9183,7 +9189,7 @@ restoreUIScroll(savedUIState);
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
-    const SW_VERSION = '40';
+    const SW_VERSION = '42';
     navigator.serviceWorker.register('service-worker.js?v='+SW_VERSION, {updateViaCache:'none'}).then(function(reg){
       try{ reg.update(); }catch(e){}
       if(reg.waiting){ try{ reg.waiting.postMessage({type:'SKIP_WAITING'}); }catch(e){} }
