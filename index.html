@@ -876,7 +876,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v45<br><span>Updated 30 Sep 2026</span><span>Time 03:34 PM PKT</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v46<br><span>Updated 30 Sep 2026</span><span>Time 03:43 PM PKT</span></div>
         </div>
       </div>
     </div>
@@ -1676,7 +1676,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v45 • Updated 30 Sep 2026 • 03:34 PM PKT</div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v46 • Updated 30 Sep 2026 • 03:43 PM PKT</div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1692,7 +1692,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 <button class="fab-expense" id="btnQuickExpense" title="Expense add karein">💵</button>
 
 <script>
-const APP_INDEX_VERSION = 'v45';
+const APP_INDEX_VERSION = 'v46';
 const APP_INDEX_UPDATED = '30 Sep 2026 • 03:28 PM PKT';
 
 let inventory = [];
@@ -1907,17 +1907,14 @@ function confirmExitApp(){
   try{ if(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.exitApp){ window.webkit.messageHandlers.exitApp.postMessage({}); return; } }catch(e){}
   try{ if(window.navigator && window.navigator.app && typeof window.navigator.app.exitApp==='function'){ window.navigator.app.exitApp(); return; } }catch(e){}
 
-  // A normal browser/PWA cannot be forcibly killed by JavaScript. The safest
-  // possible web behaviour is to remove the synthetic guard entry and then
-  // immediately perform the real Back navigation. In an installed Android
-  // PWA this returns to the launcher when the app has no previous document.
-  try{ window.close(); }catch(e){}
-  try{
-    history.go(-2);
-  }catch(e){
-    try{ history.back(); }catch(e2){}
-  }
-  setTimeout(function(){ try{ window.close(); }catch(e){} }, 120);
+  // Normal Chrome/PWA pages cannot be force-killed by JavaScript. Use the
+  // available native bridge when present; otherwise perform the cleanest
+  // possible real Back navigation without leaving a confirmation/history loop.
+  try{ history.go(-2); }catch(e){ try{ history.back(); }catch(e2){} }
+  setTimeout(function(){
+    try{ history.back(); }catch(e){}
+    try{ window.close(); }catch(e){}
+  }, 180);
 }
 document.getElementById('exitConfirmCancel').onclick=cancelExitConfirm;
 document.getElementById('exitConfirmOk').onclick=confirmExitApp;
@@ -3754,8 +3751,12 @@ const LS_APP_LOCK_KEY = 'mobileLedger_appLock_v1';
 const LS_APP_LOCK_SESSION_KEY = 'mobileLedger_appLockSession_v1';
 let appLockConfig = { enabled:false, methods:{pin:false, pattern:false, fingerprint:false}, preferred:'pin', pinLength:4, pinSalt:'', pinHash:'', patternSalt:'', patternHash:'', fingerprintCredentialId:'' };
 let appLockUnlocked = false;
-function appLockSessionIsUnlocked(){ try{return localStorage.getItem(LS_APP_LOCK_SESSION_KEY)==='1';}catch(e){try{return sessionStorage.getItem(LS_APP_LOCK_SESSION_KEY)==='1';}catch(e2){return false;}} }
-function setAppLockSessionUnlocked(v){ try{ if(v) localStorage.setItem(LS_APP_LOCK_SESSION_KEY,'1'); else localStorage.removeItem(LS_APP_LOCK_SESSION_KEY); }catch(e){} try{ if(v) sessionStorage.setItem(LS_APP_LOCK_SESSION_KEY,'1'); else sessionStorage.removeItem(LS_APP_LOCK_SESSION_KEY); }catch(e){} }
+function appLockSessionIsUnlocked(){ try{return sessionStorage.getItem(LS_APP_LOCK_SESSION_KEY)==='1';}catch(e){return false;} }
+function setAppLockSessionUnlocked(v){ try{ if(v) sessionStorage.setItem(LS_APP_LOCK_SESSION_KEY,'1'); else sessionStorage.removeItem(LS_APP_LOCK_SESSION_KEY); }catch(e){} }
+// Every fresh app/page launch starts locked when App Lock is enabled. The unlock
+// flag is intentionally session-only so enabling Fingerprint cannot silently
+// bypass verification on the next launch.
+try{ sessionStorage.removeItem(LS_APP_LOCK_SESSION_KEY); }catch(e){}
 let appLockSetupMode = null;
 let appLockActiveMethod = null;
 let appLockChangePendingMode = null;
