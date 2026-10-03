@@ -1911,15 +1911,19 @@ function confirmExitApp(){
   try{ if(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.exitApp){ window.webkit.messageHandlers.exitApp.postMessage({}); return; } }catch(e){}
   try{ if(window.navigator && window.navigator.app && typeof window.navigator.app.exitApp==='function'){ window.navigator.app.exitApp(); return; } }catch(e){}
 
-  // Browser/PWA: first ask the platform to close a script-created window.
-  // Android Chrome may reject this by design; in that case leave the current
-  // history entry immediately so the normal browser/PWA back stack is used.
-  let closed=false;
-  try{ window.close(); closed=true; }catch(e){}
-  if(closed) return;
-  try{ history.back(); }catch(e){}
+  // Browser/PWA: try to close a script-created window.
+  // Android Chrome may reject window.close() for a normal tab/PWA.
+  // window.close() does not reliably tell us whether the platform actually
+  // closed the window, so NEVER treat the call itself as success. If the
+  // window is still visible, leave the current history entry so the normal
+  // browser/PWA back stack is used.
+  try{ window.close(); }catch(e){}
   setTimeout(function(){
-    try{ if(document.visibilityState==='visible' && history.length>1) history.go(-1); }catch(e){}
+    try{
+      if(document.visibilityState==='visible' && history.length>1){
+        history.go(-1);
+      }
+    }catch(e){}
   },120);
 }
 document.getElementById('exitConfirmCancel').onclick=cancelExitConfirm;
