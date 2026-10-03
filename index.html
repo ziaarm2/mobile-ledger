@@ -873,7 +873,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v42<br><span>Updated 30 Sep 2026</span><span>Time 02:31 PM PKT</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v44<br><span>Updated 03 Oct 2026</span><span>Exit + menu fix</span></div>
         </div>
       </div>
     </div>
@@ -1673,7 +1673,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v42 • Updated 30 Sep 2026 • 02:31 PM PKT</div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v44 • Updated 03 Oct 2026 • Exit + menu fix</div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1689,6 +1689,9 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 <button class="fab-expense" id="btnQuickExpense" title="Expense add karein">💵</button>
 
 <script>
+const APP_INDEX_VERSION = 'v44';
+const APP_INDEX_UPDATED = '03 Oct 2026 • Exit + menu fix';
+
 let inventory = [];
 
 // ---------- Per-shop local storage isolation ----------
@@ -1860,6 +1863,7 @@ window.addEventListener('popstate', function(){
   const menu = document.getElementById('menuDropdown');
   if(menu && !menu.classList.contains('hidden')){
     menu.classList.add('hidden');
+    syncMenuOpenState();
     if(mainHistoryGuardActive){
       try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){}
     }
@@ -1911,18 +1915,24 @@ function confirmExitApp(){
   try{ if(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.exitApp){ window.webkit.messageHandlers.exitApp.postMessage({}); return; } }catch(e){}
   try{ if(window.navigator && window.navigator.app && typeof window.navigator.app.exitApp==='function'){ window.navigator.app.exitApp(); return; } }catch(e){}
 
-  // Browser/PWA: try to close a script-created window.
-  // Android Chrome may reject window.close() for a normal tab/PWA.
-  // window.close() does not reliably tell us whether the platform actually
-  // closed the window, so NEVER treat the call itself as success. If the
-  // window is still visible, leave the current history entry so the normal
-  // browser/PWA back stack is used.
-  try{ window.close(); }catch(e){}
+  // Browser/PWA: ask the platform to close a script-created window.
+  // IMPORTANT: window.close() usually does NOT throw when Android Chrome
+  // rejects it, so success must be checked with window.closed instead of
+  // assuming that reaching the next line means the window was closed.
+  let closed=false;
+  try{
+    window.close();
+    closed = !!window.closed;
+  }catch(e){}
+  if(closed) return;
+
+  // If the browser/PWA refuses window.close(), leave the two same-document
+  // history entries created by the app guard. The first back reaches the
+  // main entry; the second leaves the app/page.
+  try{ history.back(); }catch(e){}
   setTimeout(function(){
     try{
-      if(document.visibilityState==='visible' && history.length>1){
-        history.go(-1);
-      }
+      if(document.visibilityState==='visible' && history.length>1) history.go(-1);
     }catch(e){}
   },120);
 }
@@ -6616,6 +6626,7 @@ document.addEventListener('click', function(e){
   const btn = document.getElementById('btnMenu');
   if(!menu.classList.contains('hidden') && !menu.contains(e.target) && e.target!==btn){
     menu.classList.add('hidden');
+    syncMenuOpenState();
   }
 });
 
