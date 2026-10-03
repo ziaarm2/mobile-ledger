@@ -873,7 +873,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v44<br><span>Updated 03 Oct 2026</span><span>Exit + menu fix</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v45<br><span>Updated 03 Oct 2026</span><span>Exit + menu fix</span></div>
         </div>
       </div>
     </div>
@@ -1673,7 +1673,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v44 • Updated 03 Oct 2026 • Exit + menu fix</div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v45 • Updated 03 Oct 2026 • Exit + menu fix</div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1689,7 +1689,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 <button class="fab-expense" id="btnQuickExpense" title="Expense add karein">💵</button>
 
 <script>
-const APP_INDEX_VERSION = 'v44';
+const APP_INDEX_VERSION = 'v45';
 const APP_INDEX_UPDATED = '03 Oct 2026 • Exit + menu fix';
 
 let inventory = [];
@@ -1926,15 +1926,20 @@ function confirmExitApp(){
   }catch(e){}
   if(closed) return;
 
-  // If the browser/PWA refuses window.close(), leave the two same-document
-  // history entries created by the app guard. The first back reaches the
-  // main entry; the second leaves the app/page.
-  try{ history.back(); }catch(e){}
-  setTimeout(function(){
-    try{
-      if(document.visibilityState==='visible' && history.length>1) history.go(-1);
-    }catch(e){}
-  },120);
+  // Browser/PWA fallback: the app has one original document entry plus the
+  // guard entry we added above. Go back across BOTH entries in one operation.
+  // Doing two separate back() calls is unreliable because the first one lands
+  // on the original same-document entry, leaving no entry for the second call.
+  try{
+    if(history.length > 1){
+      history.go(-2);
+      return;
+    }
+  }catch(e){}
+
+  // Nothing else can be closed by browser JavaScript when this document was
+  // opened as the very first history entry. In that case the platform itself
+  // must handle the app/window close (or the user can use the system Back).
 }
 document.getElementById('exitConfirmCancel').onclick=cancelExitConfirm;
 document.getElementById('exitConfirmOk').onclick=confirmExitApp;
