@@ -782,6 +782,9 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
   .exit-confirm-title{font-size:23px;}
   .exit-confirm-message{font-size:17px;}
 }
+
+/* NO-APPROVAL MODE: account signup is immediate; legacy approval/notification UI is hidden. */
+#adminNotificationBtn,#settingsShopAccessCategory,#accountAccessView{display:none!important;}
 </style>
 </head>
 <body>
@@ -7573,7 +7576,7 @@ const settingsDraftSaveBtn=document.getElementById('settingsDraftSave');
 if(settingsDraftUndoBtn) settingsDraftUndoBtn.onclick=settingsDraftUndo;
 if(settingsDraftSaveBtn) settingsDraftSaveBtn.onclick=settingsDraftSave;
 
-document.getElementById('adminNotificationBtn').onclick=function(){
+if(document.getElementById('adminNotificationBtn')) document.getElementById('adminNotificationBtn').onclick=function(){
   if(userRole!=='admin') return;
   document.getElementById('settingsOverlay').classList.remove('hidden'); pushOverlayHistory('settingsOverlay');
   settingsDraftBegin();
@@ -8142,23 +8145,15 @@ function resolveUserRoleAndShop(user){
       userRole='admin'; userShopId=user.uid; userAccessStatus='active'; userAccessReason=''; try{localStorage.setItem('mobileLedger_lastAdminSession','1');}catch(e){}
       return fbDb.collection('users').doc(user.uid).set({role:'admin',shopId:user.uid,accessStatus:'active',email:user.email||null,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
     }
-    if(snap.exists){
-      const d=snap.data()||{};
-      userRole=d.role||'shop'; userShopId=d.shopId||user.uid; userAccessStatus=d.accessStatus||'pending'; userAccessReason=d.accessReason||'';
-      return null;
-    }
-    userRole='shop'; userShopId=user.uid; userAccessStatus='pending'; userAccessReason='';
-    return fbDb.collection('users').doc(user.uid).set({
-      role:'shop',shopId:user.uid,accessStatus:'pending',accessReason:'',email:user.email||null,
-      shopName:shopProfile.shopName||'',ownerName:shopProfile.ownerName||'',createdAt:firebase.firestore.FieldValue.serverTimestamp()
-    },{merge:true}).then(function(){
-      return fbDb.collection('shopRequests').doc(user.uid).set({uid:user.uid,email:user.email||'',shopName:shopProfile.shopName||'',ownerName:shopProfile.ownerName||'',status:'pending',submittedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
-    });
+    userRole='shop'; userShopId=user.uid; userAccessStatus='active'; userAccessReason='';
+    const d=snap.exists ? (snap.data()||{}) : {};
+    const payload={role:'shop',shopId:user.uid,accessStatus:'active',accessReason:'',email:user.email||d.email||null,shopName:d.shopName||shopProfile.shopName||'',ownerName:d.ownerName||shopProfile.ownerName||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+    return fbDb.collection('users').doc(user.uid).set(payload,{merge:true});
   }).catch(function(err){
     console.error('Could not resolve user role', err);
     if(admin){ userRole='admin'; userShopId=user.uid; userAccessStatus='active'; try{localStorage.setItem('mobileLedger_lastAdminSession','1');}catch(e){} }
-    else { userRole='shop'; userShopId=user.uid; userAccessStatus='pending'; }
-  }).then(function(){ return ensureAccessTemplatesLoaded(); });
+    else { userRole='shop'; userShopId=user.uid; userAccessStatus='active'; userAccessReason=''; }
+  }).then(function(){ return Promise.resolve(); });
 }
 function fillTemplate(text, data){
   return String(text||'').replace(/\{shopName\}/g,String(data.shopName||'')).replace(/\{ownerName\}/g,String(data.ownerName||'')).replace(/\{reason\}/g,String(data.reason||''));
@@ -8180,7 +8175,7 @@ function setAccessGate(status, reason){
   if(map){ if(title) title.textContent=map.title; if(msg) msg.textContent=map.msg; if(pill){pill.textContent=map.pill;pill.className='access-status '+map.cls;} }
   if(r){ r.textContent=reason ? 'Reason: '+reason : ''; r.style.display=reason?'block':'none'; }
 }
-function accessStatusAllowsUse(){ return userRole==='admin' || userAccessStatus==='active'; }
+function accessStatusAllowsUse(){ return !!fbUser && (userRole==='admin' || userRole==='shop'); }
 
 
 
@@ -8622,7 +8617,7 @@ function refreshAccessState(){
   if(!fbDb || !fbUser) return;
   fbDb.collection('users').doc(fbUser.uid).get().then(function(snap){
     if(!snap.exists) return;
-    const d=snap.data()||{}; userRole=d.role||userRole; userShopId=d.shopId||userShopId; userAccessStatus=d.accessStatus||'pending'; userAccessReason=d.accessReason||'';
+    const d=snap.data()||{}; userRole=d.role||userRole; userShopId=d.shopId||userShopId; userAccessStatus='active'; userAccessReason='';
     updateAccountUI();
     if(accessStatusAllowsUse()){
       setAuthGateView('unlocked');
@@ -8923,15 +8918,13 @@ document.getElementById('btnAccountSignup').onclick = function(){
       shopProfile = {shopName:shopName, ownerName:ownerName, shopPhone:''};
       try{ localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY), JSON.stringify(shopProfile)); }catch(e){}
       const u=fbAuth.currentUser; if(!u) return;
-      const payload={role:'shop',shopId:u.uid,accessStatus:'pending',accessReason:'',email:u.email||email,shopName:shopName,ownerName:ownerName,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+      const payload={role:'shop',shopId:u.uid,accessStatus:'active',accessReason:'',email:u.email||email,shopName:shopName,ownerName:ownerName,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
       return fbDb.collection('users').doc(u.uid).set(payload,{merge:true}).then(function(){
-        return fbDb.collection('shopRequests').doc(u.uid).set({uid:u.uid,email:u.email||email,shopName:shopName,ownerName:ownerName,status:'pending',submittedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
-      }).then(function(){
-        return Promise.all([
-          writeShopNotification(u.uid,'Request Received',fillTemplate(accessTemplates.requestReceived,Object.assign({},shopProfile,{reason:''})),'requestReceived'),
-          writeAdminNotification('New Shop Request',shopName+' ne Mobile Hisab access ke liye request bheji hai.','request',u.uid)
-        ]);
-      }).then(function(){ showToast('✓ Request receive ho gayi — Z Mobile approval ka wait karein.'); });
+        userRole='shop'; userShopId=u.uid; userAccessStatus='active'; userAccessReason='';
+        setAuthGateView('unlocked');
+        if(!cloudUnsub) startCloudSync(u.uid);
+        showToast('✓ Account ban gaya — Mobile Hisab use karein.');
+      });
     })
     .catch(function(err){ showAccountError(friendlyAuthError(err)); });
 };
@@ -9032,19 +9025,13 @@ document.getElementById('btnCompleteShopSetup').onclick=function(){
   shopProfile={shopName:shopName,ownerName:ownerName,shopPhone:shopPhone};
   try{ localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY), JSON.stringify(shopProfile)); }catch(e){}
   if(fbDb && fbUser && userRole!=='admin'){
-    fbDb.collection('users').doc(fbUser.uid).set({shopName:shopName,ownerName:ownerName,shopPhone:shopPhone,accessStatus:userAccessStatus||'pending',updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).then(function(){
-      return fbDb.collection('shopRequests').doc(fbUser.uid).set({uid:fbUser.uid,email:fbUser.email||'',shopName:shopName,ownerName:ownerName,status:userAccessStatus||'pending',submittedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
-    }).then(function(){
-      if(userAccessStatus!=='active') return Promise.all([
-        writeShopNotification(fbUser.uid,'Request Received',fillTemplate(accessTemplates.requestReceived,Object.assign({},shopProfile,{reason:''})),'requestReceived'),
-        writeAdminNotification('New Shop Request',shopName+' ne Google account se Mobile Hisab access request bheji hai.','request',fbUser.uid)
-      ]);
-    }).catch(function(e){console.warn('Shop setup sync failed',e);});
+    userAccessStatus='active'; userAccessReason='';
+    fbDb.collection('users').doc(fbUser.uid).set({shopName:shopName,ownerName:ownerName,shopPhone:shopPhone,accessStatus:'active',accessReason:'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(function(e){console.warn('Shop setup sync failed',e);});
   }
   if(accessStatusAllowsUse()) schedulePush(); updateAccountUI();
   document.getElementById('shopSetupOverlay').classList.add('hidden');
   pendingGoogleShopSetup=false;
-  showToast(accessStatusAllowsUse()?'✓ Shop profile save ho gaya.':'✓ Request receive ho gayi — Z Mobile approval ka wait karein.');
+  showToast('✓ Shop profile save ho gaya.');
 };
 
 document.getElementById('btnAccountChangePassword').onclick=function(){
