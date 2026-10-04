@@ -536,17 +536,17 @@
 .activity-history-main{flex:1;min-width:0;}
 .activity-history-title{font-size:12.5px;font-weight:650;}
 .activity-history-meta{font-size:10.5px;color:var(--text-dim);margin-top:3px;}
-.dead-stock-card{grid-column:1 / -1;border:1px solid #6b4a1f;background:linear-gradient(180deg,#211b13 0%,#1b1712 100%);border-radius:14px;padding:14px;margin-top:0;min-width:0;overflow:hidden;}
-.dead-stock-title{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;margin-bottom:3px;}
+.dead-stock-card{grid-column:1 / -1;border:1px solid var(--border);background:var(--surface);border-radius:14px;padding:14px;margin-top:0;min-width:0;overflow:hidden;}
+.dead-stock-title{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;color:var(--text);margin-bottom:3px;}
 .dead-stock-subtitle{font-size:10.5px;color:var(--text-dim);margin-bottom:10px;}
 .dead-stock-list{display:flex;flex-direction:column;}
 .dead-stock-head,.dead-stock-row{display:grid;grid-template-columns:minmax(0,1fr) 64px 52px 76px;gap:8px;align-items:center;}
 .dead-stock-head{padding:0 0 6px;color:var(--text-faint);font-size:9.5px;text-transform:uppercase;letter-spacing:.35px;}
-.dead-stock-row{padding:9px 0;border-top:1px solid rgba(255,255,255,.07);font-size:11.5px;}
+.dead-stock-row{padding:9px 0;border-top:1px solid var(--border);font-size:11.5px;}
 .dead-stock-model{min-width:0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .dead-stock-meta{font-size:10px;color:var(--text-dim);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .dead-stock-age,.dead-stock-qty,.dead-stock-buy{text-align:right;white-space:nowrap;}
-.dead-stock-age{color:#fbbf24;font-weight:700;}
+.dead-stock-age{color:var(--nonpta);font-weight:700;}
 .dead-stock-buy{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700;}
 @media(max-width:380px){
   .dead-stock-head,.dead-stock-row{grid-template-columns:minmax(0,1fr) 58px 46px 68px;gap:5px;}
@@ -1679,7 +1679,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 <button class="fab-expense" id="btnQuickExpense" title="Expense add karein">💵</button>
 
 <script>
-const APP_INDEX_VERSION = 'v46';
+const APP_INDEX_VERSION = 'v47';
 const APP_INDEX_UPDATED = '04 Oct 2026 • Menu cleanup + Dead Stock dashboard fix';
 
 let inventory = [];
