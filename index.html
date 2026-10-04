@@ -340,10 +340,10 @@
   .wa-template-item .handle{color:var(--text-faint);font-size:15px;flex-shrink:0;}
   .wa-template-item .label{flex:1;font-size:13px;min-width:0;}
   .wa-template-item .remove{color:var(--danger);font-weight:800;font-size:16px;padding:2px 5px;cursor:pointer;}
-  .wa-template-preview{white-space:pre-wrap;background:#0b0d10;border:1px solid var(--border);border-radius:10px;padding:11px 12px;margin-top:10px;font-size:12.5px;line-height:1.55;color:var(--text);max-height:230px;overflow:auto;}
+  .wa-template-preview{white-space:pre-wrap;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 12px;margin-top:10px;font-size:12.5px;line-height:1.55;color:var(--text);max-height:230px;overflow:auto;}
   .wa-template-custom-row{display:flex;gap:7px;margin-top:8px;}
   .wa-template-custom-row input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 11px;color:var(--text);font-size:13px;}
-  .wa-message-editor{width:100%;min-height:280px;resize:vertical;background:#0b0d10;border:1px solid var(--border-strong);border-radius:12px;padding:12px;color:var(--text);font-size:13px;line-height:1.6;font-family:inherit;outline:none;}
+  .wa-message-editor{width:100%;min-height:280px;resize:vertical;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:12px;padding:12px;color:var(--text);font-size:13px;line-height:1.6;font-family:inherit;outline:none;}
   .wa-message-editor:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(45,212,191,.12);}
   .wa-field-toolbar{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
   .wa-field-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:999px;padding:7px 9px;font-size:11.5px;cursor:pointer;}
@@ -913,7 +913,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
   <div class="sheet" style="height:100vh;max-height:100vh;border-radius:0;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom);">
     <div class="sheet-head"><h3 id="waSharePreviewTitle">📤 WhatsApp Preview</h3><button class="icon-btn" id="waSharePreviewClose">×</button></div>
     <div style="padding:0 14px 10px;color:var(--text-dim);font-size:11px;">Message ko share karne se pehle yahan freely edit kar sakte hain.</div>
-    <textarea id="waSharePreviewEditor" style="flex:1;width:100%;resize:none;background:#0b0d10;border:1px solid var(--border);border-radius:12px;padding:14px;color:var(--text);font-size:14px;line-height:1.65;font-family:inherit;outline:none;"></textarea>
+    <textarea id="waSharePreviewEditor" style="flex:1;width:100%;resize:none;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:14px;color:var(--text);font-size:14px;line-height:1.65;font-family:inherit;outline:none;"></textarea>
     <div style="display:flex;gap:8px;padding:10px 0 0;">
       <button type="button" class="btn-secondary" id="waSharePreviewCancel" style="flex:1;">Cancel</button>
       <button type="button" class="btn-primary" id="waSharePreviewShare" style="flex:1;">📤 Share</button>
