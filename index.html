@@ -1679,8 +1679,8 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 <button class="fab-expense" id="btnQuickExpense" title="Expense add karein">💵</button>
 
 <script>
-const APP_INDEX_VERSION = 'v47';
-const APP_INDEX_UPDATED = '04 Oct 2026 • Menu cleanup + Dead Stock dashboard fix';
+const APP_INDEX_VERSION = 'v48';
+const APP_INDEX_UPDATED = '04 Oct 2026 • Settings category touch navigation fix';
 
 let inventory = [];
 
@@ -7535,26 +7535,10 @@ document.querySelectorAll('#settingsOverlay [data-settings-page]').forEach(funct
     }
   };
 
-  // Mobile fix: activate Settings categories directly on touch/pen.
-  // This avoids relying on the browser's delayed/synthetic click, which
-  // can make the first tap appear to do nothing on some touch browsers.
-  btn.addEventListener('pointerup', function(e){
-    if(e.pointerType==='mouse') return;
-    e.preventDefault();
-    e.stopPropagation();
-    openSettingsPage(btn.dataset.settingsPage);
-    btn.setAttribute('data-settings-pointer-handled','1');
-    setTimeout(function(){ btn.removeAttribute('data-settings-pointer-handled'); },350);
-  }, {passive:false});
-
-  // Prevent the synthetic click from opening the page a second time.
-  btn.addEventListener('click', function(e){
-    if(btn.getAttribute('data-settings-pointer-handled')==='1'){
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      btn.removeAttribute('data-settings-pointer-handled');
-    }
-  }, true);
+  // Use the normal click event only. Changing the Settings page during
+  // pointerup can cause the browser to activate the element that moves
+  // underneath the finger (for example a select on the next page).
+  // Keeping navigation on click prevents that accidental second action.
 });
 document.getElementById('settingsBackBtn').onclick=function(){openSettingsPage('home');};
 document.getElementById('settingsOpenAccountBtn').onclick=function(){ requestOverlayClose(); setTimeout(function(){ document.getElementById('btnAccount').click(); },120); };
