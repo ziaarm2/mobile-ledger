@@ -536,9 +536,22 @@
 .activity-history-main{flex:1;min-width:0;}
 .activity-history-title{font-size:12.5px;font-weight:650;}
 .activity-history-meta{font-size:10.5px;color:var(--text-dim);margin-top:3px;}
-.dead-stock-card{border:1px solid #6b4a1f;background:#211b13;border-radius:10px;padding:10px;margin-top:10px;}
-.dead-stock-title{font-size:12px;font-weight:700;margin-bottom:7px;}
-.dead-stock-row{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid rgba(255,255,255,.06);font-size:11.5px;}
+.dead-stock-card{grid-column:1 / -1;border:1px solid #6b4a1f;background:linear-gradient(180deg,#211b13 0%,#1b1712 100%);border-radius:14px;padding:14px;margin-top:0;min-width:0;overflow:hidden;}
+.dead-stock-title{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;margin-bottom:3px;}
+.dead-stock-subtitle{font-size:10.5px;color:var(--text-dim);margin-bottom:10px;}
+.dead-stock-list{display:flex;flex-direction:column;}
+.dead-stock-head,.dead-stock-row{display:grid;grid-template-columns:minmax(0,1fr) 64px 52px 76px;gap:8px;align-items:center;}
+.dead-stock-head{padding:0 0 6px;color:var(--text-faint);font-size:9.5px;text-transform:uppercase;letter-spacing:.35px;}
+.dead-stock-row{padding:9px 0;border-top:1px solid rgba(255,255,255,.07);font-size:11.5px;}
+.dead-stock-model{min-width:0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dead-stock-meta{font-size:10px;color:var(--text-dim);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dead-stock-age,.dead-stock-qty,.dead-stock-buy{text-align:right;white-space:nowrap;}
+.dead-stock-age{color:#fbbf24;font-weight:700;}
+.dead-stock-buy{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700;}
+@media(max-width:380px){
+  .dead-stock-head,.dead-stock-row{grid-template-columns:minmax(0,1fr) 58px 46px 68px;gap:5px;}
+  .dead-stock-row{font-size:11px;}
+}
 
   /* ===== Professional Settings + Account UI (v21) ===== */
   .settings-shell,.account-shell{max-width:480px;width:100%;min-width:0;height:100%;max-height:none;border-radius:0;margin:0 auto;padding:0;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;}
@@ -762,17 +775,6 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
   .menu-btn{width:44px!important;height:44px!important;}
 }
 
-/* Native-style exit confirmation: shown only when Back is pressed on the main screen. */
-.exit-confirm-overlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.56);display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;}
-.exit-confirm-overlay.hidden{display:none!important;}
-.exit-confirm-card{width:min(100%,596px);background:#fff;border-radius:3px;box-shadow:0 16px 45px rgba(0,0,0,.32);padding:28px 30px 20px;color:#202124;box-sizing:border-box;}
-.exit-confirm-title{font-size:24px;line-height:1.25;font-weight:500;margin-bottom:24px;}
-.exit-confirm-message{font-size:18px;line-height:1.35;color:#303134;max-width:520px;}
-.exit-confirm-actions{display:flex;justify-content:flex-end;align-items:center;gap:28px;margin-top:26px;}
-.exit-confirm-btn{border:0;background:transparent;font-size:14px;font-weight:800;letter-spacing:.12em;padding:12px 6px;min-width:58px;cursor:pointer;}
-.exit-confirm-btn.cancel{color:#6b625e;}
-.exit-confirm-btn.ok{color:#6b625e;}
-.exit-confirm-btn:active{opacity:.65;}
 .menu-footer-version{text-align:right;line-height:1.35;}
 .menu-footer-version span{font-size:10px;color:#98a2b3;display:block;}
 @media(max-width:520px){
@@ -783,16 +785,6 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 </style>
 </head>
 <body>
-<div class="exit-confirm-overlay hidden" id="exitConfirmOverlay" aria-hidden="true">
-  <div class="exit-confirm-card" role="dialog" aria-modal="true" aria-labelledby="exitConfirmTitle">
-    <div class="exit-confirm-title" id="exitConfirmTitle">Mobile Hisab</div>
-    <div class="exit-confirm-message">Are you sure to exit Mobile Hisab?</div>
-    <div class="exit-confirm-actions">
-      <button type="button" class="exit-confirm-btn cancel" id="exitConfirmCancel">CANCEL</button>
-      <button type="button" class="exit-confirm-btn ok" id="exitConfirmOk">OK</button>
-    </div>
-  </div>
-</div>
 
 <div class="app" style="visibility:hidden;">
   <header style="position:relative;">
@@ -854,8 +846,6 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <button class="menu-item" id="btnAdminShops" style="display:none !important;"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M3 10h18M5 10v10h14V10M7 10V6h10v4M9 20v-5h6v5" stroke-width="1.8" stroke-linejoin="round"/></svg></span><span class="menu-item-text">All Shops (Admin)</span></button>
         <button class="menu-item" id="btnExitAdminShop" style="display:none !important;"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7M8 12h13" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="menu-item-text">Apni Shop par wapas</span></button>
         <button class="menu-item" id="btnDashboard"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4h6v7H4zM14 4h6v4h-6zM14 12h6v8h-6zM4 15h6v5H4z" stroke-width="1.7" stroke-linejoin="round"/></svg></span><span class="menu-item-text">Dashboard</span></button>
-        <button class="menu-item" id="btnMenuInventory"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5v-9Z" stroke-width="1.8" stroke-linejoin="round"/><path d="m4.5 7.7 7.5 4.2 7.5-4.2M12 12v9" stroke-width="1.8" stroke-linejoin="round"/></svg></span><span class="menu-item-text">Stock</span></button>
-        <button class="menu-item" id="btnMenuSold"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke-width="1.8"/><path d="m8.5 12 2.2 2.2 4.8-5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="menu-item-text">Sold</span></button>
         <button class="menu-item" id="btnExpenses"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="14" rx="2" stroke-width="1.8"/><path d="M7 12h10M8 9h8" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Expenses</span></button>
         <button class="menu-item" id="btnRateBook"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M6 4.5h12a2 2 0 0 1 2 2V20H6a2 2 0 0 1-2-2V6.5a2 2 0 0 1 2-2Z" stroke-width="1.8"/><path d="M8 8h8M8 12h8M8 16h5" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Rate Book</span></button>
         <button class="menu-item" id="btnContacts"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke-width="1.8"/><path d="M3.5 19c.5-3.3 2.4-5 5.5-5s5 1.7 5.5 5M17 11a2.5 2.5 0 1 0 0-5M16 14c2.5.2 4 1.7 4.5 5" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Contacts</span></button>
@@ -873,7 +863,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v44<br><span>Updated 03 Oct 2026</span><span>Exit + menu fix</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v46<br><span>Updated 04 Oct 2026</span><span>Menu cleanup + Dead Stock dashboard fix</span></div>
         </div>
       </div>
     </div>
@@ -1673,7 +1663,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v44 • Updated 03 Oct 2026 • Exit + menu fix</div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v45 • Updated 04 Oct 2026 • Browser exit confirmation removed</div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1689,8 +1679,8 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 <button class="fab-expense" id="btnQuickExpense" title="Expense add karein">💵</button>
 
 <script>
-const APP_INDEX_VERSION = 'v44';
-const APP_INDEX_UPDATED = '03 Oct 2026 • Exit + menu fix';
+const APP_INDEX_VERSION = 'v46';
+const APP_INDEX_UPDATED = '04 Oct 2026 • Menu cleanup + Dead Stock dashboard fix';
 
 let inventory = [];
 
@@ -1806,19 +1796,6 @@ let rangeInputMode = 'auto'; // 'auto' until the user manually edits the sell-ra
 const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','imeiScanOverlay','adminShopsOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','expensesOverlay','accountOverlay','rateBookOverlay','rateAddOverlay','shopSetupOverlay'];
 let overlayHistoryStack = [];
 
-// Keep the app on its main route when the phone/browser Back gesture is used.
-// Overlay history still works normally above this guard.
-let mainHistoryGuardActive = false;
-try{
-  history.replaceState({mlMain:true}, '', location.href);
-  history.pushState({mlMainGuard:true}, '', location.href);
-  mainHistoryGuardActive = true;
-}catch(e){}
-setTimeout(function(){
-  if(mainHistoryGuardActive) return;
-  try{ history.pushState({mlMainGuard:true}, '', location.href); mainHistoryGuardActive=true; }catch(e){}
-}, 250);
-
 function pushOverlayHistory(id){
   overlayHistoryStack.push(id);
   try{ history.pushState({mlOverlay:id}, '', location.href); }catch(e){}
@@ -1848,98 +1825,18 @@ window.addEventListener('popstate', function(){
     }
     if(id==='imeiScanOverlay') stopImeiScan();
     if(id==='waSharePreviewOverlay'){ const mb=document.getElementById('multiShareBar'); if(mb) updateMultiShareBar(); }
-    if(mainHistoryGuardActive){
-      try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){}
-    }
     return;
   }
   if(typeof shareSelectMode!=='undefined' && shareSelectMode){
     setShareSelectMode(false);
-    if(mainHistoryGuardActive){
-      try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){}
-    }
     return;
   }
   const menu = document.getElementById('menuDropdown');
   if(menu && !menu.classList.contains('hidden')){
     menu.classList.add('hidden');
     syncMenuOpenState();
-    if(mainHistoryGuardActive){
-      try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){}
-    }
     return;
   }
-  if(mainHistoryGuardActive){
-    // Main screen: always show the in-app confirmation. Re-arm the guard only
-    // after Cancel; OK deliberately disables it and leaves the app.
-    showExitConfirm();
-  }
-});
-
-let exitConfirmPending = false;
-function showExitConfirm(){
-  exitConfirmPending = true;
-  const ov=document.getElementById('exitConfirmOverlay');
-  if(!ov) return;
-  ov.classList.remove('hidden');
-  ov.setAttribute('aria-hidden','false');
-  setTimeout(function(){
-    const btn=document.getElementById('exitConfirmCancel');
-    if(btn) btn.focus();
-  },0);
-}
-function hideExitConfirm(){
-  const ov=document.getElementById('exitConfirmOverlay');
-  if(!ov) return;
-  ov.classList.add('hidden');
-  ov.setAttribute('aria-hidden','true');
-  exitConfirmPending=false;
-}
-function cancelExitConfirm(){
-  hideExitConfirm();
-  if(mainHistoryGuardActive){
-    try{ history.pushState({mlMainGuard:true}, '', location.href); }catch(e){}
-  }
-}
-function confirmExitApp(){
-  // Confirmed: remove the app's history guard and leave the current document.
-  // Do not call history.back() first because it can be swallowed by the same
-  // popstate guard on some Android/PWA builds.
-  hideExitConfirm();
-  mainHistoryGuardActive=false;
-  exitConfirmPending=false;
-  try{ saveUIState(); }catch(e){}
-
-  // Native wrappers (if ever packaged) can close the real app process.
-  try{ if(window.Android && typeof window.Android.exitApp==='function'){ window.Android.exitApp(); return; } }catch(e){}
-  try{ if(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.exitApp){ window.webkit.messageHandlers.exitApp.postMessage({}); return; } }catch(e){}
-  try{ if(window.navigator && window.navigator.app && typeof window.navigator.app.exitApp==='function'){ window.navigator.app.exitApp(); return; } }catch(e){}
-
-  // Browser/PWA: ask the platform to close a script-created window.
-  // IMPORTANT: window.close() usually does NOT throw when Android Chrome
-  // rejects it, so success must be checked with window.closed instead of
-  // assuming that reaching the next line means the window was closed.
-  let closed=false;
-  try{
-    window.close();
-    closed = !!window.closed;
-  }catch(e){}
-  if(closed) return;
-
-  // If the browser/PWA refuses window.close(), leave the two same-document
-  // history entries created by the app guard. The first back reaches the
-  // main entry; the second leaves the app/page.
-  try{ history.back(); }catch(e){}
-  setTimeout(function(){
-    try{
-      if(document.visibilityState==='visible' && history.length>1) history.go(-1);
-    }catch(e){}
-  },120);
-}
-document.getElementById('exitConfirmCancel').onclick=cancelExitConfirm;
-document.getElementById('exitConfirmOk').onclick=confirmExitApp;
-document.getElementById('exitConfirmOverlay').addEventListener('click',function(e){
-  if(e.target===this) cancelExitConfirm();
 });
 
 
@@ -6284,7 +6181,27 @@ function renderDashboard(){
     const days=(Date.now()-new Date(d).getTime())/86400000; return days>=30;
   }).sort(function(a,b){return new Date(a.buyDate||a.availableDate||a.lastUpdated)-new Date(b.buyDate||b.availableDate||b.lastUpdated);}).slice(0,8);
   let deadHtml='';
-  if(dead.length){ deadHtml='<div class="dead-stock-card"><div class="dead-stock-title">⚠️ Dead Stock — 30+ din se unsold</div>'+dead.map(function(e){const d=e.buyDate||e.availableDate||e.lastUpdated;const days=Math.max(0,Math.floor((Date.now()-new Date(d).getTime())/86400000));return '<div class="dead-stock-row"><span>'+escapeHtml((e.brand||'')+' '+(e.model||''))+'<br><span style="color:var(--text-dim)">'+days+' din · '+(e.quantity||0)+' pcs</span></span><span class="num">'+(e.buy!=null?fmt(e.buy):'-')+'</span></div>';}).join('')+'</div>'; }
+  if(dead.length){
+    deadHtml='<div class="dead-stock-card">'+
+      '<div class="dead-stock-title">⚠️ Dead Stock</div>'+
+      '<div class="dead-stock-subtitle">30+ din se unsold phones</div>'+
+      '<div class="dead-stock-list">'+
+        '<div class="dead-stock-head"><span>Model</span><span style="text-align:right">Age</span><span style="text-align:right">Qty</span><span style="text-align:right">Buy</span></div>'+
+        dead.map(function(e){
+          const d=e.buyDate||e.availableDate||e.lastUpdated;
+          const days=Math.max(0,Math.floor((Date.now()-new Date(d).getTime())/86400000));
+          const model=escapeHtml((e.brand||'')+' '+(e.model||''));
+          const dateLabel=d?escapeHtml(new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})):'';
+          return '<div class="dead-stock-row">'+
+            '<div><div class="dead-stock-model">'+model+'</div><div class="dead-stock-meta">'+dateLabel+'</div></div>'+
+            '<div class="dead-stock-age">'+days+'d</div>'+
+            '<div class="dead-stock-qty">'+(e.quantity||0)+'</div>'+
+            '<div class="dead-stock-buy">'+(e.buy!=null?fmt(e.buy):'-')+'</div>'+
+          '</div>';
+        }).join('')+
+      '</div>'+
+    '</div>';
+  }
   document.getElementById('dashboardGrid').innerHTML=cards.map(function(c){return '<div class="stat-card"><div class="v num">'+c.v+'</div><div class="l">'+escapeHtml(c.l)+'</div></div>';}).join('')+deadHtml;
   const note=document.getElementById('dashboardPeriodNote'); if(note) note.textContent=range.mode==='lifetime'?'All records':(dashboardSettings.mode==='business'?'Har month isi selected start day se period calculate hota hai.':'Calendar month: 1st se month ke last day tak.');
 }
@@ -6566,8 +6483,6 @@ document.getElementById('btnMenuEditProfile').onclick = function(){
     if(edit && fbUser) edit.click();
   },60);
 };
-document.getElementById('btnMenuInventory').onclick=function(){ currentFilter='available'; renderFilterChips(); render(); closeMainMenu(); saveUIState(); };
-document.getElementById('btnMenuSold').onclick=function(){ currentFilter='sold'; renderFilterChips(); render(); closeMainMenu(); saveUIState(); };
 document.getElementById('btnMenuLogout').onclick=function(){ closeMainMenu(); document.getElementById('btnAccountLogout').click(); };
 
 
