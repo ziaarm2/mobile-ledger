@@ -1643,8 +1643,8 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 </div>
 <button class="fab-expense" id="btnQuickExpense" title="Expense add karein">💵</button>
 <script>
-const APP_INDEX_VERSION = 'v85';
-const APP_INDEX_UPDATED = '05 Oct 2026 • 05:52:12 PM PKT';
+const APP_INDEX_VERSION = 'v86';
+const APP_INDEX_UPDATED = '05 Oct 2026 • 06:00:49 PM PKT';
 function updateVersionFooter(){
   const el = document.getElementById('menuFooterVersion');
   if(el) el.innerHTML = `Index ${APP_INDEX_VERSION}<br><span>Updated ${APP_INDEX_UPDATED}</span>`;
@@ -6331,6 +6331,8 @@ function renderDashboard(){
 }
 
 document.getElementById('btnDashboard').onclick = function(){
+  closeMainMenu();
+  renderDashboardPeriodControls();
   renderDashboard();
   document.getElementById('dashboardOverlay').classList.remove('hidden');
   pushOverlayHistory('dashboardOverlay');
