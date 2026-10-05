@@ -2107,9 +2107,9 @@ function setPlatformDefault(platform, fieldKey, value){
 }
 
 function applyPlatformDefaultsToForm(platform){
-  const defs={status:'',ram:'',storage:'',condition:'',network:'',display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',battery:platform==='iphone'?'':'Perfect',box:'No',packing:'No pack',charger:platform==='iphone'?'No charger':'Original charger',faceid:platform==='iphone'?'Yes':'No',truetone:platform==='iphone'?'Yes':'No'};
+  const defs={status:platform==='iphone'?'':'',ram:'',storage:'',condition:'',network:'',display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',battery:platform==='iphone'?'':'Perfect',box:platform==='iphone'?'No':'No',packing:'No pack',charger:platform==='iphone'?'No charger':'Original charger',faceid:platform==='iphone'?'Yes':'No',truetone:platform==='iphone'?'Yes':'No'};
   Object.keys(defs).forEach(function(k){
-    const d=getPlatformDefault(platform,k,defs[k]);
+    const d=(platform==='iphone' && k==='status') ? '' : ((platform==='iphone' && k==='box') ? 'No' : ((platform==='iphone' && k==='charger') ? 'No charger' : getPlatformDefault(platform,k,defs[k])));
     const opts=getEntryFieldOptionsForPlatform(platform,k);
     formState[k]=(d && opts.indexOf(d)!==-1) ? d : '';
   });
@@ -5044,7 +5044,7 @@ function applyEntryLayoutToDOM(platform){
   let moreKeys = L.more.slice();
   if(platform==='iphone'){
     fixedMainKeys = [
-      'brand','model','photos','storage','condition','battery',
+      'brand','model','photos','status','storage','condition','battery',
       'box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
       'seller','saleFields','moreToggle','extras'
     ];
@@ -5433,8 +5433,8 @@ function openAdd(){
   // Android keeps the existing mandatory fields. iPhone has no Status/RAM,
   // Box/Charger are optional and default to absent, while Battery is mandatory.
   formState.status = '';
-  formState.box = '';
-  formState.charger = ''; 
+  formState.box = 'No';
+  formState.charger = 'No charger';
   formState.battery = '';
   formPhotos = [];
   renderPhotoStrip();
@@ -5601,7 +5601,7 @@ function saveEntry(){
     return;
   }
   const entryPlatform = getEntryPlatform(brand);
-  if(entryPlatform!=='iphone' && !formState.status){ alert('Status select karna zaroori hai'); return; }
+  if(!formState.status){ alert('Status select karna zaroori hai'); return; }
   if(entryPlatform!=='iphone' && !formState.ram){ alert('RAM select karna zaroori hai'); return; }
   if(!formState.storage){ alert('Storage select karna zaroori hai'); return; }
   if(!formState.condition){ alert('Condition select karna zaroori hai'); return; }
@@ -5627,7 +5627,7 @@ function saveEntry(){
     storage: formState.storage || '',
     condition: formState.condition || '',
     network: formState.network || '',
-    status: entryPlatform==='iphone' ? '' : (formState.status || 'PTA'),
+    status: formState.status || 'PTA',
     display: formState.display || 'Original panel',
     touch: formState.touch || 'Perfect',
     camera: formState.camera || 'Perfect',
