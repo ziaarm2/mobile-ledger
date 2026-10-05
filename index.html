@@ -7736,6 +7736,7 @@ document.getElementById('btnSettings').onclick = function(e){
   if(e){ e.preventDefault(); e.stopPropagation(); }
   const menu=document.getElementById('menuDropdown');
   if(menu) menu.classList.add('hidden');
+  syncMenuOpenState();
   const overlay=document.getElementById('settingsOverlay');
   if(!overlay) return;
   dedupeSettingsHomeCategories();
