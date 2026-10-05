@@ -1594,31 +1594,19 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
       </div>
 
       <div class="settings-view" data-settings-view="fields">
-        <div class="settings-page-title">Entry fields & options</div>
+        <div class="settings-page-title">Badge settings</div>
         <div class="settings-section-card">
-          <div class="settings-note" style="margin-top:0;">Android aur iPhone ki lists alag manage karein. <b>Both</b> se dono platforms par change apply hoga.</div>
+          <div class="settings-note" style="margin-top:0;">
+            Sirf ye set karein ke kis field ke kis option par card par badge show hoga.
+          </div>
           <div class="chip-row" id="settingsPlatformToggles" style="margin-top:9px;"></div>
           <select class="settings-field-select" id="settings-field-select"></select>
-          <div class="settings-add-row"><input type="text" id="settingsNewField" placeholder="Nayi field, jaise Condition / Color"><select class="settings-field-select" id="settingsNewFieldTarget" style="margin:0;max-width:125px;"><option value="android">🤖 Android</option><option value="iphone">🍎 iPhone</option><option value="both">📱 Both</option></select><button type="button" class="sell-btn" id="settingsAddFieldBtn">+ Field</button></div>
-          <div id="settingsCustomFieldActions" style="margin-top:8px;"></div>
-          <div class="settings-default-row" style="display:flex;gap:8px;align-items:center;margin-top:8px;"><span style="font-size:12px;color:var(--text-dim);white-space:nowrap;">Default:</span><select class="settings-field-select" id="settings-default-select" style="margin:0;flex:1;"></select></div>
           <div class="settings-opts" id="settingsOptsList"></div>
-          <div class="settings-add-row"><input type="text" id="settingsNewOption" placeholder="Naya option likhein"><button type="button" class="sell-btn" id="settingsAddBtn">Add</button></div>
-          <div class="settings-note" id="settingsIssueNote">× se option is platform ki entry list se hide hoga. Default, issue classification aur visibility yahin control hoti hai.</div>
-          <div class="settings-section-card" style="margin-top:10px;">
-            <div class="sec-label">Entry layout — Main / Zyada details</div>
-            <div class="settings-note">☷ ko drag karke order badlein. Main / Zyada se jagah badlein, Hide se field chhupayein. Both mein same change Android + iPhone dono par lagega.</div>
-            <div id="entryLayoutSettingsList" style="margin-top:8px;"></div>
-          </div>
-          <div class="settings-section-card" style="margin-top:10px;">
-            <div class="sec-label">Main screen — fields</div>
-            <div class="settings-note">Phone card par kaun si basic information dikhni chahiye, Android / iPhone / Both ke liye alag set karein.</div>
-            <div class="chip-row" id="cardPlatformToggles" style="margin-top:8px;"></div>
-            <div class="entry-platform-card-list" id="platformCardFieldList"></div>
+          <div class="settings-note" id="settingsIssueNote">
+            Yahan sirf badge visibility control hoti hai. Option hide, default ya field layout change nahi kiya ja sakta.
           </div>
         </div>
       </div>
-
       <div class="settings-view" data-settings-view="whatsapp">
         <div class="settings-page-title">WhatsApp share message</div>
         <div class="settings-section-card">
