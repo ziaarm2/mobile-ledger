@@ -822,7 +822,12 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 }
 </style>
 
-<style id="mandatory-star-style">.required-star{color:#d92d20;font-weight:800;margin-left:2px;}</style></head>
+<style id="mandatory-star-style">.required-star{color:#d92d20;font-weight:800;margin-left:2px;}</style>
+<style id="badge-only-settings-style">
+.badge-only-opt{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.badge-only-opt .card-vis-toggle{flex:0 0 auto;}
+</style>
+</head>
 <body>
 
 <div class="app" style="visibility:hidden;">
@@ -1525,7 +1530,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
           <button class="settings-category" data-settings-page="shop"><span class="settings-category-icon">🏪</span><span class="settings-category-main"><span class="settings-category-title">Shop</span><span class="settings-category-sub" id="settingsSummaryShop">Shop details & contact</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="inventory"><span class="settings-category-icon">📦</span><span class="settings-category-main"><span class="settings-category-title">Stock & Pricing</span><span class="settings-category-sub">Card view, sell range & brands</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="appearance"><span class="settings-category-icon">🎨</span><span class="settings-category-main"><span class="settings-category-title">Appearance</span><span class="settings-category-sub">Badge order & card layout</span></span><span class="settings-category-arrow">›</span></button>
-          <button class="settings-category admin-only-setting" id="settingsFieldsAdminCategory" data-settings-page="fields" style="display:none;"><span class="settings-category-icon">⚙️</span><span class="settings-category-main"><span class="settings-category-title">Fields & Options</span><span class="settings-category-sub">Badge visibility, issue rules & options</span></span><span class="settings-category-arrow">›</span></button>
+          <button class="settings-category admin-only-setting" id="settingsFieldsAdminCategory" data-settings-page="fields" style="display:none;"><span class="settings-category-icon">⚙️</span><span class="settings-category-main"><span class="settings-category-title">Fields & Options</span><span class="settings-category-sub">Kis option par badge show ho</span></span><span class="settings-category-arrow">›</span></button>
           
           <button class="settings-category" data-settings-page="whatsapp"><span class="settings-category-icon">💬</span><span class="settings-category-main"><span class="settings-category-title">WhatsApp</span><span class="settings-category-sub">Share message template</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="privacy"><span class="settings-category-icon">🔐</span><span class="settings-category-main"><span class="settings-category-title">Privacy & Security</span><span class="settings-category-sub" id="settingsSummaryPrivacy">Privacy mode & security</span></span><span class="settings-category-arrow">›</span></button>
@@ -1596,17 +1601,27 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
       <div class="settings-view" data-settings-view="fields">
         <div class="settings-page-title">Badge settings</div>
         <div class="settings-section-card">
-          <div class="settings-note" style="margin-top:0;">
-            Sirf ye set karein ke kis field ke kis option par card par badge show hoga.
-          </div>
+          <div class="settings-note" style="margin-top:0;">Field select karein, phir us field ke option par tap karke badge show/hide karein.</div>
           <div class="chip-row" id="settingsPlatformToggles" style="margin-top:9px;"></div>
           <select class="settings-field-select" id="settings-field-select"></select>
-          <div class="settings-opts" id="settingsOptsList"></div>
-          <div class="settings-note" id="settingsIssueNote">
-            Yahan sirf badge visibility control hoti hai. Option hide, default ya field layout change nahi kiya ja sakta.
+          <div id="settingsOptsList" class="settings-opts" style="margin-top:10px;"></div>
+          <div class="settings-note" id="settingsIssueNote">Badge ko 3 states mein set kiya ja sakta hai: Hidden → Card pe → Prominent.</div>
+
+          <!-- Kept hidden so existing initialization code remains safe; no field/option editing is exposed here. -->
+          <div style="display:none;">
+            <div id="settingsCustomFieldActions"></div>
+            <select id="settings-default-select"></select>
+            <div class="settings-add-row">
+              <input type="text" id="settingsNewField">
+              <select id="settingsNewFieldTarget"><option value="android">Android</option></select>
+              <button type="button" id="settingsAddFieldBtn"></button>
+            </div>
+            <input type="text" id="settingsNewOption">
+            <button type="button" id="settingsAddBtn"></button>
           </div>
         </div>
       </div>
+
       <div class="settings-view" data-settings-view="whatsapp">
         <div class="settings-page-title">WhatsApp share message</div>
         <div class="settings-section-card">
@@ -7318,139 +7333,79 @@ function renderPlatformCardFieldSettings(){
 
 function renderSettingsFieldOptions(){
   const sel=document.getElementById('settings-field-select');
+  if(!sel) return;
   const fieldKey=sel.value;
   const fields=getAllSettingsFields(settingsPlatform);
   const fieldDef=fields.find(function(f){return f.key===fieldKey;});
-  if(!fieldDef) return;
+  const optsBox=document.getElementById('settingsOptsList');
+  if(!fieldDef || !optsBox) return;
+
   const targets=settingTargetPlatforms(settingsPlatform);
   const isCustom=!!fieldDef.isCustom;
   const options=[];
+
   targets.forEach(function(pl){
     const p=ensurePlatformOptionData(pl);
     if(isCustom){
-      getCustomFieldOptionsForPlatform(pl,fieldKey).forEach(function(o){ if(options.indexOf(o)===-1) options.push(o); });
+      getCustomFieldOptionsForPlatform(pl,fieldKey).forEach(function(o){
+        if(options.indexOf(o)===-1) options.push(o);
+      });
     }else{
       const hidden=p.hidden[fieldKey]||[];
-      fieldDef.base.forEach(function(o){ if(hidden.indexOf(o)===-1 && options.indexOf(o)===-1) options.push(o); });
-      (p.extra[fieldKey]||[]).forEach(function(o){ if(options.indexOf(o)===-1) options.push(o); });
+      fieldDef.base.forEach(function(o){
+        if(hidden.indexOf(o)===-1 && options.indexOf(o)===-1) options.push(o);
+      });
+      (p.extra[fieldKey]||[]).forEach(function(o){
+        if(options.indexOf(o)===-1) options.push(o);
+      });
     }
   });
 
-  const defaultSelect=document.getElementById('settings-default-select');
-  if(defaultSelect){
-    const current=settingsPlatform==='both' ? '' : (function(){const p=ensurePlatformOptionData(settingsPlatform);return Object.prototype.hasOwnProperty.call(p.defaults,fieldKey)?p.defaults[fieldKey]:'';})();
-    defaultSelect.innerHTML='<option value="">— Koi default nahi —</option>'+options.map(function(o){return '<option value="'+escapeHtml(o)+'">'+escapeHtml(o)+'</option>';}).join('');
-    defaultSelect.value=current;
-    defaultSelect.onchange=function(){
-      const value=defaultSelect.value;
-      targets.forEach(function(pl){ ensurePlatformOptionData(pl).defaults[fieldKey]=value; });
-      saveCustomOptionData(); renderSettingsFieldOptions(); renderAllChips();
-    };
-  }
-
-  const actionBox=document.getElementById('settingsCustomFieldActions');
-  if(actionBox){
-    const targetText=settingsPlatform==='both' ? 'Android + iPhone' : platformLabel(settingsPlatform);
-    actionBox.innerHTML='<div style="display:flex;gap:7px;flex-wrap:wrap;">'+
-      '<button type="button" class="btn-cancel" id="settingsDeleteFieldBtn" style="flex:1;min-width:140px;">🗑️ Field delete</button>'+
-      '<button type="button" class="btn-save" id="settingsApplyExistingBtn" style="flex:1;min-width:180px;">↻ Existing entries par apply</button>'+
-      '</div><div class="settings-note" style="margin-top:7px;">'+targetText+' ke liye field/options manage ho rahe hain. Field delete karne se sirf selected platform se field remove/hide hogi.</div>';
-
-    const del=document.getElementById('settingsDeleteFieldBtn');
-    if(del) del.onclick=function(){
-      if(!confirm('"'+fieldDef.label+'" field ko '+targetText+' se delete/hide kar dein?')) return;
-      targets.forEach(function(pl){
-        const pp=ensurePlatformOptionData(pl);
-        ensureHiddenFields(pp)[fieldKey]=true;
-        delete pp.defaults[fieldKey];
-        delete pp.extra[fieldKey];
-        delete pp.hidden[fieldKey];
-      });
-      const cf=getCustomFieldDef(settingsPlatform==='both'?'android':settingsPlatform,fieldKey);
-      if(cf && isCustom){
-        cf.platforms=(cf.platforms||['android','iphone']).filter(function(pl){ return targets.indexOf(pl)===-1; });
-        if(!cf.platforms.length) customOptionData.globalCustomFields=(customOptionData.globalCustomFields||[]).filter(function(f){return f.key!==fieldKey;});
-      }
-      saveCustomOptionData(); populateSettingsFieldSelect(); renderSettingsFieldOptions(); renderAllChips(); renderWaMessageEditor();
-    };
-    const applyExisting=document.getElementById('settingsApplyExistingBtn');
-    if(applyExisting) applyExisting.onclick=function(){
-      const value=(document.getElementById('settings-default-select')||{}).value||'';
-      if(!value){ alert('Pehle Default mein koi option select karein.'); return; }
-      const targetEntries=inventory.filter(function(e){ return targets.indexOf(getEntryPlatform(e.brand))!==-1; });
-      if(!targetEntries.length){ alert('Selected platform ki koi existing entry nahi mili.'); return; }
-      if(!confirm(targetText+' ki '+targetEntries.length+' existing entries par "'+fieldDef.label+' = '+value+'" apply kar dein?')) return;
-      targetEntries.forEach(function(e){
-        if(isCustom){ if(!e.customFields) e.customFields={}; e.customFields[fieldKey]=value; }
-        else e[fieldKey]=value;
-        e.lastUpdated=todayStr();
-      });
-      saveInventory(); renderSettingsFieldOptions(); renderAllChips(); renderList(); renderWaMessageEditor(); showToast('✓ '+targetEntries.length+' existing entries update ho gayi.');
-    };
-  }
-
-  const canHaveIssue=!isCustom && !!GOOD_CONDITION_VALUES[fieldKey];
   const isCardBadgeField=!isCustom && DEFAULT_BADGE_ORDER.indexOf(fieldKey)!==-1;
-  document.getElementById('settingsIssueNote').style.display='block';
-  function issueToggleHtml(val){
-    if(!canHaveIssue) return '';
-    const isIssue=isConditionIssue(fieldKey,val);
-    return '<span class="issue-toggle'+(isIssue?' is-issue':'')+'" data-val="'+escapeHtml(val)+'">'+(isIssue?'⚠ Issue':'Normal')+'</span>';
+
+  if(!isCardBadgeField){
+    optsBox.innerHTML='<div class="settings-note" style="margin:0;">Is field ke options par badge available nahi hai.</div>';
+    const note=document.getElementById('settingsIssueNote');
+    if(note) note.textContent='Sirf badge-supported fields ke options yahan badge ke liye control kiye ja sakte hain.';
+    return;
   }
+
+  const note=document.getElementById('settingsIssueNote');
+  if(note) note.textContent='Badge ko 3 states mein set kiya ja sakta hai: Hidden → Card pe → Prominent.';
+
   function cardVisToggleHtml(val){
-    if(!isCardBadgeField) return '';
-    const vis=effectiveCardVisible(fieldKey,val); const prom=effectiveBadgeProminent(fieldKey,val);
+    const vis=effectiveCardVisible(fieldKey,val);
+    const prom=effectiveBadgeProminent(fieldKey,val);
     const label=!vis?'🚫 Hidden':(prom?'⭐ Prominent':'👁 Card pe');
-    return '<span class="card-vis-toggle'+(vis?' is-visible':'')+(prom?' is-prominent':'')+'" data-val="'+escapeHtml(val)+'">'+label+'</span>';
-  }
-  function colorInputHtml(val){
-    if(!isCardBadgeField) return '';
-    const color=effectiveBadgeColor(fieldKey,val)||'#8a8a93';
-    return '<input type="color" class="badge-color-input" data-val="'+escapeHtml(val)+'" value="'+color+'" title="Is value ka badge color">';
+    return '<button type="button" class="card-vis-toggle'+(vis?' is-visible':'')+(prom?' is-prominent':'')+'" data-val="'+escapeHtml(val)+'">'+label+'</button>';
   }
 
-  let html='';
-  if(isCustom){
-    html=options.map(function(o){ return '<div class="settings-opt" data-kind="custom" data-val="'+escapeHtml(o)+'">'+escapeHtml(o)+'<span class="rm" data-action="delete">×</span></div>'; }).join('');
-  }else{
-    html=fieldDef.base.map(function(o){
-      const hiddenAll=targets.every(function(pl){return (ensurePlatformOptionData(pl).hidden[fieldKey]||[]).indexOf(o)!==-1;});
-      const hiddenSome=targets.some(function(pl){return (ensurePlatformOptionData(pl).hidden[fieldKey]||[]).indexOf(o)!==-1;});
-      const shown=hiddenAll?' is-hidden':'';
-      return '<div class="settings-opt'+shown+'" data-kind="base" data-val="'+escapeHtml(o)+'">'+escapeHtml(o)+issueToggleHtml(o)+cardVisToggleHtml(o)+colorInputHtml(o)+
-        '<span class="rm" data-action="'+(hiddenAll?'restore':'hide')+'">'+(hiddenSome?'↺/×':(hiddenAll?'↺':'×'))+'</span></div>';
-    }).join('')+options.filter(function(o){return fieldDef.base.indexOf(o)===-1;}).map(function(o){
-      return '<div class="settings-opt" data-kind="extra" data-val="'+escapeHtml(o)+'">'+escapeHtml(o)+issueToggleHtml(o)+cardVisToggleHtml(o)+colorInputHtml(o)+'<span class="rm" data-action="delete">×</span></div>';
-    }).join('');
-  }
-  document.getElementById('settingsOptsList').innerHTML=html;
+  optsBox.innerHTML=options.map(function(o){
+    return '<div class="settings-opt badge-only-opt" data-val="'+escapeHtml(o)+'"><span>'+escapeHtml(o)+'</span>'+cardVisToggleHtml(o)+'</div>';
+  }).join('');
 
-  document.getElementById('settingsOptsList').querySelectorAll('.issue-toggle').forEach(function(btn){ btn.onclick=function(e){ e.stopPropagation(); const val=btn.dataset.val; if(!customOptionData.issueOverrides[fieldKey]) customOptionData.issueOverrides[fieldKey]={}; customOptionData.issueOverrides[fieldKey][val]=!isConditionIssue(fieldKey,val); saveCustomOptionData(); renderSettingsFieldOptions(); renderList(); }; });
-  document.getElementById('settingsOptsList').querySelectorAll('.card-vis-toggle').forEach(function(btn){ btn.onclick=function(e){ e.stopPropagation(); const val=btn.dataset.val; const vis=effectiveCardVisible(fieldKey,val),prom=effectiveBadgeProminent(fieldKey,val); if(!customOptionData.cardVisibility[fieldKey]) customOptionData.cardVisibility[fieldKey]={}; if(!customOptionData.badgeProminent[fieldKey]) customOptionData.badgeProminent[fieldKey]={}; if(!vis){customOptionData.cardVisibility[fieldKey][val]=true;customOptionData.badgeProminent[fieldKey][val]=false;}else if(vis&&!prom){customOptionData.badgeProminent[fieldKey][val]=true;}else{customOptionData.cardVisibility[fieldKey][val]=false;customOptionData.badgeProminent[fieldKey][val]=false;} saveCustomOptionData(); renderSettingsFieldOptions(); renderList(); }; });
-  document.getElementById('settingsOptsList').querySelectorAll('.badge-color-input').forEach(function(input){ input.onclick=function(e){e.stopPropagation();}; input.onchange=function(e){e.stopPropagation();const val=input.dataset.val;if(!customOptionData.badgeColor[fieldKey])customOptionData.badgeColor[fieldKey]={};customOptionData.badgeColor[fieldKey][val]=input.value;saveCustomOptionData();renderList();}; });
-  document.getElementById('settingsOptsList').querySelectorAll('.rm').forEach(function(btn){
+  optsBox.querySelectorAll('.card-vis-toggle').forEach(function(btn){
     btn.onclick=function(e){
-      e.stopPropagation(); const parent=btn.closest('.settings-opt'); const val=parent.dataset.val; const kind=parent.dataset.kind; const action=btn.dataset.action;
-      if(isCustom){
-        const cf=getCustomFieldDef(settingsPlatform==='both'?'android':settingsPlatform,fieldKey);
-        if(cf){
-          if(!cf.optionsByPlatform) cf.optionsByPlatform={android:(cf.options||[]).slice(),iphone:(cf.options||[]).slice()};
-          targets.forEach(function(pl){
-            cf.optionsByPlatform[pl]=(cf.optionsByPlatform[pl]||[]).filter(function(x){return x!==val;});
-            const pp=ensurePlatformOptionData(pl); if(pp.defaults[fieldKey]===val) pp.defaults[fieldKey]='';
-          });
-          cf.options=Array.from(new Set([].concat(cf.optionsByPlatform.android||[],cf.optionsByPlatform.iphone||[])));
-        }
-      }else if(kind==='base'){
-        targets.forEach(function(pl){
-          const pp=ensurePlatformOptionData(pl); if(!pp.hidden[fieldKey]) pp.hidden[fieldKey]=[];
-          if(action==='hide' || action==='↺/×'){ if(pp.hidden[fieldKey].indexOf(val)===-1) pp.hidden[fieldKey].push(val); }
-          else pp.hidden[fieldKey]=pp.hidden[fieldKey].filter(function(x){return x!==val;});
-        });
+      e.stopPropagation();
+      const val=btn.dataset.val;
+      const vis=effectiveCardVisible(fieldKey,val);
+      const prom=effectiveBadgeProminent(fieldKey,val);
+      if(!customOptionData.cardVisibility[fieldKey]) customOptionData.cardVisibility[fieldKey]={};
+      if(!customOptionData.badgeProminent[fieldKey]) customOptionData.badgeProminent[fieldKey]={};
+
+      if(!vis){
+        customOptionData.cardVisibility[fieldKey][val]=true;
+        customOptionData.badgeProminent[fieldKey][val]=false;
+      }else if(vis && !prom){
+        customOptionData.badgeProminent[fieldKey][val]=true;
       }else{
-        targets.forEach(function(pl){const pp=ensurePlatformOptionData(pl);pp.extra[fieldKey]=(pp.extra[fieldKey]||[]).filter(function(x){return x!==val;});if(pp.defaults[fieldKey]===val)pp.defaults[fieldKey]='';});
+        customOptionData.cardVisibility[fieldKey][val]=false;
+        customOptionData.badgeProminent[fieldKey][val]=false;
       }
-      saveCustomOptionData(); renderSettingsFieldOptions(); renderAllChips(); renderWaMessageEditor();
+
+      saveCustomOptionData();
+      renderSettingsFieldOptions();
+      renderList();
     };
   });
 }
