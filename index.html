@@ -821,7 +821,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 }
 </style>
 
-</head>
+<style id="mandatory-star-style">.required-star{color:#d92d20;font-weight:800;margin-left:2px;}</style></head>
 <body>
 
 <div class="app" style="visibility:hidden;">
@@ -1223,7 +1223,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <div class="field"><label>Se (date)</label><input type="date" id="rp-from"></div>
         <div class="field"><label>Tak (date)</label><input type="date" id="rp-to"></div>
       </div>
-      <div class="field"><label>Brand</label><select id="rp-brand"></select></div>
+      <div class="field"><label>Brand <span class="required-star">*</span></label><select id="rp-brand"></select></div>
       <div class="field"><label>Customer (naam ya number)</label><input type="text" id="rp-customer" placeholder="Search karein"></div>
     </div>
     <div class="report-summary">
@@ -1499,9 +1499,9 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
   <div class="sheet">
     <div class="sheet-handle"></div>
     <h2>+ Rate add karein</h2>
-    <div class="field"><label>Brand</label><input id="rb-brand" placeholder="Apple / Samsung..."></div>
-    <div class="field"><label>Model</label><input id="rb-model" placeholder="iPhone 13"></div>
-    <div class="two-col"><div class="field"><label>Variant / Storage</label><input id="rb-variant" placeholder="128GB"></div><div class="field"><label>Status</label><select id="rb-status"></select></div></div>
+    <div class="field"><label>Brand <span class="required-star">*</span></label><input id="rb-brand" placeholder="Apple / Samsung..."></div>
+    <div class="field"><label>Model <span class="required-star">*</span></label><input id="rb-model" placeholder="iPhone 13"></div>
+    <div class="two-col"><div class="field"><label>Variant / Storage <span class="required-star">*</span></label><input id="rb-variant" placeholder="128GB"></div><div class="field"><label>Status <span class="required-star">*</span></label><select id="rb-status"></select></div></div>
     <div class="two-col"><div class="field big-input"><label>Buy Rate</label><input id="rb-rate" type="text" inputmode="decimal" placeholder="e.g. 125k"><div class="price-hint" id="rb-rate-hint"></div></div><div class="field"><label>Date</label><input id="rb-date" type="date"></div></div>
     <div class="field"><label>Seller / Dealer (optional)</label><input id="rb-seller" placeholder="Naam"></div>
     <div class="field"><label>Notes (optional)</label><input id="rb-notes" placeholder="Condition ya koi khaas baat"></div>
