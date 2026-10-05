@@ -1053,13 +1053,13 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
       <div class="sec-label">Battery health</div>
       <div class="chip-row" id="batteryChips"></div>
 
-      <div class="sec-label">Box</div>
+      <div class="sec-label">Box <span style="color:var(--danger);">*</span></div>
       <div class="chip-row" id="boxChips"></div>
 
       <div class="sec-label">Packing</div>
       <div class="chip-row" id="packingChips"></div>
 
-      <div class="sec-label">Charger</div>
+      <div class="sec-label">Charger <span style="color:var(--danger);">*</span></div>
       <div class="chip-row" id="chargerChips"></div>
 
       <div class="sec-label">Face ID</div>
@@ -1925,8 +1925,8 @@ function renderUiScaleToggles(){
 }
 
 const DEFAULT_ENTRY_LAYOUT = {
-  main: ['brand','model','photos','status','ram','storage','condition','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'],
-  more: ['network','display','touch','camera','body','openrepair','battery','box','packing','charger','faceid','truetone','notes'],
+  main: ['brand','model','photos','status','ram','storage','condition','box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'],
+  more: ['network','display','touch','camera','body','openrepair','battery','packing','faceid','truetone','notes'],
   hidden: []
 };
 const ENTRY_LAYOUT_LABELS = {
@@ -4658,6 +4658,13 @@ function prepareEntryLayoutDOM(){
   const conditionChips=sheet.querySelector('#conditionChips');
   if(conditionChips) addMainGroup('condition',[previousSecLabel(conditionChips),conditionChips]);
 
+  // Box and Charger are now mandatory main-entry fields immediately below Condition.
+  // Moving these existing groups out of More Details keeps a single source of truth.
+  const boxChips=sheet.querySelector('#boxChips');
+  if(boxChips) addMainGroup('box',[previousSecLabel(boxChips),boxChips]);
+  const chargerChips=sheet.querySelector('#chargerChips');
+  if(chargerChips) addMainGroup('charger',[previousSecLabel(chargerChips),chargerChips]);
+
   const imei1=sheet.querySelector('#f-imei');
   if(imei1) addMainGroup('imei1',[imei1.closest('.field')]);
   const imei2=sheet.querySelector('#f-imei2');
@@ -4776,6 +4783,12 @@ function ensureLayoutContainsAll(layout){
     layout.main.splice(keepBuy,0,'buyPrice','phoneExpenses','sellRange');
   }
 
+  // v57: fixed entry order — Box and Charger are mandatory and sit directly
+  // below Condition; phone expense stays immediately below Buy price.
+  const fixedMainOrder=['brand','model','photos','status','ram','storage','condition','box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'];
+  layout.main=fixedMainOrder.slice();
+  layout.more=['network','display','touch','camera','body','openrepair','battery','packing','faceid','truetone','notes'];
+  layout.hidden=[];
   const all=d.main.concat(d.more);
   all.forEach(function(k){ if(layout.main.indexOf(k)===-1 && layout.more.indexOf(k)===-1 && layout.hidden.indexOf(k)===-1){ layout.main.push(k); } });
   // Preserve custom entry fields in the configurable layout as well.
@@ -5457,6 +5470,8 @@ function saveEntry(){
   if(!formState.ram){ alert('RAM select karna zaroori hai'); return; }
   if(!formState.storage){ alert('Storage select karna zaroori hai'); return; }
   if(!formState.condition){ alert('Condition select karna zaroori hai'); return; }
+  if(!formState.box){ alert('Box select karna zaroori hai'); return; }
+  if(!formState.charger){ alert('Charger select karna zaroori hai'); return; }
   const qty = Math.max(1, Number(document.getElementById('f-qty').value || 1));
   const buyFieldRaw = document.getElementById('f-buy').value.trim();
   const parsedBuyForRange = buyFieldRaw==='' ? null : parsePrice(buyFieldRaw);
