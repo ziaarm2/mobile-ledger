@@ -875,7 +875,6 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="menu-scroll">
         <div class="menu-section-label">Business</div>
-        <button class="menu-item" id="btnAdminShops" style="display:none !important;"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M3 10h18M5 10v10h14V10M7 10V6h10v4M9 20v-5h6v5" stroke-width="1.8" stroke-linejoin="round"/></svg></span><span class="menu-item-text">All Shops (Admin)</span></button>
         <button class="menu-item" id="btnExitAdminShop" style="display:none !important;"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7M8 12h13" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="menu-item-text">Apni Shop par wapas</span></button>
         <button class="menu-item" id="btnDashboard"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4h6v7H4zM14 4h6v4h-6zM14 12h6v8h-6zM4 15h6v5H4z" stroke-width="1.7" stroke-linejoin="round"/></svg></span><span class="menu-item-text">Dashboard</span></button>
         <button class="menu-item" id="btnExpenses"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="14" rx="2" stroke-width="1.8"/><path d="M7 12h10M8 9h8" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Expenses</span></button>
@@ -6611,7 +6610,7 @@ document.getElementById('btnRateBookClose').onclick = function(){ requestOverlay
 document.getElementById('rateBookOverlay').onclick = function(e){ if(e.target.id==='rateBookOverlay') requestOverlayClose(); };
 document.getElementById('adminShopsOverlay').onclick = function(e){ if(e.target.id==='adminShopsOverlay') requestOverlayClose(); };
 document.getElementById('btnAdminShopsClose').onclick = function(){ requestOverlayClose(); };
-document.getElementById('btnAdminShops').onclick = function(){ openAdminShops(); };
+const adminShopsMenuBtn=document.getElementById('btnAdminShops'); if(adminShopsMenuBtn) adminShopsMenuBtn.onclick = function(){ openAdminShops(); };
 document.getElementById('btnRateBookAdd').onclick = function(){ openRateAdd(); };
 document.getElementById('btnRateAddCancel').onclick = function(){ requestOverlayClose(); };
 document.getElementById('btnRateAddSave').onclick = function(){ saveManualRate(); };
