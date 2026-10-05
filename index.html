@@ -875,8 +875,6 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="menu-scroll">
         <div class="menu-section-label">Business</div>
-        <button class="menu-item" id="btnAdminShops" style="display:none;" aria-hidden="true"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M3 10h18M5 10v10h14V10M7 10V6h10v4M9 20v-5h6v5" stroke-width="1.8" stroke-linejoin="round"/></svg></span><span class="menu-item-text">All Shops (Admin)</span></button>
-        <button class="menu-item" id="btnExitAdminShop" style="display:none !important;"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7M8 12h13" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="menu-item-text">Apni Shop par wapas</span></button>
         <button class="menu-item" id="btnDashboard"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4h6v7H4zM14 4h6v4h-6zM14 12h6v8h-6zM4 15h6v5H4z" stroke-width="1.7" stroke-linejoin="round"/></svg></span><span class="menu-item-text">Dashboard</span></button>
         <button class="menu-item" id="btnExpenses"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="14" rx="2" stroke-width="1.8"/><path d="M7 12h10M8 9h8" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Expenses</span></button>
         <button class="menu-item" id="btnRateBook"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M6 4.5h12a2 2 0 0 1 2 2V20H6a2 2 0 0 1-2-2V6.5a2 2 0 0 1 2-2Z" stroke-width="1.8"/><path d="M8 8h8M8 12h8M8 16h5" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Rate Book</span></button>
@@ -895,7 +893,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index <span id="menuFooterVersionNumber">v67</span><br><span id="menuFooterUpdated">Updated 05 Oct 2026</span><span id="menuFooterChange">Admin long-press restored + All Shops hidden</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v46<br><span>Updated 04 Oct 2026</span><span>Menu cleanup + Dead Stock dashboard fix</span></div>
         </div>
       </div>
     </div>
@@ -1698,7 +1696,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: <span id="settingsAppVersion">Index v67 • Updated 05 Oct 2026 • Admin access restored + All Shops locked hidden</span></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v53 • Updated 05 Oct 2026 • Entry form order and required fields updated</div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1714,25 +1712,8 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 <button class="fab-expense" id="btnQuickExpense" title="Expense add karein">💵</button>
 
 <script>
-const APP_INDEX_VERSION = 'v67';
-const APP_INDEX_UPDATED = '05 Oct 2026 • Admin access restored + All Shops locked hidden';
-function updateAppVersionUI(){
-  const version=APP_INDEX_VERSION;
-  const updated=APP_INDEX_UPDATED;
-  const parts=String(updated).split(' • ');
-  const dateText=parts.shift() || updated;
-  const changeText=parts.join(' • ') || '';
-  const v=document.getElementById('menuFooterVersionNumber');
-  const d=document.getElementById('menuFooterUpdated');
-  const c=document.getElementById('menuFooterChange');
-  if(v) v.textContent=version;
-  if(d) d.textContent='Updated ' + dateText;
-  if(c) c.textContent=changeText;
-  const sv=document.getElementById('settingsAppVersion');
-  if(sv) sv.textContent='Index ' + version + ' • Updated ' + dateText + (changeText ? ' • ' + changeText : '');
-}
-updateAppVersionUI();
-
+const APP_INDEX_VERSION = 'v61';
+const APP_INDEX_UPDATED = '05 Oct 2026 • Entry UI restored and startup fix';
 
 let inventory = [];
 
@@ -6592,59 +6573,33 @@ document.getElementById('btnMenuLogout').onclick=function(){ closeMainMenu(); do
 
 
 // ---------- Hidden Admin Access ----------
-// All Shops is completely hidden from the normal menu. Only an authenticated
-// admin can reveal it by long-pressing the "Mobile Hisab" title.
-let hiddenAdminMenuRevealed = false;
-function setHiddenAdminMenu(reveal){
-  const btn=document.getElementById('btnAdminShops');
-  hiddenAdminMenuRevealed = !!reveal && userRole==='admin';
-  if(btn){
-    btn.style.display = hiddenAdminMenuRevealed ? 'flex' : 'none';
-    btn.setAttribute('aria-hidden', hiddenAdminMenuRevealed ? 'false' : 'true');
-  }
-}
-// Robust mobile/desktop long-press: ~1.5 seconds on the actual title text.
-// Uses pointer events plus touch fallback so browser-based/mobile WebViews do
-// not lose the hidden admin gesture. Normal users never reveal the item.
+// Admins can reach All Shops without exposing an Admin label/button to shop owners.
+// Long-press the existing "Mobile Ledger" title for ~1.5 seconds.
 (function(){
   const target=document.querySelector('.header-top h1');
   if(!target) return;
   let timer=null;
   let longPressFired=false;
-  const clear=function(){
-    if(timer){ clearTimeout(timer); timer=null; }
-  };
-  const reveal=function(){
-    timer=null;
-    if(userRole!=='admin') return;
-    longPressFired=true;
-    try{ if(navigator.vibrate) navigator.vibrate(25); }catch(err){}
-    if(isAdminShopView()){
-      exitAdminShop();
-      return;
-    }
-    setHiddenAdminMenu(true);
-    const menu=document.getElementById('menuDropdown');
-    if(menu) menu.classList.remove('hidden');
-    syncMenuOpenState();
-  };
-  const start=function(e){
-    if(e && e.type==='pointerdown' && e.pointerType==='mouse' && e.button!==0) return;
-    longPressFired=false;
-    clear();
-    timer=setTimeout(reveal,1500);
-  };
-  const end=function(){ clear(); };
+  const clear=function(){ if(timer){ clearTimeout(timer); timer=null; } };
   target.style.userSelect='none';
   target.style.webkitUserSelect='none';
-  target.style.webkitTouchCallout='none';
-  target.addEventListener('pointerdown', start, {passive:true});
-  target.addEventListener('pointerup', end, {passive:true});
-  target.addEventListener('pointercancel', end, {passive:true});
-  target.addEventListener('pointerleave', end, {passive:true});
-  target.addEventListener('touchstart', start, {passive:true});
-  target.addEventListener('touchend', end, {passive:true});
-  target.addEventListener('touchcancel', end, {passive:true});
+  target.addEventListener('pointerdown', function(e){
+    if(e.pointerType==='mouse' && e.button!==0) return;
+    longPressFired=false;
+    clear();
+    timer=setTimeout(function(){
+      timer=null;
+      if(userRole!=='admin') return;
+      longPressFired=true;
+      try{ if(navigator.vibrate) navigator.vibrate(25); }catch(err){}
+      if(isAdminShopView()){
+        exitAdminShop();
+      }else{
+        openAdminShops();
+      }
+    },1500);
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(function(ev){ target.addEventListener(ev, clear); });
   target.addEventListener('contextmenu', function(e){
     if(userRole==='admin') e.preventDefault();
   });
@@ -6654,7 +6609,7 @@ document.getElementById('btnRateBookClose').onclick = function(){ requestOverlay
 document.getElementById('rateBookOverlay').onclick = function(e){ if(e.target.id==='rateBookOverlay') requestOverlayClose(); };
 document.getElementById('adminShopsOverlay').onclick = function(e){ if(e.target.id==='adminShopsOverlay') requestOverlayClose(); };
 document.getElementById('btnAdminShopsClose').onclick = function(){ requestOverlayClose(); };
-document.getElementById('btnAdminShops').onclick = function(){ openAdminShops(); };
+const adminShopsMenuBtn=document.getElementById('btnAdminShops'); if(adminShopsMenuBtn) adminShopsMenuBtn.onclick = function(){ openAdminShops(); };
 document.getElementById('btnRateBookAdd').onclick = function(){ openRateAdd(); };
 document.getElementById('btnRateAddCancel').onclick = function(){ requestOverlayClose(); };
 document.getElementById('btnRateAddSave').onclick = function(){ saveManualRate(); };
@@ -8501,7 +8456,7 @@ function exitAdminShop(){
   showToast('✓ Apni Admin screen par wapas aa gaye');
 }
 
-document.getElementById('btnExitAdminShop').onclick=function(){ exitAdminShop(); };
+// Hidden admin shop exit remains available through the existing title long-press.
 document.getElementById('adminShopContextExit').onclick=function(){ exitAdminShop(); };
 
 function firebaseAuthEnvironmentSupported(){
@@ -8633,7 +8588,6 @@ function updateMenuProfileUI(){
 }
 
 function updateAccountUI(){
-  updateAppVersionUI();
   updateMenuProfileUI();
   const label = document.getElementById('accountStatusLabel');
   if(!label) return;
@@ -8641,8 +8595,7 @@ function updateAccountUI(){
   const loggedInView = document.getElementById('accountLoggedInView');
   const statusLine = document.getElementById('accountStatusLine');
   const adminBtn = document.getElementById('btnAdminShops');
-  if(adminBtn) adminBtn.style.display = (userRole==='admin' && hiddenAdminMenuRevealed) ? 'flex' : 'none';
-  if(userRole!=='admin') hiddenAdminMenuRevealed=false;
+  if(adminBtn) adminBtn.style.display = 'none';
   updateAdminShopContextUI();
   if(fbUser){
     label.textContent = accountDisplayId(fbUser) + ' (sync ON)';
