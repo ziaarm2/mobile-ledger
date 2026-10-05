@@ -140,14 +140,14 @@
 
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:flex;align-items:flex-end;justify-content:center;}
   .overlay.hidden{display:none;}
-  .sheet{background:var(--surface);width:min(100%,480px);max-width:480px;min-width:0;border-radius:20px 20px 0 0;max-height:90vh;overflow-y:auto;padding:16px 16px 20px;}
+  .sheet{background:var(--surface);width:min(100%,480px);max-width:480px;min-width:0;border-radius:20px 20px 0 0;max-height:90vh;overflow-y:auto;padding:16px 16px 28px;}
   .sheet-handle{width:36px;height:4px;background:var(--border-strong);border-radius:2px;margin:0 auto 12px;}
   .sheet h2{font-size:16px;margin:0 0 12px;}
   .sheet-item-name{font-size:14px;color:var(--text-dim);margin:-6px 0 14px;}
   .sec-label{font-size:11px;color:var(--text-dim);margin:12px 0 6px;text-transform:uppercase;letter-spacing:0.3px;}
   .chip-row{display:flex;gap:6px;flex-wrap:wrap;}
-  #conditionChips{row-gap:8px;margin-bottom:14px;}
-  .imei-field{margin-top:10px;}
+  #conditionChips{row-gap:8px;margin-bottom:8px;}
+  .imei-field{margin-top:8px;}
   .chip-opt{padding:8px 13px;border-radius:9px;background:var(--surface-2);border:1px solid var(--border);font-size:13px;color:var(--text-dim);}
   .chip-opt.on{background:var(--accent);border-color:var(--accent);color:var(--accent-text);font-weight:600;}
   .chip-opt.status-opt{flex:1 1 30%;text-align:center;font-size:12.5px;padding:10px 4px;}
@@ -324,7 +324,7 @@
   .phone-expense-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(90px,1fr) 34px;gap:7px;align-items:center;}
   .phone-expense-remove{width:34px;height:34px;border:1px solid var(--border);background:var(--surface-2);color:var(--danger);border-radius:8px;font-size:18px;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;}
   .phone-expense-remove:hover{background:var(--cpid-bg);border-color:var(--danger);}
-  .add-expense-inline{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--surface-2);color:var(--accent);font-size:22px;font-weight:700;cursor:pointer;margin-top:7px;}
+  .add-expense-inline{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--surface-2);color:var(--accent);font-size:22px;font-weight:700;cursor:pointer;margin-top:7px;margin-bottom:12px;}
   .settings-toggle-chip.on{background:var(--pta-bg);color:var(--pta);}
   .settings-toggle-chip .dot{width:8px;height:8px;border-radius:50%;background:var(--text-faint);}
   .settings-toggle-chip.on .dot{background:var(--pta);}
@@ -5330,7 +5330,8 @@ function openAdd(){
   document.getElementById('qtyLabel').textContent = 'Quantity (kitne piece)';
   formState = {brand:'', status:'', ram:'', storage:'', condition:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'', packing:'No pack', charger:'', faceid:'No', truetone:'No', customFields:{}, isSold:false, __platform:'android'};
   applyPlatformDefaultsToForm('android');
-  // Box and Charger are mandatory, but must start with no selection on a new entry.
+  // Status, Box and Charger are mandatory, but must start with no selection on a new entry.
+  formState.status = '';
   formState.box = '';
   formState.charger = '';
   formPhotos = [];
