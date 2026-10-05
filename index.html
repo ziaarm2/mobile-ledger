@@ -4906,8 +4906,13 @@ function applyEntryLayoutToDOM(platform){
     g.classList.remove('is-hidden');
   });
 
-  // Put Main groups in the Main wrapper in the saved order.
-  L.main.forEach(function(key,i){
+  // Put Main groups in the saved order, but always keep the two action
+  // controls at the very bottom of the entry form. This is intentional:
+  // 'Add more Details' and 'Add another piece' must never appear between
+  // the main entry fields.
+  const mainKeys = L.main.filter(function(key){ return key!=='moreToggle' && key!=='extras'; });
+  const bottomKeys = ['moreToggle','extras'];
+  mainKeys.concat(bottomKeys).forEach(function(key,i){
     const g=groups[key];
     if(!g) return;
     g.style.display='block';
