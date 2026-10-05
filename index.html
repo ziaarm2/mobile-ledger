@@ -970,42 +970,52 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
       </label>
     </div>
 
-    <div class="sec-label">Status</div>
+    <div style="display:none;">
+      <label id="qtyLabel">Quantity</label>
+      <input id="f-qty" type="number" min="1" value="1">
+      <div id="qtyWarning"></div>
+    </div>
+
+    <div class="sec-label">Status <span style="color:var(--danger);">*</span></div>
     <div class="chip-row" id="statusChips"></div>
 
-    <div class="field" style="margin-top:12px;">
-      <label id="qtyLabel">Quantity (kitne piece — SIRF agar sabka price/condition bilkul same hai)</label>
-      <input id="f-qty" type="number" inputmode="numeric" min="1" value="1">
-      <div class="qty-warning" id="qtyWarning">⚠️ Agar price ya condition alag ho to yahan 1 hi rahne dein — alag piece "+ Isi model ka aur piece add karein" button se add karein.</div>
-    </div>
+    <div class="sec-label">RAM <span style="color:var(--danger);">*</span></div>
+    <div class="chip-row" id="ramChips"></div>
 
-    <div class="two-col">
-      <div class="field"><label>Buy price <span style="color:var(--danger);">*</span></label><input id="f-buy" type="text" inputmode="decimal" placeholder="e.g. 45k" required><div class="price-hint" id="f-buy-hint"></div></div>
-      <div class="field"><label>Sell price range</label><input id="f-range" placeholder="45k-47k"><div class="price-hint" id="f-range-hint"></div></div>
-    </div>
+    <div class="sec-label">Storage <span style="color:var(--danger);">*</span></div>
+    <div class="chip-row" id="storageChips"></div>
 
-    <div class="two-col">
-      <div class="field"><label>Buy date</label><input id="f-buydate" type="date"></div>
-      <div class="field"><label>IMEI (optional)</label>
-        <div style="display:flex;gap:6px;">
-          <input id="f-imei" type="text" inputmode="numeric" placeholder="15 digit number" style="flex:1;">
-          <button type="button" class="imei-scan-btn" data-imei-target="f-imei" style="flex-shrink:0;padding:0 12px;border-radius:8px;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);font-size:12.5px;">📷 Scan</button>
-        </div>
+    <div class="sec-label">Condition <span style="color:var(--danger);">*</span></div>
+    <div class="chip-row" id="conditionChips"></div>
+
+    <div class="field"><label>IMEI 1</label>
+      <div style="display:flex;gap:6px;">
+        <input id="f-imei" type="text" inputmode="numeric" placeholder="15 digit number" style="flex:1;">
+        <button type="button" class="imei-scan-btn" data-imei-target="f-imei" style="flex-shrink:0;padding:0 12px;border-radius:8px;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);font-size:12.5px;">📷 Scan</button>
       </div>
     </div>
 
-    <div class="two-col">
-      <div class="field"><label>Seller ka naam (optional)</label><input id="f-seller-name" placeholder="Kis se khareeda"></div>
-      <div class="field"><label>Seller ka number (optional)</label><input id="f-seller-number" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx"></div>
+    <div class="field"><label>IMEI 2</label>
+      <div style="display:flex;gap:6px;">
+        <input id="f-imei2" type="text" inputmode="numeric" placeholder="15 digit number" style="flex:1;">
+        <button type="button" class="imei-scan-btn" data-imei-target="f-imei2" style="flex-shrink:0;padding:0 12px;border-radius:8px;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);font-size:12.5px;">📷 Scan</button>
+      </div>
     </div>
 
-    <div id="extraBuyList" class="extra-buy-list"></div>
-    <div class="add-extra-buy" id="addExtraBuyBtn">+ Isi model ka aur piece, alag price/condition par, add karein</div>
+    <div class="field"><label>Buy price <span style="color:var(--danger);">*</span></label><input id="f-buy" type="text" inputmode="decimal" placeholder="e.g. 45k" required><div class="price-hint" id="f-buy-hint"></div></div>
 
     <div class="sec-label" style="margin-top:14px;">📱 Is mobile par hua extra kharcha</div>
-    
     <div id="f-phone-expenses" class="phone-expense-list"></div>
     <div class="add-expense-inline" id="addPhoneExpenseInline" role="button" tabindex="0" aria-label="Add phone expense">+</div>
+
+    <div class="field"><label>Sell price range</label><input id="f-range" placeholder="45k-47k"><div class="price-hint" id="f-range-hint"></div></div>
+
+    <div class="field"><label>Buy date</label><input id="f-buydate" type="date"></div>
+
+    <div class="two-col"><div class="field"><label>Seller ka naam (optional)</label><input id="f-seller-name" placeholder="Kis se khareeda"></div><div class="field"><label>Seller ka number (optional)</label><input id="f-seller-number" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx"></div></div>
+
+    <div id="extraBuyList" class="extra-buy-list"></div>
+    <div class="add-extra-buy" id="addExtraBuyBtn">+ Isi model ka aur piece add karein</div>
 
     <div class="more-section" id="saleFieldsWrap">
       <div class="two-col big-input">
@@ -1022,15 +1032,9 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
       </div>
     </div>
 
-    <div class="more-toggle" id="moreToggle">+ Zyada details add karein</div>
+    <div class="more-toggle" id="moreToggle">+ Add more Details</div>
 
     <div class="more-section" id="moreSection">
-      <div class="sec-label">RAM</div>
-      <div class="chip-row" id="ramChips"></div>
-
-      <div class="sec-label">Storage</div>
-      <div class="chip-row" id="storageChips"></div>
-
       <div class="sec-label">Network</div>
       <div class="chip-row" id="networkChips"></div>
 
@@ -1066,8 +1070,6 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="sec-label">True Tone</div>
       <div class="chip-row" id="truetoneChips"></div>
-
-      <div id="customEntryFields"></div>
 
       <div class="field" style="margin-top:10px;"><label>Notes</label><input id="f-notes" placeholder="Koi khaas baat"></div>
     </div>
@@ -1668,7 +1670,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v45 • Updated 04 Oct 2026 • Browser exit confirmation removed</div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v53 • Updated 05 Oct 2026 • Entry form order and required fields updated</div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1684,8 +1686,8 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 <button class="fab-expense" id="btnQuickExpense" title="Expense add karein">💵</button>
 
 <script>
-const APP_INDEX_VERSION = 'v48';
-const APP_INDEX_UPDATED = '04 Oct 2026 • Settings category touch navigation fix';
+const APP_INDEX_VERSION = 'v53';
+const APP_INDEX_UPDATED = '05 Oct 2026 • Entry form order and required fields updated';
 
 let inventory = [];
 
@@ -1850,6 +1852,7 @@ const STATUS_OPTS = ['PTA','Non-PTA','CPID','JV','Bypass/MDM'];
 const RAM_OPTS = ['2GB','3GB','4GB','6GB','8GB','12GB','16GB'];
 const STORAGE_OPTS = ['32GB','64GB','128GB','256GB','512GB'];
 const NETWORK_OPTS = ['4G','5G'];
+const CONDITION_OPTS = ['10/10','9.5/10','9/10','8.5/10','8/10','7.5/10','7/10','6.5/10','6/10','5.5/10','5/10','4.5/10','4/10','3.5/10','3/10','2.5/10','2/10','1.5/10','1/10'];
 const DISPLAY_OPTS = ['Original panel','Minor shade','Minor lines','Line','Dark spots','Minor spot','Light spot','Scratches','Cracked','Glass changed','Panel changed','Changed but genuine'];
 const TOUCH_OPTS = ['Perfect','Minor lag','Dead zones','Not working'];
 const CAMERA_OPTS = ['Perfect','No dots','Dot','Dots','Blurry/spots','Not working'];
@@ -2072,7 +2075,7 @@ function setPlatformDefault(platform, fieldKey, value){
 }
 
 function applyPlatformDefaultsToForm(platform){
-  const defs={status:'PTA',ram:'',storage:'',network:'',display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',battery:'Perfect',box:'No',packing:'No pack',charger:'Original charger',faceid:platform==='iphone'?'Yes':'No',truetone:platform==='iphone'?'Yes':'No'};
+  const defs={status:'',ram:'',storage:'',condition:'',network:'',display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',battery:'Perfect',box:'No',packing:'No pack',charger:'Original charger',faceid:platform==='iphone'?'Yes':'No',truetone:platform==='iphone'?'Yes':'No'};
   Object.keys(defs).forEach(function(k){
     const d=getPlatformDefault(platform,k,defs[k]);
     const opts=getEntryFieldOptionsForPlatform(platform,k);
@@ -2094,7 +2097,7 @@ function getCustomFieldOptionsForPlatform(platform, fieldKey){
 }
 
 function getEntryFieldOptionsForPlatform(platform, fieldKey){
-  const baseMap={status:STATUS_OPTS,ram:RAM_OPTS,storage:STORAGE_OPTS,network:NETWORK_OPTS,display:DISPLAY_OPTS,touch:TOUCH_OPTS,camera:CAMERA_OPTS,body:BODY_OPTS,openrepair:OPEN_REPAIR_OPTS,battery:BATTERY_OPTS,box:['No','Yes'],packing:PACKING_OPTS,charger:CHARGER_OPTS,faceid:['No','Yes'],truetone:['No','Yes']};
+  const baseMap={status:STATUS_OPTS,ram:RAM_OPTS,storage:STORAGE_OPTS,condition:CONDITION_OPTS,network:NETWORK_OPTS,display:DISPLAY_OPTS,touch:TOUCH_OPTS,camera:CAMERA_OPTS,body:BODY_OPTS,openrepair:OPEN_REPAIR_OPTS,battery:BATTERY_OPTS,box:['No','Yes'],packing:PACKING_OPTS,charger:CHARGER_OPTS,faceid:['No','Yes'],truetone:['No','Yes']};
   if(Object.prototype.hasOwnProperty.call(baseMap,fieldKey)) return getPlatformFieldOptions(platform,fieldKey,baseMap[fieldKey]);
   const cf=getCustomFieldDef(platform,fieldKey);
   return getCustomFieldOptionsForPlatform(platform,fieldKey);
@@ -5018,6 +5021,7 @@ function renderAllChips(){
   renderChipGroup('statusChips', getEntryFieldOptions('status', STATUS_OPTS), 'status', 'status-opt');
   renderChipGroup('ramChips', getEntryFieldOptions('ram', RAM_OPTS), 'ram');
   renderChipGroup('storageChips', getEntryFieldOptions('storage', STORAGE_OPTS), 'storage');
+  renderChipGroup('conditionChips', getEntryFieldOptions('condition', CONDITION_OPTS), 'condition');
   renderChipGroup('networkChips', getEntryFieldOptions('network', NETWORK_OPTS), 'network');
   renderChipGroup('displayChips', getEntryFieldOptions('display', DISPLAY_OPTS), 'display');
   renderChipGroup('touchChips', getEntryFieldOptions('touch', TOUCH_OPTS), 'touch');
@@ -5259,7 +5263,7 @@ function openAdd(){
   rangeInputMode = 'auto';
   document.getElementById('sheetTitle').textContent = 'Nayi stock entry';
   document.getElementById('qtyLabel').textContent = 'Quantity (kitne piece)';
-  formState = {brand:'', status:'PTA', ram:'', storage:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'No', packing:'No pack', charger:'Original charger', faceid:'No', truetone:'No', customFields:{}, isSold:false, __platform:'android'};
+  formState = {brand:'', status:'', ram:'', storage:'', condition:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'No', packing:'No pack', charger:'Original charger', faceid:'No', truetone:'No', customFields:{}, isSold:false, __platform:'android'};
   applyPlatformDefaultsToForm('android');
   formPhotos = [];
   renderPhotoStrip();
@@ -5274,6 +5278,7 @@ function openAdd(){
   if(rangeInputMode==='auto') maybeAutoFillRange();
   document.getElementById('f-buydate').value = todayISO();
   document.getElementById('f-imei').value = '';
+  document.getElementById('f-imei2').value = '';
   document.getElementById('f-seller-name').value = '';
   document.getElementById('f-seller-number').value = '';
   document.getElementById('f-customer-number').value = '';
@@ -5331,8 +5336,8 @@ function openEdit(id){
   const brandKnown = BRANDS.indexOf(e.brand)!==-1;
   formState = {
     brand: brandKnown ? e.brand : 'Other',
-    status: e.status || 'PTA',
-    ram: e.ram || '', storage: e.storage || '', network: e.network || '',
+    status: e.status || '',
+    ram: e.ram || '', storage: e.storage || '', condition: e.condition || '', network: e.network || '',
     display: e.display || 'Original panel', touch: e.touch || 'Perfect', camera: e.camera || 'Perfect', body: e.body || 'Original', openrepair: e.openrepair || 'No open, no repair', battery: e.battery || 'Perfect',
     box: e.box || 'No', packing: e.packing || 'No pack', charger: e.charger || 'Original charger',
     faceid: e.faceid || 'No', truetone: e.truetone || 'No',
@@ -5354,6 +5359,7 @@ function openEdit(id){
   document.getElementById('f-range-hint').textContent = '';
   document.getElementById('f-buydate').value = e.buyDate || todayISO();
   document.getElementById('f-imei').value = e.imei || '';
+  document.getElementById('f-imei2').value = e.imei2 || '';
   document.getElementById('f-seller-name').value = e.sellerName || '';
   document.getElementById('f-seller-number').value = e.sellerNumber || '';
   document.getElementById('f-notes').value = e.notes || '';
@@ -5423,6 +5429,10 @@ function saveEntry(){
     alert('Brand aur model zaroori hai');
     return;
   }
+  if(!formState.status){ alert('Status select karna zaroori hai'); return; }
+  if(!formState.ram){ alert('RAM select karna zaroori hai'); return; }
+  if(!formState.storage){ alert('Storage select karna zaroori hai'); return; }
+  if(!formState.condition){ alert('Condition select karna zaroori hai'); return; }
   const qty = Math.max(1, Number(document.getElementById('f-qty').value || 1));
   const buyFieldRaw = document.getElementById('f-buy').value.trim();
   const parsedBuyForRange = buyFieldRaw==='' ? null : parsePrice(buyFieldRaw);
@@ -5434,11 +5444,13 @@ function saveEntry(){
     rangeMode: rangeInputMode,
     quantity: qty,
     imei: document.getElementById('f-imei').value.trim(),
+    imei2: document.getElementById('f-imei2').value.trim(),
     buyDate: document.getElementById('f-buydate').value || todayISO(),
     sellerName: document.getElementById('f-seller-name').value.trim(),
     sellerNumber: document.getElementById('f-seller-number').value.trim(),
     ram: formState.ram || '',
     storage: formState.storage || '',
+    condition: formState.condition || '',
     network: formState.network || '',
     status: formState.status || 'PTA',
     display: formState.display || 'Original panel',
