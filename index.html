@@ -1014,9 +1014,6 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
     <div class="two-col"><div class="field"><label>Seller ka naam (optional)</label><input id="f-seller-name" placeholder="Kis se khareeda"></div><div class="field"><label>Seller ka number (optional)</label><input id="f-seller-number" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx"></div></div>
 
-    <div id="extraBuyList" class="extra-buy-list"></div>
-    <div class="add-extra-buy" id="addExtraBuyBtn">+ Isi model ka aur piece add karein</div>
-
     <div class="more-section" id="saleFieldsWrap">
       <div class="two-col big-input">
         <div class="field"><label>Sale price</label><input id="f-sellprice" type="text" inputmode="decimal" placeholder="e.g. 45k"><div class="price-hint" id="f-sellprice-hint"></div></div>
@@ -1073,6 +1070,10 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="field" style="margin-top:10px;"><label>Notes</label><input id="f-notes" placeholder="Koi khaas baat"></div>
     </div>
+
+    <div id="extraBuyList" class="extra-buy-list"></div>
+    <div class="add-extra-buy" id="addExtraBuyBtn">+ Isi model ka aur piece add karein</div>
+
 
     <div class="sheet-actions">
       <button class="btn-cancel" id="btnCancel">Cancel</button>
@@ -1924,12 +1925,12 @@ function renderUiScaleToggles(){
 }
 
 const DEFAULT_ENTRY_LAYOUT = {
-  main: ['brand','model','photos','status','quantity','buyPrice','phoneExpenses','sellRange','buyMeta','seller','saleFields','moreToggle','extras'],
-  more: ['ram','storage','network','display','touch','camera','body','openrepair','battery','box','packing','charger','faceid','truetone','customFields','notes'],
+  main: ['brand','model','photos','status','ram','storage','condition','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'],
+  more: ['network','display','touch','camera','body','openrepair','battery','box','packing','charger','faceid','truetone','notes'],
   hidden: []
 };
 const ENTRY_LAYOUT_LABELS = {
-  brand:'Brand', model:'Model', photos:'Pics', status:'Status', quantity:'Quantity', buyPrice:'Buy price', phoneExpenses:'Phone expenses', sellRange:'Sell price range', buyRange:'Buy price + Sell range', buyMeta:'Buy date + IMEI', seller:'Seller details', extras:'+ Isi model ka aur piece', moreToggle:'+ Zyada details add karein', saleFields:'Sale details',
+  brand:'Brand', model:'Model', photos:'Pics', status:'Status', ram:'RAM', storage:'Storage', condition:'Condition', imei1:'IMEI 1', imei2:'IMEI 2', buyPrice:'Buy price', phoneExpenses:'Phone expenses', sellRange:'Sell price range', buyDate:'Buy date', seller:'Seller details', extras:'+ Isi model ka aur piece', moreToggle:'+ Add more Details', saleFields:'Sale details',
   ram:'RAM', storage:'Storage', network:'Network', display:'Display / Panel', touch:'Touch', camera:'Camera', body:'Body', openrepair:'Open aur Repair', battery:'Battery health', box:'Box', packing:'Packing', charger:'Charger', faceid:'Face ID', truetone:'True Tone', customFields:'Custom fields', notes:'Notes'
 };
 const DEFAULT_PLATFORM_CARD_FIELDS = ['display','battery','touch','camera','body','openrepair','ram','storage','network','packing','charger','box','faceid','truetone'];
