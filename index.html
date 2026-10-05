@@ -256,6 +256,10 @@
   
  .dashboard-period-bar{margin:0 0 12px;padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--surface-2);}
 .stats-period-pill{display:flex;justify-content:center;align-items:center;margin:0 0 8px;}
+.stats-period-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%;max-width:620px;padding:4px;border:1px solid var(--border);border-radius:14px;background:var(--surface-2);}
+.stats-period-btn{min-width:0;padding:8px 9px;border:0;border-radius:10px;background:transparent;color:var(--text-dim);font-size:11.5px;font-weight:700;line-height:1.15;white-space:nowrap;cursor:pointer;}
+.stats-period-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.10);}
+
 .stats-period-pill span{display:inline-flex;align-items:center;padding:4px 10px;border:1px solid var(--border);border-radius:999px;background:var(--surface-2);color:var(--text-dim);font-size:10.5px;font-weight:700;line-height:1.2;}
 .stats-period-select{appearance:none;-webkit-appearance:none;display:inline-flex;align-items:center;padding:4px 28px 4px 10px;border:1px solid var(--border);border-radius:999px;background:var(--surface-2);color:var(--text-dim);font-size:10.5px;font-weight:700;line-height:1.2;text-align:center;text-align-last:center;outline:none;cursor:pointer;background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);background-position:calc(100% - 12px) 50%,calc(100% - 8px) 50%;background-size:4px 4px,4px 4px;background-repeat:no-repeat;}
 .dashboard-period-title{font-size:12px;font-weight:700;color:var(--text-dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:.3px;}
@@ -687,7 +691,7 @@ header{background:#fff;border-bottom:1px solid #e2e6ec;padding:0 16px 14px;box-s
 .header-top>div:last-child .menu-btn{flex:0 0 46px;}
 .stats{gap:8px;margin-top:0;}
 .stats-period-pill span{background:#f4f7fa;border:1px solid #dce2ea;color:#667085;padding:7px 12px;font-size:11.5px;}
-.stats-period-select{background-color:#f4f7fa;border-color:#dce2ea;color:#667085;padding:7px 30px 7px 12px;font-size:11.5px;}
+.stats-period-options{background:#f4f7fa;border-color:#dce2ea;}.stats-period-btn{font-size:11px;padding:8px 6px;color:#667085;}.stats-period-btn.active{background:#fff;color:#1f2937;}
 .stat{background:#f7f9fc;border:1px solid #edf0f4;border-radius:10px;padding:11px 7px;box-shadow:none;}
 .stat .v{font-size:19px;color:#172033;font-weight:700;}
 .stat .l{font-size:11px;color:#6b7483;}
@@ -3488,7 +3492,8 @@ function openDashboardDatePicker(){
   picker.showPicker ? picker.showPicker() : picker.click();
 }
 function renderDashboardPeriodControls(){
-  const defs=[['calendar','This month'],['business','Business month'],['lifetime','Lifetime'],['selected','Select date']];
+  if(dashboardSettings.mode==='selected'){ dashboardSettings.mode='calendar'; saveDashboardSettings(); }
+  const defs=[['calendar','This month'],['business','Business month'],['lifetime','Lifetime']];
   const html=defs.map(function(x){ return '<button type="button" class="chip '+(dashboardSettings.mode===x[0]?'active':'')+'" data-dashboard-period="'+x[0]+'">'+x[1]+'</button>'; }).join('');
   ['dashboardPeriodToggles','dashboardDefaultPeriodToggles'].forEach(function(id){ const el=document.getElementById(id); if(el) el.innerHTML=html; });
   document.querySelectorAll('[data-dashboard-period]').forEach(function(btn){ btn.onclick=function(){
@@ -3530,31 +3535,25 @@ function renderStats(){
   }
   const selectedPeriodValue=['calendar','business','lifetime','selected'].indexOf(dashboardSettings.mode)!==-1?dashboardSettings.mode:'calendar';
   document.getElementById('stats').innerHTML=
-    '<div class="stats-period-pill"><select id="statsPeriodSelector" class="stats-period-select" aria-label="Report period">'+
-      '<option value="calendar" '+(selectedPeriodValue==='calendar'?'selected':'')+'>This month · '+escapeHtml(new Date().toLocaleString('en-PK',{month:'short',year:'numeric'}))+'</option>'+
-      '<option value="business" '+(selectedPeriodValue==='business'?'selected':'')+'>Business month</option>'+
-      '<option value="lifetime" '+(selectedPeriodValue==='lifetime'?'selected':'')+'>Lifetime</option>'+
-      '<option value="selected" '+(selectedPeriodValue==='selected'?'selected':'')+'>Select date</option>'+
-    '</select></div>'+
+    '<div class="stats-period-pill">'+
+      '<div class="stats-period-options" role="group" aria-label="Report period">'+
+        '<button type="button" class="stats-period-btn '+(selectedPeriodValue==='calendar'?'active':'')+'" data-stats-period="calendar">This month</button>'+
+        '<button type="button" class="stats-period-btn '+(selectedPeriodValue==='business'?'active':'')+'" data-stats-period="business">Business month</button>'+
+        '<button type="button" class="stats-period-btn '+(selectedPeriodValue==='lifetime'?'active':'')+'" data-stats-period="lifetime">Lifetime</button>'+
+      '</div>'+
+    '</div>'+
     '<div class="stat"><div class="v num">'+availableUnits+'</div><div class="l">Stock mein</div></div>'+
     '<div class="stat"><div class="v num">'+soldUnits+'</div><div class="l">Sold</div></div>'+
     '<div class="stat"><div class="v num" style="color:'+netProfitColor+'">'+displayProfitHtml(netProfit)+'</div><div class="l">Net Profit</div></div>';
-  const periodSelector=document.getElementById('statsPeriodSelector');
-  if(periodSelector){
-    periodSelector.onchange=function(){
-      const nextMode=this.value;
-      if(nextMode==='selected'){
-        openDashboardDatePicker();
-        this.value=dashboardSettings.mode;
-        return;
-      }
-      dashboardSettings.mode=nextMode;
+  document.querySelectorAll('[data-stats-period]').forEach(function(btn){
+    btn.onclick=function(){
+      dashboardSettings.mode=this.dataset.statsPeriod;
       saveDashboardSettings();
       renderDashboardPeriodControls();
       renderDashboard();
       renderStats();
     };
-  }
+  });
 }
 
 // Most browsers give roughly 5MB per site for localStorage. There's no
