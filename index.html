@@ -568,6 +568,9 @@
   .settings-page-wrap{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px 14px calc(24px + env(safe-area-inset-bottom,0px));}
   .settings-view{display:none;}
   .settings-view.active{display:block;}
+  .admin-only-setting{display:none !important;}
+  body.admin-user .admin-only-setting{display:block !important;}
+  body.admin-user .settings-category.admin-only-setting{display:flex !important;}
   .settings-home-title{font-size:13px;color:var(--text-dim);margin:2px 4px 12px;}
   .settings-category-list{display:flex;flex-direction:column;gap:9px;}
   .settings-category{width:100%;display:flex;align-items:center;gap:12px;text-align:left;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 12px;color:var(--text);min-height:66px;}
@@ -797,8 +800,6 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
 /* NO-APPROVAL MODE: account signup is immediate; legacy approval/notification UI is hidden. */
 #adminNotificationBtn,#settingsShopAccessCategory,#accountAccessView{display:none!important;}
-/* v52: hide the removed Fields & Options customization page from Settings. */
-.settings-view[data-settings-view="fields"]{display:none!important;}
 
 /* Entry sheet presentation: keep Mobile Hisab header visible behind it. */
 #overlay {
@@ -1524,6 +1525,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
           <button class="settings-category" data-settings-page="shop"><span class="settings-category-icon">🏪</span><span class="settings-category-main"><span class="settings-category-title">Shop</span><span class="settings-category-sub" id="settingsSummaryShop">Shop details & contact</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="inventory"><span class="settings-category-icon">📦</span><span class="settings-category-main"><span class="settings-category-title">Stock & Pricing</span><span class="settings-category-sub">Card view, sell range & brands</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="appearance"><span class="settings-category-icon">🎨</span><span class="settings-category-main"><span class="settings-category-title">Appearance</span><span class="settings-category-sub">Badge order & card layout</span></span><span class="settings-category-arrow">›</span></button>
+          <button class="settings-category admin-only-setting" id="settingsFieldsAdminCategory" data-settings-page="fields" style="display:none;"><span class="settings-category-icon">⚙️</span><span class="settings-category-main"><span class="settings-category-title">Fields & Options</span><span class="settings-category-sub">Badge visibility, issue rules & options</span></span><span class="settings-category-arrow">›</span></button>
           
           <button class="settings-category" data-settings-page="whatsapp"><span class="settings-category-icon">💬</span><span class="settings-category-main"><span class="settings-category-title">WhatsApp</span><span class="settings-category-sub">Share message template</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="privacy"><span class="settings-category-icon">🔐</span><span class="settings-category-main"><span class="settings-category-title">Privacy & Security</span><span class="settings-category-sub" id="settingsSummaryPrivacy">Privacy mode & security</span></span><span class="settings-category-arrow">›</span></button>
@@ -1564,7 +1566,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
           <div class="settings-add-row"><input type="number" id="autoRangeMinMarkup" placeholder="+ From" min="0"><input type="number" id="autoRangeMaxMarkup" placeholder="+ To" min="0"><button type="button" class="sell-btn" id="autoRangeAddBtn">Add</button></div>
           <div class="settings-note">Existing filled ranges automatic overwrite nahi honge.</div>
         </div>
-        <div class="settings-section-card">
+        <div class="settings-section-card admin-only-setting" id="settingsBrandsAdminCard">
           <div class="sec-label">Brands</div>
           <div class="settings-opts" id="settingsBrandsList"></div>
           <div class="settings-add-row"><input type="text" id="settingsNewBrand" placeholder="Naya brand naam"><button type="button" class="sell-btn" id="settingsAddBrandBtn">Add</button></div>
@@ -1578,7 +1580,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
           <div class="settings-note">Shop owner ki aankhon ke liye text, buttons aur UI ko thora bara karein. Ye setting Save changes ke baad permanently apply hogi.</div>
           <div class="chip-row" id="uiScaleToggles" style="margin-top:9px;"></div>
         </div>
-        <div class="settings-section-card"><div class="sec-label">Badges ka order</div><div class="settings-note">Drag karke card badges ki tarteeb set karein.</div><div class="badge-order-list" id="badgeOrderList"></div></div>
+        <div class="settings-section-card admin-only-setting" id="settingsBadgeOrderAdminCard"><div class="sec-label">Badges ka order</div><div class="settings-note">Drag karke card badges ki tarteeb set karein.</div><div class="badge-order-list" id="badgeOrderList"></div></div>
         <div class="settings-section-card">
           <div class="sec-label">📊 Dashboard reporting period</div>
           <div class="settings-note">Dashboard par Sold aur Net Profit kis period ke hisaab se dikhana hai. Business month choose karein to har month isi din se naya cycle start hoga.</div>
@@ -7690,7 +7692,7 @@ function settingsDraftPrompt(nextAction){
 }
 
 function openSettingsPage(page){
-  if(page==='fields') return; // Fields & Options customization is intentionally disabled; changes are handled manually.
+  if(page==='fields' && userRole!=='admin') return;
 
   dedupeSettingsHomeCategories();
   if(page==='shopaccess' && userRole!=='admin') page='home';
@@ -8697,7 +8699,20 @@ function updateMenuProfileUI(){
   phoneEl.textContent = phone || (shop ? shop + ' • Mobile Hisab' : 'Mobile Hisab');
 }
 
+function updateAdminOnlySettingsUI(){
+  const isAdmin = userRole === 'admin';
+  document.body.classList.toggle('admin-user', isAdmin);
+  const fieldsView=document.querySelector('[data-settings-view="fields"]');
+  const fieldsCategory=document.getElementById('settingsFieldsAdminCategory');
+  if(fieldsCategory) fieldsCategory.style.display=isAdmin?'flex':'none';
+  if(!isAdmin && fieldsView && fieldsView.classList.contains('active')){
+    const home=document.querySelector('[data-settings-view="home"]');
+    if(home){ fieldsView.classList.remove('active'); home.classList.add('active'); }
+  }
+}
+
 function updateAccountUI(){
+  updateAdminOnlySettingsUI();
   updateMenuProfileUI();
   const label = document.getElementById('accountStatusLabel');
   if(!label) return;
