@@ -875,7 +875,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="menu-scroll">
         <div class="menu-section-label">Business</div>
-        <button class="menu-item" id="btnAdminShops" style="display:none;"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M3 10h18M5 10v10h14V10M7 10V6h10v4M9 20v-5h6v5" stroke-width="1.8" stroke-linejoin="round"/></svg></span><span class="menu-item-text">All Shops (Admin)</span></button>
+        <button class="menu-item" id="btnAdminShops" style="display:none;" aria-hidden="true"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M3 10h18M5 10v10h14V10M7 10V6h10v4M9 20v-5h6v5" stroke-width="1.8" stroke-linejoin="round"/></svg></span><span class="menu-item-text">All Shops (Admin)</span></button>
         <button class="menu-item" id="btnExitAdminShop" style="display:none !important;"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7M8 12h13" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="menu-item-text">Apni Shop par wapas</span></button>
         <button class="menu-item" id="btnDashboard"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4h6v7H4zM14 4h6v4h-6zM14 12h6v8h-6zM4 15h6v5H4z" stroke-width="1.7" stroke-linejoin="round"/></svg></span><span class="menu-item-text">Dashboard</span></button>
         <button class="menu-item" id="btnExpenses"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="14" rx="2" stroke-width="1.8"/><path d="M7 12h10M8 9h8" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Expenses</span></button>
@@ -895,7 +895,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index <span id="menuFooterVersionNumber">v64</span><br><span id="menuFooterUpdated">Updated 05 Oct 2026</span><span id="menuFooterChange">Admin hidden access + version info sync</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index <span id="menuFooterVersionNumber">v67</span><br><span id="menuFooterUpdated">Updated 05 Oct 2026</span><span id="menuFooterChange">Admin long-press restored + All Shops hidden</span></div>
         </div>
       </div>
     </div>
@@ -1698,7 +1698,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: <span id="settingsAppVersion">Index v64 • Updated 05 Oct 2026 • Admin hidden access + version info sync</span></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: <span id="settingsAppVersion">Index v67 • Updated 05 Oct 2026 • Admin access restored + All Shops locked hidden</span></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1714,8 +1714,8 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 <button class="fab-expense" id="btnQuickExpense" title="Expense add karein">💵</button>
 
 <script>
-const APP_INDEX_VERSION = 'v64';
-const APP_INDEX_UPDATED = '05 Oct 2026 • Admin hidden access + version info sync';
+const APP_INDEX_VERSION = 'v67';
+const APP_INDEX_UPDATED = '05 Oct 2026 • Admin access restored + All Shops locked hidden';
 function updateAppVersionUI(){
   const version=APP_INDEX_VERSION;
   const updated=APP_INDEX_UPDATED;
@@ -6593,44 +6593,58 @@ document.getElementById('btnMenuLogout').onclick=function(){ closeMainMenu(); do
 
 // ---------- Hidden Admin Access ----------
 // All Shops is completely hidden from the normal menu. Only an authenticated
-// admin can reveal it with the existing hidden long-press trick on the title.
+// admin can reveal it by long-pressing the "Mobile Hisab" title.
 let hiddenAdminMenuRevealed = false;
 function setHiddenAdminMenu(reveal){
   const btn=document.getElementById('btnAdminShops');
-  // LOCKED: All Shops must remain invisible in every normal menu/version.
-  // The hidden admin access is intentionally kept separate from the visible menu.
-  hiddenAdminMenuRevealed = false;
-  if(btn) btn.style.display='none';
+  hiddenAdminMenuRevealed = !!reveal && userRole==='admin';
+  if(btn){
+    btn.style.display = hiddenAdminMenuRevealed ? 'flex' : 'none';
+    btn.setAttribute('aria-hidden', hiddenAdminMenuRevealed ? 'false' : 'true');
+  }
 }
-// Long-press the existing "Mobile Ledger" title for ~1.5 seconds.
+// Robust mobile/desktop long-press: ~1.5 seconds on the actual title text.
+// Uses pointer events plus touch fallback so browser-based/mobile WebViews do
+// not lose the hidden admin gesture. Normal users never reveal the item.
 (function(){
   const target=document.querySelector('.header-top h1');
   if(!target) return;
   let timer=null;
   let longPressFired=false;
-  const clear=function(){ if(timer){ clearTimeout(timer); timer=null; } };
-  target.style.userSelect='none';
-  target.style.webkitUserSelect='none';
-  target.addEventListener('pointerdown', function(e){
-    if(e.pointerType==='mouse' && e.button!==0) return;
+  const clear=function(){
+    if(timer){ clearTimeout(timer); timer=null; }
+  };
+  const reveal=function(){
+    timer=null;
+    if(userRole!=='admin') return;
+    longPressFired=true;
+    try{ if(navigator.vibrate) navigator.vibrate(25); }catch(err){}
+    if(isAdminShopView()){
+      exitAdminShop();
+      return;
+    }
+    setHiddenAdminMenu(true);
+    const menu=document.getElementById('menuDropdown');
+    if(menu) menu.classList.remove('hidden');
+    syncMenuOpenState();
+  };
+  const start=function(e){
+    if(e && e.type==='pointerdown' && e.pointerType==='mouse' && e.button!==0) return;
     longPressFired=false;
     clear();
-    timer=setTimeout(function(){
-      timer=null;
-      if(userRole!=='admin') return;
-      longPressFired=true;
-      try{ if(navigator.vibrate) navigator.vibrate(25); }catch(err){}
-      if(isAdminShopView()){
-        exitAdminShop();
-      }else{
-        setHiddenAdminMenu(true);
-        const menu=document.getElementById('menuDropdown');
-        if(menu) menu.classList.remove('hidden');
-        syncMenuOpenState();
-      }
-    },1500);
-  });
-  ['pointerup','pointercancel','pointerleave'].forEach(function(ev){ target.addEventListener(ev, clear); });
+    timer=setTimeout(reveal,1500);
+  };
+  const end=function(){ clear(); };
+  target.style.userSelect='none';
+  target.style.webkitUserSelect='none';
+  target.style.webkitTouchCallout='none';
+  target.addEventListener('pointerdown', start, {passive:true});
+  target.addEventListener('pointerup', end, {passive:true});
+  target.addEventListener('pointercancel', end, {passive:true});
+  target.addEventListener('pointerleave', end, {passive:true});
+  target.addEventListener('touchstart', start, {passive:true});
+  target.addEventListener('touchend', end, {passive:true});
+  target.addEventListener('touchcancel', end, {passive:true});
   target.addEventListener('contextmenu', function(e){
     if(userRole==='admin') e.preventDefault();
   });
