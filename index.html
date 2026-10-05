@@ -869,7 +869,15 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
       <div class="privacy-amount-hint">Slider se 500 se 10,000 tak 500 ke steps mein foran change karein. Number box mein exact amount bhi likh sakte hain.</div>
     </div>
     <div id="offlineBanner" style="display:none;background:#3a2610;border:1px solid #6b4a1f;color:#ffdca8;border-radius:10px;padding:9px 11px;font-size:11.5px;margin:0 0 9px;">📴 Offline mode — data phone mein save ho raha hai. Internet wapas aayega to sync ho jayega.</div>
-<div class="menu-dropdown hidden" id="menuDropdown">
+    <div class="backup-reminder" id="backupReminder">
+      <span>24 ghante se zyada ho gaye, backup nahi ho saka — abhi le lein.</span>
+      <span style="display:flex;">
+        <button id="reminderBackupBtn">📤 Backup lein</button>
+        <button class="dismiss" id="reminderDismissBtn">Baad mein</button>
+      </span>
+    </div>
+
+    <div class="menu-dropdown hidden" id="menuDropdown">
       <div class="menu-profile">
         <div class="menu-profile-avatar"><img src="icon-192.png" alt="Z Mobile"></div>
         <div class="menu-profile-info">
@@ -1527,9 +1535,12 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
           <button class="settings-category" data-settings-page="inventory"><span class="settings-category-icon">📦</span><span class="settings-category-main"><span class="settings-category-title">Stock & Pricing</span><span class="settings-category-sub">Card view, sell range & brands</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="appearance"><span class="settings-category-icon">🎨</span><span class="settings-category-main"><span class="settings-category-title">Appearance</span><span class="settings-category-sub">Badge order & card layout</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category admin-only-setting" id="settingsAdminCategory" data-settings-page="admin" style="display:none;"><span class="settings-category-icon">🛠️</span><span class="settings-category-main"><span class="settings-category-title">Admin</span><span class="settings-category-sub">Brands, badges & field options</span></span><span class="settings-category-arrow">›</span></button>
+          
+          <button class="settings-category" data-settings-page="whatsapp" style="display:none;"><span class="settings-category-icon">💬</span><span class="settings-category-main"><span class="settings-category-title">WhatsApp</span><span class="settings-category-sub">Share message template</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="privacy"><span class="settings-category-icon">🔐</span><span class="settings-category-main"><span class="settings-category-title">Privacy & Security</span><span class="settings-category-sub" id="settingsSummaryPrivacy">Privacy mode & security</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="applock"><span class="settings-category-icon">🔒</span><span class="settings-category-main"><span class="settings-category-title">App Lock</span><span class="settings-category-sub" id="settingsSummaryAppLock">PIN, Pattern & Fingerprint</span></span><span class="settings-category-arrow">›</span></button>
-          <button class="settings-category" data-settings-page="backupdata"><span class="settings-category-icon">☁️</span><span class="settings-category-main"><span class="settings-category-title">Backup, Sync & Data</span><span class="settings-category-sub" id="settingsSummarySync">Backup, cloud sync & data management</span></span><span class="settings-category-arrow">›</span></button>
+          <button class="settings-category" data-settings-page="backupdata"><span class="settings-category-icon">☁️</span><span class="settings-category-main"><span class="settings-category-title">Backup, Sync & Data</span><span class="settings-category-sub" id="settingsSummarySync">Backup, sync & data management</span></span><span class="settings-category-arrow">›</span></button>
+          <button class="settings-category" data-settings-page="data" style="display:none;"><span class="settings-category-icon">🗂️</span><span class="settings-category-main"><span class="settings-category-title">Data Management</span><span class="settings-category-sub">Import, restore & clear data</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="about"><span class="settings-category-icon">ℹ️</span><span class="settings-category-main"><span class="settings-category-title">About</span><span class="settings-category-sub">Mobile Hisab app info</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" id="settingsShopAccessCategory" data-settings-page="shopaccess" style="display:none;"><span class="settings-category-icon">🔑</span><span class="settings-category-main"><span class="settings-category-title">Shop Access</span><span class="settings-category-sub" id="settingsSummaryShopAccess">Approvals & message templates</span></span><span class="settings-category-arrow">›</span></button>
         </div>
@@ -1618,7 +1629,21 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
             <button type="button" id="settingsAddBtn"></button>
           </div>
         </div>
-      </div><div class="settings-view" data-settings-view="privacy">
+      </div>
+
+      <div class="settings-view" data-settings-view="whatsapp">
+        <div class="settings-page-title">WhatsApp share message</div>
+        <div class="settings-section-card">
+          <div class="settings-note" style="margin-top:0;">Bilkul WhatsApp message ki tarah message likhein/edit karein. Automatic values buttons se insert karein.</div>
+          <textarea id="waMessageEditor" class="wa-message-editor" spellcheck="false"></textarea>
+          <div class="wa-history-actions"><span class="wa-history-label">Text Undo / Redo</span><button type="button" id="waUndoBtn" title="Undo" aria-label="Undo">↶</button><button type="button" id="waRedoBtn" title="Redo" aria-label="Redo">↷</button></div>
+          <div class="sec-label" style="margin-top:12px;font-size:11.5px;">➕ Mobile ki information add karein</div><div class="wa-field-toolbar" id="waFieldToolbar"></div>
+          <div class="wa-editor-actions"><button type="button" class="btn-cancel" id="waTemplateReset">↩️ Default message</button><button type="button" class="btn-save" id="waTemplateSave">✓ Save message</button></div>
+          <div class="sec-label" style="margin-top:12px;">👁 Preview</div><div class="wa-template-preview" id="waTemplatePreview"></div>
+        </div>
+      </div>
+
+      <div class="settings-view" data-settings-view="privacy">
         <div class="settings-page-title">Privacy & Security</div>
         <div class="settings-section-card">
           <div class="sec-label">Privacy mode</div>
@@ -1649,42 +1674,32 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
           <div class="settings-note">PIN aur Pattern aapke custom app credentials hain — phone ka screen-lock nahi.</div>
         </div>
       </div>
+
       <div class="settings-view" data-settings-view="backupdata">
         <div class="settings-page-title">Backup, Sync & Data</div>
-
         <div class="settings-section-card">
-          <div class="sec-label">Cloud Sync</div>
-          <div class="settings-note" id="settingsCloudSyncStatus" style="margin-top:6px;">Account sync status loading…</div>
+          <div class="sec-label">Cloud Sync</div><div class="settings-note" id="settingsCloudSyncStatus" style="margin-top:6px;">Account sync status loading…</div>
         </div>
-
         <div class="settings-section-card">
           <div class="sec-label">Backup</div>
-          <div class="settings-note" style="margin-top:6px;">Manual backup karein, ya app ko har 12 ghante baad automatic backup lene dein.</div>
+          <div class="settings-note" style="margin-top:6px;">Manual backup karein, ya app har 12 ghante baad automatic backup le.</div>
           <div class="settings-action-list" style="margin-top:10px;">
-            <button class="menu-item" id="btnBackup">⬇ Manual JSON Backup</button>
+            <button class="menu-item" id="btnShareBackup">📤 Share Backup File</button>
+            <button class="menu-item" id="btnBackup">⬇ Download JSON Backup</button>
             <button class="menu-item" id="btnExcelBackup">📊 Excel Backup</button>
           </div>
-          <div class="settings-note" id="settingsAutoBackupStatus" style="margin-top:10px;">Auto backup: har 12 ghante</div>
+          <div class="settings-note" style="margin-top:10px;">Auto backup: har 12 ghante</div>
         </div>
-
-        <div class="settings-section-card">
-          <div class="sec-label">Import / Restore</div>
-          <div class="settings-action-list">
-            <button class="menu-item" id="btnRestore">⬆ Restore from JSON</button>
-            <button class="menu-item" id="btnExcelRestore">📥 Import from Excel</button>
-          </div>
-          <input type="file" id="restoreFile" accept="application/json" style="display:none;">
-          <input type="file" id="excelFile" accept=".xlsx,.xls" style="display:none;">
-        </div>
-
-        <div class="settings-section-card settings-danger-card">
-          <div class="sec-label" style="color:var(--danger);">Danger Zone</div>
-          <div class="settings-note">Clear data se app ka local business data remove ho jayega. Password protection apply hogi.</div>
-          <button class="menu-item danger" id="btnClearData" style="margin-top:10px;background:var(--surface-2);border:1px solid var(--border);">🗑️ Clear all data</button>
-        </div>
+        <div class="settings-section-card"><div class="sec-label">Import / Restore</div><div class="settings-action-list"><button class="menu-item" id="btnRestore">⬆ Restore from JSON</button><button class="menu-item" id="btnExcelRestore">📥 Import from Excel</button></div><input type="file" id="restoreFile" accept="application/json" style="display:none;"><input type="file" id="excelFile" accept=".xlsx,.xls" style="display:none;"></div>
+        <div class="settings-section-card settings-danger-card"><div class="sec-label" style="color:var(--danger);">Danger Zone</div><div class="settings-note">Clear data se app ka local business data remove ho jayega. Password protection apply hogi.</div><button class="menu-item danger" id="btnClearData" style="margin-top:10px;background:var(--surface-2);border:1px solid var(--border);">🗑️ Clear all data</button></div>
+      </div>
+      <div class="settings-view" data-settings-view="data" style="display:none;">
+        <div class="settings-page-title">Data Management</div>
+        <div class="settings-section-card"><div class="sec-label">Import / Restore</div><div class="settings-action-list"><button class="menu-item" id="btnRestore">⬆ Restore from JSON</button><button class="menu-item" id="btnExcelRestore">📥 Import from Excel</button></div><input type="file" id="restoreFile" accept="application/json" style="display:none;"><input type="file" id="excelFile" accept=".xlsx,.xls" style="display:none;"></div>
+        <div class="settings-section-card settings-danger-card"><div class="sec-label" style="color:var(--danger);">Danger Zone</div><div class="settings-note">Clear data se app ka local business data remove ho jayega. Password protection apply hogi.</div><button class="menu-item danger" id="btnClearData" style="margin-top:10px;background:var(--surface-2);border:1px solid var(--border);">🗑️ Clear all data</button></div>
       </div>
 
-<div class="settings-view" data-settings-view="shopaccess">
+      <div class="settings-view" data-settings-view="shopaccess">
         <div class="settings-page-title">Shop Access Management</div>
         <div class="settings-section-card">
           <div class="sec-label">Requests & access</div>
@@ -1727,7 +1742,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 <button class="fab-expense" id="btnQuickExpense" title="Expense add karein">💵</button>
 
 <script>
-const APP_INDEX_VERSION = 'v80';
+const APP_INDEX_VERSION = 'v81';
 const APP_INDEX_UPDATED = '05 Oct 2026 • Backup, Sync & Data combined';
 
 let inventory = [];
@@ -6329,15 +6344,12 @@ function restoreData(file){
 }
 
 function hideBackupReminder(){
-  const el=document.getElementById('backupReminder');
-  if(el) el.classList.remove('show');
+  document.getElementById('backupReminder').classList.remove('show');
 }
 
 const BACKUP_INTERVAL = 12 * 60 * 60 * 1000; // 12 hours
 
 function checkBackupReminder(){
-  const reminderEl=document.getElementById('backupReminder');
-  if(!reminderEl) return;
   if(!inventory.length){ hideBackupReminder(); return; }
   let lastBackup = 0;
   let dismissedAt = 0;
@@ -8069,7 +8081,11 @@ document.getElementById('restoreFile').onchange = function(){
     this.value = '';
   }
 };
-
+document.getElementById('reminderBackupBtn').onclick = function(){ shareBackupFile(); };
+document.getElementById('reminderDismissBtn').onclick = function(){
+  try{ localStorage.setItem(LS_REMINDER_DISMISSED_KEY, String(Date.now())); }catch(e){}
+  hideBackupReminder();
+};
 
 // ================= Firebase multi-device sync (optional) =================
 // Paste your own Firebase project's config below (Firebase console →
