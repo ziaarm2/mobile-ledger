@@ -827,6 +827,10 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 .badge-only-opt{display:flex;align-items:center;justify-content:space-between;gap:10px;}
 .badge-only-opt .card-vis-toggle{flex:0 0 auto;}
 </style>
+
+<style id="admin-settings-category-style">
+#settingsAdminCategory{border-top:1px solid var(--border);margin-top:8px;padding-top:14px;}
+</style>
 </head>
 <body>
 
@@ -1530,7 +1534,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
           <button class="settings-category" data-settings-page="shop"><span class="settings-category-icon">🏪</span><span class="settings-category-main"><span class="settings-category-title">Shop</span><span class="settings-category-sub" id="settingsSummaryShop">Shop details & contact</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="inventory"><span class="settings-category-icon">📦</span><span class="settings-category-main"><span class="settings-category-title">Stock & Pricing</span><span class="settings-category-sub">Card view, sell range & brands</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="appearance"><span class="settings-category-icon">🎨</span><span class="settings-category-main"><span class="settings-category-title">Appearance</span><span class="settings-category-sub">Badge order & card layout</span></span><span class="settings-category-arrow">›</span></button>
-          <button class="settings-category admin-only-setting" id="settingsFieldsAdminCategory" data-settings-page="fields" style="display:none;"><span class="settings-category-icon">⚙️</span><span class="settings-category-main"><span class="settings-category-title">Fields & Options</span><span class="settings-category-sub">Kis option par badge show ho</span></span><span class="settings-category-arrow">›</span></button>
+          <button class="settings-category admin-only-setting" id="settingsAdminCategory" data-settings-page="admin" style="display:none;"><span class="settings-category-icon">🛠️</span><span class="settings-category-main"><span class="settings-category-title">Admin</span><span class="settings-category-sub">Brands, badges & field options</span></span><span class="settings-category-arrow">›</span></button>
           
           <button class="settings-category" data-settings-page="whatsapp"><span class="settings-category-icon">💬</span><span class="settings-category-main"><span class="settings-category-title">WhatsApp</span><span class="settings-category-sub">Share message template</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="privacy"><span class="settings-category-icon">🔐</span><span class="settings-category-main"><span class="settings-category-title">Privacy & Security</span><span class="settings-category-sub" id="settingsSummaryPrivacy">Privacy mode & security</span></span><span class="settings-category-arrow">›</span></button>
@@ -1571,11 +1575,6 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
           <div class="settings-add-row"><input type="number" id="autoRangeMinMarkup" placeholder="+ From" min="0"><input type="number" id="autoRangeMaxMarkup" placeholder="+ To" min="0"><button type="button" class="sell-btn" id="autoRangeAddBtn">Add</button></div>
           <div class="settings-note">Existing filled ranges automatic overwrite nahi honge.</div>
         </div>
-        <div class="settings-section-card admin-only-setting" id="settingsBrandsAdminCard">
-          <div class="sec-label">Brands</div>
-          <div class="settings-opts" id="settingsBrandsList"></div>
-          <div class="settings-add-row"><input type="text" id="settingsNewBrand" placeholder="Naya brand naam"><button type="button" class="sell-btn" id="settingsAddBrandBtn">Add</button></div>
-        </div>
       </div>
 
       <div class="settings-view" data-settings-view="appearance">
@@ -1585,7 +1584,6 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
           <div class="settings-note">Shop owner ki aankhon ke liye text, buttons aur UI ko thora bara karein. Ye setting Save changes ke baad permanently apply hogi.</div>
           <div class="chip-row" id="uiScaleToggles" style="margin-top:9px;"></div>
         </div>
-        <div class="settings-section-card admin-only-setting" id="settingsBadgeOrderAdminCard"><div class="sec-label">Badges ka order</div><div class="settings-note">Drag karke card badges ki tarteeb set karein.</div><div class="badge-order-list" id="badgeOrderList"></div></div>
         <div class="settings-section-card">
           <div class="sec-label">📊 Dashboard reporting period</div>
           <div class="settings-note">Dashboard par Sold aur Net Profit kis period ke hisaab se dikhana hai. Business month choose karein to har month isi din se naya cycle start hoga.</div>
@@ -1598,8 +1596,19 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         </div>
       </div>
 
-      <div class="settings-view" data-settings-view="fields">
-        <div class="settings-page-title">Badge settings</div>
+      <div class="settings-view" data-settings-view="admin">
+        <div class="settings-page-title">Admin settings</div>
+        <div class="settings-section-card">
+          <div class="sec-label">Brands</div>
+          <div class="settings-opts" id="settingsBrandsList"></div>
+          <div class="settings-add-row"><input type="text" id="settingsNewBrand" placeholder="Naya brand naam"><button type="button" class="sell-btn" id="settingsAddBrandBtn">Add</button></div>
+        </div>
+        <div class="settings-section-card">
+          <div class="sec-label">Badges ka order</div>
+          <div class="settings-note">Drag karke card badges ki tarteeb set karein.</div>
+          <div class="badge-order-list" id="badgeOrderList"></div>
+        </div>
+
         <div class="settings-section-card">
           <div class="settings-note" style="margin-top:0;">Field select karein, phir us field ke option par tap karke badge show/hide karein.</div>
           <div class="chip-row" id="settingsPlatformToggles" style="margin-top:9px;"></div>
@@ -8646,7 +8655,7 @@ function updateAdminOnlySettingsUI(){
   const isAdmin = userRole === 'admin';
   document.body.classList.toggle('admin-user', isAdmin);
   const fieldsView=document.querySelector('[data-settings-view="fields"]');
-  const fieldsCategory=document.getElementById('settingsFieldsAdminCategory');
+  const fieldsCategory=document.getElementById('settingsAdminCategory');
   if(fieldsCategory) fieldsCategory.style.display=isAdmin?'flex':'none';
   if(!isAdmin && fieldsView && fieldsView.classList.contains('active')){
     const home=document.querySelector('[data-settings-view="home"]');
