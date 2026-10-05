@@ -2107,7 +2107,7 @@ function setPlatformDefault(platform, fieldKey, value){
 }
 
 function applyPlatformDefaultsToForm(platform){
-  const defs={status:'',ram:'',storage:'',condition:'',network:'',display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',battery:'Perfect',box:'No',packing:'No pack',charger:'Original charger',faceid:platform==='iphone'?'Yes':'No',truetone:platform==='iphone'?'Yes':'No'};
+  const defs={status:'',ram:'',storage:'',condition:'',network:'',display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',battery:platform==='iphone'?'':'Perfect',box:'No',packing:'No pack',charger:platform==='iphone'?'No charger':'Original charger',faceid:platform==='iphone'?'Yes':'No',truetone:platform==='iphone'?'Yes':'No'};
   Object.keys(defs).forEach(function(k){
     const d=getPlatformDefault(platform,k,defs[k]);
     const opts=getEntryFieldOptionsForPlatform(platform,k);
@@ -5036,11 +5036,41 @@ function applyEntryLayoutToDOM(platform){
   // Entry form order is intentionally fixed to the approved workflow.
   // Saved/legacy layout ordering must not move these fields around.
   // Box and Charger are explicitly included so they cannot fall back into More Details.
-  const fixedMainKeys = [
+  let fixedMainKeys = [
     'brand','model','photos','status','ram','storage','condition',
     'box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
     'seller','saleFields','moreToggle','extras'
   ];
+  let moreKeys = L.more.slice();
+  if(platform==='iphone'){
+    fixedMainKeys = [
+      'brand','model','photos','storage','condition','battery',
+      'box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
+      'seller','saleFields','moreToggle','extras'
+    ];
+    moreKeys = moreKeys.filter(function(key){ return key!=='battery' && key!=='status' && key!=='ram'; });
+    // iPhone-specific labels: Battery is mandatory; Box/Charger are optional.
+    const batteryGroup=groups.battery;
+    if(batteryGroup){
+      const batteryLabel=batteryGroup.querySelector('.sec-label');
+      if(batteryLabel) batteryLabel.innerHTML='Battery health <span style="color:var(--danger);">*</span>';
+    }
+    ['box','charger'].forEach(function(key){
+      const g=groups[key];
+      if(!g) return;
+      const label=g.querySelector('.sec-label');
+      if(label) label.textContent=key==='box'?'Box':'Charger';
+    });
+  }else{
+    const batteryGroup=groups.battery;
+    if(batteryGroup){
+      const batteryLabel=batteryGroup.querySelector('.sec-label');
+      if(batteryLabel) batteryLabel.textContent='Battery health';
+    }
+    const boxGroup=groups.box, chargerGroup=groups.charger;
+    if(boxGroup){ const label=boxGroup.querySelector('.sec-label'); if(label) label.innerHTML='Box <span style="color:var(--danger);">*</span>'; }
+    if(chargerGroup){ const label=chargerGroup.querySelector('.sec-label'); if(label) label.innerHTML='Charger <span style="color:var(--danger);">*</span>'; }
+  }
   fixedMainKeys.forEach(function(key,i){
     const g=groups[key];
     if(!g) return;
@@ -5062,7 +5092,7 @@ function applyEntryLayoutToDOM(platform){
   });
 
   // Put More groups back into the actual More section in the saved order.
-  L.more.forEach(function(key,i){
+  moreKeys.forEach(function(key,i){
     const g=groups[key];
     if(!g) return;
     g.style.display='block';
@@ -5400,10 +5430,12 @@ function openAdd(){
   document.getElementById('qtyLabel').textContent = 'Quantity (kitne piece)';
   formState = {brand:'', status:'', ram:'', storage:'', condition:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'', packing:'No pack', charger:'', faceid:'No', truetone:'No', customFields:{}, isSold:false, __platform:'android'};
   applyPlatformDefaultsToForm('android');
-  // Status, Box and Charger are mandatory, but must start with no selection on a new entry.
+  // Android keeps the existing mandatory fields. iPhone has no Status/RAM,
+  // Box/Charger are optional and default to absent, while Battery is mandatory.
   formState.status = '';
   formState.box = '';
-  formState.charger = '';
+  formState.charger = ''; 
+  formState.battery = '';
   formPhotos = [];
   renderPhotoStrip();
   document.getElementById('f-brand-other').value = '';
@@ -5568,12 +5600,14 @@ function saveEntry(){
     alert('Brand aur model zaroori hai');
     return;
   }
-  if(!formState.status){ alert('Status select karna zaroori hai'); return; }
-  if(!formState.ram){ alert('RAM select karna zaroori hai'); return; }
+  const entryPlatform = getEntryPlatform(brand);
+  if(entryPlatform!=='iphone' && !formState.status){ alert('Status select karna zaroori hai'); return; }
+  if(entryPlatform!=='iphone' && !formState.ram){ alert('RAM select karna zaroori hai'); return; }
   if(!formState.storage){ alert('Storage select karna zaroori hai'); return; }
   if(!formState.condition){ alert('Condition select karna zaroori hai'); return; }
-  if(!formState.box){ alert('Box select karna zaroori hai'); return; }
-  if(!formState.charger){ alert('Charger select karna zaroori hai'); return; }
+  if(entryPlatform==='iphone' && !formState.battery){ alert('Battery health select karna zaroori hai'); return; }
+  if(entryPlatform!=='iphone' && !formState.box){ alert('Box select karna zaroori hai'); return; }
+  if(entryPlatform!=='iphone' && !formState.charger){ alert('Charger select karna zaroori hai'); return; }
   const qty = Math.max(1, Number(document.getElementById('f-qty').value || 1));
   const buyFieldRaw = document.getElementById('f-buy').value.trim();
   const parsedBuyForRange = buyFieldRaw==='' ? null : parsePrice(buyFieldRaw);
@@ -5589,11 +5623,11 @@ function saveEntry(){
     buyDate: document.getElementById('f-buydate').value || todayISO(),
     sellerName: document.getElementById('f-seller-name').value.trim(),
     sellerNumber: document.getElementById('f-seller-number').value.trim(),
-    ram: formState.ram || '',
+    ram: entryPlatform==='iphone' ? '' : (formState.ram || ''),
     storage: formState.storage || '',
     condition: formState.condition || '',
     network: formState.network || '',
-    status: formState.status || 'PTA',
+    status: entryPlatform==='iphone' ? '' : (formState.status || 'PTA'),
     display: formState.display || 'Original panel',
     touch: formState.touch || 'Perfect',
     camera: formState.camera || 'Perfect',
