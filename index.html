@@ -1162,6 +1162,11 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 <div class="sheet">
 <div class="sheet-handle"></div>
 <h2>Dashboard</h2>
+<div class="dashboard-period-bar">
+  <div class="dashboard-period-title">Report period</div>
+  <div class="stats-period-options" id="dashboardPeriodToggles" role="group" aria-label="Report period"></div>
+  <div class="dashboard-period-note" id="dashboardPeriodNote">Calendar month: 1st se month ke last day tak.</div>
+</div>
 <div class="stat-grid-2" id="dashboardGrid"></div>
 <div class="sheet-actions">
 <button class="btn-cancel" id="btnDashboardClose">Band karein</button>
@@ -1638,8 +1643,8 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 </div>
 <button class="fab-expense" id="btnQuickExpense" title="Expense add karein">💵</button>
 <script>
-const APP_INDEX_VERSION = 'v84';
-const APP_INDEX_UPDATED = '05 Oct 2026 • 05:46:37 PM PKT';
+const APP_INDEX_VERSION = 'v85';
+const APP_INDEX_UPDATED = '05 Oct 2026 • 05:52:12 PM PKT';
 function updateVersionFooter(){
   const el = document.getElementById('menuFooterVersion');
   if(el) el.innerHTML = `Index ${APP_INDEX_VERSION}<br><span>Updated ${APP_INDEX_UPDATED}</span>`;
@@ -3465,25 +3470,9 @@ function renderStats(){
   }
   const selectedPeriodValue=['calendar','business','lifetime','selected'].indexOf(dashboardSettings.mode)!==-1?dashboardSettings.mode:'calendar';
   document.getElementById('stats').innerHTML=
-    '<div class="stats-period-pill">'+
-      '<div class="stats-period-options" role="group" aria-label="Report period">'+
-        '<button type="button" class="stats-period-btn '+(selectedPeriodValue==='calendar'?'active':'')+'" data-stats-period="calendar">This month</button>'+
-        '<button type="button" class="stats-period-btn '+(selectedPeriodValue==='business'?'active':'')+'" data-stats-period="business">Business month</button>'+
-        '<button type="button" class="stats-period-btn '+(selectedPeriodValue==='lifetime'?'active':'')+'" data-stats-period="lifetime">Lifetime</button>'+
-      '</div>'+
-    '</div>'+
     '<div class="stat"><div class="v num">'+availableUnits+'</div><div class="l">Stock mein</div></div>'+
     '<div class="stat"><div class="v num">'+soldUnits+'</div><div class="l">Sold</div></div>'+
     '<div class="stat"><div class="v num" style="color:'+netProfitColor+'">'+displayProfitHtml(netProfit)+'</div><div class="l">Net Profit</div></div>';
-  document.querySelectorAll('[data-stats-period]').forEach(function(btn){
-    btn.onclick=function(){
-      dashboardSettings.mode=this.dataset.statsPeriod;
-      saveDashboardSettings();
-      renderDashboardPeriodControls();
-      renderDashboard();
-      renderStats();
-    };
-  });
 }
 
 // Most browsers give roughly 5MB per site for localStorage. There's no
