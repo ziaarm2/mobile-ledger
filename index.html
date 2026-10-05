@@ -257,6 +257,7 @@
  .dashboard-period-bar{margin:0 0 12px;padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--surface-2);}
 .stats-period-pill{display:flex;justify-content:center;align-items:center;margin:0 0 8px;}
 .stats-period-pill span{display:inline-flex;align-items:center;padding:4px 10px;border:1px solid var(--border);border-radius:999px;background:var(--surface-2);color:var(--text-dim);font-size:10.5px;font-weight:700;line-height:1.2;}
+.stats-period-select{appearance:none;-webkit-appearance:none;display:inline-flex;align-items:center;padding:4px 28px 4px 10px;border:1px solid var(--border);border-radius:999px;background:var(--surface-2);color:var(--text-dim);font-size:10.5px;font-weight:700;line-height:1.2;text-align:center;text-align-last:center;outline:none;cursor:pointer;background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);background-position:calc(100% - 12px) 50%,calc(100% - 8px) 50%;background-size:4px 4px,4px 4px;background-repeat:no-repeat;}
 .dashboard-period-title{font-size:12px;font-weight:700;color:var(--text-dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:.3px;}
 .dashboard-period-note{font-size:11.5px;color:var(--text-dim);margin-top:7px;line-height:1.35;}
 .stat-card{background:var(--surface);border-radius:var(--radius);padding:14px 12px;}
@@ -686,6 +687,7 @@ header{background:#fff;border-bottom:1px solid #e2e6ec;padding:0 16px 14px;box-s
 .header-top>div:last-child .menu-btn{flex:0 0 46px;}
 .stats{gap:8px;margin-top:0;}
 .stats-period-pill span{background:#f4f7fa;border:1px solid #dce2ea;color:#667085;padding:7px 12px;font-size:11.5px;}
+.stats-period-select{background-color:#f4f7fa;border-color:#dce2ea;color:#667085;padding:7px 30px 7px 12px;font-size:11.5px;}
 .stat{background:#f7f9fc;border:1px solid #edf0f4;border-radius:10px;padding:11px 7px;box-shadow:none;}
 .stat .v{font-size:19px;color:#172033;font-weight:700;}
 .stat .l{font-size:11px;color:#6b7483;}
@@ -3414,7 +3416,7 @@ let dashboardSettings = { mode:'calendar', businessStartDay:1 };
 function loadDashboardSettings(){
   try{
     const raw=localStorage.getItem(shopStorageKey(LS_DASHBOARD_SETTINGS_KEY));
-    if(raw){ const x=JSON.parse(raw)||{}; dashboardSettings.mode=['calendar','lifetime','business'].indexOf(x.mode)!==-1?x.mode:'calendar'; dashboardSettings.businessStartDay=Math.min(28,Math.max(1,Number(x.businessStartDay)||1)); }
+    if(raw){ const x=JSON.parse(raw)||{}; dashboardSettings.mode=['calendar','lifetime','business','selected'].indexOf(x.mode)!==-1?x.mode:'calendar'; dashboardSettings.businessStartDay=Math.min(28,Math.max(1,Number(x.businessStartDay)||1)); }
   }catch(e){ dashboardSettings={mode:'calendar',businessStartDay:1}; }
 }
 function saveDashboardSettings(){
@@ -3425,6 +3427,20 @@ function isoDateLocal(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padS
 function dashboardPeriodRange(){
   const now=new Date();
   if(dashboardSettings.mode==='lifetime') return {from:'',to:'',label:'Lifetime',mode:'lifetime'};
+  if(dashboardSettings.mode==='selected'){
+    const fromEl=document.getElementById('activityFrom');
+    const toEl=document.getElementById('activityTo');
+    const from=fromEl?fromEl.value:'';
+    const to=toEl?toEl.value:'';
+    if(!from && !to) {
+      const start=new Date(now.getFullYear(),now.getMonth(),1);
+      const end=new Date(now.getFullYear(),now.getMonth()+1,0);
+      return {from:isoDateLocal(start),to:isoDateLocal(end),label:'Select dates',mode:'calendar'};
+    }
+    const labelPart=function(v){ return v?new Date(v+'T00:00:00').toLocaleDateString('en-PK',{day:'2-digit',month:'short',year:'numeric'}):''; };
+    const label=(from&&to&&from===to)?('Selected · '+labelPart(from)):('Selected · '+(from?labelPart(from):'Any date')+' → '+(to?labelPart(to):'Today'));
+    return {from:from,to:to,label:label,mode:'selected'};
+  }
   if(dashboardSettings.mode==='business'){
     const day=dashboardSettings.businessStartDay;
     let start=new Date(now.getFullYear(),now.getMonth(),day);
@@ -3448,10 +3464,21 @@ function expensesForDashboardRange(range){
   return total;
 }
 function renderDashboardPeriodControls(){
-  const defs=[['calendar','This month'],['business','Business month'],['lifetime','Lifetime']];
+  const defs=[['calendar','This month'],['business','Business month'],['lifetime','Lifetime'],['selected','Selected dates']];
   const html=defs.map(function(x){ return '<button type="button" class="chip '+(dashboardSettings.mode===x[0]?'active':'')+'" data-dashboard-period="'+x[0]+'">'+x[1]+'</button>'; }).join('');
   ['dashboardPeriodToggles','dashboardDefaultPeriodToggles'].forEach(function(id){ const el=document.getElementById(id); if(el) el.innerHTML=html; });
-  document.querySelectorAll('[data-dashboard-period]').forEach(function(btn){ btn.onclick=function(){ dashboardSettings.mode=btn.dataset.dashboardPeriod; saveDashboardSettings(); renderDashboardPeriodControls(); renderDashboard(); renderStats(); }; });
+  document.querySelectorAll('[data-dashboard-period]').forEach(function(btn){ btn.onclick=function(){
+    const nextMode=btn.dataset.dashboardPeriod;
+    if(nextMode==='selected' && !document.getElementById('activityFrom').value && !document.getElementById('activityTo').value){
+      alert('Pehle neeche Se ya Tak date select karein.');
+      return;
+    }
+    dashboardSettings.mode=nextMode;
+    saveDashboardSettings();
+    renderDashboardPeriodControls();
+    renderDashboard();
+    renderStats();
+  }; });
   const inp=document.getElementById('businessMonthStartDay'); if(inp){ inp.value=dashboardSettings.businessStartDay; inp.onchange=function(){ dashboardSettings.businessStartDay=Math.min(28,Math.max(1,Number(inp.value)||1)); inp.value=dashboardSettings.businessStartDay; saveDashboardSettings(); renderDashboard(); renderStats(); }; }
 }
 loadDashboardSettings();
@@ -3477,11 +3504,33 @@ function renderStats(){
   }else if(range.mode==='lifetime'){
     periodLabel='Lifetime';
   }
+  const selectedPeriodValue=['calendar','business','lifetime','selected'].indexOf(dashboardSettings.mode)!==-1?dashboardSettings.mode:'calendar';
   document.getElementById('stats').innerHTML=
-    '<div class="stats-period-pill"><span>'+escapeHtml(periodLabel)+'</span></div>'+
+    '<div class="stats-period-pill"><select id="statsPeriodSelector" class="stats-period-select" aria-label="Report period">'+
+      '<option value="calendar" '+(selectedPeriodValue==='calendar'?'selected':'')+'>This month · '+escapeHtml(new Date().toLocaleString('en-PK',{month:'short',year:'numeric'}))+'</option>'+
+      '<option value="business" '+(selectedPeriodValue==='business'?'selected':'')+'>Business month</option>'+
+      '<option value="lifetime" '+(selectedPeriodValue==='lifetime'?'selected':'')+'>Lifetime</option>'+
+      '<option value="selected" '+(selectedPeriodValue==='selected'?'selected':'')+'>Selected dates</option>'+
+    '</select></div>'+
     '<div class="stat"><div class="v num">'+availableUnits+'</div><div class="l">Stock mein</div></div>'+
     '<div class="stat"><div class="v num">'+soldUnits+'</div><div class="l">Sold</div></div>'+
     '<div class="stat"><div class="v num" style="color:'+netProfitColor+'">'+displayProfitHtml(netProfit)+'</div><div class="l">Net Profit</div></div>';
+  const periodSelector=document.getElementById('statsPeriodSelector');
+  if(periodSelector){
+    periodSelector.onchange=function(){
+      const nextMode=this.value;
+      if(nextMode==='selected' && !document.getElementById('activityFrom').value && !document.getElementById('activityTo').value){
+        alert('Pehle neeche Se ya Tak date select karein.');
+        this.value=dashboardSettings.mode;
+        return;
+      }
+      dashboardSettings.mode=nextMode;
+      saveDashboardSettings();
+      renderDashboardPeriodControls();
+      renderDashboard();
+      renderStats();
+    };
+  }
 }
 
 // Most browsers give roughly 5MB per site for localStorage. There's no
@@ -5799,14 +5848,18 @@ document.getElementById('s-price').oninput = updateSellProfitPreview;
 document.getElementById('search').oninput = function(){ renderList(); saveUIState(); };
 document.getElementById('sortSelect').onchange = function(){ currentSort = this.value; renderList(); saveUIState(); };
 document.getElementById('activityTypeFilter').onchange = function(){ renderList(); saveUIState(); };
-document.getElementById('activityFrom').onchange = function(){ renderList(); saveUIState(); };
-document.getElementById('activityTo').onchange = function(){ renderList(); saveUIState(); };
+document.getElementById('activityFrom').onchange = function(){ renderList(); saveUIState(); if(dashboardSettings.mode==='selected'){ renderDashboard(); renderStats(); } };
+document.getElementById('activityTo').onchange = function(){ renderList(); saveUIState(); if(dashboardSettings.mode==='selected'){ renderDashboard(); renderStats(); } };
 document.getElementById('clearActivityFilter').onclick = function(){
   document.getElementById('activityTypeFilter').value='all';
   document.getElementById('activityFrom').value='';
   document.getElementById('activityTo').value='';
+  if(dashboardSettings.mode==='selected') dashboardSettings.mode='calendar';
   renderList();
   saveUIState();
+  renderDashboardPeriodControls();
+  renderDashboard();
+  renderStats();
 };
 const addPhoneExpenseInlineBtn=document.getElementById('addPhoneExpenseInline');
 if(addPhoneExpenseInlineBtn){
