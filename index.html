@@ -1162,11 +1162,6 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 <div class="sheet">
 <div class="sheet-handle"></div>
 <h2>Dashboard</h2>
-<div class="dashboard-period-bar">
-<div class="dashboard-period-title">Report period</div>
-<div class="chip-row" id="dashboardPeriodToggles"></div>
-<div class="dashboard-period-note" id="dashboardPeriodNote"></div>
-</div>
 <div class="stat-grid-2" id="dashboardGrid"></div>
 <div class="sheet-actions">
 <button class="btn-cancel" id="btnDashboardClose">Band karein</button>
@@ -1629,7 +1624,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 </div>
 <div class="settings-view" data-settings-view="about">
 <div class="settings-page-title">About Mobile Hisab</div>
-<div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale &amp; purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v53 • Updated 05 Oct 2026 • Entry form order and required fields updated</div></div>
+<div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale &amp; purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" id="settingsAppVersionStatus" style="margin-top:12px;"></div></div>
 </div>
 </div>
 <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1643,11 +1638,13 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 </div>
 <button class="fab-expense" id="btnQuickExpense" title="Expense add karein">💵</button>
 <script>
-const APP_INDEX_VERSION = 'v83';
-const APP_INDEX_UPDATED = '05 Oct 2026';
+const APP_INDEX_VERSION = 'v84';
+const APP_INDEX_UPDATED = '05 Oct 2026 • 05:46:37 PM PKT';
 function updateVersionFooter(){
   const el = document.getElementById('menuFooterVersion');
-  if(el) el.innerHTML = `Index ${APP_INDEX_VERSION}<br><span>Updated ${APP_INDEX_UPDATED}</span><span>Auto version/date</span>`;
+  if(el) el.innerHTML = `Index ${APP_INDEX_VERSION}<br><span>Updated ${APP_INDEX_UPDATED}</span>`;
+  const settingsEl = document.getElementById('settingsAppVersionStatus');
+  if(settingsEl) settingsEl.textContent = `App version: Index ${APP_INDEX_VERSION} • Updated ${APP_INDEX_UPDATED}`;
 }
 
 
