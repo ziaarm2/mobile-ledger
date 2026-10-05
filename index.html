@@ -146,6 +146,8 @@
   .sheet-item-name{font-size:14px;color:var(--text-dim);margin:-6px 0 14px;}
   .sec-label{font-size:11px;color:var(--text-dim);margin:12px 0 6px;text-transform:uppercase;letter-spacing:0.3px;}
   .chip-row{display:flex;gap:6px;flex-wrap:wrap;}
+  #conditionChips{row-gap:8px;margin-bottom:14px;}
+  .imei-field{margin-top:10px;}
   .chip-opt{padding:8px 13px;border-radius:9px;background:var(--surface-2);border:1px solid var(--border);font-size:13px;color:var(--text-dim);}
   .chip-opt.on{background:var(--accent);border-color:var(--accent);color:var(--accent-text);font-weight:600;}
   .chip-opt.status-opt{flex:1 1 30%;text-align:center;font-size:12.5px;padding:10px 4px;}
@@ -1019,7 +1021,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
     <div class="sec-label">Charger <span style="color:var(--danger);">*</span></div>
     <div class="chip-row" id="chargerChips"></div>
 
-    <div class="field"><label>IMEI 1</label>
+    <div class="field imei-field"><label>IMEI 1</label>
       <div style="display:flex;gap:6px;">
         <input id="f-imei" type="text" inputmode="numeric" placeholder="15 digit number" style="flex:1;">
         <button type="button" class="imei-scan-btn" data-imei-target="f-imei" style="flex-shrink:0;padding:0 12px;border-radius:8px;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);font-size:12.5px;">📷 Scan</button>
@@ -5326,8 +5328,11 @@ function openAdd(){
   rangeInputMode = 'auto';
   document.getElementById('sheetTitle').textContent = 'Nayi stock entry';
   document.getElementById('qtyLabel').textContent = 'Quantity (kitne piece)';
-  formState = {brand:'', status:'', ram:'', storage:'', condition:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'No', packing:'No pack', charger:'Original charger', faceid:'No', truetone:'No', customFields:{}, isSold:false, __platform:'android'};
+  formState = {brand:'', status:'', ram:'', storage:'', condition:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'', packing:'No pack', charger:'', faceid:'No', truetone:'No', customFields:{}, isSold:false, __platform:'android'};
   applyPlatformDefaultsToForm('android');
+  // Box and Charger are mandatory, but must start with no selection on a new entry.
+  formState.box = '';
+  formState.charger = '';
   formPhotos = [];
   renderPhotoStrip();
   document.getElementById('f-brand-other').value = '';
