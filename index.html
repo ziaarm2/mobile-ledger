@@ -875,7 +875,6 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="menu-scroll">
         <div class="menu-section-label">Business</div>
-        <button class="menu-item" id="btnExitAdminShop" style="display:none !important;"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7M8 12h13" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="menu-item-text">Apni Shop par wapas</span></button>
         <button class="menu-item" id="btnDashboard"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4h6v7H4zM14 4h6v4h-6zM14 12h6v8h-6zM4 15h6v5H4z" stroke-width="1.7" stroke-linejoin="round"/></svg></span><span class="menu-item-text">Dashboard</span></button>
         <button class="menu-item" id="btnExpenses"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="14" rx="2" stroke-width="1.8"/><path d="M7 12h10M8 9h8" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Expenses</span></button>
         <button class="menu-item" id="btnRateBook"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M6 4.5h12a2 2 0 0 1 2 2V20H6a2 2 0 0 1-2-2V6.5a2 2 0 0 1 2-2Z" stroke-width="1.8"/><path d="M8 8h8M8 12h8M8 16h5" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Rate Book</span></button>
@@ -8457,7 +8456,7 @@ function exitAdminShop(){
   showToast('✓ Apni Admin screen par wapas aa gaye');
 }
 
-document.getElementById('btnExitAdminShop').onclick=function(){ exitAdminShop(); };
+// Hidden admin shop exit remains available through the existing title long-press.
 document.getElementById('adminShopContextExit').onclick=function(){ exitAdminShop(); };
 
 function firebaseAuthEnvironmentSupported(){
