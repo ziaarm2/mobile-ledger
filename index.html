@@ -791,10 +791,8 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 #adminNotificationBtn,#settingsShopAccessCategory,#accountAccessView{display:none!important;}
 /* v52: hide the removed Fields & Options customization page from Settings. */
 .settings-view[data-settings-view="fields"]{display:none!important;}
-</style>
 
-<style id="entry-header-visible-v60">
-/* Restore the polished entry-sheet presentation: keep Mobile Hisab header visible behind it. */
+/* Entry sheet presentation: keep Mobile Hisab header visible behind it. */
 #overlay {
   align-items:flex-end !important;
   justify-content:center !important;
@@ -814,6 +812,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
   overflow-y:auto !important;
 }
 </style>
+
 </head>
 <body>
 
@@ -1713,8 +1712,8 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 <button class="fab-expense" id="btnQuickExpense" title="Expense add karein">💵</button>
 
 <script>
-const APP_INDEX_VERSION = 'v53';
-const APP_INDEX_UPDATED = '05 Oct 2026 • Entry form order and required fields updated';
+const APP_INDEX_VERSION = 'v61';
+const APP_INDEX_UPDATED = '05 Oct 2026 • Entry UI restored and startup fix';
 
 let inventory = [];
 
@@ -6505,29 +6504,7 @@ document.getElementById('btnReportsPdf').onclick = function(){
     '.summary-table td{border:none;padding:4px 8px;}'+
     '.summary-table .net td{border-top:2px solid #333;font-weight:bold;font-size:14px;}'+
     '@media print{ body{padding:0;} }'+
-    '</style>
-<style id="entry-header-visible-v60">
-/* Restore the polished entry-sheet presentation: keep Mobile Hisab header visible behind it. */
-#overlay {
-  align-items:flex-end !important;
-  justify-content:center !important;
-  background:rgba(15,23,42,.48) !important;
-  z-index:1000 !important;
-}
-#overlay > .sheet {
-  width:min(100%,480px) !important;
-  max-width:480px !important;
-  height:auto !important;
-  min-height:0 !important;
-  max-height:90vh !important;
-  border-radius:20px 20px 0 0 !important;
-  border:0 !important;
-  box-shadow:none !important;
-  padding:16px 16px 20px !important;
-  overflow-y:auto !important;
-}
-</style>
-</head><body>'+
+    '</style></head><body>'+
     '<h1>Mobile Hisab — Sales Report</h1>'+
     '<div class="sub">'+rangeLabel+(brand!=='all'?(' • Brand: '+brand):'')+' • Banaya gaya: '+formatDateDisplay(todayISO())+'</div>'+
     '<h2>Sales</h2>'+
