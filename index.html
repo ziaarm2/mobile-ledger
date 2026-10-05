@@ -909,7 +909,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v46<br><span>Updated 04 Oct 2026</span><span>Menu cleanup + Dead Stock dashboard fix</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion"></div</div>
         </div>
       </div>
     </div>
@@ -1742,8 +1742,15 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 <button class="fab-expense" id="btnQuickExpense" title="Expense add karein">💵</button>
 
 <script>
-const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '05 Oct 2026 • Backup, Sync & Data combined';
+const APP_INDEX_VERSION = 'v82';
+const APP_INDEX_UPDATED = '05 Oct 2026';
+function updateVersionFooter(){
+  const el = document.getElementById('menuFooterVersion');
+  if(el) el.innerHTML = `Index ${APP_INDEX_VERSION}<br><span>Updated ${APP_INDEX_UPDATED}</span><span>Auto version/date</span>`;
+}
+
+
+document.addEventListener('DOMContentLoaded', updateVersionFooter);
 
 let inventory = [];
 
