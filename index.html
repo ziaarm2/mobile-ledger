@@ -3463,14 +3463,38 @@ function expensesForDashboardRange(range){
   allPhoneExpenseEntries().forEach(function(x){ if(dashboardDateInRange(x.date,range)) total+=Number(x.amount)||0; });
   return total;
 }
+function openDashboardDatePicker(){
+  const picker=document.createElement('input');
+  picker.type='date';
+  picker.value=document.getElementById('activityFrom')?.value||'';
+  picker.style.position='fixed';
+  picker.style.left='-10000px';
+  picker.style.opacity='0';
+  picker.onchange=function(){
+    if(!picker.value) return;
+    const from=document.getElementById('activityFrom');
+    const to=document.getElementById('activityTo');
+    if(from) from.value=picker.value;
+    if(to) to.value='';
+    dashboardSettings.mode='selected';
+    saveDashboardSettings();
+    renderDashboardPeriodControls();
+    renderDashboard();
+    renderStats();
+    setTimeout(function(){ picker.remove(); },0);
+  };
+  picker.onblur=function(){ setTimeout(function(){ if(document.body.contains(picker)) picker.remove(); },250); };
+  document.body.appendChild(picker);
+  picker.showPicker ? picker.showPicker() : picker.click();
+}
 function renderDashboardPeriodControls(){
-  const defs=[['calendar','This month'],['business','Business month'],['lifetime','Lifetime'],['selected','Selected dates']];
+  const defs=[['calendar','This month'],['business','Business month'],['lifetime','Lifetime'],['selected','Select date']];
   const html=defs.map(function(x){ return '<button type="button" class="chip '+(dashboardSettings.mode===x[0]?'active':'')+'" data-dashboard-period="'+x[0]+'">'+x[1]+'</button>'; }).join('');
   ['dashboardPeriodToggles','dashboardDefaultPeriodToggles'].forEach(function(id){ const el=document.getElementById(id); if(el) el.innerHTML=html; });
   document.querySelectorAll('[data-dashboard-period]').forEach(function(btn){ btn.onclick=function(){
     const nextMode=btn.dataset.dashboardPeriod;
-    if(nextMode==='selected' && !document.getElementById('activityFrom').value && !document.getElementById('activityTo').value){
-      alert('Pehle neeche Se ya Tak date select karein.');
+    if(nextMode==='selected'){
+      openDashboardDatePicker();
       return;
     }
     dashboardSettings.mode=nextMode;
@@ -3510,7 +3534,7 @@ function renderStats(){
       '<option value="calendar" '+(selectedPeriodValue==='calendar'?'selected':'')+'>This month · '+escapeHtml(new Date().toLocaleString('en-PK',{month:'short',year:'numeric'}))+'</option>'+
       '<option value="business" '+(selectedPeriodValue==='business'?'selected':'')+'>Business month</option>'+
       '<option value="lifetime" '+(selectedPeriodValue==='lifetime'?'selected':'')+'>Lifetime</option>'+
-      '<option value="selected" '+(selectedPeriodValue==='selected'?'selected':'')+'>Selected dates</option>'+
+      '<option value="selected" '+(selectedPeriodValue==='selected'?'selected':'')+'>Select date</option>'+
     '</select></div>'+
     '<div class="stat"><div class="v num">'+availableUnits+'</div><div class="l">Stock mein</div></div>'+
     '<div class="stat"><div class="v num">'+soldUnits+'</div><div class="l">Sold</div></div>'+
@@ -3519,8 +3543,8 @@ function renderStats(){
   if(periodSelector){
     periodSelector.onchange=function(){
       const nextMode=this.value;
-      if(nextMode==='selected' && !document.getElementById('activityFrom').value && !document.getElementById('activityTo').value){
-        alert('Pehle neeche Se ya Tak date select karein.');
+      if(nextMode==='selected'){
+        openDashboardDatePicker();
         this.value=dashboardSettings.mode;
         return;
       }
