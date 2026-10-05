@@ -4650,6 +4650,19 @@ function prepareEntryLayoutDOM(){
   if(photoStrip) addMainGroup('photos',[previousSecLabel(photoStrip.closest('.photo-add-row')||photoStrip),photoStrip.closest('.photo-add-row')]);
   const statusChips=sheet.querySelector('#statusChips');
   if(statusChips) addMainGroup('status',[previousSecLabel(statusChips),statusChips]);
+
+  const ramChips=sheet.querySelector('#ramChips');
+  if(ramChips) addMainGroup('ram',[previousSecLabel(ramChips),ramChips]);
+  const storageChips=sheet.querySelector('#storageChips');
+  if(storageChips) addMainGroup('storage',[previousSecLabel(storageChips),storageChips]);
+  const conditionChips=sheet.querySelector('#conditionChips');
+  if(conditionChips) addMainGroup('condition',[previousSecLabel(conditionChips),conditionChips]);
+
+  const imei1=sheet.querySelector('#f-imei');
+  if(imei1) addMainGroup('imei1',[imei1.closest('.field')]);
+  const imei2=sheet.querySelector('#f-imei2');
+  if(imei2) addMainGroup('imei2',[imei2.closest('.field')]);
+
   const qty=sheet.querySelector('#f-qty');
   if(qty) addMainGroup('quantity',[qty.closest('.field')]);
   const buy=sheet.querySelector('#f-buy');
@@ -4666,7 +4679,7 @@ function prepareEntryLayoutDOM(){
   if(oldBuyRow && oldBuyRow !== (range ? range.closest('.two-col') : null)) oldBuyRow.remove();
   else if(oldBuyRow && !oldBuyRow.children.length) oldBuyRow.remove();
   const buyDate=sheet.querySelector('#f-buydate');
-  if(buyDate) addMainGroup('buyMeta',[buyDate.closest('.two-col')]);
+  if(buyDate) addMainGroup('buyDate',[buyDate.closest('.field')]);
   const seller=sheet.querySelector('#f-seller-name');
   if(seller) addMainGroup('seller',[seller.closest('.two-col')]);
   const extraList=sheet.querySelector('#extraBuyList');
@@ -4910,9 +4923,14 @@ function applyEntryLayoutToDOM(platform){
   // controls at the very bottom of the entry form. This is intentional:
   // 'Add more Details' and 'Add another piece' must never appear between
   // the main entry fields.
-  const mainKeys = L.main.filter(function(key){ return key!=='moreToggle' && key!=='extras'; });
-  const bottomKeys = ['moreToggle','extras'];
-  mainKeys.concat(bottomKeys).forEach(function(key,i){
+  // Entry form order is intentionally fixed to the approved workflow.
+  // Saved/legacy layout ordering must not move these fields around.
+  const fixedMainKeys = [
+    'brand','model','photos','status','ram','storage','condition',
+    'imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
+    'seller','saleFields','moreToggle','extras'
+  ];
+  fixedMainKeys.forEach(function(key,i){
     const g=groups[key];
     if(!g) return;
     g.style.display='block';
