@@ -5218,6 +5218,15 @@ function applyEntryLayoutToDOM(platform){
     if(boxGroup){ const label=boxGroup.querySelector('.sec-label'); if(label) label.innerHTML='Box <span style="color:var(--danger);">*</span>'; }
     if(chargerGroup){ const label=chargerGroup.querySelector('.sec-label'); if(label) label.innerHTML='Charger <span style="color:var(--danger);">*</span>'; }
   }
+  // Android entry order is explicit and must always show RAM before Storage.
+  // Keep both groups visible even if an older saved layout accidentally hid/reordered them.
+  if(platform==='android'){
+    ['ram','storage'].forEach(function(key){
+      const g=groups[key];
+      if(g){ g.style.display='block'; g.classList.remove('is-hidden'); }
+    });
+  }
+
   fixedMainKeys.forEach(function(key,i){
     const g=groups[key];
     if(!g) return;
