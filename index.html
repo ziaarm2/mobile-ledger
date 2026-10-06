@@ -5266,25 +5266,34 @@ function applyEntryLayoutToDOM(platform){
 
 function renderChipGroup(containerId, options, groupKey, extraClass){
   const container = document.getElementById(containerId);
+  if(!container) return;
+  // Use real buttons for main entry chips. On some Android WebViews a rapidly
+  // replaced div[onclick] can lose the tap; buttons give the browser a stable,
+  // native interactive target.
   container.innerHTML = options.map(function(o){
-    return '<div class="chip-opt '+(extraClass||'')+' '+(formState[groupKey]===o?'on':'')+'" data-val="'+o+'">'+o+'</div>';
+    return '<button type="button" class="chip-opt '+(extraClass||'')+' '+(formState[groupKey]===o?'on':'')+'" data-val="'+escapeHtml(String(o))+'">'+escapeHtml(String(o))+'</button>';
   }).join('');
   container.querySelectorAll('.chip-opt').forEach(function(c){
-    c.onclick = function(){
-      formState[groupKey] = c.dataset.val;
+    c.onclick = function(e){
+      if(e) e.preventDefault();
+      const value=c.dataset.val;
+      formState[groupKey] = value;
+      // Update only this row. Do NOT rebuild the whole entry form after a
+      // storage/condition/battery tap; rebuilding the DOM is what can make a
+      // tap disappear on slower Android WebViews.
+      container.querySelectorAll('.chip-opt').forEach(function(x){ x.classList.remove('on'); });
+      c.classList.add('on');
       if(groupKey==='brand'){
-        document.getElementById('brandOtherWrap').style.display = (c.dataset.val==='Other') ? 'block' : 'none';
-        updateModelField(c.dataset.val);
-        loadGlobalModelsForBrand(c.dataset.val);
-        // Brand select must never auto-fill a model in a new entry.
-        // Show suggestions only; keep the model input completely blank until
-        // the user types something or explicitly taps a suggestion.
+        document.getElementById('brandOtherWrap').style.display = (value==='Other') ? 'block' : 'none';
+        updateModelField(value);
+        loadGlobalModelsForBrand(value);
         renderModelSuggestions('');
-        const platform=getEntryPlatform(c.dataset.val);
+        const platform=getEntryPlatform(value);
         if(formState.__platform!==platform) applyPlatformDefaultsToForm(platform);
+        // Brand changes platform, so only then rebuild the complete chip set.
+        renderAllChips();
         applyEntryLayoutToDOM(platform);
       }
-      renderAllChips();
     };
   });
 }
