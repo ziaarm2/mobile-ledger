@@ -849,6 +849,21 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 .analytics-brand-bars{display:flex;flex-direction:column;gap:8px;}.analytics-brand-row{display:grid;grid-template-columns:58px 1fr;gap:5px 8px;align-items:center;font-size:10px;}.analytics-brand-name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.analytics-brand-track{height:9px;background:var(--surface-2);border:1px solid var(--border);border-radius:99px;position:relative;overflow:hidden;}.analytics-brand-sale{position:absolute;left:0;top:0;bottom:0;background:var(--pta);border-radius:99px;}.analytics-brand-purchase{position:absolute;left:0;top:0;bottom:0;background:var(--nonpta);opacity:.75;border-radius:99px;}.analytics-brand-values{grid-column:1 / -1;text-align:left;color:var(--text-dim);white-space:normal;font-size:10px;line-height:1.25;padding-left:66px;}.analytics-brand-legend{display:flex;justify-content:center;gap:12px;font-size:10px;color:var(--text-dim);margin-bottom:8px;}.analytics-brand-legend span{display:inline-flex;align-items:center;gap:4px;}
 .analytics-model-list{display:flex;flex-direction:column;gap:6px;}.analytics-model-row{display:grid;grid-template-columns:1fr 43px 58px;gap:7px;align-items:center;padding:7px 8px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;}.analytics-model-name{font-size:10.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.analytics-model-sold{font-size:10px;color:var(--text-dim);text-align:center;}.analytics-model-profit{font-size:10px;font-weight:900;text-align:right;}
 .analytics-month-wrap{overflow:hidden;padding-bottom:2px;}.analytics-month-chart{width:100%;}.analytics-month-chart svg{width:100%;height:225px;display:block;}.analytics-empty{padding:16px;text-align:center;color:var(--text-faint);font-size:10px;}
+.analytics-periods{grid-template-columns:repeat(4,minmax(0,1fr));}
+.analytics-period{min-height:36px;font-size:11px;}
+.analytics-custom-range{margin-top:8px;padding:9px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;}
+.analytics-custom-title{font-size:10px;font-weight:900;color:var(--text-dim);text-transform:uppercase;margin-bottom:7px;}
+.analytics-custom-fields{display:grid;grid-template-columns:1fr 1fr auto;gap:7px;align-items:end;}
+.analytics-custom-fields label{display:block;font-size:9.5px;font-weight:800;color:var(--text-faint);margin:0 0 4px 2px;}
+.analytics-custom-fields input{width:100%;min-width:0;box-sizing:border-box;background:var(--surface);color:var(--text);border:1px solid var(--border-strong);border-radius:8px;padding:8px 7px;font-size:11px;}
+.analytics-apply-btn{border:0;border-radius:8px;background:var(--pta);color:var(--surface);font-weight:900;padding:9px 11px;min-height:35px;cursor:pointer;}
+.analytics-custom-error{font-size:9.5px;color:var(--danger);min-height:13px;margin-top:5px;}
+.analytics-quantity-note{font-size:9.5px;color:var(--text-faint);text-align:center;margin-top:5px;}
+.analytics-brand-values{font-size:10.5px;}
+.analytics-model-row{min-height:40px;}
+.analytics-month-chart svg{height:245px;}
+.analytics-line-wrap svg{height:220px;}
+@media(max-width:380px){.analytics-custom-fields{grid-template-columns:1fr 1fr;}.analytics-apply-btn{grid-column:1 / -1;width:100%;}.analytics-period{font-size:10px;padding-left:2px;padding-right:2px;}}
 @media(min-width:700px){.analytics-scoreboard{grid-template-columns:repeat(3,1fr);}.analytics-sheet{max-width:720px;margin:20px auto;border-radius:18px;}}
 </style>
 <style id="badge-only-settings-style">
@@ -938,7 +953,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 06 Oct 2026 • 09:18:22 AM PKT</span><span>Backup, Sync & Data combined</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 06 Oct 2026 • 09:25:50 AM PKT</span><span>Backup, Sync & Data combined</span></div>
         </div>
       </div>
     </div>
@@ -1298,8 +1313,18 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <button type="button" class="analytics-period active" data-analytics-period="calendar">This month</button>
         <button type="button" class="analytics-period" data-analytics-period="business">Business month</button>
         <button type="button" class="analytics-period" data-analytics-period="lifetime">Lifetime</button>
+        <button type="button" class="analytics-period" data-analytics-period="custom">Custom</button>
       </div>
       <div class="analytics-period-note" id="analyticsPeriodNote"></div>
+      <div class="analytics-custom-range hidden" id="analyticsCustomRange">
+        <div class="analytics-custom-title">Custom period</div>
+        <div class="analytics-custom-fields">
+          <div><label for="analyticsFrom">From</label><input type="date" id="analyticsFrom"></div>
+          <div><label for="analyticsTo">To</label><input type="date" id="analyticsTo"></div>
+          <button type="button" class="analytics-apply-btn" id="analyticsApplyRange">Apply</button>
+        </div>
+        <div class="analytics-custom-error" id="analyticsCustomError"></div>
+      </div>
     </div>
     <div class="analytics-scoreboard" id="analyticsScoreboard"></div>
     <div class="analytics-card">
@@ -1307,11 +1332,15 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
       <div class="analytics-line-wrap" id="analyticsLineChart"></div>
     </div>
     <div class="analytics-card">
-      <div class="analytics-card-head"><div><div class="analytics-card-title">PURCHASE vs SALE</div><div class="analytics-card-sub">Current period vs previous comparable period</div></div></div>
+      <div class="analytics-card-head"><div><div class="analytics-card-title">PURCHASE vs SALE</div><div class="analytics-card-sub">Money invested and money received · selected period vs previous</div></div></div>
       <div class="analytics-bars" id="analyticsVolumeBars"></div>
     </div>
     <div class="analytics-card">
-      <div class="analytics-card-head"><div><div class="analytics-card-title">STOCK PERFORMANCE</div><div class="analytics-card-sub">Current stock position after purchases, sales and returns</div></div></div>
+      <div class="analytics-card-head"><div><div class="analytics-card-title">QUANTITY COMPARISON</div><div class="analytics-card-sub">How many mobiles were purchased and sold in this period</div></div></div>
+      <div class="analytics-bars" id="analyticsQuantityBars"></div>
+    </div>
+    <div class="analytics-card">
+      <div class="analytics-card-head"><div><div class="analytics-card-title">STOCK PERFORMANCE</div><div class="analytics-card-sub">Current stock snapshot — not limited to selected period</div></div></div>
       <div class="analytics-stock-grid" id="analyticsStockGrid"></div>
     </div>
     <div class="analytics-card">
@@ -1323,7 +1352,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
       <div class="analytics-model-list" id="analyticsModelList"></div>
     </div>
     <div class="analytics-card">
-      <div class="analytics-card-head"><div><div class="analytics-card-title">6-MONTH BUSINESS TREND</div><div class="analytics-card-sub">Purchase, sale and net profit by month</div></div></div>
+      <div class="analytics-card-head"><div><div class="analytics-card-title" id="analyticsTrendTitle">BUSINESS TREND</div><div class="analytics-card-sub" id="analyticsMonthSub">Purchase, sale and net profit over time</div></div></div>
       <div class="analytics-month-wrap"><div class="analytics-month-chart" id="analyticsMonthChart"></div></div>
     </div>
   </div>
@@ -1795,7 +1824,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 06 Oct 2026 • 09:18:22 AM PKT • Backup, Sync & Data combined</div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 06 Oct 2026 • 09:25:50 AM PKT • Backup, Sync & Data combined</div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1812,7 +1841,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
 <script>
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '06 Oct 2026 • 09:18:22 AM PKT';
+const APP_INDEX_UPDATED = '06 Oct 2026 • 09:25:50 AM PKT';
 
 let inventory = [];
 
@@ -6767,6 +6796,16 @@ function analyticsDateRange(mode){
   const now=new Date();
   const today=isoDateLocal(now);
   if(mode==='lifetime') return {from:'',to:'',label:'Lifetime',mode:'lifetime',previous:null};
+  if(mode==='custom'){
+    const from=document.getElementById('analyticsFrom')?.value||'';
+    const to=document.getElementById('analyticsTo')?.value||'';
+    if(!from||!to||from>to) return {from:'',to:'',label:'Custom period — select valid dates',mode:'custom',previous:null,invalid:true};
+    const elapsed=analyticsDaysBetween(from,to);
+    const prevEnd=new Date(from+'T00:00:00'); prevEnd.setDate(prevEnd.getDate()-1);
+    const prevStart=new Date(prevEnd); prevStart.setDate(prevStart.getDate()-elapsed);
+    const pf=isoDateLocal(prevStart),pt=isoDateLocal(prevEnd);
+    return {from:from,to:to,label:'Custom · '+analyticsLabelDate(from,true)+' – '+analyticsLabelDate(to,true),mode:'custom',previous:{from:pf,to:pt,label:analyticsLabelDate(pf,true)+' – '+analyticsLabelDate(pt,true)}};
+  }
   let start,end,prevStart,prevEnd;
   if(mode==='business'){
     const day=Math.min(28,Math.max(1,Number(dashboardSettings.businessStartDay)||1));
@@ -6861,11 +6900,17 @@ function analyticsRenderScoreboard(curr,prev){
   }).join('');
 }
 function analyticsSeriesForRange(range,key,points){
-  const curr=analyticsMetrics(range);
-  const vals=Array(points).fill(0);
-  if(!range.from) return vals;
-  const start=new Date(range.from+'T00:00:00');
-  function add(date,value){const d=dateOnly(date);if(!d)return;const idx=Math.floor((new Date(d+'T00:00:00')-start)/86400000);if(idx>=0&&idx<points)vals[idx]+=Number(value)||0;}
+  const curr=analyticsMetrics(range), vals=Array(points).fill(0);
+  if(!range.from||!range.to) return vals;
+  const start=new Date(range.from+'T00:00:00'), end=new Date(range.to+'T00:00:00');
+  const span=Math.max(1,analyticsDaysBetween(range.from,range.to)+1);
+  function add(date,value){
+    const d=dateOnly(date); if(!d)return;
+    const idx=Math.floor((new Date(d+'T00:00:00')-start)/86400000);
+    if(idx<0||idx>=span)return;
+    const bucket=Math.min(points-1,Math.floor(idx*points/span));
+    vals[bucket]+=Number(value)||0;
+  }
   if(key==='sales') curr.sales.forEach(function(e){add(e.date,e.amount);});
   else if(key==='purchases') curr.purchases.forEach(function(e){add(e.date,e.amount);});
   else if(key==='soldUnits') curr.sales.forEach(function(e){add(e.date,e.qty);});
@@ -6881,25 +6926,45 @@ function analyticsSeriesForRange(range,key,points){
   for(let i=1;i<vals.length;i++) vals[i]+=vals[i-1];
   return vals;
 }
+function analyticsRangeForLifetime(){
+  const dates=[];
+  analyticsPurchaseRecords().forEach(e=>e.date&&dates.push(dateOnly(e.date)));
+  analyticsSaleRecords().forEach(e=>e.date&&dates.push(dateOnly(e.date)));
+  expenses.forEach(e=>e.date&&dates.push(dateOnly(e.date)));
+  allPhoneExpenseEntries().forEach(e=>e.date&&dates.push(dateOnly(e.date)));
+  if(!dates.length) return {from:isoDateLocal(new Date()),to:isoDateLocal(new Date()),mode:'lifetime'};
+  dates.sort(); return {from:dates[0],to:isoDateLocal(new Date()),mode:'lifetime'};
+}
 function analyticsRenderLine(currRange,prevRange,key){
   const box=document.getElementById('analyticsLineChart');
-  const days=currRange.mode==='lifetime'?30:Math.max(1,analyticsDaysBetween(currRange.from,currRange.to)+1);
-  const points=Math.min(days,31);
-  const a=analyticsSeriesForRange(currRange,key,points), b=prevRange?analyticsSeriesForRange(prevRange,key,points):[];
-  const max=Math.max(1,Math.max.apply(null,a.concat(b.length?b:[0]))),w=640,h=205,pad={l:50,r:10,t:16,b:28},iw=w-pad.l-pad.r,ih=h-pad.t-pad.b;
-  function xy(v,i){return {x:pad.l+(i/(Math.max(1,points-1)))*iw,y:pad.t+ih-(v/max)*ih};}
-  function path(vals){return vals.map(function(v,i){const q=xy(v,i);return (i?'L':'M')+q.x.toFixed(1)+' '+q.y.toFixed(1);}).join(' ');}
-  let grid='';for(let g=0;g<=4;g++){const y=pad.t+ih-(g/4)*ih;grid+='<line x1="'+pad.l+'" y1="'+y+'" x2="'+(w-pad.r)+'" y2="'+y+'" stroke="currentColor" opacity=".10"/><text x="'+(pad.l-7)+'" y="'+(y+3)+'" text-anchor="end" font-size="9" fill="currentColor" opacity=".55">'+analyticsValueLabel(max*g/4,key)+'</text>';}
-  let dots='';[a,b].forEach(function(vals,si){if(!vals.length)return;const step=Math.max(1,Math.floor(vals.length/7));vals.forEach(function(v,i){if(i%step===0||i===vals.length-1){const q=xy(v,i);dots+='<circle cx="'+q.x+'" cy="'+q.y+'" r="3.2" fill="var(--'+(si?'nonpta':'pta')+')" stroke="var(--surface)" stroke-width="1.5"/>';}});});
+  const actualRange=currRange.mode==='lifetime'?analyticsRangeForLifetime():currRange;
+  const days=Math.max(1,analyticsDaysBetween(actualRange.from,actualRange.to)+1);
+  const points=days<=31?days:days<=120?Math.min(16,Math.ceil(days/7)):Math.min(12,Math.ceil(days/30));
+  const a=analyticsSeriesForRange(actualRange,key,points);
+  const prevActual=prevRange&&prevRange.from?prevRange:prevRange;
+  const b=prevActual&&prevActual.from?analyticsSeriesForRange(prevActual,key,points):[];
+  const all=a.concat(b), max=Math.max(1,...all.map(Math.abs)), min=Math.min(0,...all), w=560,h=250,pad={l:58,r:12,t:16,b:30},iw=w-pad.l-pad.r,ih=h-pad.t-pad.b;
+  function y(v){return pad.t+((max-v)/(max-min))*ih;}
+  function path(vals){return vals.map(function(v,i){const x=pad.l+(i/(Math.max(1,vals.length-1)))*iw;return (i?'L':'M')+x.toFixed(1)+' '+y(v).toFixed(1);}).join(' ');}
+  let grid=''; for(let g=0;g<=4;g++){const val=max-((max-min)*g/4),yy=y(val);grid+='<line x1="'+pad.l+'" y1="'+yy+'" x2="'+(w-pad.r)+'" y2="'+yy+'" stroke="currentColor" opacity=".10"/><text x="'+(pad.l-7)+'" y="'+(yy+3)+'" text-anchor="end" font-size="10" fill="currentColor" opacity=".55">'+analyticsValueLabel(val,key)+'</text>';}
+  let dots=''; [a,b].forEach(function(vals,si){vals.forEach(function(v,i){if(i===0||i===vals.length-1||vals.length<=8){const x=pad.l+(i/(Math.max(1,vals.length-1)))*iw;dots+='<circle cx="'+x+'" cy="'+y(v)+'" r="3.2" fill="var(--'+(si?'nonpta':'pta')+')" stroke="var(--surface)" stroke-width="1.5"/>';}});});
   const title=document.getElementById('analyticsMetric').options[document.getElementById('analyticsMetric').selectedIndex].textContent;
-  document.getElementById('analyticsTrendSub').textContent=title+' cumulative scoring · comparable period';
-  const x1=analyticsLabelDate(currRange.from,false), x2=analyticsLabelDate(currRange.to,false);
-  box.innerHTML='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+title+' scoring comparison"><g>'+grid+'</g>'+(a.length?'<path d="'+path(a)+'" fill="none" stroke="var(--pta)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>':'')+(b.length?'<path d="'+path(b)+'" fill="none" stroke="var(--nonpta)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>':'')+dots+'<text x="'+pad.l+'" y="'+(h-6)+'" text-anchor="start" font-size="9" fill="currentColor" opacity=".55">'+x1+'</text><text x="'+(w-pad.r)+'" y="'+(h-6)+'" text-anchor="end" font-size="9" fill="currentColor" opacity=".55">'+x2+'</text></svg><div class="analytics-legend"><span><i class="analytics-dot" style="background:var(--pta)"></i>Current</span>'+(b.length?'<span><i class="analytics-dot" style="background:var(--nonpta)"></i>Previous comparable</span>':'')+'</div>';
+  document.getElementById('analyticsTrendSub').textContent=title+' cumulative scoring · selected period';
+  const x1=analyticsLabelDate(actualRange.from,false), x2=analyticsLabelDate(actualRange.to,false);
+  box.innerHTML='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+title+' scoring comparison"><g>'+grid+'</g>'+(a.length?'<path d="'+path(a)+'" fill="none" stroke="var(--pta)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>':'')+(b.length?'<path d="'+path(b)+'" fill="none" stroke="var(--nonpta)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>':'')+dots+'<text x="'+pad.l+'" y="'+(h-6)+'" text-anchor="start" font-size="10" fill="currentColor" opacity=".55">'+x1+'</text><text x="'+(w-pad.r)+'" y="'+(h-6)+'" text-anchor="end" font-size="10" fill="currentColor" opacity=".55">'+x2+'</text></svg><div class="analytics-legend"><span><i class="analytics-dot" style="background:var(--pta)"></i>Current</span>'+(b.length?'<span><i class="analytics-dot" style="background:var(--nonpta)"></i>Previous comparable</span>':'')+'</div>';
 }
 function analyticsRenderVolume(curr,prev){
   const max=Math.max(1,curr.purchaseAmount,curr.saleAmount,prev?prev.purchaseAmount:0,prev?prev.saleAmount:0);
   function group(title,c,p,key){const h=Math.max(3,Math.round((c/max)*92)),hp=p==null?0:Math.max(3,Math.round((p/max)*92));return '<div class="analytics-bar-group"><div class="analytics-bar-title">'+title+'</div><div class="analytics-bar-track"><div class="analytics-bar-col"><div class="analytics-bar-value">Rs '+fmt(c)+'</div><div class="analytics-bar" style="height:'+h+'px"></div><div class="analytics-bar-label">Current</div></div>'+(p==null?'':'<div class="analytics-bar-col"><div class="analytics-bar-value">Rs '+fmt(p)+'</div><div class="analytics-bar previous" style="height:'+hp+'px"></div><div class="analytics-bar-label">Previous</div></div>')+'</div><div class="analytics-bar-change">'+(p==null?'<span class="analytics-flat">No previous period</span>':analyticsChangeHtml(c,p,key)+' '+analyticsDifferenceHtml(c,p,key))+'</div></div>';}
   document.getElementById('analyticsVolumeBars').innerHTML=group('PURCHASE',curr.purchaseAmount,prev&&prev.purchaseAmount,'purchases')+group('SALE',curr.saleAmount,prev&&prev.saleAmount,'sales');
+}
+function analyticsRenderQuantity(curr,prev){
+  const max=Math.max(1,curr.purchasedUnits,curr.soldUnits,prev?prev.purchasedUnits:0,prev?prev.soldUnits:0);
+  function group(title,c,p,key){
+    const h=Math.max(3,Math.round((c/max)*92)),hp=p==null?0:Math.max(3,Math.round((p/max)*92));
+    return '<div class="analytics-bar-group"><div class="analytics-bar-title">'+title+'</div><div class="analytics-bar-track"><div class="analytics-bar-col"><div class="analytics-bar-value">'+Math.round(c)+'</div><div class="analytics-bar" style="height:'+h+'px"></div><div class="analytics-bar-label">Current</div></div>'+(p==null?'':'<div class="analytics-bar-col"><div class="analytics-bar-value">'+Math.round(p)+'</div><div class="analytics-bar previous" style="height:'+hp+'px"></div><div class="analytics-bar-label">Previous</div></div>')+'</div><div class="analytics-bar-change">'+(p==null?'<span class="analytics-flat">No previous period</span>':analyticsChangeHtml(c,p,key)+' '+analyticsDifferenceHtml(c,p,key))+'</div></div>';
+  }
+  document.getElementById('analyticsQuantityBars').innerHTML=group('PURCHASED',curr.purchasedUnits,prev&&prev.purchasedUnits,'purchasedUnits')+group('SOLD',curr.soldUnits,prev&&prev.soldUnits,'soldUnits')+'<div class="analytics-quantity-note" style="grid-column:1 / -1;">Numbers = total mobile units in the selected period.</div>';
 }
 function analyticsRenderStock(){
   const stock=analyticsCurrentStock();
@@ -6922,19 +6987,44 @@ function analyticsMonthRange(year,month){
   const start=new Date(year,month,1),end=new Date(year,month+1,0);return {from:isoDateLocal(start),to:isoDateLocal(end),mode:'calendar'};
 }
 function analyticsRenderMonths(){
-  const now=new Date(), rows=[];
-  for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1),r=analyticsMonthRange(d.getFullYear(),d.getMonth()),m=analyticsMetrics(r);rows.push({label:d.toLocaleString('en-PK',{month:'short'}),sales:m.saleAmount,purchase:m.purchaseAmount,profit:m.netProfit});}
-  const max=Math.max(1,...rows.map(function(r){return Math.max(r.sales,r.purchase,r.profit,0);})),min=Math.min(0,...rows.map(function(r){return r.profit;})),w=560,h=225,pad={l:58,r:12,t:16,b:34},iw=w-pad.l-pad.r,ih=h-pad.t-pad.b;
+  const active=analyticsDateRange(analyticsMode), base=active.mode==='lifetime'?analyticsRangeForLifetime():active;
+  const startD=new Date((base.from||isoDateLocal(new Date()))+'T00:00:00'), endD=new Date((base.to||isoDateLocal(new Date()))+'T00:00:00');
+  const days=Math.max(1,analyticsDaysBetween(isoDateLocal(startD),isoDateLocal(endD))+1);
+  let bucketType='month', count=6;
+  if(days<=31){bucketType='day';count=Math.min(14,days);} else if(days<=120){bucketType='week';count=Math.min(12,Math.ceil(days/7));}
+  const rows=[];
+  for(let i=count-1;i>=0;i--){
+    let from,to,label;
+    if(bucketType==='day'){
+      const d=new Date(endD); d.setDate(d.getDate()-i); from=to=isoDateLocal(d); label=d.toLocaleDateString('en-PK',{day:'2-digit',month:'short'});
+    }else if(bucketType==='week'){
+      const d=new Date(endD); d.setDate(d.getDate()-i*7); to=isoDateLocal(d); const f=new Date(d); f.setDate(f.getDate()-6); from=from=isoDateLocal(f); label=d.toLocaleDateString('en-PK',{day:'2-digit',month:'short'});
+    }else{
+      const d=new Date(endD.getFullYear(),endD.getMonth()-i,1); from=isoDateLocal(d); to=isoDateLocal(new Date(d.getFullYear(),d.getMonth()+1,0)); label=d.toLocaleString('en-PK',{month:'short',year:'2-digit'});
+    }
+    const r={from:from,to:to,mode:'calendar'},m=analyticsMetrics(r); rows.push({label:label,sales:m.saleAmount,purchase:m.purchaseAmount,profit:m.netProfit});
+  }
+  const max=Math.max(1,...rows.map(function(r){return Math.max(r.sales,r.purchase,r.profit,0);})),min=Math.min(0,...rows.map(function(r){return r.profit;})),w=560,h=255,pad={l:58,r:12,t:16,b:38},iw=w-pad.l-pad.r,ih=h-pad.t-pad.b;
   function y(v){return pad.t+((max-v)/(max-min))*ih;}
-  let grid='';for(let g=0;g<=4;g++){const val=max-((max-min)*g/4),yy=y(val);grid+='<line x1="'+pad.l+'" y1="'+yy+'" x2="'+(w-pad.r)+'" y2="'+yy+'" stroke="currentColor" opacity=".10"/><text x="'+(pad.l-7)+'" y="'+(yy+3)+'" text-anchor="end" font-size="9" fill="currentColor" opacity=".55">Rs '+fmt(val)+'</text>';}
-  function line(key){return rows.map(function(r,i){const x=pad.l+(i/(rows.length-1))*iw;return (i?'L':'M')+x.toFixed(1)+' '+y(r[key]).toFixed(1);}).join(' ');}
-  const dots=['sales','purchase','profit'].map(function(key){return rows.map(function(r,i){const x=pad.l+(i/(rows.length-1))*iw;return '<circle cx="'+x+'" cy="'+y(r[key])+'" r="2.8" fill="var(--'+(key==='sales'?'pta':key==='purchase'?'nonpta':'text')+')"/>';}).join('');}).join('');
+  let grid='';for(let g=0;g<=4;g++){const val=max-((max-min)*g/4),yy=y(val);grid+='<line x1="'+pad.l+'" y1="'+yy+'" x2="'+(w-pad.r)+'" y2="'+yy+'" stroke="currentColor" opacity=".10"/><text x="'+(pad.l-7)+'" y="'+(yy+3)+'" text-anchor="end" font-size="10" fill="currentColor" opacity=".55">Rs '+fmt(val)+'</text>';}
+  function line(key){return rows.map(function(r,i){const x=pad.l+(i/(Math.max(1,rows.length-1)))*iw;return (i?'L':'M')+x.toFixed(1)+' '+y(r[key]).toFixed(1);}).join(' ');}
+  const dots=['sales','purchase','profit'].map(function(key){return rows.map(function(r,i){const x=pad.l+(i/(Math.max(1,rows.length-1)))*iw;return '<circle cx="'+x+'" cy="'+y(r[key])+'" r="3" fill="var(--'+(key==='sales'?'pta':key==='purchase'?'nonpta':'text')+')"/>';}).join('');}).join('');
   const lines='<path d="'+line('sales')+'" fill="none" stroke="var(--pta)" stroke-width="2.8" stroke-linecap="round"/><path d="'+line('purchase')+'" fill="none" stroke="var(--nonpta)" stroke-width="2.8" stroke-linecap="round"/><path d="'+line('profit')+'" fill="none" stroke="currentColor" opacity=".7" stroke-width="2.5" stroke-linecap="round"/>';
-  const labels=rows.map(function(r,i){const x=pad.l+(i/(rows.length-1))*iw;return '<text x="'+x+'" y="'+(h-10)+'" text-anchor="middle" font-size="9" fill="currentColor" opacity=".6">'+r.label+'</text>';}).join('');
-  document.getElementById('analyticsMonthChart').innerHTML='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Six month business trend">'+grid+lines+dots+labels+'</svg><div class="analytics-legend"><span><i class="analytics-dot" style="background:var(--pta)"></i>Sales</span><span><i class="analytics-dot" style="background:var(--nonpta)"></i>Purchase</span><span><i class="analytics-dot" style="background:currentColor"></i>Profit</span></div>';
+  const labels=rows.map(function(r,i){const x=pad.l+(i/(Math.max(1,rows.length-1)))*iw;return '<text x="'+x+'" y="'+(h-10)+'" text-anchor="middle" font-size="10" fill="currentColor" opacity=".6">'+r.label+'</text>';}).join('');
+  document.getElementById('analyticsMonthSub').textContent=(bucketType==='day'?'Daily':bucketType==='week'?'Weekly':'Monthly')+' purchase, sale and net profit';
+  document.getElementById('analyticsTrendTitle').textContent=(bucketType==='day'?'DAILY':bucketType==='week'?'WEEKLY':'MONTHLY')+' BUSINESS TREND';
+  document.getElementById('analyticsMonthChart').innerHTML='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Business trend">'+grid+lines+dots+labels+'</svg><div class="analytics-legend"><span><i class="analytics-dot" style="background:var(--pta)"></i>Sales</span><span><i class="analytics-dot" style="background:var(--nonpta)"></i>Purchase</span><span><i class="analytics-dot" style="background:currentColor"></i>Profit</span></div>';
 }
 let analyticsMode='calendar';
+let analyticsCustomFrom='';
+let analyticsCustomTo='';
 function renderAnalytics(){
+  const custom=document.getElementById('analyticsCustomRange');
+  if(analyticsMode==='custom') custom.classList.remove('hidden'); else custom.classList.add('hidden');
+  if(analyticsMode==='custom'){
+    if(analyticsCustomFrom) document.getElementById('analyticsFrom').value=analyticsCustomFrom;
+    if(analyticsCustomTo) document.getElementById('analyticsTo').value=analyticsCustomTo;
+  }
   const range=analyticsDateRange(analyticsMode), prev=range.previous||null;
   const curr=analyticsMetrics(range), previous=prev?analyticsMetrics(prev):null;
   document.querySelectorAll('[data-analytics-period]').forEach(function(b){b.classList.toggle('active',b.dataset.analyticsPeriod===analyticsMode);});
@@ -6942,6 +7032,7 @@ function renderAnalytics(){
   analyticsRenderScoreboard(curr,previous);
   analyticsRenderLine(range,prev,document.getElementById('analyticsMetric').value);
   analyticsRenderVolume(curr,previous);
+  analyticsRenderQuantity(curr,previous);
   analyticsRenderStock();
   analyticsRenderBrands(curr);
   analyticsRenderModels(curr);
@@ -6950,14 +7041,31 @@ function renderAnalytics(){
 document.getElementById('btnAnalytics').onclick=function(){
   closeMainMenu();
   analyticsMode=['calendar','business','lifetime'].indexOf(dashboardSettings.mode)!==-1?dashboardSettings.mode:'calendar';
+  analyticsCustomFrom=''; analyticsCustomTo='';
   renderAnalytics();
   document.getElementById('analyticsOverlay').classList.remove('hidden');
   pushOverlayHistory('analyticsOverlay');
 };
 document.getElementById('btnAnalyticsClose').onclick=function(){requestOverlayClose();};
 document.getElementById('analyticsOverlay').onclick=function(e){if(e.target.id==='analyticsOverlay')requestOverlayClose();};
-document.querySelectorAll('[data-analytics-period]').forEach(function(btn){btn.onclick=function(){analyticsMode=btn.dataset.analyticsPeriod;renderAnalytics();};});
+document.querySelectorAll('[data-analytics-period]').forEach(function(btn){btn.onclick=function(){
+  analyticsMode=btn.dataset.analyticsPeriod;
+  if(analyticsMode==='custom'){
+    const today=isoDateLocal(new Date()), first=today.slice(0,8)+'01';
+    analyticsCustomFrom=analyticsCustomFrom||first; analyticsCustomTo=analyticsCustomTo||today;
+  }
+  renderAnalytics();
+};});
 document.getElementById('analyticsMetric').onchange=renderAnalytics;
+document.getElementById('analyticsApplyRange').onclick=function(){
+  const from=document.getElementById('analyticsFrom').value, to=document.getElementById('analyticsTo').value;
+  const err=document.getElementById('analyticsCustomError');
+  if(!from||!to){err.textContent='From aur To dono select karein.';return;}
+  if(from>to){err.textContent='From date, To date se pehle honi chahiye.';return;}
+  analyticsCustomFrom=from; analyticsCustomTo=to; err.textContent=''; renderAnalytics();
+};
+document.getElementById('analyticsFrom').onchange=function(){analyticsCustomFrom=this.value;};
+document.getElementById('analyticsTo').onchange=function(){analyticsCustomTo=this.value;};
 
 // ---------- Menu dropdown ----------
 // Single "☰ Menu" button replaces the wall of buttons that used to sit
