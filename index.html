@@ -1844,7 +1844,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 06 Oct 2026 • 11:04:03 AM PKT • Analytics priority reordered</div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 06 Oct 2026 • 02:22:02 PM PKT • Stability + entry interaction fixes</div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1861,7 +1861,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
 <script>
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '06 Oct 2026 • 11:04:03 AM PKT • Analytics priority reordered';
+const APP_INDEX_UPDATED = '06 Oct 2026 • 02:22:02 PM PKT • Stability + entry interaction fixes';
 
 let inventory = [];
 
@@ -5537,7 +5537,8 @@ function preloadLatestShopEntryConfig(){
       customOptionData=data.customOptionData;
       try{ localStorage.setItem(shopStorageKey(LS_CUSTOM_OPTIONS_KEY), JSON.stringify(customOptionData)); }catch(e){}
       shopConfigReady=true;
-      refreshEntryFormUI();
+      if(entryFormOpen) entryConfigRefreshPending=true;
+      else refreshEntryFormUI();
     }
   }).catch(function(err){
     console.warn('Entry config preload failed',err);
@@ -5556,20 +5557,16 @@ function refreshEntryFormUI(){
   }catch(err){ console.warn('Entry UI refresh failed',err); }
 }
 function settleEntryFormUI(){
-  // Cloud sync may finish just after the sheet opens. Re-check briefly so the
-  // first open and the post-refresh open show the same fields/options.
-  [0,120,300,700,1200].forEach(function(ms){
-    setTimeout(function(){
-      const ov=document.getElementById('overlay');
-      if(ov && !ov.classList.contains('hidden')) refreshEntryFormUI();
-    },ms);
-  });
+  // Intentionally do not rebuild the entry form repeatedly after opening.
+  // Background cloud/config updates are deferred until the next open so user
+  // taps cannot be interrupted by DOM replacement.
 }
-
 function openAdd(){
   prepareEntryLayoutDOM();
-  preloadLatestShopEntryConfig();
   if(isAdminShopView()){ alert('Admin Shop view read-only hai — nayi entry add nahi ki ja sakti.'); return; }
+  entryFormOpen = true;
+  entryConfigRefreshPending = false;
+  preloadLatestShopEntryConfig();
   hideSaveError('saveErrorBanner');
   editingId = null;
   rangeInputMode = 'auto';
@@ -5615,8 +5612,10 @@ function openAdd(){
   renderPhoneExpenseRows('f-phone-expenses', [{}]);
   extraPieceCount = 0;
   document.getElementById('addExtraBuyBtn').style.display = 'block';
-  // Render immediately from the latest local snapshot, then quietly settle
-  // against any cloud snapshot that arrives just after the sheet opens.
+  // Render once from the latest stable local/cloud snapshot. Any cloud
+  // configuration arriving while the form was open is intentionally deferred
+  // until the next entry session.
+  if(entryConfigRefreshPending){ loadCustomOptionData(); entryConfigRefreshPending=false; }
   refreshEntryFormUI();
   document.getElementById('overlay').classList.remove('hidden');
   requestAnimationFrame(function(){
@@ -5624,7 +5623,6 @@ function openAdd(){
     const sheet=document.querySelector('#overlay .sheet');
     if(sheet) sheet.scrollTop=0;
   });
-  settleEntryFormUI();
   pushOverlayHistory('overlay');
 }
 
@@ -5647,6 +5645,8 @@ function openEdit(id){
   hideSaveError('saveErrorBanner');
   const e = inventory.find(function(x){return x.id===id;});
   if(!e) return;
+  entryFormOpen = true;
+  entryConfigRefreshPending = false;
   editingId = id;
   rangeInputMode = (e.rangeMode==='auto' || e.rangeMode==='manual') ? e.rangeMode : (e.range ? 'manual' : 'auto');
   document.getElementById('sheetTitle').textContent = e.sold ? 'Sale entry edit karein' : 'Stock entry edit karein';
@@ -5717,6 +5717,8 @@ function openEdit(id){
 }
 
 function closeSheet(){
+  entryFormOpen=false;
+  entryConfigRefreshPending=false;
   requestOverlayClose();
 }
 
@@ -8532,6 +8534,11 @@ let applyingRemoteUpdate = false; // true while a cloud update is being written 
 let shopConfigReady = false;
 let shopConfigFetchPromise = null;
 let pushDebounceTimer = null;
+// Prevent background cloud/config refreshes from rebuilding entry chips while
+// the user is actively filling the form. Replacing chip DOM during a tap can
+// make an option appear visible but miss the click.
+let entryFormOpen = false;
+let entryConfigRefreshPending = false;
 // Guards against the "offline entry disappears" bug: every local save bumps
 // localVersion; a push only advances lastPushedVersion (persisted, so it
 // survives a refresh) once that exact version is confirmed written to the
@@ -9034,6 +9041,13 @@ function initFirebaseSync(){
     var checkingTimeout = setTimeout(function(){
       if(!fbUser) setAuthGateView('locked');
     }, 6000);
+    var resolveSafetyTimeout = setTimeout(function(){
+      if(wasLoggedInBefore && fbUser && document.querySelector('.app')?.style.visibility==='hidden'){
+        const appEl=document.querySelector('.app'); if(appEl) appEl.style.visibility='visible';
+        const fab=document.getElementById('fabAdd'); if(fab) fab.style.display='flex';
+        setSessionSplash(false);
+      }
+    }, 8500);
     fbAuth.onAuthStateChanged(function(user){
       clearTimeout(checkingTimeout);
       fbUser = user;
@@ -9060,6 +9074,18 @@ function initFirebaseSync(){
             setAccessGate(userAccessStatus,userAccessReason);
             subscribeUserNotifications();
             setTimeout(function(){ if(pendingGoogleShopSetup) maybeOpenShopSetup(true); }, 350);
+          }
+        }).catch(function(err){
+          console.error('User/shop resolve failed', err);
+          // If this is a previously authenticated device, keep the cached app
+          // usable during a temporary Firestore/network failure. The next
+          // successful auth/shop resolution will still enforce access state.
+          if(wasLoggedInBefore){
+            const appEl=document.querySelector('.app'); if(appEl) appEl.style.visibility='visible';
+            const fab=document.getElementById('fabAdd'); if(fab) fab.style.display='flex';
+            setSessionSplash(false);
+          }else{
+            setAuthGateView('locked');
           }
         });
       } else {
@@ -9424,11 +9450,17 @@ function startCloudSync(uid){
     // immediately when the latest shop snapshot arrives so a newly opened entry
     // does not show an incomplete set of fields until a manual page refresh.
     try{
-      loadCustomOptionData();
-      renderAllChips();
-      prepareEntryLayoutDOM();
-      applyEntryLayoutToDOM(getEntryPlatform(formState && formState.brand));
-      renderEntryLayoutSettings();
+      if(entryFormOpen){
+        // Keep the currently displayed entry controls stable while the user is
+        // entering data. Apply the newest cloud config on the next open.
+        entryConfigRefreshPending=true;
+      }else{
+        loadCustomOptionData();
+        renderAllChips();
+        prepareEntryLayoutDOM();
+        applyEntryLayoutToDOM(getEntryPlatform(formState && formState.brand));
+        renderEntryLayoutSettings();
+      }
     }catch(e){}
     updateAccountUI();
     setAccountSyncStatus('sab devices par sync ho gaya', 'ok');
