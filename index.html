@@ -1844,7 +1844,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 06 Oct 2026 • 02:22:02 PM PKT • Stability + entry interaction fixes</div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 06 Oct 2026 • 05:39:13 PM PKT • Entry chip interaction fix</div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1861,7 +1861,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
 <script>
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '06 Oct 2026 • 02:22:02 PM PKT • Stability + entry interaction fixes';
+const APP_INDEX_UPDATED = '06 Oct 2026 • 05:39:13 PM PKT • Entry chip interaction fix';
 
 let inventory = [];
 
@@ -5562,11 +5562,12 @@ function settleEntryFormUI(){
   // taps cannot be interrupted by DOM replacement.
 }
 function openAdd(){
+  // Mark the entry sheet as open BEFORE any UI/config refresh. Cloud snapshots
+  // use this flag to defer chip/layout rebuilds while the user is tapping options.
+  entryFormOpen=true;
+  entryConfigRefreshPending=false;
   prepareEntryLayoutDOM();
   if(isAdminShopView()){ alert('Admin Shop view read-only hai — nayi entry add nahi ki ja sakti.'); return; }
-  entryFormOpen = true;
-  entryConfigRefreshPending = false;
-  preloadLatestShopEntryConfig();
   hideSaveError('saveErrorBanner');
   editingId = null;
   rangeInputMode = 'auto';
