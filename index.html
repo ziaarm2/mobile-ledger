@@ -859,17 +859,18 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 .analytics-apply-btn{border:0;border-radius:8px;background:var(--pta);color:var(--surface);font-weight:900;padding:9px 11px;min-height:35px;cursor:pointer;}
 .analytics-custom-error{font-size:9.5px;color:var(--danger);min-height:13px;margin-top:5px;}
 .analytics-quantity-note{font-size:9.5px;color:var(--text-faint);text-align:center;margin-top:5px;}
-.analytics-time-grid{display:grid;grid-template-columns:1fr;gap:6px;}
-.analytics-time-row{display:grid;grid-template-columns:56px 1fr 1fr;gap:7px;align-items:center;font-size:10px;}
+.analytics-time-grid{display:grid;gap:7px;}
+.analytics-time-row{display:grid;grid-template-columns:48px 1fr;gap:6px;align-items:center;font-size:10px;}
 .analytics-time-label{font-weight:800;color:var(--text-dim);text-align:right;}
-.analytics-time-track{height:16px;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;overflow:hidden;position:relative;}
-.analytics-time-fill{height:100%;border-radius:4px;min-width:2px;}
+.analytics-time-pair{display:grid;gap:3px;}
+.analytics-time-track{height:15px;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;overflow:hidden;position:relative;}
+.analytics-time-fill{height:100%;min-width:2px;border-radius:4px;}
 .analytics-time-fill.sale{background:var(--pta);}.analytics-time-fill.purchase{background:var(--nonpta);}
-.analytics-time-value{position:absolute;inset:0;display:flex;align-items:center;padding-left:6px;font-size:9px;font-weight:900;color:var(--text);mix-blend-mode:multiply;}
-.analytics-time-legend{display:flex;justify-content:center;gap:14px;font-size:10px;color:var(--text-dim);margin-bottom:8px;}
-.analytics-time-legend span{display:inline-flex;align-items:center;gap:5px;}
-.analytics-time-summary{font-size:10px;color:var(--text-faint);text-align:center;margin-top:7px;line-height:1.4;}
-.analytics-time-missing{color:var(--danger);font-size:9.5px;text-align:center;margin-top:5px;line-height:1.4;}
+.analytics-time-value{position:absolute;inset:0;display:flex;align-items:center;padding-left:5px;font-size:8.5px;font-weight:800;color:var(--text);}
+.analytics-time-summary{font-size:10px;color:var(--text-dim);text-align:center;margin-top:8px;line-height:1.4;}
+.analytics-time-missing{font-size:9px;color:var(--text-faint);text-align:center;margin-top:5px;line-height:1.35;}
+.analytics-time-legend{display:flex;justify-content:center;gap:14px;font-size:9.5px;color:var(--text-dim);margin-bottom:8px;}
+
 .analytics-brand-values{font-size:10.5px;}
 .analytics-model-row{min-height:40px;}
 .analytics-month-chart svg{height:245px;}
@@ -964,7 +965,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 06 Oct 2026 • 09:42:54 AM PKT</span><span>Backup, Sync & Data combined</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 06 Oct 2026 • 09:58:00 AM PKT</span><span>Backup, Sync & Data combined</span></div>
         </div>
       </div>
     </div>
@@ -1351,7 +1352,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
       <div class="analytics-bars" id="analyticsQuantityBars"></div>
     </div>
     <div class="analytics-card">
-      <div class="analytics-card-head"><div><div class="analytics-card-title">⏰ BUSIEST BUSINESS HOURS</div><div class="analytics-card-sub">Selected period mein kis waqt zyada purchase aur sale hui</div></div></div>
+      <div class="analytics-card-head"><div><div class="analytics-card-title">⏰ BUSIEST BUSINESS HOURS</div><div class="analytics-card-sub">Selected period mein sale aur purchase kis waqt zyada hui</div></div></div>
       <div class="analytics-time-legend"><span><i class="analytics-dot" style="background:var(--pta)"></i>Sale</span><span><i class="analytics-dot" style="background:var(--nonpta)"></i>Purchase</span></div>
       <div class="analytics-time-grid" id="analyticsTimeGrid"></div>
       <div class="analytics-time-summary" id="analyticsTimeSummary"></div>
@@ -1843,7 +1844,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 06 Oct 2026 • 09:42:54 AM PKT • Backup, Sync & Data combined</div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 06 Oct 2026 • 09:58:00 AM PKT • Backup, Sync & Data combined</div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1860,7 +1861,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
 <script>
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '06 Oct 2026 • 09:42:54 AM PKT • Analytics time-of-day accuracy + hourly purchase/sale graph';
+const APP_INDEX_UPDATED = '06 Oct 2026 • 09:58:00 AM PKT • Analytics time-of-day graph';
 
 let inventory = [];
 
@@ -6853,29 +6854,20 @@ function analyticsDateRange(mode){
 }
 function analyticsInRange(value,range){return dashboardDateInRange(value,range);}
 function analyticsPurchaseRecords(){
-  // A purchase belongs to the original stock entry. Sold records are only
-  // transaction records linked by stockId; returned sales are already back in
-  // the original stock quantity, so they must NOT be added twice.
+  const originals=inventory.filter(function(e){return !e.sold;});
   const soldByStock={};
   inventory.forEach(function(e){
-    if(e.sold && !isReturnedSale(e) && e.stockId){
-      const sid=String(e.stockId);
-      soldByStock[sid]=(soldByStock[sid]||0)+(Number(e.quantity)||0);
-    }
+    if(e.sold && !isReturnedSale(e) && e.stockId){ soldByStock[String(e.stockId)]=(soldByStock[String(e.stockId)]||0)+(Number(e.quantity)||0); }
   });
-  return inventory.filter(function(e){return !e.stockId;}).map(function(e){
-    const currentQty=Math.max(0,Number(e.quantity)||0);
-    const soldQty=soldByStock[String(e.id)]||0;
-    const qty=currentQty+soldQty;
-    const purchaseTime=e.purchaseAt||entryCreatedAt(e)||e.buyDate||e.lastUpdated;
-    return {id:e.id,date:e.buyDate||purchaseTime,exactTime:purchaseTime,qty:qty,amount:(Number(e.buy)||0)*qty,brand:e.brand||'Other',model:e.model||''};
+  return originals.map(function(e){
+    const qty=Math.max(0,(Number(e.quantity)||0)+(soldByStock[String(e.id)]||0));
+    return {id:e.id,date:e.buyDate||e.purchaseAt||e.lastUpdated,qty:qty,amount:(Number(e.buy)||0)*qty,brand:e.brand||'Other',model:e.model||''};
   }).filter(function(e){return e.qty>0;});
 }
 function analyticsSaleRecords(){
   return inventory.filter(function(e){return e.sold && !isReturnedSale(e) && e.sell!=null;}).map(function(e){
     const qty=Math.max(1,Number(e.quantity)||1);
-    const saleTime=e.saleAt||e.saleDate||e.lastUpdated;
-    return {id:e.id,date:e.saleDate||saleTime,exactTime:saleTime,qty:qty,amount:(Number(e.sell)||0)*qty,profit:saleBaseProfit(e),brand:e.brand||'Other',model:e.model||'',phoneExpenses:phoneExpensesTotal(e)};
+    return {id:e.id,date:e.saleDate||e.saleAt||e.lastUpdated,qty:qty,amount:(Number(e.sell)||0)*qty,profit:saleBaseProfit(e),brand:e.brand||'Other',model:e.model||'',phoneExpenses:phoneExpensesTotal(e)};
   });
 }
 function analyticsExpenseTotal(range){return expensesForDashboardRange(range);}
@@ -6995,42 +6987,21 @@ function analyticsRenderQuantity(curr,prev){
   document.getElementById('analyticsQuantityBars').innerHTML=group('PURCHASED',curr.purchasedUnits,prev&&prev.purchasedUnits,'purchasedUnits')+group('SOLD',curr.soldUnits,prev&&prev.soldUnits,'soldUnits')+'<div class="analytics-quantity-note" style="grid-column:1 / -1;">Numbers = total mobile units in the selected period.</div>';
 }
 function analyticsRenderTimeOfDay(range){
-  const rows=Array.from({length:24},function(_,h){return {hour:h,saleQty:0,purchaseQty:0,saleAmount:0,purchaseAmount:0};});
-  let missingPurchase=0,missingSale=0;
-  const curr=analyticsMetrics(range);
-  curr.sales.forEach(function(e){
-    const raw=e.exactTime;
-    const d=raw?new Date(raw):null;
-    if(!d||isNaN(d.getTime())){missingSale++;return;}
-    rows[d.getHours()].saleQty+=Number(e.qty)||0;
-    rows[d.getHours()].saleAmount+=Number(e.amount)||0;
-  });
-  curr.purchases.forEach(function(e){
-    const raw=e.exactTime;
-    const d=raw?new Date(raw):null;
-    if(!d||isNaN(d.getTime())){missingPurchase++;return;}
-    rows[d.getHours()].purchaseQty+=Number(e.qty)||0;
-    rows[d.getHours()].purchaseAmount+=Number(e.amount)||0;
-  });
-  const active=rows.filter(function(r){return r.saleQty||r.purchaseQty;});
-  const saleMax=Math.max(1,...active.map(function(r){return r.saleQty;}));
-  const purchaseMax=Math.max(1,...active.map(function(r){return r.purchaseQty;}));
   const grid=document.getElementById('analyticsTimeGrid');
-  grid.innerHTML=active.length?active.map(function(r){
-    const label=String(r.hour).padStart(2,'0')+':00';
-    const sw=Math.round(r.saleQty/saleMax*100), pw=Math.round(r.purchaseQty/purchaseMax*100);
-    return '<div class="analytics-time-row"><div class="analytics-time-label">'+label+'</div><div class="analytics-time-track"><div class="analytics-time-fill sale" style="width:'+sw+'%"></div><div class="analytics-time-value">'+r.saleQty+' sold · Rs '+fmt(r.saleAmount)+'</div></div><div class="analytics-time-track"><div class="analytics-time-fill purchase" style="width:'+pw+'%"></div><div class="analytics-time-value">'+r.purchaseQty+' bought · Rs '+fmt(r.purchaseAmount)+'</div></div></div>';
-  }).join(''):'<div class="analytics-empty">Selected period mein exact time ke sath koi purchase/sale record nahi mila.</div>';
-  const topSale=active.slice().sort(function(a,b){return b.saleQty-a.saleQty;})[0];
-  const topPurchase=active.slice().sort(function(a,b){return b.purchaseQty-a.purchaseQty;})[0];
-  const summary=[];
-  if(topSale) summary.push('Peak sale: '+String(topSale.hour).padStart(2,'0')+':00–'+String((topSale.hour+1)%24).padStart(2,'0')+':00 ('+topSale.saleQty+' mobiles)');
-  if(topPurchase) summary.push('Peak purchase: '+String(topPurchase.hour).padStart(2,'0')+':00–'+String((topPurchase.hour+1)%24).padStart(2,'0')+':00 ('+topPurchase.purchaseQty+' mobiles)');
-  document.getElementById('analyticsTimeSummary').textContent=summary.join('  •  ');
-  const miss=[];
-  if(missingSale) miss.push(missingSale+' sale record(s) mein exact sale time available nahi tha');
-  if(missingPurchase) miss.push(missingPurchase+' purchase record(s) mein exact purchase time available nahi tha');
-  document.getElementById('analyticsTimeMissing').textContent=miss.length?'⚠️ '+miss.join(' • ')+'. In records ko hourly graph mein include nahi kiya gaya.':'Exact time available hone wale records hi hourly graph mein count hote hain.';
+  if(!grid) return;
+  const rows=Array.from({length:24},(_,hour)=>({hour,sale:0,purchase:0}));
+  const m=analyticsMetrics(range);
+  m.sales.forEach(e=>{const d=e.exactTime?new Date(e.exactTime):null;if(d&&!isNaN(d.getTime())) rows[d.getHours()].sale+=Number(e.qty)||0;});
+  m.purchases.forEach(e=>{const d=e.exactTime?new Date(e.exactTime):null;if(d&&!isNaN(d.getTime())) rows[d.getHours()].purchase+=Number(e.qty)||0;});
+  const active=rows.filter(r=>r.sale||r.purchase);
+  if(!active.length){grid.innerHTML='<div class="analytics-empty">Is period mein exact time ke sath sale/purchase record nahi mila.</div>';document.getElementById('analyticsTimeSummary').textContent='';return;}
+  const sm=Math.max(1,...active.map(r=>r.sale)),pm=Math.max(1,...active.map(r=>r.purchase));
+  grid.innerHTML=active.map(r=>{const label=String(r.hour).padStart(2,'0')+':00';return '<div class="analytics-time-row"><div class="analytics-time-label">'+label+'</div><div class="analytics-time-pair"><div class="analytics-time-track"><div class="analytics-time-fill sale" style="width:'+Math.round(r.sale/sm*100)+'%"></div><div class="analytics-time-value">Sale: '+r.sale+' mobile</div></div><div class="analytics-time-track"><div class="analytics-time-fill purchase" style="width:'+Math.round(r.purchase/pm*100)+'%"></div><div class="analytics-time-value">Purchase: '+r.purchase+' mobile</div></div></div></div>';}).join('');
+  const topS=active.reduce((a,b)=>b.sale>a.sale?b:a,active[0]),topP=active.reduce((a,b)=>b.purchase>a.purchase?b:a,active[0]);
+  const s=topS.sale?'Peak sale: '+String(topS.hour).padStart(2,'0')+':00–'+String((topS.hour+1)%24).padStart(2,'0')+':00 ('+topS.sale+' mobiles)':'';
+  const p=topP.purchase?'Peak purchase: '+String(topP.hour).padStart(2,'0')+':00–'+String((topP.hour+1)%24).padStart(2,'0')+':00 ('+topP.purchase+' mobiles)':'';
+  document.getElementById('analyticsTimeSummary').textContent=[s,p].filter(Boolean).join(' • ');
+  document.getElementById('analyticsTimeMissing').textContent='Sirf un records ko count kiya gaya hai jin mein exact time available hai.';
 }
 function analyticsRenderStock(){
   const stock=analyticsCurrentStock();
