@@ -831,10 +831,10 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 .analytics-period{border:0;border-radius:8px;background:transparent;color:var(--text-dim);padding:8px 5px;font-size:10.5px;font-weight:800;cursor:pointer;}
 .analytics-period.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.12);}
 .analytics-period-note{font-size:10.5px;color:var(--text-dim);margin-top:8px;text-align:center;line-height:1.5;}
-.analytics-scoreboard{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.analytics-scoreboard{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}.analytics-scoreboard .analytics-score:nth-child(1){grid-column:1 / -1;}.analytics-scoreboard .analytics-score:nth-child(6){grid-column:1 / -1;}
 .analytics-score{background:linear-gradient(145deg,var(--surface),var(--surface-2));border:1px solid var(--border);border-radius:13px;padding:10px;position:relative;overflow:hidden;min-width:0;}
 .analytics-score:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--border-strong);}
-.analytics-score.profit-score{border-width:1.5px;} .analytics-score.profit-score .analytics-score-value{font-size:23px;}
+.analytics-score.profit-score{border-width:2px;} .analytics-score.profit-score .analytics-score-value{font-size:27px;} .analytics-score.profit-score .analytics-score-label{font-size:11px;}
 .analytics-score-label{font-size:10px;color:var(--text-dim);font-weight:900;text-transform:uppercase;letter-spacing:.3px;}
 .analytics-score-value{font-size:22px;font-weight:900;line-height:1.15;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.analytics-score-sub{font-size:10px;color:var(--text-faint);margin-top:3px;}
 .analytics-change{margin-top:6px;font-size:10px;font-weight:900;line-height:1.35;}.analytics-up{color:var(--pta);}.analytics-down{color:var(--danger);}.analytics-flat{color:var(--text-dim);}
@@ -965,7 +965,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 06 Oct 2026 • 09:58:00 AM PKT</span><span>Backup, Sync & Data combined</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 06 Oct 2026 • 11:04:03 AM PKT</span><span>Backup, Sync & Data combined</span></div>
         </div>
       </div>
     </div>
@@ -1340,16 +1340,16 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
     </div>
     <div class="analytics-scoreboard" id="analyticsScoreboard"></div>
     <div class="analytics-card">
-      <div class="analytics-card-head"><div><div class="analytics-card-title">SCORING COMPARISON</div><div class="analytics-card-sub" id="analyticsTrendSub">Current vs previous comparable period</div></div><select id="analyticsMetric"><option value="sales">Sales</option><option value="purchases">Purchase</option><option value="profit">Profit</option><option value="expenses">Expenses</option><option value="soldUnits">Mobiles sold</option><option value="purchasedUnits">Mobiles purchased</option></select></div>
+      <div class="analytics-card-head"><div><div class="analytics-card-title">SCORING COMPARISON</div><div class="analytics-card-sub" id="analyticsTrendSub">Current vs previous comparable period</div></div><select id="analyticsMetric"><option value="profit" selected>Profit</option><option value="soldUnits">Mobiles sold</option><option value="purchasedUnits">Mobiles purchased</option><option value="sales">Sales</option><option value="purchases">Purchase</option><option value="expenses">Expenses</option></select></div>
       <div class="analytics-line-wrap" id="analyticsLineChart"></div>
     </div>
     <div class="analytics-card">
-      <div class="analytics-card-head"><div><div class="analytics-card-title">PURCHASE vs SALE</div><div class="analytics-card-sub">Money invested and money received · selected period vs previous</div></div></div>
-      <div class="analytics-bars" id="analyticsVolumeBars"></div>
+      <div class="analytics-card-head"><div><div class="analytics-card-title">QUANTITY COMPARISON</div><div class="analytics-card-sub">Mobiles purchased vs sold · same days vs previous period</div></div></div>
+      <div class="analytics-bars" id="analyticsQuantityBars"></div>
     </div>
     <div class="analytics-card">
-      <div class="analytics-card-head"><div><div class="analytics-card-title">QUANTITY COMPARISON</div><div class="analytics-card-sub">How many mobiles were purchased and sold in this period</div></div></div>
-      <div class="analytics-bars" id="analyticsQuantityBars"></div>
+      <div class="analytics-card-head"><div><div class="analytics-card-title">PURCHASE vs SALE</div><div class="analytics-card-sub">Money invested and money received · same days vs previous period</div></div></div>
+      <div class="analytics-bars" id="analyticsVolumeBars"></div>
     </div>
     <div class="analytics-card">
       <div class="analytics-card-head"><div><div class="analytics-card-title">⏰ BUSIEST BUSINESS HOURS</div><div class="analytics-card-sub">Selected period mein sale aur purchase kis waqt zyada hui</div></div></div>
@@ -1844,7 +1844,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 06 Oct 2026 • 09:58:00 AM PKT • Backup, Sync & Data combined</div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 06 Oct 2026 • 11:04:03 AM PKT • Analytics priority reordered</div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1861,7 +1861,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
 <script>
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '06 Oct 2026 • 09:58:00 AM PKT • Analytics time-of-day graph';
+const APP_INDEX_UPDATED = '06 Oct 2026 • 11:04:03 AM PKT • Analytics priority reordered';
 
 let inventory = [];
 
@@ -6910,7 +6910,7 @@ function analyticsDifferenceHtml(curr,prev,key){
   return '<span class="analytics-diff">'+sign+(key==='soldUnits'||key==='purchasedUnits'?Math.abs(Math.round(diff)):'Rs '+fmt(Math.abs(diff)))+' vs previous</span>';
 }
 function analyticsRenderScoreboard(curr,prev){
-  const cards=[['Sale',curr.saleAmount,prev&&prev.saleAmount,'sales','Sales volume'],['Purchase',curr.purchaseAmount,prev&&prev.purchaseAmount,'purchases','Investment in phones'],['Profit',curr.netProfit,prev&&prev.netProfit,'profit','Net profit'],['Expenses',curr.expenses,prev&&prev.expenses,'expenses','Total business expenses'],['Mobiles sold',curr.soldUnits,prev&&prev.soldUnits,'soldUnits','Units sold'],['Mobiles purchased',curr.purchasedUnits,prev&&prev.purchasedUnits,'purchasedUnits','Units purchased']];
+  const cards=[['Profit',curr.netProfit,prev&&prev.netProfit,'profit','Net profit'],['Mobiles sold',curr.soldUnits,prev&&prev.soldUnits,'soldUnits','Units sold'],['Mobiles purchased',curr.purchasedUnits,prev&&prev.purchasedUnits,'purchasedUnits','Units purchased'],['Sale',curr.saleAmount,prev&&prev.saleAmount,'sales','Sales volume'],['Purchase',curr.purchaseAmount,prev&&prev.purchaseAmount,'purchases','Investment in phones'],['Expenses',curr.expenses,prev&&prev.expenses,'expenses','Total business expenses']];
   document.getElementById('analyticsScoreboard').innerHTML=cards.map(function(c){
     const pv=c[2]==null?null:c[2], avg=c[3]==='profit'?(curr.soldUnits?curr.netProfit/curr.soldUnits:0):null, avgPrev=c[3]==='profit'&&prev?(prev.soldUnits?prev.netProfit/prev.soldUnits:0):null;
     const sub=c[3]==='profit'?'Avg profit / mobile: Rs '+fmt(avg):(c[3]==='purchases'&&curr.purchasedUnits===0?'No purchases recorded':(c[3]==='sales'&&curr.soldUnits===0?'No sales recorded':c[4]));
