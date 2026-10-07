@@ -831,6 +831,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 .analytics-period{border:0;border-radius:8px;background:transparent;color:var(--text-dim);padding:8px 5px;font-size:10.5px;font-weight:800;cursor:pointer;}
 .analytics-period.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.12);}
 .analytics-period-note{font-size:10.5px;color:var(--text-dim);margin-top:8px;text-align:center;line-height:1.5;}
+.analytics-snapshot-card{margin-bottom:10px;}.analytics-snapshot-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}.analytics-snapshot-item{background:var(--surface-2);border:1px solid var(--border);border-radius:11px;padding:9px;min-width:0;}.analytics-snapshot-value{font-size:17px;font-weight:900;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.analytics-snapshot-label{font-size:9.5px;color:var(--text-dim);margin-top:3px;line-height:1.25;}.analytics-snapshot-dead{margin-top:9px;border:1px solid var(--border);border-radius:11px;padding:9px;background:var(--surface-2);}.analytics-snapshot-dead-title{font-size:11px;font-weight:900;display:flex;justify-content:space-between;gap:8px;}.analytics-snapshot-dead-title span{font-size:9.5px;color:var(--text-dim);font-weight:600;}.analytics-snapshot-dead-list{margin-top:7px;display:grid;gap:5px;}.analytics-snapshot-dead-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:7px;align-items:center;font-size:10px;border-top:1px solid var(--border);padding-top:6px;}.analytics-snapshot-dead-row div{min-width:0;}.analytics-snapshot-dead-row b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.analytics-snapshot-dead-row small{display:block;color:var(--text-faint);margin-top:2px;}
 .analytics-scoreboard{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}.analytics-scoreboard .analytics-score:nth-child(1){grid-column:1 / -1;}.analytics-scoreboard .analytics-score:nth-child(6){grid-column:1 / -1;}
 .analytics-score{background:linear-gradient(145deg,var(--surface),var(--surface-2));border:1px solid var(--border);border-radius:13px;padding:10px;position:relative;overflow:hidden;min-width:0;}
 .analytics-score:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--border-strong);}
@@ -969,7 +970,6 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="menu-scroll">
         <div class="menu-section-label">Business</div>
-        <button class="menu-item" id="btnDashboard"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4h6v7H4zM14 4h6v4h-6zM14 12h6v8h-6zM4 15h6v5H4z" stroke-width="1.7" stroke-linejoin="round"/></svg></span><span class="menu-item-text">Dashboard</span></button>
         <button class="menu-item" id="btnExpenses"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="14" rx="2" stroke-width="1.8"/><path d="M7 12h10M8 9h8" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Expenses</span></button>
         <button class="menu-item" id="btnRateBook"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M6 4.5h12a2 2 0 0 1 2 2V20H6a2 2 0 0 1-2-2V6.5a2 2 0 0 1 2-2Z" stroke-width="1.8"/><path d="M8 8h8M8 12h8M8 16h5" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Rate Book</span></button>
         <button class="menu-item" id="btnContacts"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke-width="1.8"/><path d="M3.5 19c.5-3.3 2.4-5 5.5-5s5 1.7 5.5 5M17 11a2.5 2.5 0 1 0 0-5M16 14c2.5.2 4 1.7 4.5 5" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Contacts</span></button>
@@ -1365,6 +1365,11 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         </div>
         <div class="analytics-custom-error" id="analyticsCustomError"></div>
       </div>
+    </div>
+    <div class="analytics-card analytics-snapshot-card">
+      <div class="analytics-card-head"><div><div class="analytics-card-title">BUSINESS SNAPSHOT</div><div class="analytics-card-sub">Dashboard ki key information — isi Analytics page par</div></div></div>
+      <div class="analytics-snapshot-grid" id="analyticsSnapshotGrid"></div>
+      <div id="analyticsDeadStockWrap"></div>
     </div>
     <div class="analytics-scoreboard" id="analyticsScoreboard"></div>
     <div class="analytics-card">
@@ -1876,7 +1881,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 07 Oct 2026 • 09:23:22 AM PKT • iPhone safe-area all-pages + close buttons fix</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 07 Oct 2026 • 09:31:00 AM PKT • Dashboard integrated into Analytics</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1923,7 +1928,7 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
 });
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '07 Oct 2026 • 09:23:22 AM PKT • iPhone safe-area all-pages + close buttons fix';
+const APP_INDEX_UPDATED = '07 Oct 2026 • 09:31:00 AM PKT • Dashboard integrated into Analytics';
 
 let inventory = [];
 
@@ -6628,12 +6633,14 @@ function renderDashboard(){
   const note=document.getElementById('dashboardPeriodNote'); if(note) note.textContent=range.mode==='lifetime'?'All records':(dashboardSettings.mode==='business'?'Har month isi selected start day se period calculate hota hai.':'Calendar month: 1st se month ke last day tak.');
 }
 
-document.getElementById('btnDashboard').onclick = function(){
+const btnDashboard = document.getElementById('btnDashboard');
+if(btnDashboard) btnDashboard.onclick = function(){
   renderDashboard();
   document.getElementById('dashboardOverlay').classList.remove('hidden');
   pushOverlayHistory('dashboardOverlay');
 };
-document.getElementById('btnDashboardClose').onclick = function(){
+const btnDashboardClose = document.getElementById('btnDashboardClose');
+if(btnDashboardClose) btnDashboardClose.onclick = function(){
   requestOverlayClose();
 };
 document.getElementById('dashboardOverlay').onclick = function(e){
@@ -7126,6 +7133,32 @@ function analyticsRenderMonths(){
   document.getElementById('analyticsTrendTitle').textContent=(bucketType==='day'?'DAILY':bucketType==='week'?'WEEKLY':'MONTHLY')+' BUSINESS TREND';
   document.getElementById('analyticsMonthChart').innerHTML='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Business trend">'+grid+lines+dots+labels+'</svg><div class="analytics-legend"><span><i class="analytics-dot" style="background:var(--pta)"></i>Sales</span><span><i class="analytics-dot" style="background:var(--nonpta)"></i>Purchase</span><span><i class="analytics-dot" style="background:currentColor"></i>Profit</span></div>';
 }
+function analyticsRenderSnapshot(range,curr){
+  const stockItems=inventory.filter(function(e){return !e.sold&&Number(e.quantity||0)>0;});
+  const lifetimeSold=inventory.filter(function(e){return e.sold&&!isReturnedSale(e);}).reduce(function(s,e){return s+(Number(e.quantity)||0);},0);
+  const totalStockValue=stockItems.reduce(function(s,e){return s+(Number(e.buy)||0)*(Number(e.quantity)||0);},0);
+  const allTimeProfit=inventory.filter(function(e){return e.sold&&!isReturnedSale(e)&&e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+(Number(e.sell)-Number(e.buy))*(Number(e.quantity)||1);},0);
+  const lifetimeExpenses=totalExpensesAllTime()+totalPhoneExpensesAllTime();
+  const lifetimeNetProfit=allTimeProfit-lifetimeExpenses;
+  const cards=[
+    ['Stock value','Rs '+fmt(totalStockValue)],
+    ['Stock units',String(stockItems.reduce(function(s,e){return s+(Number(e.quantity)||0);},0))],
+    ['Sold · selected period',String(curr.soldUnits)],
+    ['Net profit · selected period','Rs '+fmt(curr.netProfit)],
+    ['Expenses · selected period','Rs '+fmt(curr.expenses)],
+    ['Lifetime sold',String(lifetimeSold)],
+    ['Lifetime net profit','Rs '+fmt(lifetimeNetProfit)],
+    ['Lifetime expenses','Rs '+fmt(lifetimeExpenses)]
+  ];
+  document.getElementById('analyticsSnapshotGrid').innerHTML=cards.map(function(c){return '<div class="analytics-snapshot-item"><div class="analytics-snapshot-value">'+c[1]+'</div><div class="analytics-snapshot-label">'+escapeHtml(c[0])+'</div></div>';}).join('');
+
+  const dead=stockItems.filter(function(e){const d=e.buyDate||e.availableDate||e.lastUpdated;if(!d)return false;return (Date.now()-new Date(d).getTime())/86400000>=30;}).sort(function(a,b){return new Date(a.buyDate||a.availableDate||a.lastUpdated)-new Date(b.buyDate||b.availableDate||b.lastUpdated);}).slice(0,8);
+  let html='';
+  if(dead.length){
+    html='<div class="analytics-snapshot-dead"><div class="analytics-snapshot-dead-title">⚠️ Dead Stock <span>30+ din se unsold</span></div><div class="analytics-snapshot-dead-list">'+dead.map(function(e){const d=e.buyDate||e.availableDate||e.lastUpdated;const days=Math.max(0,Math.floor((Date.now()-new Date(d).getTime())/86400000));return '<div class="analytics-snapshot-dead-row"><div><b>'+escapeHtml((e.brand||'')+' '+(e.model||''))+'</b><small>'+escapeHtml(d?new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'')+'</small></div><strong>'+days+'d</strong><strong>'+(e.quantity||0)+' pcs</strong><strong>'+(e.buy!=null?'Rs '+fmt(e.buy):'-')+'</strong></div>';}).join('')+'</div></div>';
+  }
+  document.getElementById('analyticsDeadStockWrap').innerHTML=html;
+}
 let analyticsMode='calendar';
 let analyticsCustomFrom='';
 let analyticsCustomTo='';
@@ -7140,6 +7173,7 @@ function renderAnalytics(){
   const curr=analyticsMetrics(range), previous=prev?analyticsMetrics(prev):null;
   document.querySelectorAll('[data-analytics-period]').forEach(function(b){b.classList.toggle('active',b.dataset.analyticsPeriod===analyticsMode);});
   document.getElementById('analyticsPeriodNote').textContent=prev?'Current: '+range.label+'  •  Previous comparable: '+prev.label:range.label+'  •  No previous period';
+  analyticsRenderSnapshot(range,curr);
   analyticsRenderScoreboard(curr,previous);
   analyticsRenderLine(range,prev,document.getElementById('analyticsMetric').value);
   analyticsRenderVolume(curr,previous);
