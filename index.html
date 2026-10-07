@@ -1881,7 +1881,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 07 Oct 2026 • 09:31:00 AM PKT • Dashboard integrated into Analytics</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 07 Oct 2026 • 09:44:49 AM PKT • Busiest Hours exact-time mapping fix</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1928,7 +1928,7 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
 });
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '07 Oct 2026 • 09:31:00 AM PKT • Dashboard integrated into Analytics';
+const APP_INDEX_UPDATED = '07 Oct 2026 • 09:44:49 AM PKT • Busiest Hours exact-time mapping fix';
 
 let inventory = [];
 
@@ -6942,13 +6942,13 @@ function analyticsPurchaseRecords(){
   });
   return originals.map(function(e){
     const qty=Math.max(0,(Number(e.quantity)||0)+(soldByStock[String(e.id)]||0));
-    return {id:e.id,date:e.buyDate||e.purchaseAt||e.lastUpdated,qty:qty,amount:(Number(e.buy)||0)*qty,brand:e.brand||'Other',model:e.model||''};
+    return {id:e.id,date:e.buyDate||e.purchaseAt||e.lastUpdated,exactTime:e.purchaseAt||null,qty:qty,amount:(Number(e.buy)||0)*qty,brand:e.brand||'Other',model:e.model||''};
   }).filter(function(e){return e.qty>0;});
 }
 function analyticsSaleRecords(){
   return inventory.filter(function(e){return e.sold && !isReturnedSale(e) && e.sell!=null;}).map(function(e){
     const qty=Math.max(1,Number(e.quantity)||1);
-    return {id:e.id,date:e.saleDate||e.saleAt||e.lastUpdated,qty:qty,amount:(Number(e.sell)||0)*qty,profit:saleBaseProfit(e),brand:e.brand||'Other',model:e.model||'',phoneExpenses:phoneExpensesTotal(e)};
+    return {id:e.id,date:e.saleDate||e.saleAt||e.lastUpdated,exactTime:e.saleAt||null,qty:qty,amount:(Number(e.sell)||0)*qty,profit:saleBaseProfit(e),brand:e.brand||'Other',model:e.model||'',phoneExpenses:phoneExpensesTotal(e)};
   });
 }
 function analyticsExpenseTotal(range){return expensesForDashboardRange(range);}
