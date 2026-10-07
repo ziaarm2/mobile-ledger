@@ -1844,7 +1844,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 06 Oct 2026 • 05:39:13 PM PKT • Entry chip interaction fix</div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 07 Oct 2026 • 08:58:00 AM PKT • Multi-device cloud sync fix</div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1861,7 +1861,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
 <script>
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '06 Oct 2026 • 05:39:13 PM PKT • Entry chip interaction fix';
+const APP_INDEX_UPDATED = '07 Oct 2026 • 08:58:00 AM PKT • Multi-device cloud sync fix';
 
 let inventory = [];
 
@@ -5218,15 +5218,6 @@ function applyEntryLayoutToDOM(platform){
     if(boxGroup){ const label=boxGroup.querySelector('.sec-label'); if(label) label.innerHTML='Box <span style="color:var(--danger);">*</span>'; }
     if(chargerGroup){ const label=chargerGroup.querySelector('.sec-label'); if(label) label.innerHTML='Charger <span style="color:var(--danger);">*</span>'; }
   }
-  // Android entry order is explicit and must always show RAM before Storage.
-  // Keep both groups visible even if an older saved layout accidentally hid/reordered them.
-  if(platform==='android'){
-    ['ram','storage'].forEach(function(key){
-      const g=groups[key];
-      if(g){ g.style.display='block'; g.classList.remove('is-hidden'); }
-    });
-  }
-
   fixedMainKeys.forEach(function(key,i){
     const g=groups[key];
     if(!g) return;
@@ -9404,17 +9395,20 @@ function startCloudSync(uid){
   const syncShopId=String(userShopId||'').trim();
   if(!syncShopId) return;
   if(uid && String(uid)!==syncShopId){ console.warn('Cloud sync requested for a different shop id; using resolved userShopId only.'); }
-  if(userRole==='admin'){
-    // Admin must never attach the normal owner listener or push data into an
-    // admin shop document. Admin reads selected shop documents explicitly.
-    setAccountSyncStatus('sync ON', 'ok');
-    return;
-  }
+  // The admin email is also the owner's real Z Mobile account. Its normal
+  // dashboard must sync to its own shop document across devices. The admin
+  // read-only Shop View is handled separately by enterAdminShop(), so the
+  // normal listener must simply stand by while that view is active.
   setAccountSyncStatus('data la rahe hain…', 'saving');
   cloudUnsub = fbDb.collection('shops').doc(syncShopId).onSnapshot(function(snap){
+    // Never let the owner's background listener replace the read-only
+    // selected-shop snapshot while Admin is viewing another shop.
+    if(isAdminShopView()) return;
     if(!snap.exists){
-      // Brand-new account: seed the cloud with whatever's already on this device.
-      setAccountSyncStatus('nayi account — is device ka data upload ho raha hai', 'saving');
+      // First sync for an existing local account: seed the cloud with the
+      // business data already stored on this device. This is important for
+      // the original Z Mobile/admin account whose data predates cloud sync.
+      setAccountSyncStatus('cloud setup ho raha hai — is device ka data upload ho raha hai', 'saving');
       schedulePush();
       return;
     }
@@ -9431,6 +9425,20 @@ function startCloudSync(uid){
       return;
     }
     const data = snap.data();
+    // If a cloud document exists but contains no business records while this
+    // device already has real inventory/expenses, never wipe the local
+    // business state with that empty snapshot. Seed/repair the cloud instead.
+    const remoteInventoryCount = Array.isArray(data.inventory) ? data.inventory.length : 0;
+    const remoteExpenseCount = Array.isArray(data.expenses) ? data.expenses.length : 0;
+    const localHasBusinessData = (Array.isArray(inventory) && inventory.length>0) || (Array.isArray(expenses) && expenses.length>0);
+    const remoteLooksEmpty = remoteInventoryCount===0 && remoteExpenseCount===0;
+    if(remoteLooksEmpty && localHasBusinessData && !hasPendingLocalChanges()){
+      localVersion++;
+      try{ localStorage.setItem(shopStorageKey(LS_LOCAL_VERSION_KEY), String(localVersion)); }catch(e){}
+      attemptPush();
+      setAccountSyncStatus('existing device ka data cloud par sync ho raha hai…', 'saving');
+      return;
+    }
     applyingRemoteUpdate = true;
     if(Array.isArray(data.inventory)){
       const localPhotosById = {};
