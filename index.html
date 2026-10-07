@@ -886,6 +886,8 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 <style id="admin-settings-category-style">
 #settingsAdminCategory{border-top:1px solid var(--border);margin-top:8px;padding-top:14px;}
 </style>
+
+<style id="iphone-safe-area-fix">html,body{padding-top:0!important;}body{overflow-x:hidden;}.app>header{padding-top:env(safe-area-inset-top,0px)!important;}.app>header .header-top{padding-top:calc(11px + env(safe-area-inset-top,0px))!important;min-height:calc(86px + env(safe-area-inset-top,0px))!important;}.menu-dropdown{height:100dvh!important;min-height:100vh!important;padding-top:env(safe-area-inset-top,0px)!important;box-sizing:border-box!important;}.menu-profile{padding-top:calc(25px + env(safe-area-inset-top,0px))!important;}@supports (padding-top:constant(safe-area-inset-top)){.app>header{padding-top:constant(safe-area-inset-top)!important;}.app>header .header-top{padding-top:calc(11px + constant(safe-area-inset-top))!important;min-height:calc(86px + constant(safe-area-inset-top))!important;}.menu-dropdown{padding-top:constant(safe-area-inset-top)!important;}.menu-profile{padding-top:calc(25px + constant(safe-area-inset-top))!important;}}</style>
 </head>
 <body>
 
@@ -965,7 +967,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 06 Oct 2026 • 11:04:03 AM PKT</span><span>Backup, Sync & Data combined</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 07 Oct 2026 • 09:14:03 AM PKT</span><span>Backup, Sync & Data combined</span></div>
         </div>
       </div>
     </div>
@@ -1844,7 +1846,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 07 Oct 2026 • 08:58:00 AM PKT • Multi-device cloud sync fix</div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 07 Oct 2026 • 09:14:03 AM PKT • iPhone safe-area header/menu fix</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1861,7 +1863,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
 <script>
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '07 Oct 2026 • 08:58:00 AM PKT • Multi-device cloud sync fix';
+const APP_INDEX_UPDATED = '07 Oct 2026 • 09:14:03 AM PKT • iPhone safe-area header/menu fix';
 
 let inventory = [];
 
