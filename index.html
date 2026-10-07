@@ -888,6 +888,26 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 </style>
 
 <style id="iphone-safe-area-fix">html,body{padding-top:0!important;}body{overflow-x:hidden;}.app>header{padding-top:env(safe-area-inset-top,0px)!important;}.app>header .header-top{padding-top:calc(11px + env(safe-area-inset-top,0px))!important;min-height:calc(86px + env(safe-area-inset-top,0px))!important;}.menu-dropdown{height:100dvh!important;min-height:100vh!important;padding-top:env(safe-area-inset-top,0px)!important;box-sizing:border-box!important;}.menu-profile{padding-top:calc(25px + env(safe-area-inset-top,0px))!important;}@supports (padding-top:constant(safe-area-inset-top)){.app>header{padding-top:constant(safe-area-inset-top)!important;}.app>header .header-top{padding-top:calc(11px + constant(safe-area-inset-top))!important;min-height:calc(86px + constant(safe-area-inset-top))!important;}.menu-dropdown{padding-top:constant(safe-area-inset-top)!important;}.menu-profile{padding-top:calc(25px + constant(safe-area-inset-top))!important;}}</style>
+<style id="iphone-safe-area-pages-fix">
+/* iPhone notch/Dynamic-Island safe area for every full-screen sheet/page. */
+.overlay{padding-top:env(safe-area-inset-top,0px)!important;box-sizing:border-box!important;}
+.overlay>.sheet{position:relative;box-sizing:border-box!important;padding-top:calc(16px + env(safe-area-inset-top,0px))!important;}
+#overlay>.sheet{height:calc(100dvh - env(safe-area-inset-top,0px))!important;min-height:calc(100dvh - env(safe-area-inset-top,0px))!important;}
+.settings-shell,.account-shell{padding-top:env(safe-area-inset-top,0px)!important;box-sizing:border-box!important;}
+.settings-topbar,.account-topbar{padding-top:14px!important;}
+.safe-page-close{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));right:12px;width:40px;height:40px;border-radius:11px;border:1px solid #cbd3de;background:#fff;color:#172033;font-size:24px;line-height:1;display:flex;align-items:center;justify-content:center;z-index:20;box-shadow:0 2px 8px rgba(0,0,0,.12);}
+.menu-safe-close{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));right:12px;width:40px;height:40px;border-radius:11px;border:1px solid #cbd3de;background:#fff;color:#172033;font-size:24px;line-height:1;display:flex;align-items:center;justify-content:center;z-index:20;box-shadow:0 2px 8px rgba(0,0,0,.12);}
+.menu-dropdown .menu-profile{padding-top:calc(25px + env(safe-area-inset-top,0px))!important;padding-right:64px!important;}
+@supports (padding-top:constant(safe-area-inset-top)){
+.overlay{padding-top:constant(safe-area-inset-top)!important;}
+.overlay>.sheet{padding-top:calc(16px + constant(safe-area-inset-top))!important;}
+#overlay>.sheet{height:calc(100vh - constant(safe-area-inset-top))!important;min-height:calc(100vh - constant(safe-area-inset-top))!important;}
+.settings-shell,.account-shell{padding-top:constant(safe-area-inset-top)!important;}
+.safe-page-close{top:calc(8px + constant(safe-area-inset-top));}
+.menu-safe-close{top:calc(10px + constant(safe-area-inset-top));}
+.menu-dropdown .menu-profile{padding-top:calc(25px + constant(safe-area-inset-top))!important;}
+}
+</style>
 </head>
 <body>
 
@@ -935,6 +955,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
     </div>
 
     <div class="menu-dropdown hidden" id="menuDropdown">
+      <button type="button" class="menu-safe-close" id="menuSafeClose" aria-label="Close menu" title="Close">×</button>
       <div class="menu-profile">
         <div class="menu-profile-avatar"><img src="icon-192.png" alt="Z Mobile"></div>
         <div class="menu-profile-info">
@@ -1041,6 +1062,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
 <div class="overlay hidden" id="overlay">
   <div class="sheet">
+    <button type="button" class="safe-page-close" data-safe-close-overlay="overlay" aria-label="Close" title="Close">×</button>
     <div class="sheet-handle"></div>
     <h2 id="sheetTitle">Nayi stock entry</h2>
     <div class="save-error-banner" id="saveErrorBanner"></div>
@@ -1183,6 +1205,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
 <div class="overlay hidden" id="sellOverlay">
   <div class="sheet">
+    <button type="button" class="safe-page-close" data-safe-close-overlay="sellOverlay" aria-label="Close" title="Close">×</button>
     <div class="sheet-handle"></div>
     <h2>Sale entry</h2>
     <div class="save-error-banner" id="sellErrorBanner"></div>
@@ -1219,6 +1242,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
 <div class="overlay hidden" id="cropOverlay">
   <div class="sheet">
+    <button type="button" class="safe-page-close" data-safe-close-overlay="cropOverlay" aria-label="Close" title="Close">×</button>
     <div class="sheet-handle"></div>
     <h2>Photo crop karein</h2>
     <div class="crop-stage-wrap">
@@ -1268,6 +1292,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
 <div class="overlay hidden" id="dashboardOverlay">
   <div class="sheet">
+    <button type="button" class="safe-page-close" data-safe-close-overlay="dashboardOverlay" aria-label="Close" title="Close">×</button>
     <div class="sheet-handle"></div>
     <h2>Dashboard</h2>
     <div class="dashboard-period-bar">
@@ -1284,6 +1309,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
 <div class="overlay hidden" id="reportsOverlay">
   <div class="sheet">
+    <button type="button" class="safe-page-close" data-safe-close-overlay="reportsOverlay" aria-label="Close" title="Close">×</button>
     <div class="sheet-handle"></div>
     <h2>Reports</h2>
     <div class="report-filters">
@@ -1395,6 +1421,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 </div>
 <div class="overlay hidden" id="expensesOverlay">
   <div class="sheet">
+    <button type="button" class="safe-page-close" data-safe-close-overlay="expensesOverlay" aria-label="Close" title="Close">×</button>
     <div class="sheet-handle"></div>
     <h2>Expenses (Kharcha)</h2>
 
@@ -1598,6 +1625,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
 <div class="overlay hidden" id="contactsOverlay">
   <div class="sheet">
+    <button type="button" class="safe-page-close" data-safe-close-overlay="contactsOverlay" aria-label="Close" title="Close">×</button>
     <div class="sheet-handle"></div>
     <h2>Contacts</h2>
     <input type="text" class="contact-search" id="contactsSearch" placeholder="Naam ya number se search karein">
@@ -1610,6 +1638,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
 <div class="overlay hidden" id="rateBookOverlay">
   <div class="sheet">
+    <button type="button" class="safe-page-close" data-safe-close-overlay="rateBookOverlay" aria-label="Close" title="Close">×</button>
     <div class="sheet-handle"></div>
     <h2>📋 Rate Book</h2>
     <div class="settings-note" style="margin-top:0;">Jab bhi naya mobile purchase/save hoga, uska Buy Rate yahan automatically history mein save ho jayega. Aap manually bhi rate add kar sakte hain.</div>
@@ -1627,6 +1656,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
 <div class="overlay hidden" id="rateAddOverlay">
   <div class="sheet">
+    <button type="button" class="safe-page-close" data-safe-close-overlay="rateAddOverlay" aria-label="Close" title="Close">×</button>
     <div class="sheet-handle"></div>
     <h2>+ Rate add karein</h2>
     <div class="field"><label>Brand <span class="required-star">*</span></label><input id="rb-brand" placeholder="Apple / Samsung..."></div>
@@ -1846,7 +1876,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 07 Oct 2026 • 09:14:03 AM PKT • iPhone safe-area header/menu fix</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 07 Oct 2026 • 09:23:22 AM PKT • iPhone safe-area all-pages + close buttons fix</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1862,8 +1892,38 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 <button class="fab-expense" id="btnQuickExpense" title="Expense add karein">💵</button>
 
 <script>
+// iPhone safe-area page controls: every full-screen sheet gets a visible close button
+// below the notch/Dynamic Island. It closes through the same overlay history used by
+// the iPhone back gesture, so the browser back button and Close stay synchronized.
+function closeOverlayFromSafeButton(id){
+  const el=document.getElementById(id);
+  if(!el) return;
+  if(typeof overlayHistoryStack!=='undefined' && overlayHistoryStack.length){
+    const top=overlayHistoryStack[overlayHistoryStack.length-1];
+    if(top===id){ requestOverlayClose(); return; }
+  }
+  el.classList.add('hidden');
+  if(id==='sellOverlay') sellingId=null;
+  if(id==='imeiScanOverlay' && typeof stopImeiScan==='function') stopImeiScan();
+  if(typeof syncMenuOpenState==='function') syncMenuOpenState();
+}
+
+document.querySelectorAll('[data-safe-close-overlay]').forEach(function(btn){
+  btn.addEventListener('click',function(e){
+    e.preventDefault(); e.stopPropagation();
+    closeOverlayFromSafeButton(btn.getAttribute('data-safe-close-overlay'));
+  });
+});
+const menuSafeClose=document.getElementById('menuSafeClose');
+if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
+  e.preventDefault(); e.stopPropagation();
+  const menu=document.getElementById('menuDropdown');
+  if(menu) menu.classList.add('hidden');
+  if(typeof syncMenuOpenState==='function') syncMenuOpenState();
+});
+
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '07 Oct 2026 • 09:14:03 AM PKT • iPhone safe-area header/menu fix';
+const APP_INDEX_UPDATED = '07 Oct 2026 • 09:23:22 AM PKT • iPhone safe-area all-pages + close buttons fix';
 
 let inventory = [];
 
