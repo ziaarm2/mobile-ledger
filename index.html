@@ -1928,7 +1928,7 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
 });
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '07 Oct 2026 • 09:44:49 AM PKT • Busiest Hours exact-time mapping fix';
+const APP_INDEX_UPDATED = '07 Oct 2026 • 01:39:00 PM PKT • Reports + Rate Book mandatory details fixed';
 
 let inventory = [];
 
@@ -2918,16 +2918,18 @@ function saveRateBook(){
   schedulePush(); return true;
 }
 function rateBookKey(x){ return String(x.brand||'').trim().toLowerCase()+'|||'+String(x.model||'').trim().toLowerCase()+'|||'+String(x.variant||'').trim().toLowerCase()+'|||'+String(x.status||'').trim().toLowerCase(); }
+function mandatoryDetailsHtml(e){ if(!e) return ''; const platform=getEntryPlatform(e.brand||''); const parts=[]; if(e.status) parts.push('Status: '+escapeHtml(e.status)); if(platform!=='iphone' && e.ram) parts.push('RAM: '+escapeHtml(e.ram)); if(e.storage) parts.push('Storage: '+escapeHtml(e.storage)); if(e.condition) parts.push('Condition: '+escapeHtml(e.condition)); if(platform==='iphone' && e.battery) parts.push('Battery health: '+escapeHtml(e.battery)); if(platform!=='iphone' && e.box) parts.push('Box: '+escapeHtml(e.box)); if(platform!=='iphone' && e.charger) parts.push('Charger: '+escapeHtml(e.charger)); return parts.length ? '<div class="rr-sub" style="margin-top:5px;line-height:1.55;"><b>Mandatory details:</b> '+parts.join(' · ')+'</div>' : ''; }
+function rateBookDetailsFromInventory(e){ return {ram:e&&e.ram||'',storage:e&&e.storage||'',condition:e&&e.condition||'',battery:e&&e.battery||'',box:e&&e.box||'',charger:e&&e.charger||''}; }
 function addRateBookEntry(entry, silent){
   const rate=Number(entry.rate); if(!isFinite(rate)||rate<=0) return false;
-  const item={id:entry.id||('rb_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7)),sourceInventoryId:entry.sourceInventoryId||'',brand:String(entry.brand||'').trim(),model:String(entry.model||'').trim(),variant:String(entry.variant||'').trim(),status:String(entry.status||'').trim(),rate:rate,quantity:Math.max(1,Number(entry.quantity)||1),date:entry.date||todayISO(),seller:String(entry.seller||'').trim(),notes:String(entry.notes||'').trim(),source:entry.source||'manual'};
+  const item={id:entry.id||('rb_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7)),sourceInventoryId:entry.sourceInventoryId||'',brand:String(entry.brand||'').trim(),model:String(entry.model||'').trim(),variant:String(entry.variant||'').trim(),status:String(entry.status||'').trim(),rate:rate,quantity:Math.max(1,Number(entry.quantity)||1),date:entry.date||todayISO(),seller:String(entry.seller||'').trim(),notes:String(entry.notes||'').trim(),ram:String(entry.ram||'').trim(),storage:String(entry.storage||'').trim(),condition:String(entry.condition||'').trim(),battery:String(entry.battery||'').trim(),box:String(entry.box||'').trim(),charger:String(entry.charger||'').trim(),source:entry.source||'manual'};
   if(!item.brand||!item.model) return false;
   activityBeforeFromCurrentMutation(); rateBook.unshift(item); const ok=saveRateBook(); if(!ok){rateBook.shift();activityBeforeState=null;return false;} if(!silent){renderRateBook();logActivity('rate','Rate Book mein rate add kiya: '+item.brand+' '+item.model,'Rs '+fmt(item.rate));} return true;
 }
 function migrateInventoryToRateBook(){
   if(!Array.isArray(inventory)||!inventory.length) return;
   const existing={}; rateBook.forEach(function(r){existing[String(r.sourceInventoryId||'')+'|'+String(r.rate)+'|'+String(r.date)]=true;}); let changed=false;
-  inventory.forEach(function(e){ if(e.buy==null||Number(e.buy)<=0||!e.brand||!e.model)return; const sig=String(e.id)+'|'+String(Number(e.buy))+'|'+String(e.buyDate||todayISO()); if(existing[sig])return; rateBook.push({id:'rb_m_'+String(e.id),sourceInventoryId:e.id,brand:e.brand,model:e.model,variant:e.storage||'',status:e.status||'',rate:Number(e.buy),quantity:Math.max(1,Number(e.quantity)||1),date:e.buyDate||todayISO(),seller:e.sellerName||'',notes:e.notes||'',source:'stock-migration'}); changed=true; });
+  inventory.forEach(function(e){ if(e.buy==null||Number(e.buy)<=0||!e.brand||!e.model)return; const sig=String(e.id)+'|'+String(Number(e.buy))+'|'+String(e.buyDate||todayISO()); if(existing[sig])return; rateBook.push({id:'rb_m_'+String(e.id),sourceInventoryId:e.id,brand:e.brand,model:e.model,variant:e.storage||'',status:e.status||'',rate:Number(e.buy),quantity:Math.max(1,Number(e.quantity)||1),date:e.buyDate||todayISO(),seller:e.sellerName||'',notes:e.notes||'',ram:e.ram||'',storage:e.storage||'',condition:e.condition||'',battery:e.battery||'',box:e.box||'',charger:e.charger||'',source:'stock-migration'}); changed=true; });
   if(changed){try{localStorage.setItem(shopStorageKey(LS_RATE_BOOK_KEY),JSON.stringify(rateBook));}catch(e){}}
 }
 function renderRateBook(){
@@ -2937,7 +2939,7 @@ function renderRateBook(){
   const cards=Object.keys(groups).map(function(k){return groups[k];}); cards.forEach(function(g){g.history.sort(function(a,b){return String(b.date).localeCompare(String(a.date));});});
   cards.sort(function(a,b){return String(a.brand+' '+a.model+' '+a.variant).localeCompare(String(b.brand+' '+b.model+' '+b.variant),undefined,{numeric:true,sensitivity:'base'});});
   if(!cards.length){list.innerHTML='<div class="empty" style="padding:35px 10px;">Koi rate nahi mila. + Add Rate se manually rate save karein.</div>';return;}
-  list.innerHTML=cards.map(function(g,gi){ const h=g.history, latest=h[0], nums=h.map(function(x){return Number(x.rate)||0;}), low=Math.min.apply(Math,nums), high=Math.max.apply(Math,nums), avg=nums.reduce(function(a,b){return a+b;},0)/nums.length; const rows=h.map(function(x){return '<div class="rate-book-history-row"><span>'+escapeHtml(x.date)+(x.quantity>1?' · x'+x.quantity:'')+(x.seller?' · '+escapeHtml(x.seller):'')+'</span><span class="rate">Rs '+fmt(x.rate)+'</span></div>';}).join(''); return '<div class="rate-book-card"><div class="rate-book-card-head"><div><div class="rate-book-title">'+escapeHtml(g.brand+' '+g.model+(g.variant?' '+g.variant:''))+'</div><div class="rate-book-sub">'+escapeHtml(g.status||'No status')+' · Last: '+escapeHtml(latest.date)+'</div></div><div class="rate-book-current">Rs '+fmt(latest.rate)+'</div></div><div class="rate-book-stats"><span class="rate-book-stat">Lowest: Rs '+fmt(low)+'</span><span class="rate-book-stat">Highest: Rs '+fmt(high)+'</span><span class="rate-book-stat">Average: Rs '+fmt(avg)+'</span></div><div class="rate-book-card-actions"><button type="button" data-rate-history="'+gi+'">'+(h.length>1?'View '+h.length+' rates':'View history')+'</button><button type="button" class="danger" data-rate-delete-group="'+gi+'">Delete history</button></div><div class="rate-book-history" id="rateHistory_'+gi+'">'+rows+'</div></div>'; }).join('');
+  list.innerHTML=cards.map(function(g,gi){ const h=g.history, latest=h[0], nums=h.map(function(x){return Number(x.rate)||0;}), low=Math.min.apply(Math,nums), high=Math.max.apply(Math,nums), avg=nums.reduce(function(a,b){return a+b;},0)/nums.length; const rows=h.map(function(x){return '<div class="rate-book-history-row" style="display:block;"><div style="display:flex;justify-content:space-between;gap:8px;"><span>'+escapeHtml(x.date)+(x.quantity>1?' · x'+x.quantity:'')+(x.seller?' · '+escapeHtml(x.seller):'')+'</span><span class="rate">Rs '+fmt(x.rate)+'</span></div>'+mandatoryDetailsHtml(x)+'</div>';}).join(''); return '<div class="rate-book-card"><div class="rate-book-card-head"><div><div class="rate-book-title">'+escapeHtml(g.brand+' '+g.model+(g.variant?' '+g.variant:''))+'</div><div class="rate-book-sub">'+escapeHtml(g.status||'No status')+' · Last: '+escapeHtml(latest.date)+'</div></div><div class="rate-book-current">Rs '+fmt(latest.rate)+'</div></div><div class="rate-book-stats"><span class="rate-book-stat">Lowest: Rs '+fmt(low)+'</span><span class="rate-book-stat">Highest: Rs '+fmt(high)+'</span><span class="rate-book-stat">Average: Rs '+fmt(avg)+'</span></div><div class="rate-book-card-actions"><button type="button" data-rate-history="'+gi+'">'+(h.length>1?'View '+h.length+' rates':'View history')+'</button><button type="button" class="danger" data-rate-delete-group="'+gi+'">Delete history</button></div><div class="rate-book-history" id="rateHistory_'+gi+'">'+rows+'</div></div>'; }).join('');
   list.querySelectorAll('[data-rate-history]').forEach(function(btn){btn.onclick=function(){const el=document.getElementById('rateHistory_'+btn.dataset.rateHistory);if(el)el.classList.toggle('show');};});
   list.querySelectorAll('[data-rate-delete-group]').forEach(function(btn){btn.onclick=function(){if(isAdminShopView()){alert('Admin Shop view read-only hai — Rate Book change nahi ki ja sakti.');return;}const g=cards[Number(btn.dataset.rateDeleteGroup)];if(!g)return;if(!confirm('Is mobile ki puri rate history delete karni hai?'))return;const key=rateBookKey(g);activityBeforeFromCurrentMutation();rateBook=rateBook.filter(function(r){return rateBookKey(r)!==key;});saveRateBook();logActivity('rate','Rate Book history delete ki: '+g.brand+' '+g.model,'');renderRateBook();};});
 }
@@ -6761,6 +6763,7 @@ function renderReports(){
       (isReturnedSale(e)?'<div class="rr-sub">Returned: '+formatDateTimeDisplay(e.returnedAt)+'</div>':'')+
       (phoneExpensesTotal(e)>0?'<div class="rr-sub" style="color:var(--danger);">Phone expenses: -'+displayProfitHtml(phoneExpensesTotal(e))+'</div>':'')+
       (e.customer || e.customerNumber ? '<div class="rr-sub">'+(e.customer||'')+(e.customerNumber?' - '+e.customerNumber:'')+'</div>' : '')+
+      mandatoryDetailsHtml(e)+
     '</div>';
   }).join('');
   document.getElementById('rp-list').innerHTML = rowsHtml || '<div class="rr-sub" style="text-align:center;padding:20px 0;">Koi entry nahi mili in filters se.</div>';
@@ -6818,7 +6821,7 @@ document.getElementById('btnReportsPdf').onclick = function(){
     if(!isReturnedSale(e) && e.buy!=null && e.sell!=null) grossProfit += profit;
     return '<tr>'+
       '<td>'+formatDateDisplay(dateOnly(e.saleDate))+(isReturnedSale(e)?'<br>Returned: '+formatDateTimeDisplay(e.returnedAt):'')+'</td>'+
-      '<td>'+e.brand+' '+e.model+(e.quantity>1?(' x'+e.quantity):'')+(isReturnedSale(e)?' (RETURNED)':'')+'</td>'+
+      '<td>'+e.brand+' '+e.model+(e.quantity>1?(' x'+e.quantity):'')+(isReturnedSale(e)?' (RETURNED)':'')+'<br><small>'+[e.status?'Status: '+e.status:'',getEntryPlatform(e.brand||'')!=='iphone'&&e.ram?'RAM: '+e.ram:'',e.storage?'Storage: '+e.storage:'',e.condition?'Condition: '+e.condition:'',getEntryPlatform(e.brand||'')==='iphone'&&e.battery?'Battery health: '+e.battery:'',getEntryPlatform(e.brand||'')!=='iphone'&&e.box?'Box: '+e.box:'',getEntryPlatform(e.brand||'')!=='iphone'&&e.charger?'Charger: '+e.charger:''].filter(Boolean).join(' · ')+'</small></td>'+
       '<td>'+(e.customer||'')+(e.customerNumber?'<br>'+e.customerNumber:'')+'</td>'+
       '<td style="text-align:right;">'+fmt(displayBuyPrice(e.buy))+'</td>'+
       '<td style="text-align:right;">'+fmt(e.sell)+'</td>'+
