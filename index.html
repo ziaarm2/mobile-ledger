@@ -1949,7 +1949,7 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
 });
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '08 Oct 2026 • 11:29:17 AM PKT • Android Box/Charger auto-selection fixed';
+const APP_INDEX_UPDATED = '08 Oct 2026 • 11:42:23 AM PKT • iPhone Box/Charger default set to No';
 
 let inventory = [];
 
@@ -2341,7 +2341,7 @@ function setPlatformDefault(platform, fieldKey, value){
 function applyPlatformDefaultsToForm(platform){
   const defs={status:platform==='iphone'?'':'',ram:'',storage:'',condition:'',network:'',display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',battery:platform==='iphone'?'':'Perfect',box:platform==='iphone'?'No':'No',packing:'No pack',charger:platform==='iphone'?'No charger':'Original charger',faceid:platform==='iphone'?'Yes':'No',truetone:platform==='iphone'?'Yes':'No'};
   Object.keys(defs).forEach(function(k){
-    const d=(platform==='iphone' && (k==='status' || k==='battery')) ? '' : ((k==='box' || k==='charger') ? '' : getPlatformDefault(platform,k,defs[k]));
+    const d=(platform==='iphone' && (k==='status' || k==='battery')) ? '' : ((platform==='iphone' && k==='box') ? 'No' : ((platform==='iphone' && k==='charger') ? 'No charger' : (k==='box' || k==='charger' ? '' : getPlatformDefault(platform,k,defs[k]))));
     const opts=getEntryFieldOptionsForPlatform(platform,k);
     formState[k]=(d && opts.indexOf(d)!==-1) ? d : '';
   });
@@ -5738,7 +5738,8 @@ function openAdd(){
   // Box/Charger are optional and default to absent, while Battery is mandatory.
   formState.status = '';
   // Android entry: Box aur Charger kisi option par default select nahi honge.
-  // User ko entry ke waqt manually select karna hoga.
+  // User ko entry ke waqt manually select karna hoga. iPhone par applyPlatformDefaultsToForm
+  // No / No charger ko default select karta hai.
   formState.box = '';
   formState.charger = '';
   // iPhone Battery Health must always start unselected for a new entry.
