@@ -3876,43 +3876,38 @@ function renderBrandFilter(){
       return '<button type="button" class="chip '+(activeBrandFilter===b?'active':'')+'" data-brand="'+b+'">'+b+'</button>';
     }).join('');
 
-  // Keep one delegated handler on the stable wrapper. Touch/pointer selection
-  // is handled here as well; the old pointerup handler only prevented the
-  // generated click, which made brand taps appear unresponsive on phones.
+  // Brand filtering has one canonical interaction path: click.
+  // Do not split the state update between pointerdown and click. Repainting
+  // during pointerdown can replace the pressed button before the browser's
+  // click event is dispatched, which makes the tap look like it did nothing
+  // on some touch browsers. A normal click is generated for mouse, touch and
+  // keyboard activation, so it is sufficient and keeps state + repaint atomic.
   if(!wrap.__brandFilterDelegated){
     wrap.__brandFilterDelegated = true;
-    function applyBrandFilterChip(chip){
-      const val = chip.getAttribute('data-brand') || 'all';
-      if(userRole==='admin' && adminViewActive && adminViewShopId==='__combined__'){
-        adminCombinedBrandFilter = val;
-      } else {
-        currentBrandFilter = val;
-      }
-      // Force a complete main-screen repaint. This is intentional here:
-      // Combined Data must update the visible cards immediately on brand tap,
-      // without waiting for another lower filter to trigger a repaint.
-      render();
-      if(!(userRole==='admin' && adminViewActive && adminViewShopId==='__combined__')) saveUIState();
-    }
     wrap.addEventListener('click', function(e){
       const chip = e.target.closest('.chip[data-brand]');
       if(!chip || !wrap.contains(chip)) return;
-      if(e.detail===0) return;
       e.preventDefault();
       e.stopPropagation();
-      // Mouse/keyboard activation.
-      if(e.pointerType && e.pointerType!=='mouse') return;
-      applyBrandFilterChip(chip);
-    });
-    wrap.addEventListener('pointerdown', function(e){
-      const chip = e.target.closest('.chip[data-brand]');
-      if(!chip || !wrap.contains(chip)) return;
-      if(e.pointerType==='touch' || e.pointerType==='pen'){
-        e.preventDefault();
-        e.stopPropagation();
-        applyBrandFilterChip(chip);
+
+      const val = chip.getAttribute('data-brand') || 'all';
+      const isCombined = (userRole==='admin' && adminViewActive && adminViewShopId==='__combined__');
+
+      // Combined Data owns its own brand-filter state. Never read/write the
+      // normal shop's currentBrandFilter while Combined Data is open.
+      if(isCombined){
+        adminCombinedBrandFilter = val;
+      }else{
+        currentBrandFilter = val;
       }
-    }, {passive:false});
+
+      // The brand state is changed first, then the list is rendered from that
+      // exact state. This prevents the lower filter row from being required to
+      // trigger a second repaint before the selected brand becomes visible.
+      render();
+
+      if(!isCombined) saveUIState();
+    });
   }
 }
 
@@ -9134,7 +9129,10 @@ function enterAdminCombined(){
   cardDisplaySettings=Object.assign({},cloneAdminData(adminViewSnapshot.cardDisplaySettings||{}));
   shopProfile={shopName:'All Shops Combined',ownerName:'Admin'};
   rateBook=[];
-  currentFilter='all'; currentBrandFilter='all'; adminCombinedBrandFilter='all'; currentSort='brand-qty-desc';
+  currentFilter='all'; adminCombinedBrandFilter='all'; currentSort='brand-qty-desc';
+  // Combined Data is an independent filter context. The normal shop's
+  // currentBrandFilter remains in adminViewSnapshot and is restored only
+  // when exiting Combined Data; it is never used to render Combined Data.
   if(document.getElementById('search')) document.getElementById('search').value='';
   document.getElementById('adminShopsOverlay').classList.add('hidden');
   updateAdminShopContextUI(); updateAccountUI(); render(); window.scrollTo(0,0);
