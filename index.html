@@ -738,9 +738,15 @@ header{background:#fff;border-bottom:1px solid #e2e6ec;padding:0 16px 14px;box-s
 .menu-dropdown.hidden{display:none!important;}
 /* Keep the floating Entry/Expense actions completely behind the open drawer. */
 body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;visibility:hidden !important;pointer-events:none !important;}
-/* When the drawer is open, keep the whole sticky header above main-screen filters. */
-body.menu-open .app>header{z-index:2500!important;}
-.menu-dropdown::before{content:"";position:fixed;top:0;left:100%;width:100vw;height:100vh;background:rgba(15,23,42,.42);z-index:-1;}
+/* When the drawer is open, the main-screen search/filter controls must not sit
+   over the drawer or receive touches through it. */
+body.menu-open .search-row,
+body.menu-open #brandFilterChips,
+body.menu-open #filterChips,
+body.menu-open .activity-filter-row{visibility:hidden!important;pointer-events:none!important;}
+/* Keep the whole sticky header below the fixed menu drawer. */
+body.menu-open .app>header{z-index:1!important;}
+.menu-dropdown::before{content:"";position:fixed;top:0;left:100%;width:100vw;height:100vh;background:rgba(15,23,42,.42);z-index:-1;pointer-events:none!important;}
 .menu-profile{display:flex;align-items:center;gap:14px;padding:25px 22px 22px;border-bottom:1px solid #dfe4eb;background:#fff;flex:0 0 auto;}
 .menu-profile-avatar{width:78px;height:78px;flex:0 0 78px;border-radius:50%;overflow:hidden;background:#f5f7fa;border:1px solid #e1e6ed;display:flex;align-items:center;justify-content:center;}
 .menu-profile-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
@@ -994,7 +1000,7 @@ body.menu-open .app>header{z-index:2500!important;}
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 08 Oct 2026 • 09:47:03 AM PKT</span><span>Menu stacking + Combined brand filters fixed</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 08 Oct 2026 • 09:56:35 AM PKT • All Shops Combined brand filters fixed</span><span>All Shops Combined brand filters fixed</span></div>
         </div>
       </div>
     </div>
@@ -1896,7 +1902,7 @@ body.menu-open .app>header{z-index:2500!important;}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 08 Oct 2026 • 09:47:03 AM PKT • All Shops Combined Data</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 08 Oct 2026 • 09:56:35 AM PKT • All Shops Combined brand filters fixed • All Shops Combined brand filters fixed</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1943,7 +1949,7 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
 });
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '08 Oct 2026 • 09:47:03 AM PKT • Menu stacking + All Shops Combined brand filters fixed';
+const APP_INDEX_UPDATED = '08 Oct 2026 • 09:56:35 AM PKT • All Shops Combined brand filters fixed';
 
 let inventory = [];
 
@@ -3866,18 +3872,32 @@ function renderBrandFilter(){
     distinct.map(function(b){
       return '<button type="button" class="chip '+(currentBrandFilter===b?'active':'')+'" data-brand="'+b+'">'+b+'</button>';
     }).join('');
-  wrap.querySelectorAll('.chip').forEach(function(c){
-    c.onclick = function(e){
+  // Click handling is delegated to the stable wrapper so it survives every
+  // re-render of the brand chips. This is especially important in All Shops
+  // Combined mode where the chip row is rebuilt after each selection.
+  if(!wrap.__brandFilterDelegated){
+    wrap.__brandFilterDelegated = true;
+    wrap.addEventListener('click', function(e){
+      const chip = e.target.closest('.chip[data-brand]');
+      if(!chip || !wrap.contains(chip)) return;
       e.preventDefault();
       e.stopPropagation();
-      currentBrandFilter = c.getAttribute('data-brand') || 'all';
+      currentBrandFilter = chip.getAttribute('data-brand') || 'all';
       renderBrandFilter();
       renderList();
       // Combined admin data is read-only UI; don't overwrite the owner's
       // normal-screen filter state while an admin is browsing all shops.
       if(!(userRole==='admin' && adminViewActive && adminViewShopId==='__combined__')) saveUIState();
-    };
-  });
+    });
+    wrap.addEventListener('pointerup', function(e){
+      const chip = e.target.closest('.chip[data-brand]');
+      if(!chip || !wrap.contains(chip)) return;
+      // On touch devices, make the first finger release an immediate filter
+      // action. The click generated afterwards is ignored because the chip
+      // row is rebuilt immediately.
+      if(e.pointerType==='touch' || e.pointerType==='pen') e.preventDefault();
+    }, {passive:false});
+  }
 }
 
 function renderFilterChips(){
