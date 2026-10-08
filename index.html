@@ -1000,7 +1000,7 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 08 Oct 2026 • 10:11:26 AM PKT • All Shops Combined brand filter immediate repaint fixed</span><span>All Shops Combined brand filters fixed</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 08 Oct 2026 • 11:06:37 AM PKT • Android entry Box/Charger no default selection</span><span>All Shops Combined brand filters fixed</span></div>
         </div>
       </div>
     </div>
@@ -1902,7 +1902,7 @@ body.menu-open .app>header{z-index:1!important;}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 08 Oct 2026 • 10:11:26 AM PKT • All Shops Combined brand filter immediate repaint fixed • All Shops Combined brand filters fixed</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 08 Oct 2026 • 11:06:37 AM PKT • Android entry Box/Charger no default selection • All Shops Combined brand filters fixed</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1949,7 +1949,7 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
 });
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '08 Oct 2026 • 10:58:14 AM PKT • Combined brand filter state interaction fixed';
+const APP_INDEX_UPDATED = '08 Oct 2026 • 11:06:37 AM PKT • Android entry Box/Charger no default selection';
 
 let inventory = [];
 
@@ -5737,8 +5737,10 @@ function openAdd(){
   // Android keeps the existing mandatory fields. iPhone has no Status/RAM,
   // Box/Charger are optional and default to absent, while Battery is mandatory.
   formState.status = '';
-  formState.box = 'No';
-  formState.charger = 'No charger';
+  // Android entry: Box aur Charger kisi option par default select nahi honge.
+  // User ko entry ke waqt manually select karna hoga.
+  formState.box = '';
+  formState.charger = '';
   formState.battery = '';
   formPhotos = [];
   renderPhotoStrip();
