@@ -833,6 +833,15 @@ body.menu-open .app>header{z-index:1!important;}
   padding:16px 16px 20px !important;
   overflow-y:auto !important;
 }
+
+/* Urdu UI direction: keep numeric/IMEI controls naturally readable. */
+body.urdu-ui .app, body.urdu-ui .menu-dropdown, body.urdu-ui .overlay, body.urdu-ui .sheet,
+body.urdu-ui .settings-overlay, body.urdu-ui .dashboard-overlay { direction:rtl; }
+body.urdu-ui input[type="number"], body.urdu-ui input[inputmode="numeric"], body.urdu-ui input[id*="imei"], body.urdu-ui .imei-input,
+body.urdu-ui .price-input, body.urdu-ui .amount-input { direction:ltr; text-align:left; }
+body.urdu-ui .header-top { direction:rtl; }
+body.urdu-ui .chips-scroll { direction:rtl; }
+body.urdu-ui select { direction:rtl; }
 </style>
 
 <style id="mandatory-star-style">.required-star{color:#d92d20;font-weight:800;margin-left:2px;}</style>
@@ -943,6 +952,7 @@ body.menu-open .app>header{z-index:1!important;}
         <button class="history-icon-btn quick-privacy-btn" id="quickPrivacyHeaderBtn" title="Privacy: tap = ON/OFF, long-press = amount" aria-label="Quick Privacy">
           <svg viewBox="0 0 36 28" fill="none" aria-hidden="true"><path d="M3 14s4.5-9 15-9 15 9 15 9-4.5 9-15 9S3 14 3 14Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18" cy="14" r="4.2" fill="currentColor"/></svg>
         </button>
+        <button class="history-icon-btn" id="languageToggleBtn" title="اردو / English" aria-label="اردو / English" style="font-size:12px;font-weight:800;width:auto;padding:0 9px;">اردو</button>
         <button class="history-icon-btn quick-privacy-amount-btn" id="quickPrivacyAmountBtn" title="Privacy amount" aria-label="Privacy amount">⚙</button>
       </div>
     </div>
@@ -1902,7 +1912,7 @@ body.menu-open .app>header{z-index:1!important;}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 08 Oct 2026 • 11:27:00 AM PKT • Offline mode + automatic online sync added</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 08 Oct 2026 • 11:06:37 AM PKT • Android entry Box/Charger no default selection • All Shops Combined brand filters fixed</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1948,8 +1958,87 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
+
+/* ===== Bilingual Urdu / English UI ===== */
+const UI_LANG_KEY = 'mobileLedger_uiLanguage_v1';
+let uiLanguage = 'en';
+const UI_TRANSLATIONS = {
+  'Mobile Hisab':'موبائل حساب','by Z Mobile':'از زی موبائل','Undo':'واپس','Redo':'دوبارہ','Notifications':'اطلاعات','Quick Privacy':'فوری پرائیویسی','Privacy amount':'پرائیویسی رقم','Privacy fixed amount':'مقررہ پرائیویسی رقم','Buy price mein itna add hoga':'خرید قیمت میں اتنی رقم شامل ہوگی','Slider se 500 se 10,000 tak 500 ke steps mein foran change karein. Number box mein exact amount bhi likh sakte hain.':'سلائیڈر سے 500 سے 10,000 تک 500 کے مرحلوں میں تبدیل کریں۔ نمبر باکس میں درست رقم بھی لکھ سکتے ہیں۔',
+  'Business':'کاروبار','Expenses':'اخراجات','Contacts':'رابطے','Analytics':'تجزیہ','Reports':'رپورٹس','Activity History':'سرگرمی کی تاریخ','App':'ایپ','Settings':'سیٹنگز','Sign in nahi hai':'سائن اِن نہیں ہے','Logout':'لاگ آؤٹ','Close':'بند کریں','Menu':'مینو','Account':'اکاؤنٹ','Admin':'ایڈمن','Brands, badges & field options':'برانڈز، بیجز اور فیلڈ آپشنز',
+  'Backup lein':'بیک اپ لیں','Baad mein':'بعد میں','Model, customer se search karein':'ماڈل یا کسٹمر سے تلاش کریں','Model (zyada quantity wala upar)':'ماڈل (زیادہ مقدار والا اوپر)','Brand':'برانڈ','Model':'ماڈل','Pics':'تصاویر','Status':'اسٹیٹس','RAM':'ریم','Storage':'اسٹوریج','Condition':'حالت','Box':'باکس','Charger':'چارجر','IMEI 1':'آئی ایم ای آئی 1','IMEI 2':'آئی ایم ای آئی 2','Buy price':'خرید قیمت','Phone expenses':'فون کے اخراجات','Sell price range':'فروخت قیمت کی حد','Buy date':'خریداری کی تاریخ','Seller details':'بیچنے والے کی تفصیل','Sale details':'فروخت کی تفصیل','Add more Details':'مزید تفصیل شامل کریں','Add another piece':'ایک اور فون شامل کریں','Network':'نیٹ ورک','Display / Panel':'ڈسپلے / پینل','Touch':'ٹچ','Camera':'کیمرہ','Body':'باڈی','Open aur Repair':'کھولا اور مرمت','Battery health':'بیٹری ہیلتھ','Packing':'پیکنگ','Face ID':'فیس آئی ڈی','True Tone':'ٹرو ٹون','Notes':'نوٹس','Custom fields':'کسٹم فیلڈز','Expense category':'اخراجات کی قسم',
+  'Save entry':'اندراج محفوظ کریں','Cancel':'منسوخ','Scan':'اسکین','Enter Device IMEI':'ڈیوائس آئی ایم ای آئی درج کریں','Enter IMEI':'آئی ایم ای آئی درج کریں','15 digit number':'15 ہندسوں کا نمبر','Naya brand naam':'نیا برانڈ نام','Add':'شامل کریں','Normal':'عام','Bara':'بڑا','Bohat bara':'بہت بڑا','100%':'100 فیصد',
+  'This month':'یہ مہینہ','Business month':'کاروباری مہینہ','Lifetime':'تمام مدت','Available':'دستیاب','Sold':'فروخت شدہ','All':'سب','PTA':'پی ٹی اے','Non-PTA':'نان پی ٹی اے','CPID':'سی پی آئی ڈی','JV':'جے وی','Bypass/MDM':'بائی پاس/ایم ڈی ایم',
+  'No':'نہیں','Yes':'ہاں','No charger':'چارجر نہیں','Original charger':'اصل چارجر','Perfect':'بہترین','Original':'اصل','Original panel':'اصل پینل','Original body':'اصل باڈی','No open, no repair':'نہیں کھولا، کوئی مرمت نہیں','Repaired':'مرمت شدہ','Refurbished':'ریفربشڈ','Battery changed':'بیٹری تبدیل شدہ','Below 69%':'69 فیصد سے کم','On service':'سروس پر','Boosted':'بوسٹڈ','No pack':'پیک نہیں','Water pack':'واٹر پیک','Air tight':'ایئر ٹائٹ',
+  'Rent':'کرایہ','Refreshment':'ریفرشمنٹ','Repair':'مرمت','Jelly/Protector':'جَیلی/پروٹیکٹر','Utility Bill':'یوٹیلیٹی بل','Transport':'ٹرانسپورٹ','Salary':'تنخواہ','Other':'دیگر',
+  'Search':'تلاش','Save':'محفوظ کریں','Delete':'حذف کریں','Edit':'ترمیم','Update':'اپ ڈیٹ','Done':'مکمل','Confirm':'تصدیق','Yes, delete':'ہاں، حذف کریں','No, cancel':'نہیں، منسوخ کریں','Open':'کھولیں','View':'دیکھیں','Details':'تفصیل','Total':'کل','Profit':'منافع','Loss':'نقصان','Price':'قیمت','Quantity':'مقدار','Date':'تاریخ','Customer':'کسٹمر','Phone':'فون','Status':'حالت','Available stock':'دستیاب اسٹاک','Sold phones':'فروخت شدہ فونز','Dead stock':'ڈیڈ اسٹاک',
+  'Dashboard':'ڈیش بورڈ','Stock':'اسٹاک','Sales':'فروخت','Purchase':'خرید','Rate Book':'ریٹ بک','Cloud Sync':'کلاؤڈ سنک','Data Management':'ڈیٹا مینجمنٹ','Share Mobile Hisab':'موبائل حساب شیئر کریں','App version':'ایپ ورژن','Language':'زبان','English':'انگریزی','Urdu':'اردو',
+  '📴 Offline mode — data phone mein save ho raha hai. Internet wapas aayega to sync ho jayega.':'📴 آف لائن موڈ — ڈیٹا فون میں محفوظ ہو رہا ہے۔ انٹرنیٹ واپس آئے گا تو خودکار سنک ہو جائے گا۔',
+  'Settings draft — abhi save nahi hua':'سیٹنگز کی تبدیلیاں ابھی محفوظ نہیں ہوئیں','No charger':'چارجر نہیں','Original charger':'اصل چارجر'
+};
+const UI_TRANSLATIONS_REV = Object.keys(UI_TRANSLATIONS).reduce(function(m,k){ m[UI_TRANSLATIONS[k]]=k; return m; },{});
+function uiTranslateString(value){
+  if(uiLanguage!=='ur' || !value) return value;
+  const trimmed=String(value).trim();
+  return UI_TRANSLATIONS[trimmed] || value;
+}
+function uiEnglishString(value){
+  if(!value) return value;
+  const trimmed=String(value).trim();
+  return UI_TRANSLATIONS_REV[trimmed] || value;
+}
+function translateTextTree(root){
+  if(!root) return;
+  const walker=document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes=[];
+  let n; while((n=walker.nextNode())) nodes.push(n);
+  nodes.forEach(function(node){
+    const raw=node.nodeValue;
+    const trimmed=raw.trim();
+    if(!trimmed) return;
+    const translated=uiLanguage==='ur' ? uiTranslateString(trimmed) : uiEnglishString(trimmed);
+    if(translated!==trimmed) node.nodeValue=raw.replace(trimmed,translated);
+  });
+  const attrs=['placeholder','title','aria-label'];
+  root.querySelectorAll('*').forEach(function(el){
+    attrs.forEach(function(a){
+      if(!el.hasAttribute(a)) return;
+      const v=el.getAttribute(a); const nv=uiLanguage==='ur'?uiTranslateString(v):uiEnglishString(v);
+      if(nv!==v) el.setAttribute(a,nv);
+    });
+  });
+}
+function applyUILanguage(){
+  document.documentElement.lang=uiLanguage==='ur'?'ur':'en';
+  document.body.dir=uiLanguage==='ur'?'rtl':'ltr';
+  document.body.classList.toggle('urdu-ui',uiLanguage==='ur');
+  const b=document.getElementById('languageToggleBtn');
+  if(b){ b.textContent=uiLanguage==='ur'?'English':'اردو'; b.title=uiLanguage==='ur'?'Switch to English':'اردو / English'; b.setAttribute('aria-label',b.title); }
+  translateTextTree(document.body);
+  try{ localStorage.setItem(UI_LANG_KEY,uiLanguage); }catch(e){}
+}
+function loadUILanguage(){
+  try{ const saved=localStorage.getItem(UI_LANG_KEY); if(saved==='ur'||saved==='en') uiLanguage=saved; }catch(e){}
+  applyUILanguage();
+}
+function toggleUILanguage(){ uiLanguage=uiLanguage==='ur'?'en':'ur'; applyUILanguage(); }
+const uiLangObserver=new MutationObserver(function(mutations){
+  if(uiLanguage!=='ur') return;
+  mutations.forEach(function(m){
+    m.addedNodes.forEach(function(n){ if(n.nodeType===1 || n.nodeType===3) translateTextTree(n.nodeType===1?n:n.parentElement); });
+  });
+});
+
+function initUILanguage(){
+  const btn=document.getElementById('languageToggleBtn');
+  if(btn) btn.addEventListener('click',function(e){ e.preventDefault(); e.stopPropagation(); toggleUILanguage(); });
+  try{ uiLangObserver.observe(document.body,{childList:true,subtree:true}); }catch(e){}
+  loadUILanguage();
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initUILanguage); else initUILanguage();
+
+
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '08 Oct 2026 • 11:42:23 AM PKT • iPhone Box/Charger default set to No';
+const APP_INDEX_UPDATED = '08 Oct 2026 • 01:36 PM PKT • Urdu / English bilingual interface added';
 
 let inventory = [];
 
@@ -9246,15 +9335,6 @@ function initFirebaseSync(){
     firebase.initializeApp(firebaseConfig);
     fbAuth = firebase.auth();
     fbDb = firebase.firestore();
-    // Keep Firestore's local cache enabled so the last synced business data
-    // remains available without internet. When the connection returns,
-    // Firestore automatically reconciles the queued/local changes.
-    let firestorePersistenceReady = Promise.resolve();
-    try{
-      firestorePersistenceReady = fbDb.enablePersistence({synchronizeTabs:false}).catch(function(err){
-        console.warn('Firestore offline persistence unavailable', err);
-      });
-    }catch(e){ console.warn('Firestore persistence setup failed', e); }
     if(firebaseAuthEnvironmentSupported()){
       fbAuth.getRedirectResult().then(function(result){
         if(result && result.user && result.additionalUserInfo && result.additionalUserInfo.isNewUser){
@@ -9305,7 +9385,7 @@ function initFirebaseSync(){
       if(cloudUnsub){ cloudUnsub(); cloudUnsub = null; }
       if(user){
         try{ localStorage.setItem(LS_WAS_LOGGED_IN_KEY, '1'); }catch(e){}
-        firestorePersistenceReady.then(function(){ return resolveUserRoleAndShop(user); }).then(function(){
+        resolveUserRoleAndShop(user).then(function(){
           activateShopStorage(userShopId);
           updateAccountUI();
           globalModelLibrary={};
@@ -9971,11 +10051,7 @@ if(window.visualViewport){
 }
 
 function updateOfflineBanner(){ const el=document.getElementById('offlineBanner'); if(el) el.style.display=navigator.onLine?'none':'block'; }
-window.addEventListener('online',function(){
-  updateOfflineBanner();
-  showToast('🟢 Internet wapas aa gaya — pending data sync ho raha hai.');
-  if(fbUser && hasPendingLocalChanges()) attemptPush();
-});
+window.addEventListener('online',function(){updateOfflineBanner();showToast('🟢 Internet wapas aa gaya — sync dobara try hoga.');schedulePush();});
 window.addEventListener('offline',function(){updateOfflineBanner();showToast('📴 Offline mode — local save jari rahega.');});
 updateOfflineBanner();
 
