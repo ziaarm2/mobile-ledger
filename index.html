@@ -1949,7 +1949,7 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
 });
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '08 Oct 2026 • 11:19:17 AM PKT • iPhone Battery Health default selection removed';
+const APP_INDEX_UPDATED = '08 Oct 2026 • 11:29:17 AM PKT • Android Box/Charger auto-selection fixed';
 
 let inventory = [];
 
@@ -2341,7 +2341,7 @@ function setPlatformDefault(platform, fieldKey, value){
 function applyPlatformDefaultsToForm(platform){
   const defs={status:platform==='iphone'?'':'',ram:'',storage:'',condition:'',network:'',display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',battery:platform==='iphone'?'':'Perfect',box:platform==='iphone'?'No':'No',packing:'No pack',charger:platform==='iphone'?'No charger':'Original charger',faceid:platform==='iphone'?'Yes':'No',truetone:platform==='iphone'?'Yes':'No'};
   Object.keys(defs).forEach(function(k){
-    const d=(platform==='iphone' && (k==='status' || k==='battery')) ? '' : ((platform==='iphone' && k==='box') ? 'No' : ((platform==='iphone' && k==='charger') ? 'No charger' : getPlatformDefault(platform,k,defs[k])));
+    const d=(platform==='iphone' && (k==='status' || k==='battery')) ? '' : ((k==='box' || k==='charger') ? '' : getPlatformDefault(platform,k,defs[k]));
     const opts=getEntryFieldOptionsForPlatform(platform,k);
     formState[k]=(d && opts.indexOf(d)!==-1) ? d : '';
   });
