@@ -2933,7 +2933,13 @@ function addRateBookEntry(entry, silent){
 function migrateInventoryToRateBook(){
   if(!Array.isArray(inventory)||!inventory.length) return;
   const existing={}; rateBook.forEach(function(r){existing[String(r.sourceInventoryId||'')+'|'+String(r.rate)+'|'+String(r.date)]=true;}); let changed=false;
-  inventory.forEach(function(e){ if(e.buy==null||Number(e.buy)<=0||!e.brand||!e.model)return; const sig=String(e.id)+'|'+String(Number(e.buy))+'|'+String(e.buyDate||todayISO()); if(existing[sig])return; rateBook.push({id:'rb_m_'+String(e.id),sourceInventoryId:e.id,brand:e.brand,model:e.model,variant:e.storage||'',status:e.status||'',rate:Number(e.buy),quantity:Math.max(1,Number(e.quantity)||1),date:e.buyDate||todayISO(),seller:e.sellerName||'',notes:e.notes||'',ram:e.ram||'',storage:e.storage||'',condition:e.condition||'',battery:e.battery||'',box:e.box||'',charger:e.charger||'',source:'stock-migration'}); changed=true; });
+  inventory.forEach(function(e){ if(!e.id||!e.brand||!e.model)return; const matching=rateBook.filter(function(r){return String(r.sourceInventoryId||'')===String(e.id);});
+    matching.forEach(function(r){
+      const d=rateBookDetailsFromInventory(e);
+      ['ram','storage','condition','battery','box','charger'].forEach(function(k){ if(d[k]!==undefined && String(r[k]||'')!==String(d[k]||'')){r[k]=d[k];changed=true;} });
+      if(e.status && String(r.status||'')!==String(e.status)){r.status=e.status;changed=true;}
+    });
+    if(e.buy==null||Number(e.buy)<=0)return; const sig=String(e.id)+'|'+String(Number(e.buy))+'|'+String(e.buyDate||todayISO()); if(existing[sig])return; rateBook.push({id:'rb_m_'+String(e.id),sourceInventoryId:e.id,brand:e.brand,model:e.model,variant:e.storage||'',status:e.status||'',rate:Number(e.buy),quantity:Math.max(1,Number(e.quantity)||1),date:e.buyDate||todayISO(),seller:e.sellerName||'',notes:e.notes||'',ram:e.ram||'',storage:e.storage||'',condition:e.condition||'',battery:e.battery||'',box:e.box||'',charger:e.charger||'',source:'stock-migration'}); changed=true; });
   if(changed){try{localStorage.setItem(shopStorageKey(LS_RATE_BOOK_KEY),JSON.stringify(rateBook));}catch(e){}}
 }
 function renderRateBook(){
