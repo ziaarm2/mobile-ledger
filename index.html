@@ -511,6 +511,11 @@
   #adminShopDetail table{width:100%;border-collapse:collapse;font-size:11px;min-width:620px;}
   #adminShopDetail th,#adminShopDetail td{padding:7px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top;}
   #adminShopDetail th{font-weight:800;}
+  .admin-combined-card{border:1px solid var(--accent);border-radius:14px;padding:12px;margin:10px 0 12px;background:var(--surface-2);}
+  .admin-combined-title{font-weight:800;font-size:15px;}
+  .admin-combined-sub{font-size:12px;color:var(--text-dim);line-height:1.5;margin:4px 0 10px;}
+  body.admin-combined-active #adminShopContextBanner{display:flex!important;}
+  body.admin-combined-active #adminShopContextBanner .ctx-name{display:inline;}
 
   /* Rate Book */
   .rate-book-actions{display:flex;gap:8px;margin-top:10px;}
@@ -971,7 +976,6 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
       <div class="menu-scroll">
         <div class="menu-section-label">Business</div>
         <button class="menu-item" id="btnExpenses"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="14" rx="2" stroke-width="1.8"/><path d="M7 12h10M8 9h8" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Expenses</span></button>
-        <button class="menu-item" id="btnRateBook"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M6 4.5h12a2 2 0 0 1 2 2V20H6a2 2 0 0 1-2-2V6.5a2 2 0 0 1 2-2Z" stroke-width="1.8"/><path d="M8 8h8M8 12h8M8 16h5" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Rate Book</span></button>
         <button class="menu-item" id="btnContacts"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke-width="1.8"/><path d="M3.5 19c.5-3.3 2.4-5 5.5-5s5 1.7 5.5 5M17 11a2.5 2.5 0 1 0 0-5M16 14c2.5.2 4 1.7 4.5 5" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Contacts</span></button>
         <button class="menu-item" id="btnAnalytics"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19V9M12 19V5M19 19v-8" stroke-width="2" stroke-linecap="round"/><path d="M3.5 19.5h17" stroke-width="1.5" stroke-linecap="round"/></svg></span><span class="menu-item-text">Analytics</span></button>
         <button class="menu-item" id="btnReports"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3.5h9l3 3V20.5H6z" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3.5v4h4M9 12h6M9 16h6" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Reports</span></button>
@@ -988,7 +992,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 07 Oct 2026 • 09:14:03 AM PKT</span><span>Backup, Sync & Data combined</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 08 Oct 2026 • 09:29:44 AM PKT</span><span>Backup, Sync & Data combined</span></div>
         </div>
       </div>
     </div>
@@ -1284,6 +1288,11 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
     <div class="sheet-handle"></div>
     <h2>🏢 All Shops — Admin</h2>
     <div id="adminShopsStatus" class="rr-sub" style="margin-bottom:10px;">Data load ho raha hai…</div>
+    <div class="admin-combined-card">
+      <div class="admin-combined-title">📦 All Shops Combined Data</div>
+      <div class="admin-combined-sub">Tamam shops ke mobile records ek hi main-screen style mein dekhein — rates, condition aur tamam available details ke saath.</div>
+      <button type="button" class="btn-save" id="btnAdminCombinedData">Open Combined Data</button>
+    </div>
     <div id="adminShopsList"></div>
     <div id="adminShopDetail" style="display:none;margin-top:12px;"></div>
     <div class="sheet-actions"><button class="btn-cancel" id="btnAdminShopsClose">Band karein</button></div>
@@ -1885,7 +1894,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 07 Oct 2026 • 09:44:49 AM PKT • Busiest Hours exact-time mapping fix</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 08 Oct 2026 • 09:29:44 AM PKT • All Shops Combined Data</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1932,7 +1941,7 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
 });
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '08 Oct 2026 • 09:16:24 AM PKT • Rate Book mandatory details display redesigned';
+const APP_INDEX_UPDATED = '08 Oct 2026 • 09:29:44 AM PKT • Rate Book removed + All Shops Combined Data';
 
 let inventory = [];
 
@@ -4278,6 +4287,11 @@ function cardPhotoHtml(e){
     '</div>';
 }
 
+function adminCombinedShopBadge(e){
+  if(!(userRole==='admin' && adminViewActive && adminViewShopId==='__combined__') || !e || !e._adminShopName) return '';
+  return '<div class=\"sale-meta\" style=\"margin-top:4px;color:var(--accent);font-weight:750;\">🏪 '+adminEscape(e._adminShopName)+'</div>';
+}
+
 function renderSingleStockCard(e){
   const outOfStock = (e.quantity||0) <= 0;
   const canSplit = !outOfStock && (e.quantity||1) > 1;
@@ -4286,6 +4300,7 @@ function renderSingleStockCard(e){
   '<div class="card multi-selectable '+(outOfStock?'outofstock ':'')+(compact?'compact':'')+'" data-multi-select-card="'+e.id+'">'+
     '<span class="multi-select-mark">✓</span>'+
     '<div class="card-title">'+e.brand+' '+e.model+'</div>'+
+    adminCombinedShopBadge(e)+
     prominentSellRangeHtml(e.range)+
     cardPhotoHtml(e)+
     '<div class="badges">'+pieceStatusBadges(e, outOfStock)+'</div>'+
@@ -4319,6 +4334,7 @@ function renderStockGroup(g){
     '<div class="piece-row multi-selectable '+(outOfStock?'outofstock ':'')+(compact?' compact-row':'')+'" data-multi-select-card="'+e.id+'">'+
       '<span class="multi-select-mark">✓</span>'+
       '<div class="piece-row-top">'+pieceStatusBadges(e, outOfStock)+'</div>'+
+      adminCombinedShopBadge(e)+
       (pieceSpecBadges(e) ? '<div class="piece-row-top spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
       cardPhotoHtml(e)+
       prominentSellRangeHtml(e.range)+
@@ -4438,6 +4454,7 @@ function renderSoldCard(e){
   return (
   '<div class="card '+(returned?'returned-card':'')+'">'+
     '<div class="card-title">'+e.brand+' '+e.model+'</div>'+
+    adminCombinedShopBadge(e)+
     '<div class="badges">'+
       '<span class="badge '+statusBadgeClass(e.status)+'">'+e.status+'</span>'+
       '<span class="badge sold-badge">Sold'+(e.quantity>1?(' x'+e.quantity):'')+'</span>'+
@@ -7309,12 +7326,12 @@ document.getElementById('btnMenuLogout').onclick=function(){ closeMainMenu(); do
     if(userRole==='admin') e.preventDefault();
   });
 })();
-document.getElementById('btnRateBook').onclick = function(){ openRateBook(); };
 document.getElementById('btnRateBookClose').onclick = function(){ requestOverlayClose(); };
 document.getElementById('rateBookOverlay').onclick = function(e){ if(e.target.id==='rateBookOverlay') requestOverlayClose(); };
 document.getElementById('adminShopsOverlay').onclick = function(e){ if(e.target.id==='adminShopsOverlay') requestOverlayClose(); };
 document.getElementById('btnAdminShopsClose').onclick = function(){ requestOverlayClose(); };
 const adminShopsMenuBtn=document.getElementById('btnAdminShops'); if(adminShopsMenuBtn) adminShopsMenuBtn.onclick = function(){ openAdminShops(); };
+document.getElementById('btnAdminCombinedData').onclick = function(){ enterAdminCombined(); };
 document.getElementById('btnRateBookAdd').onclick = function(){ openRateAdd(); };
 document.getElementById('btnRateAddCancel').onclick = function(){ requestOverlayClose(); };
 document.getElementById('btnRateAddSave').onclick = function(){ saveManualRate(); };
@@ -9028,15 +9045,57 @@ function updateAdminShopContextUI(){
   const exitBtn=document.getElementById('btnExitAdminShop');
   if(app) app.classList.toggle('admin-view', isAdminShopView());
   document.body.classList.toggle('admin-view-active', isAdminShopView());
-  // Admin access is intentionally invisible in the normal UI. The selected
-  // shop is rendered using the same main-screen layout as an owner sees.
+  document.body.classList.toggle('admin-combined-active', userRole==='admin' && adminViewActive && adminViewShopId==='__combined__');
+  // Admin access remains hidden from normal shop owners. In combined mode the
+  // main-screen layout is reused so every shop's records look like normal entries.
   const titleEl=document.querySelector('.header-top h1');
   if(titleEl) titleEl.textContent = 'Mobile Hisab';
-  if(banner) banner.classList.remove('show');
-  if(nameEl) nameEl.textContent = '';
-  if(exitBtn) exitBtn.style.display = 'none';
+  if(banner){
+    const combined = userRole==='admin' && adminViewActive && adminViewShopId==='__combined__';
+    banner.classList.toggle('show', combined);
+  }
+  if(nameEl) nameEl.textContent = (userRole==='admin' && adminViewActive && adminViewShopId==='__combined__') ? 'All Shops Combined' : '';
+  if(exitBtn) exitBtn.style.display = (userRole==='admin' && adminViewActive && adminViewShopId==='__combined__') ? 'inline-block' : 'none';
   const adminBtn=document.getElementById('btnAdminShops');
   if(adminBtn) adminBtn.style.display='none';
+}
+
+function enterAdminCombined(){
+  if(userRole!=='admin'){alert('Ye section sirf Admin account ke liye hai.');return;}
+  const ids=Object.keys(adminShopCache).filter(function(k){return k.indexOf('_order_')!==0;});
+  if(!ids.length){alert('Koi shop data available nahi hai.');return;}
+  if(!adminViewSnapshot){
+    adminViewSnapshot={
+      inventory:cloneAdminData(inventory), expenses:cloneAdminData(expenses), customModels:cloneAdminData(customModels),
+      customOptionData:cloneAdminData(customOptionData), cardDisplaySettings:cloneAdminData(cardDisplaySettings),
+      shopProfile:cloneAdminData(shopProfile), rateBook:cloneAdminData(rateBook), currentFilter:currentFilter,
+      currentBrandFilter:currentBrandFilter, currentSort:currentSort,
+      search:document.getElementById('search') ? document.getElementById('search').value : ''
+    };
+  }
+  const combined=[];
+  ids.forEach(function(id){
+    const x=adminShopCache[id], data=x&&x.data||{};
+    (Array.isArray(data.inventory)?data.inventory:[]).forEach(function(e){
+      const row=cloneAdminData(e)||{};
+      row._adminShopName=x.shopName||id;
+      row._adminShopId=id;
+      combined.push(row);
+    });
+  });
+  adminViewActive=true;
+  adminViewShopId='__combined__';
+  globalModelLibrary={}; globalModelLibraryLoaded={};
+  inventory=combined;
+  expenses=[]; customModels={}; customOptionData={globalCustomFields:[]};
+  cardDisplaySettings=Object.assign({},cloneAdminData(adminViewSnapshot.cardDisplaySettings||{}));
+  shopProfile={shopName:'All Shops Combined',ownerName:'Admin'};
+  rateBook=[];
+  currentFilter='all'; currentBrandFilter='all'; currentSort='brand-qty-desc';
+  if(document.getElementById('search')) document.getElementById('search').value='';
+  document.getElementById('adminShopsOverlay').classList.add('hidden');
+  updateAdminShopContextUI(); updateAccountUI(); render(); window.scrollTo(0,0);
+  showToast('✓ All Shops Combined Data — read-only');
 }
 
 function enterAdminShop(shopId){
