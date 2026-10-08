@@ -712,7 +712,7 @@ header{background:#fff;border-bottom:1px solid #e2e6ec;padding:0 16px 14px;box-s
 .search-row input::placeholder{color:#a1a9b5;}
 .search-row input:focus,.search-row select:focus{border-color:#ef1f2f;}
 .chips-scroll{padding:10px 16px 3px;gap:8px;}
-.chip{background:#fff;border:1px solid #d3d9e1;color:#667085;border-radius:8px;padding:8px 13px;font-size:12.5px;cursor:pointer;user-select:none;pointer-events:auto;position:relative;z-index:20;}
+.chip{background:#fff;border:1px solid #d3d9e1;color:#667085;border-radius:8px;padding:8px 13px;font-size:12.5px;cursor:pointer;user-select:none;pointer-events:auto;position:relative;z-index:20;appearance:none;-webkit-appearance:none;font-family:inherit;font-weight:400;line-height:normal;display:inline-flex;align-items:center;justify-content:center;}
 .chip.active{background:#ef1f2f;border-color:#ef1f2f;color:#fff;font-weight:750;}
 .activity-filter-row{padding:8px 16px 0;gap:8px;}
 .activity-filter-row select,.activity-filter-row input{background:#fff;border:1px solid #cfd6df;color:#344054;border-radius:8px;padding:9px 8px;font-size:11.5px;}
@@ -738,6 +738,8 @@ header{background:#fff;border-bottom:1px solid #e2e6ec;padding:0 16px 14px;box-s
 .menu-dropdown.hidden{display:none!important;}
 /* Keep the floating Entry/Expense actions completely behind the open drawer. */
 body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;visibility:hidden !important;pointer-events:none !important;}
+/* When the drawer is open, keep the whole sticky header above main-screen filters. */
+body.menu-open .app>header{z-index:2500!important;}
 .menu-dropdown::before{content:"";position:fixed;top:0;left:100%;width:100vw;height:100vh;background:rgba(15,23,42,.42);z-index:-1;}
 .menu-profile{display:flex;align-items:center;gap:14px;padding:25px 22px 22px;border-bottom:1px solid #dfe4eb;background:#fff;flex:0 0 auto;}
 .menu-profile-avatar{width:78px;height:78px;flex:0 0 78px;border-radius:50%;overflow:hidden;background:#f5f7fa;border:1px solid #e1e6ed;display:flex;align-items:center;justify-content:center;}
@@ -992,7 +994,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 08 Oct 2026 • 09:29:44 AM PKT</span><span>Backup, Sync & Data combined</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 08 Oct 2026 • 09:47:03 AM PKT</span><span>Menu stacking + Combined brand filters fixed</span></div>
         </div>
       </div>
     </div>
@@ -1894,7 +1896,7 @@ body.menu-open #fabAdd, body.menu-open #btnQuickExpense{display:none !important;
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 08 Oct 2026 • 09:29:44 AM PKT • All Shops Combined Data</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 08 Oct 2026 • 09:47:03 AM PKT • All Shops Combined Data</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1941,7 +1943,7 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
 });
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '08 Oct 2026 • 09:39:00 AM PKT • All Shops Combined brand filters fixed';
+const APP_INDEX_UPDATED = '08 Oct 2026 • 09:47:03 AM PKT • Menu stacking + All Shops Combined brand filters fixed';
 
 let inventory = [];
 
@@ -3860,9 +3862,9 @@ function renderBrandFilter(){
     return a.localeCompare(b);
   });
   const wrap = document.getElementById('brandFilterChips');
-  wrap.innerHTML = '<div class="chip '+(currentBrandFilter==='all'?'active':'')+'" data-brand="all">Sab brands</div>' +
+  wrap.innerHTML = '<button type="button" class="chip '+(currentBrandFilter==='all'?'active':'')+'" data-brand="all">Sab brands</button>' +
     distinct.map(function(b){
-      return '<div class="chip '+(currentBrandFilter===b?'active':'')+'" data-brand="'+b+'">'+b+'</div>';
+      return '<button type="button" class="chip '+(currentBrandFilter===b?'active':'')+'" data-brand="'+b+'">'+b+'</button>';
     }).join('');
   wrap.querySelectorAll('.chip').forEach(function(c){
     c.onclick = function(e){
