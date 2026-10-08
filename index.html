@@ -1932,7 +1932,7 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
 });
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '08 Oct 2026 • 09:01:39 AM PKT • Rate Book mandatory details display fixed';
+const APP_INDEX_UPDATED = '08 Oct 2026 • 09:16:24 AM PKT • Rate Book mandatory details display redesigned';
 
 let inventory = [];
 
@@ -2942,6 +2942,24 @@ function migrateInventoryToRateBook(){
     if(e.buy==null||Number(e.buy)<=0)return; const sig=String(e.id)+'|'+String(Number(e.buy))+'|'+String(e.buyDate||todayISO()); if(existing[sig])return; rateBook.push({id:'rb_m_'+String(e.id),sourceInventoryId:e.id,brand:e.brand,model:e.model,variant:e.storage||'',status:e.status||'',rate:Number(e.buy),quantity:Math.max(1,Number(e.quantity)||1),date:e.buyDate||todayISO(),seller:e.sellerName||'',notes:e.notes||'',ram:e.ram||'',storage:e.storage||'',condition:e.condition||'',battery:e.battery||'',box:e.box||'',charger:e.charger||'',source:'stock-migration'}); changed=true; });
   if(changed){try{localStorage.setItem(shopStorageKey(LS_RATE_BOOK_KEY),JSON.stringify(rateBook));}catch(e){}}
 }
+function rateBookDisplayEntry(r){
+  r=r||{};
+  var src=null;
+  if(r.sourceInventoryId && Array.isArray(inventory)) src=inventory.find(function(e){return String(e.id)===String(r.sourceInventoryId);});
+  var x=Object.assign({},src||{},r);
+  if(!x.storage && r.variant) x.storage=r.variant;
+  return x;
+}
+function rateBookMandatoryGrid(e){
+  e=rateBookDisplayEntry(e);
+  var platform=getEntryPlatform(e.brand||'');
+  var items=[['Status',e.status||'—']];
+  if(platform!=='iphone') items.push(['RAM',e.ram||'—']);
+  items.push(['Storage',e.storage||'—'],['Condition',e.condition||'—']);
+  if(platform==='iphone') items.push(['Battery Health',e.battery||'—']);
+  else items.push(['Box',e.box||'—'],['Charger',e.charger||'—']);
+  return '<div class="rb-mandatory-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px;">'+items.map(function(it){return '<div style="padding:8px 9px;border:1px solid var(--border,#e5e7eb);border-radius:10px;background:var(--card,#fff);"><div style="font-size:10px;opacity:.65;font-weight:700;text-transform:uppercase;letter-spacing:.3px;">'+escapeHtml(it[0])+'</div><div style="margin-top:2px;font-weight:700;font-size:13px;">'+escapeHtml(it[1])+'</div></div>';}).join('')+'</div>';
+}
 function renderRateBook(){
   const list=document.getElementById('rateBookList'); if(!list)return;
   const q=(document.getElementById('rateBookSearch').value||'').trim().toLowerCase(); const status=document.getElementById('rateBookStatusFilter').value; const groups={};
@@ -2949,7 +2967,7 @@ function renderRateBook(){
   const cards=Object.keys(groups).map(function(k){return groups[k];}); cards.forEach(function(g){g.history.sort(function(a,b){return String(b.date).localeCompare(String(a.date));});});
   cards.sort(function(a,b){return String(a.brand+' '+a.model+' '+a.variant).localeCompare(String(b.brand+' '+b.model+' '+b.variant),undefined,{numeric:true,sensitivity:'base'});});
   if(!cards.length){list.innerHTML='<div class="empty" style="padding:35px 10px;">Koi rate nahi mila. + Add Rate se manually rate save karein.</div>';return;}
-  list.innerHTML=cards.map(function(g,gi){ const h=g.history, latest=h[0], nums=h.map(function(x){return Number(x.rate)||0;}), low=Math.min.apply(Math,nums), high=Math.max.apply(Math,nums), avg=nums.reduce(function(a,b){return a+b;},0)/nums.length; const rows=h.map(function(x){return '<div class="rate-book-history-row" style="display:block;"><div style="display:flex;justify-content:space-between;gap:8px;"><span>'+escapeHtml(x.date)+(x.quantity>1?' · x'+x.quantity:'')+(x.seller?' · '+escapeHtml(x.seller):'')+'</span><span class="rate">Rs '+fmt(x.rate)+'</span></div>'+mandatoryDetailsHtml(x)+'</div>';}).join(''); return '<div class="rate-book-card"><div class="rate-book-card-head"><div><div class="rate-book-title">'+escapeHtml(g.brand+' '+g.model+(g.variant?' '+g.variant:''))+'</div><div class="rate-book-sub">'+mandatoryDetailsHtml(latest)+'<div style="margin-top:3px;">Last: '+escapeHtml(latest.date)+'</div></div></div><div class="rate-book-current">Rs '+fmt(latest.rate)+'</div></div><div class="rate-book-stats"><span class="rate-book-stat">Lowest: Rs '+fmt(low)+'</span><span class="rate-book-stat">Highest: Rs '+fmt(high)+'</span><span class="rate-book-stat">Average: Rs '+fmt(avg)+'</span></div><div class="rate-book-card-actions"><button type="button" data-rate-history="'+gi+'">'+(h.length>1?'View '+h.length+' rates':'View history')+'</button><button type="button" class="danger" data-rate-delete-group="'+gi+'">Delete history</button></div><div class="rate-book-history" id="rateHistory_'+gi+'">'+rows+'</div></div>'; }).join('');
+  list.innerHTML=cards.map(function(g,gi){ const h=g.history, latest=h[0], latestDisplay=rateBookDisplayEntry(latest), nums=h.map(function(x){return Number(x.rate)||0;}), low=Math.min.apply(Math,nums), high=Math.max.apply(Math,nums), avg=nums.reduce(function(a,b){return a+b;},0)/nums.length; const rows=h.map(function(x){var xd=rateBookDisplayEntry(x);return '<div class="rate-book-history-row" style="display:block;"><div style="display:flex;justify-content:space-between;gap:8px;"><span>'+escapeHtml(x.date)+(x.quantity>1?' · x'+x.quantity:'')+(x.seller?' · '+escapeHtml(x.seller):'')+'</span><span class="rate">Rs '+fmt(x.rate)+'</span></div>'+rateBookMandatoryGrid(xd)+'</div>';}).join(''); return '<div class="rate-book-card"><div class="rate-book-card-head"><div><div class="rate-book-title">'+escapeHtml(g.brand+' '+g.model+(g.variant?' '+g.variant:''))+'</div><div class="rate-book-sub">Last: '+escapeHtml(latest.date)+'</div></div><div class="rate-book-current">Rs '+fmt(latest.rate)+'</div></div>'+rateBookMandatoryGrid(latestDisplay)+'<div class="rate-book-stats"><span class="rate-book-stat">Lowest: Rs '+fmt(low)+'</span><span class="rate-book-stat">Highest: Rs '+fmt(high)+'</span><span class="rate-book-stat">Average: Rs '+fmt(avg)+'</span></div><div class="rate-book-card-actions"><button type="button" data-rate-history="'+gi+'">'+(h.length>1?'View '+h.length+' rates':'View history')+'</button><button type="button" class="danger" data-rate-delete-group="'+gi+'">Delete history</button></div><div class="rate-book-history" id="rateHistory_'+gi+'">'+rows+'</div></div>'; }).join('');
   list.querySelectorAll('[data-rate-history]').forEach(function(btn){btn.onclick=function(){const el=document.getElementById('rateHistory_'+btn.dataset.rateHistory);if(el)el.classList.toggle('show');};});
   list.querySelectorAll('[data-rate-delete-group]').forEach(function(btn){btn.onclick=function(){if(isAdminShopView()){alert('Admin Shop view read-only hai — Rate Book change nahi ki ja sakti.');return;}const g=cards[Number(btn.dataset.rateDeleteGroup)];if(!g)return;if(!confirm('Is mobile ki puri rate history delete karni hai?'))return;const key=rateBookKey(g);activityBeforeFromCurrentMutation();rateBook=rateBook.filter(function(r){return rateBookKey(r)!==key;});saveRateBook();logActivity('rate','Rate Book history delete ki: '+g.brand+' '+g.model,'');renderRateBook();};});
 }
