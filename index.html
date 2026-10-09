@@ -833,21 +833,6 @@ body.menu-open .app>header{z-index:1!important;}
   padding:16px 16px 20px !important;
   overflow-y:auto !important;
 }
-
-/* Urdu UI direction: keep numeric/IMEI controls naturally readable. */
-body.urdu-ui .app, body.urdu-ui .menu-dropdown, body.urdu-ui .overlay, body.urdu-ui .sheet,
-body.urdu-ui .settings-overlay, body.urdu-ui .dashboard-overlay { direction:rtl; }
-body.urdu-ui input[type="number"], body.urdu-ui input[inputmode="numeric"], body.urdu-ui input[id*="imei"], body.urdu-ui .imei-input,
-body.urdu-ui .price-input, body.urdu-ui .amount-input { direction:ltr; text-align:left; }
-body.urdu-ui .header-top { direction:rtl; }
-body.urdu-ui .chips-scroll { direction:rtl; }
-body.urdu-ui select { direction:rtl; }
-
-/* Urdu typography (v82) */
-body.urdu-ui{font-family:"Noto Naskh Arabic","Noto Sans Arabic","Jameel Noori Nastaleeq","Segoe UI",Tahoma,Roboto,sans-serif;letter-spacing:0 !important;line-height:1.6;}
-body.urdu-ui button, body.urdu-ui input, body.urdu-ui select, body.urdu-ui textarea, body.urdu-ui .chip{font-family:inherit;letter-spacing:0 !important;}
-body.urdu-ui .num, body.urdu-ui .price-input, body.urdu-ui .amount-input, body.urdu-ui input[inputmode="numeric"]{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;direction:ltr;unicode-bidi:plaintext;}
-body.urdu-ui .chip, body.urdu-ui .badge{line-height:1.5;}
 </style>
 
 <style id="mandatory-star-style">.required-star{color:#d92d20;font-weight:800;margin-left:2px;}</style>
@@ -958,7 +943,6 @@ body.urdu-ui .chip, body.urdu-ui .badge{line-height:1.5;}
         <button class="history-icon-btn quick-privacy-btn" id="quickPrivacyHeaderBtn" title="Privacy: tap = ON/OFF, long-press = amount" aria-label="Quick Privacy">
           <svg viewBox="0 0 36 28" fill="none" aria-hidden="true"><path d="M3 14s4.5-9 15-9 15 9 15 9-4.5 9-15 9S3 14 3 14Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18" cy="14" r="4.2" fill="currentColor"/></svg>
         </button>
-        <button class="history-icon-btn" id="languageToggleBtn" data-no-translate title="اردو / English" aria-label="اردو / English" style="font-size:12px;font-weight:800;width:auto;padding:0 9px;">اردو</button>
         <button class="history-icon-btn quick-privacy-amount-btn" id="quickPrivacyAmountBtn" title="Privacy amount" aria-label="Privacy amount">⚙</button>
       </div>
     </div>
@@ -1918,7 +1902,7 @@ body.urdu-ui .chip, body.urdu-ui .badge{line-height:1.5;}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 08 Oct 2026 • 11:06:37 AM PKT • Android entry Box/Charger no default selection • All Shops Combined brand filters fixed</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 08 Oct 2026 • 11:27:00 AM PKT • Offline mode + automatic online sync added</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1964,131 +1948,8 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-
-/* ===== Bilingual Urdu / English UI (v82: natural Urdu, full coverage, safe revert) ===== */
-const UI_LANG_KEY = 'mobileLedger_uiLanguage_v1';
-let uiLanguage = 'en';
-const UI_TRANSLATIONS = {"Mobile Hisab": "موبائل حساب", "by Z Mobile": "از زی موبائل", "Z Mobile": "زی موبائل", "Mobile Hisab by Z Mobile": "موبائل حساب از زی موبائل", "Undo": "واپس", "Redo": "دوبارہ", "Notifications": "نوٹیفکیشن", "Quick Privacy": "فوری پرائیویسی", "Quick Privacy Toggle": "فوری پرائیویسی آن/آف", "Privacy amount": "پرائیویسی رقم", "Privacy fixed amount": "طے شدہ پرائیویسی رقم", "Buy price mein itna add hoga": "خرید قیمت میں اتنی رقم جمع ہوگی", "Slider se 500 se 10,000 tak 500 ke steps mein foran change karein. Number box mein exact amount bhi likh sakte hain.": "سلائیڈر سے 500 سے 10,000 تک 500 کے قدم میں فوراً تبدیل کریں۔ نمبر والے خانے میں درست رقم بھی لکھ سکتے ہیں۔", "Business": "کاروبار", "Expenses": "اخراجات", "Expenses (Kharcha)": "اخراجات (خرچہ)", "Contacts": "رابطے", "Analytics": "تجزیہ", "Reports": "رپورٹس", "Activity History": "سرگرمی کی تاریخ", "App": "ایپ", "Settings": "سیٹنگز", "Sign in nahi hai": "سائن اِن نہیں ہیں", "Logout": "لاگ آؤٹ", "Close": "بند کریں", "Menu": "مینو", "Account": "اکاؤنٹ", "Admin": "ایڈمن", "Brands, badges & field options": "برانڈ، بیج اور فیلڈ آپشنز", "Backup lein": "بیک اپ لیں", "Baad mein": "بعد میں", "Band karein": "بند کریں", "Model, customer se search karein": "ماڈل یا کسٹمر سے تلاش کریں", "Model (zyada quantity wala upar)": "ماڈل (زیادہ تعداد والا اوپر)", "Naye pehle (Latest)": "نئے پہلے", "Purane pehle": "پرانے پہلے", "Zyada quantity pehle": "زیادہ تعداد پہلے", "Kam quantity pehle": "کم تعداد پہلے", "Brand": "برانڈ", "Brands": "برانڈز", "Model": "ماڈل", "Pics": "تصاویر", "Pics (optional)": "تصاویر (اختیاری)", "Status": "اسٹیٹس", "RAM": "RAM", "Storage": "اسٹوریج", "Condition": "کنڈیشن", "Box": "باکس", "Charger": "چارجر", "IMEI 1": "IMEI 1", "IMEI 2": "IMEI 2", "Buy price": "خرید قیمت", "Phone expenses": "فون کے اخراجات", "Sell price range": "فروخت قیمت کی رینج", "Buy date": "خریداری کی تاریخ", "Seller details": "بیچنے والے کی تفصیل", "Sale details": "فروخت کی تفصیل", "Add more Details": "مزید تفصیل شامل کریں", "Add another piece": "ایک اور پیس شامل کریں", "Network": "نیٹ ورک", "Display / Panel": "ڈسپلے / پینل", "Touch": "ٹچ", "Camera": "کیمرہ", "Body": "باڈی", "Open aur Repair": "کھلا ہوا / مرمت", "Battery health": "بیٹری ہیلتھ", "Battery Health": "بیٹری ہیلتھ", "Packing": "پیکنگ", "Face ID": "Face ID", "True Tone": "True Tone", "Notes": "نوٹس", "Notes (optional)": "نوٹس (اختیاری)", "Custom fields": "اپنی مرضی کے فیلڈز", "Expense category": "خرچے کی قسم", "Variant / Storage": "ویریئنٹ / اسٹوریج", "Seller / Dealer (optional)": "بیچنے والا / ڈیلر (اختیاری)", "Seller ka naam (optional)": "بیچنے والے کا نام (اختیاری)", "Seller ka number (optional)": "بیچنے والے کا نمبر (اختیاری)", "Save entry": "اندراج محفوظ کریں", "Cancel": "منسوخ", "Scan": "اسکین", "Enter Device IMEI": "موبائل کا IMEI درج کریں", "Enter IMEI": "IMEI درج کریں", "15 digit number": "15 ہندسوں کا نمبر", "IMEI Scan Karein": "IMEI اسکین کریں", "Naya brand naam": "نئے برانڈ کا نام", "Add": "شامل کریں", "Normal": "عام", "Bara": "بڑا", "Bohat bara": "بہت بڑا", "100%": "100%", "Nayi stock entry": "نئی اسٹاک انٹری", "➕ Mobile ki information add karein": "➕ موبائل کی معلومات شامل کریں", "+ Isi model ka aur piece add karein": "+ اسی ماڈل کا ایک اور پیس شامل کریں", "Phone ke box/back par jo barcode hai usay camera ke samne rakhein.": "فون کے باکس یا پشت پر جو بارکوڈ ہے اسے کیمرے کے سامنے رکھیں۔", "This month": "اس مہینے", "Business month": "کاروباری مہینہ", "Lifetime": "شروع سے اب تک", "Custom": "حسبِ ضرورت", "Custom period": "اپنی مرضی کی مدت", "Performance period": "کارکردگی کی مدت", "Report period": "رپورٹ کی مدت", "From": "سے", "To": "تک", "Se": "سے", "Tak": "تک", "Se (date)": "سے (تاریخ)", "Tak (date)": "تک (تاریخ)", "Apply": "لاگو کریں", "Date filter clear karein": "تاریخ کا فلٹر ہٹائیں", "Available": "موجود", "Sold": "فروخت شدہ", "All": "سب", "All status": "تمام اسٹیٹس", "PTA": "PTA", "Non-PTA": "Non-PTA", "CPID": "CPID", "JV": "JV", "MDM": "MDM", "Bypass/MDM": "Bypass/MDM", "Patch": "Patch", "Active": "فعال", "Pending": "زیرِ منظوری", "Approved": "منظور شدہ", "Rejected": "مسترد", "Suspended": "معطل", "Reactivated": "دوبارہ فعال", "No": "نہیں", "Yes": "ہاں", "No charger": "چارجر نہیں", "Original charger": "اصل چارجر", "Perfect": "بہترین", "Original": "اصل", "Original panel": "اصل پینل", "Original body": "اصل باڈی", "No open, no repair": "کھلا نہیں، مرمت نہیں", "Repaired": "مرمت شدہ", "Refurbished": "ریفربشڈ", "Battery changed": "بیٹری تبدیل شدہ", "Below 69%": "69% سے کم", "On service": "سروس پر", "Boosted": "بوسٹڈ", "No pack": "بغیر پیک", "Water pack": "واٹر پیک", "Air tight": "ایئر ٹائٹ", "Rent": "کرایہ", "Refreshment": "ریفریشمنٹ", "Repair": "مرمت", "Jelly/Protector": "جیلی / پروٹیکٹر", "Utility Bill": "یوٹیلیٹی بل", "Transport": "ٹرانسپورٹ", "Salary": "تنخواہ", "Other": "دیگر", "Search": "تلاش", "Save": "محفوظ کریں", "Delete": "حذف کریں", "Edit": "ترمیم", "Update": "اپ ڈیٹ", "Done": "مکمل", "Confirm": "تصدیق", "Yes, delete": "ہاں، حذف کریں", "No, cancel": "نہیں، منسوخ کریں", "Open": "کھولیں", "View": "دیکھیں", "Details": "تفصیل", "Total": "کل", "Profit": "منافع", "Loss": "نقصان", "Price": "قیمت", "Quantity": "تعداد", "Date": "تاریخ", "Customer": "کسٹمر", "Phone": "فون", "Amount": "رقم", "Select all": "سب منتخب کریں", "Exit": "باہر نکلیں", "Filters": "فلٹرز", "Display": "ڈسپلے", "OR": "یا", "aur": "اور", "Return": "واپسی", "Available stock": "موجود اسٹاک", "Sold phones": "فروخت شدہ فونز", "Dead stock": "ڈیڈ اسٹاک", "Bechy": "فروخت کیے", "Khareedy": "خریدے", "becha": "بیچا", "kharida": "خریدا", "Dashboard": "ڈیش بورڈ", "Stock": "اسٹاک", "Sales": "فروخت", "Sale": "فروخت", "Purchase": "خرید", "Rate Book": "ریٹ بک", "Cloud Sync": "کلاؤڈ سنک", "Data Management": "ڈیٹا مینجمنٹ", "Share Mobile Hisab": "موبائل حساب شیئر کریں", "App version": "ایپ ورژن", "Language": "زبان", "English": "انگریزی", "Urdu": "اردو", "Sale entry": "فروخت کی انٹری", "Sale date": "فروخت کی تاریخ", "Sale price": "فروخت کی قیمت", "Sale price (per piece)": "فروخت کی قیمت (فی پیس)", "Sale confirm karein": "فروخت کی تصدیق کریں", "Customer name": "کسٹمر کا نام", "Customer number": "کسٹمر کا نمبر", "Customer (naam ya number)": "کسٹمر (نام یا نمبر)", "Payment method": "ادائیگی کا طریقہ", "Profit (is sale par)": "منافع (اس فروخت پر)", "Sales profit (gross)": "فروخت کا منافع (مجموعی)", "Net profit (expenses ke baad)": "خالص منافع (اخراجات کے بعد)", "🎁 Sale ke sath hua extra kharcha": "🎁 فروخت کے ساتھ ہونے والا اضافی خرچہ", "📱 Is mobile par hua extra kharcha": "📱 اس موبائل پر ہونے والا اضافی خرچہ", "+ Sale ka expense add karein": "+ فروخت کا خرچہ شامل کریں", "+ Expense add karein": "+ خرچہ شامل کریں", "Naya expense add karein": "نیا خرچہ شامل کریں", "Customer ko jelly/protector ya koi aur cheez dene ka kharcha yahan add karein. Ye is sale ke profit se minus hoga.": "کسٹمر کو جیلی، پروٹیکٹر یا کوئی اور چیز دینے کا خرچہ یہاں شامل کریں۔ یہ اس فروخت کے منافع سے منہا ہوگا۔", "↩ Refund/Wapasi (amount minus mein record hoga)": "↩ ریفنڈ / واپسی (رقم منفی میں درج ہوگی)", "+ Add Rate": "+ ریٹ شامل کریں", "+ Rate add karein": "+ ریٹ شامل کریں", "Buy Rate": "خرید ریٹ", "Save rate": "ریٹ محفوظ کریں", "💰 Auto Sell Range": "💰 خودکار فروخت رینج", "Existing filled ranges automatic overwrite nahi honge.": "پہلے سے بھری ہوئی رینجز خود بخود تبدیل نہیں ہوں گی۔", "Buy price ke hisaab se Sell Range automatically banega. Har price band ka markup set karein.": "خرید قیمت کے مطابق فروخت رینج خود بخود بنے گی۔ ہر قیمت کے دائرے کا منافع طے کریں۔", "Jab bhi naya mobile purchase/save hoga, uska Buy Rate yahan automatically history mein save ho jayega. Aap manually bhi rate add kar sakte hain.": "جب بھی نیا موبائل خرید یا محفوظ ہوگا، اس کا خرید ریٹ یہاں خود بخود ہسٹری میں محفوظ ہو جائے گا۔ آپ ہاتھ سے بھی ریٹ شامل کر سکتے ہیں۔", "Rs 500": "500 روپے", "Rs 2,000": "2,000 روپے", "Rs 5,000": "5,000 روپے", "Rs 10,000": "10,000 روپے", "📊 Analytics": "📊 تجزیہ", "📋 Rate Book": "📋 ریٹ بک", "🕘 Activity History": "🕘 سرگرمی کی تاریخ", "BRAND PERFORMANCE": "برانڈ کی کارکردگی", "BUSINESS SNAPSHOT": "کاروبار کا خلاصہ", "BUSINESS TREND": "کاروبار کا رجحان", "MODEL PERFORMANCE": "ماڈل کی کارکردگی", "PURCHASE vs SALE": "خرید بمقابلہ فروخت", "QUANTITY COMPARISON": "تعداد کا موازنہ", "SCORING COMPARISON": "اسکورنگ کا موازنہ", "STOCK PERFORMANCE": "اسٹاک کی کارکردگی", "⏰ BUSIEST BUSINESS HOURS": "⏰ مصروف ترین اوقات", "Current stock snapshot — not limited to selected period": "موجودہ اسٹاک کی صورتحال — منتخب مدت تک محدود نہیں", "Current vs previous comparable period": "موجودہ مدت بمقابلہ پچھلی مدت", "Mobiles purchased": "خریدے گئے موبائل", "Mobiles sold": "فروخت ہونے والے موبائل", "Mobiles purchased vs sold · same days vs previous period": "خریدے بمقابلہ فروخت · اتنے ہی دن بمقابلہ پچھلی مدت", "Money invested and money received · same days vs previous period": "لگائی گئی اور وصول ہونے والی رقم · اتنے ہی دن بمقابلہ پچھلی مدت", "Purchase, sale and net profit over time": "وقت کے ساتھ خرید، فروخت اور خالص منافع", "Purchase, sale and realized profit in selected period": "منتخب مدت میں خرید، فروخت اور حاصل شدہ منافع", "Top models by sold quantity and realized profit": "فروخت اور منافع کے لحاظ سے سرِفہرست ماڈل", "🕒 Customer Time": "🕒 کسٹمر کا وقت", "🕒 Customer Time Analytics": "🕒 کسٹمر کے وقت کا تجزیہ", "Har hour mein kitne customers ne mobile": "ہر گھنٹے میں کتنے کسٹمرز نے موبائل", "kharide": "خریدے", "aur kitne ne": "اور کتنوں نے", "Kitne piece beche": "کتنے پیس بیچے", "Selected period mein sale aur purchase kis waqt zyada hui": "منتخب مدت میں فروخت اور خرید کس وقت زیادہ ہوئی", "Dashboard ki key information — isi Analytics page par": "ڈیش بورڈ کی اہم معلومات — اسی تجزیہ صفحے پر", "📊 Dashboard reporting period": "📊 ڈیش بورڈ رپورٹنگ کی مدت", "Dashboard par Sold aur Net Profit kis period ke hisaab se dikhana hai. Business month choose karein to har month isi din se naya cycle start hoga.": "ڈیش بورڈ پر فروخت اور خالص منافع کس مدت کے حساب سے دکھانا ہے۔ کاروباری مہینہ منتخب کریں تو ہر مہینے اسی دن سے نیا چکر شروع ہوگا۔", "Business month start day": "کاروباری مہینے کا آغاز", "1–28 rakhein taake har month cycle reliably repeat ho.": "1 سے 28 کے درمیان رکھیں تاکہ ہر مہینے چکر درست دہرایا جائے۔", "Expenses (filtered date range)": "اخراجات (منتخب تاریخیں)", "Expenses (isi date range mein — brand/customer filter is par lagoo nahi)": "اخراجات (انہی تاریخوں میں — برانڈ/کسٹمر فلٹر اس پر لاگو نہیں)", "Total expenses (filtered)": "کل اخراجات (فلٹر شدہ)", "Sales (filtered)": "فروخت (فلٹر شدہ)", "About": "تعارف", "About Mobile Hisab": "موبائل حساب کے بارے میں", "Mobile Hisab app info": "موبائل حساب ایپ کی معلومات", "Admin settings": "ایڈمن سیٹنگز", "Appearance": "ظاہری شکل", "Readable UI": "آسانی سے پڑھنے والا انٹرفیس", "Card presentation & readability": "کارڈ کی پیشکش اور پڑھنے میں آسانی", "Card view": "کارڈ ویو", "Card view, sell range & brands": "کارڈ ویو، فروخت رینج اور برانڈ", "Badge order & card layout": "بیج کی ترتیب اور کارڈ لے آؤٹ", "Badges ka order": "بیجز کی ترتیب", "Drag karke card badges ki tarteeb set karein.": "ڈریگ کر کے کارڈ بیجز کی ترتیب طے کریں۔", "Badge ko 3 states mein set kiya ja sakta hai: Hidden → Card pe → Prominent.": "بیج کی تین حالتیں ہو سکتی ہیں: چھپا ہوا ← کارڈ پر ← نمایاں۔", "Field select karein, phir us field ke option par tap karke badge show/hide karein.": "فیلڈ منتخب کریں، پھر اس کے آپشن پر ٹیپ کر کے بیج دکھائیں یا چھپائیں۔", "Shop owner ki aankhon ke liye text, buttons aur UI ko thora bara karein. Ye setting Save changes ke baad permanently apply hogi.": "آنکھوں کی آسانی کے لیے تحریر، بٹن اور انٹرفیس کو ذرا بڑا کریں۔ یہ سیٹنگ تبدیلیاں محفوظ کرنے کے بعد ہمیشہ کے لیے لاگو ہوگی۔", "Privacy mode": "پرائیویسی موڈ", "Privacy & Security": "پرائیویسی اور سیکیورٹی", "Privacy mode & security": "پرائیویسی موڈ اور سیکیورٹی", "Stock & Pricing": "اسٹاک اور قیمتیں", "Shop details & contact": "دکان کی تفصیل اور رابطہ", "Shop profile": "دکان کا پروفائل", "✏️ Shop Profile": "✏️ دکان کا پروفائل", "Shop": "دکان", "Shop Name": "دکان کا نام", "Owner Name": "مالک کا نام", "Shop Phone (contact only)": "دکان کا فون (صرف رابطے کے لیے)", "Shop Phone (optional)": "دکان کا فون (اختیاری)", "Save Shop Profile": "دکان کا پروفائل محفوظ کریں", "Complete your shop profile": "اپنی دکان کا پروفائل مکمل کریں", "Save & Continue": "محفوظ کریں اور آگے بڑھیں", "✓ Save changes": "✓ تبدیلیاں محفوظ کریں", "↶ Undo changes": "↶ تبدیلیاں واپس کریں", "✓ Save message": "✓ پیغام محفوظ کریں", "✓ Save notification messages": "✓ نوٹیفکیشن پیغامات محفوظ کریں", "↩️ Default message": "↩️ ڈیفالٹ پیغام", "Text Undo / Redo": "تحریر Undo / Redo", "Har activity": "ہر سرگرمی", "Backup": "بیک اپ", "Backup, Sync & Data": "بیک اپ، سنک اور ڈیٹا", "Backup, sync & data management": "بیک اپ، سنک اور ڈیٹا مینجمنٹ", "Import / Restore": "امپورٹ / بحالی", "Import, restore & clear data": "امپورٹ، بحالی اور ڈیٹا صاف کرنا", "⬆ Restore from JSON": "⬆ JSON سے بحال کریں", "⬇ Download JSON Backup": "⬇ JSON بیک اپ ڈاؤن لوڈ کریں", "📊 Excel Backup": "📊 Excel بیک اپ", "📥 Import from Excel": "📥 Excel سے امپورٹ کریں", "📤 Backup lein": "📤 بیک اپ لیں", "📤 Share Backup File": "📤 بیک اپ فائل شیئر کریں", "📤 Share": "📤 شیئر کریں", "📤 Share Mobile Hisab": "📤 موبائل حساب شیئر کریں", "PDF banayein": "PDF بنائیں", "Manual backup karein, ya app har 12 ghante baad automatic backup le.": "ہاتھ سے بیک اپ لیں، یا ایپ ہر 12 گھنٹے بعد خود بخود بیک اپ لے۔", "Auto backup: har 12 ghante": "خودکار بیک اپ: ہر 12 گھنٹے", "24 ghante se zyada ho gaye, backup nahi ho saka — abhi le lein.": "24 گھنٹے سے زیادہ ہو گئے، بیک اپ نہیں ہو سکا — ابھی لے لیں۔", "Danger Zone": "خطرناک حصہ", "🗑️ Clear all data": "🗑️ تمام ڈیٹا صاف کریں", "🗑️ Clear data password": "🗑️ ڈیٹا صاف کرنے کا پاسورڈ", "🗑 Delete": "🗑 حذف کریں", "Clear data se app ka local business data remove ho jayega. Password protection apply hogi.": "ڈیٹا صاف کرنے سے ایپ کا مقامی کاروباری ڈیٹا ہٹ جائے گا۔ پاسورڈ کی حفاظت لاگو ہوگی۔", "Sirf “Clear data” action ko protect karta hai. Kam az kam 4 characters rakhein.": "یہ صرف «ڈیٹا صاف کریں» کو محفوظ کرتا ہے۔ کم از کم 4 حروف رکھیں۔", "Storage: 0% used": "اسٹوریج: 0% استعمال", "Sync status: —": "سنک اسٹیٹس: —", "Status refresh karein": "اسٹیٹس تازہ کریں", "Account sync status loading…": "اکاؤنٹ سنک اسٹیٹس لوڈ ہو رہا ہے…", "Account details loading…": "اکاؤنٹ کی تفصیل لوڈ ہو رہی ہے…", "Data load ho raha hai…": "ڈیٹا لوڈ ہو رہا ہے…", "Secure session check ho raha hai…": "محفوظ سیشن کی جانچ ہو رہی ہے…", "Session check ho raha hai…": "سیشن کی جانچ ہو رہی ہے…", "App Lock": "ایپ لاک", "🔒 App Lock": "🔒 ایپ لاک", "Set App Lock": "ایپ لاک لگائیں", "PIN, Pattern & Fingerprint": "PIN، پیٹرن اور فنگر پرنٹ", "PIN": "PIN", "Enter PIN": "PIN درج کریں", "Confirm PIN": "PIN کی تصدیق کریں", "Save PIN": "PIN محفوظ کریں", "🔢 Set / Change PIN": "🔢 PIN لگائیں / بدلیں", "✍️ Set / Change Pattern": "✍️ پیٹرن لگائیں / بدلیں", "Draw Pattern": "پیٹرن بنائیں", "Save Pattern": "پیٹرن محفوظ کریں", "Fingerprint": "فنگر پرنٹ", "Use Fingerprint": "فنگر پرنٹ استعمال کریں", "Use another method": "کوئی اور طریقہ استعمال کریں", "Register Fingerprint": "فنگر پرنٹ رجسٹر کریں", "👆 Register Fingerprint": "👆 فنگر پرنٹ رجسٹر کریں", "Fingerprint / biometric register karein": "فنگر پرنٹ / بایومیٹرک رجسٹر کریں", "Fingerprint verify karein.": "فنگر پرنٹ کی تصدیق کریں۔", "🔐 Test Lock": "🔐 لاک ٹیسٹ کریں", "Current App Lock verify karein.": "موجودہ ایپ لاک کی تصدیق کریں۔", "Forgot lock? Gmail se verify karein": "لاک بھول گئے؟ Gmail سے تصدیق کریں", "Apna custom App Lock set karein.": "اپنا ایپ لاک لگائیں۔", "Kam az kam 4 dots ka pattern banayein.": "کم از کم 4 نقطوں کا پیٹرن بنائیں۔", "App khulte hi lock screen show hogi. Aap apna custom PIN, Pattern aur Fingerprint methods set kar sakte hain.": "ایپ کھلتے ہی لاک اسکرین آئے گی۔ آپ اپنا PIN، پیٹرن اور فنگر پرنٹ لگا سکتے ہیں۔", "PIN aur Pattern aapke custom app credentials hain — phone ka screen-lock nahi.": "PIN اور پیٹرن آپ کے ایپ کے اپنے لاک ہیں — فون کا اسکرین لاک نہیں۔", "Phone ka secure biometric authenticator use hoga. Fingerprint data app mein save nahi hota.": "فون کا محفوظ بایومیٹرک سسٹم استعمال ہوگا۔ فنگر پرنٹ کا ڈیٹا ایپ میں محفوظ نہیں ہوتا۔", "Login": "لاگ اِن", "Login method": "لاگ اِن کا طریقہ", "Login & cloud sync": "لاگ اِن اور کلاؤڈ سنک", "Welcome back": "خوش آمدید", "Signed in as": "سائن اِن بطور", "Email": "ای میل", "Password": "پاسورڈ", "Confirm Password": "پاسورڈ کی تصدیق کریں", "Forgot password?": "پاسورڈ بھول گئے؟", "🔐 Change Password": "🔐 پاسورڈ تبدیل کریں", "Create Account": "اکاؤنٹ بنائیں", "Create account": "اکاؤنٹ بنائیں", "Open Account": "اکاؤنٹ کھولیں", "Naya shop hai?": "نئی دکان ہے؟", "Pehle se account hai?": "پہلے سے اکاؤنٹ ہے؟", "Continue with Google": "Google سے جاری رکھیں", "Email aur password se continue karein": "ای میل اور پاسورڈ سے جاری رکھیں", "Logout from this device": "اس ڈیوائس سے لاگ آؤٹ کریں", "Apne Mobile Hisab account mein login karein. Aap ka stock, sales aur settings devices par sync rahenge.": "اپنے موبائل حساب اکاؤنٹ میں لاگ اِن کریں۔ آپ کا اسٹاک، فروخت اور سیٹنگز تمام ڈیوائسز پر سنک رہیں گی۔", "Google se sign in ho gaya. Bas shop ki basic details save karein.": "Google سے سائن اِن ہو گیا۔ بس دکان کی بنیادی تفصیل محفوظ کریں۔", "Google login ke liye app ko": "Google لاگ اِن کے لیے ایپ کو", "ya hosted web app se open karein. Direct": "یا ہوسٹ کی گئی ویب ایپ سے کھولیں۔ براہِ راست", "HTML se Google sign-in nahi chalega.": "HTML فائل سے Google سائن اِن نہیں چلے گا۔", "Shop Access": "دکان کی رسائی", "Shop Access Management": "دکانوں کی رسائی کا انتظام", "Requests & access": "درخواستیں اور رسائی", "Approvals & message templates": "منظوریاں اور پیغام کے سانچے", "Request Received ✅": "درخواست موصول ہو گئی ✅", "Request received": "درخواست موصول ہو گئی", "🟡 Pending Approval": "🟡 منظوری کا انتظار", "Aapki Mobile Hisab access request Z Mobile ko bhej di gayi hai. Approval ka intezar karein.": "آپ کی موبائل حساب رسائی کی درخواست زی موبائل کو بھیج دی گئی ہے۔ منظوری کا انتظار کریں۔", "Naye shops pehle Pending rahenge. Aap approve, reject, suspend aur baad mein reactivate kar sakte hain.": "نئی دکانیں پہلے زیرِ منظوری رہیں گی۔ آپ منظور، مسترد، معطل اور بعد میں دوبارہ فعال کر سکتے ہیں۔", "🏢 All Shops — Admin": "🏢 تمام دکانیں — ایڈمن", "👁️ Admin mode:": "👁️ ایڈمن موڈ:", "📦 All Shops Combined Data": "📦 تمام دکانوں کا مجموعی ڈیٹا", "Open Combined Data": "مجموعی ڈیٹا کھولیں", "All Shops Combined brand filters fixed": "تمام دکانوں کے مجموعی برانڈ فلٹر درست کیے گئے", "Tamam shops ke mobile records ek hi main-screen style mein dekhein — rates, condition aur tamam available details ke saath.": "تمام دکانوں کے موبائل ریکارڈ ایک ہی مین اسکرین کی طرز پر دیکھیں — ریٹ، کنڈیشن اور تمام دستیاب تفصیل کے ساتھ۔", "Editable notification messages": "قابلِ ترمیم نوٹیفکیشن پیغامات", "WhatsApp": "WhatsApp", "WhatsApp share message": "WhatsApp شیئر پیغام", "📤 WhatsApp Preview": "📤 WhatsApp پیش نظارہ", "👁 Preview": "👁 پیش نظارہ", "Share message template": "شیئر پیغام کا سانچہ", "Message ko share karne se pehle yahan freely edit kar sakte hain.": "پیغام شیئر کرنے سے پہلے یہاں آزادی سے ترمیم کر سکتے ہیں۔", "Bilkul WhatsApp message ki tarah message likhein/edit karein. Automatic values buttons se insert karein.": "بالکل WhatsApp پیغام کی طرح لکھیں یا ترمیم کریں۔ خودکار ویلیوز بٹنوں سے شامل کریں۔", "variables use kar sakte hain. Ye text aap kabhi bhi change kar sakte hain.": "ویریبلز استعمال کر سکتے ہیں۔ یہ تحریر آپ کبھی بھی بدل سکتے ہیں۔", "In messages mein": "ان پیغامات میں", "App ko apne business workflow ke mutabiq manage karein.": "ایپ کو اپنے کاروبار کے طریقے کے مطابق چلائیں۔", "Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.": "استعمال شدہ موبائل کی خرید و فروخت کے کاروبار کے لیے اسٹاک، فروخت، اخراجات، رپورٹس، ریٹ بک اور کلاؤڈ سنک کی ایپ۔", "Photo crop karein": "تصویر کاٹیں", "Use photo": "تصویر استعمال کریں", "+ Pic": "+ تصویر", "0 selected": "0 منتخب", "Edit cancel karein": "ترمیم منسوخ کریں", "Box ko drag karein ya corners se resize karein — koi bhi shape/size chun sakte hain": "باکس کو ڈریگ کریں یا کونوں سے سائز بدلیں — کوئی بھی شکل یا سائز چن سکتے ہیں", "📴 Offline mode — data phone mein save ho raha hai. Internet wapas aayega to sync ho jayega.": "📴 آف لائن موڈ — ڈیٹا فون میں محفوظ ہو رہا ہے۔ انٹرنیٹ واپس آنے پر خود بخود سنک ہو جائے گا۔", "Settings draft — abhi save nahi hua": "سیٹنگز کی تبدیلیاں ابھی محفوظ نہیں ہوئیں", "Model delete nahi ho saka — internet / Firebase Rules check karein.": "ماڈل حذف نہیں ہو سکا — انٹرنیٹ / Firebase Rules چیک کریں۔", "Ek photo load nahi ho saki, dobara try karein.": "ایک تصویر لوڈ نہیں ہو سکی، دوبارہ کوشش کریں۔", "✓ Rate Book mein save ho gaya": "✓ ریٹ بک میں محفوظ ہو گیا", "✓ App Lock OFF ho gaya.": "✓ ایپ لاک بند ہو گیا۔", "WhatsApp open nahi hua — message copy kar diya gaya.": "WhatsApp نہیں کھلا — پیغام کاپی کر دیا گیا۔", "✓ Wapis aa gaye": "✓ واپس آ گئے", "✓ Wapis aa gayi": "✓ واپس آ گئی", "✓ WhatsApp message template save ho gaya.": "✓ WhatsApp پیغام کا سانچہ محفوظ ہو گیا۔", "✓ Default WhatsApp message restore ho gaya.": "✓ ڈیفالٹ WhatsApp پیغام بحال ہو گیا۔", "Is browser mein direct share support nahi hai — info copy kar di gayi hai.": "اس براؤزر میں براہِ راست شیئر ممکن نہیں — معلومات کاپی کر دی گئی ہیں۔", "✓ Split ho gaya": "✓ علیحدہ ہو گیا", "✓ Global Model Library se model delete ho gaya": "✓ گلوبل ماڈل لائبریری سے ماڈل حذف ہو گیا", "✓ Legacy custom model delete ho gaya": "✓ پرانا کسٹم ماڈل حذف ہو گیا", "✓ Save ho gaya": "✓ محفوظ ہو گیا", "↶ Last change undo ho gaya.": "↶ آخری تبدیلی واپس ہو گئی۔", "Undo state apply nahi ho saki.": "Undo لاگو نہیں ہو سکا۔", "Undo ke liye koi saved change nahi mila.": "Undo کے لیے کوئی محفوظ تبدیلی نہیں ملی۔", "Is latest change ka Undo state available nahi hai.": "اس تازہ تبدیلی کا Undo دستیاب نہیں۔", "Undo state load nahi ho saki.": "Undo لوڈ نہیں ہو سکا۔", "Redo ke liye koi change nahi hai.": "Redo کے لیے کوئی تبدیلی نہیں۔", "Auto-backup ho gaya (Downloads mein).": "خودکار بیک اپ ہو گیا (Downloads میں)۔", "✓ App PIN save ho gaya.": "✓ ایپ PIN محفوظ ہو گیا۔", "✓ App pattern save ho gaya.": "✓ ایپ پیٹرن محفوظ ہو گیا۔", "✓ Gmail verification successful.": "✓ Gmail کی تصدیق کامیاب۔", "✓ Fingerprint / biometric register ho gaya.": "✓ فنگر پرنٹ / بایومیٹرک رجسٹر ہو گیا۔", "↶ Unsaved settings changes undo ho gaye.": "↶ غیر محفوظ سیٹنگز کی تبدیلیاں واپس ہو گئیں۔", "✓ Settings save ho gayi.": "✓ سیٹنگز محفوظ ہو گئیں۔", "✓ Shop profile save ho gaya.": "✓ دکان کا پروفائل محفوظ ہو گیا۔", "✓ Ho gaya.": "✓ ہو گیا۔", "✓ Clear-data password save ho gaya.": "✓ ڈیٹا صاف کرنے کا پاسورڈ محفوظ ہو گیا۔", "✓ Excel file ban gayi (Inventory + Expenses dono sheets) — Downloads mein save ho gayi.": "✓ Excel فائل بن گئی (انوینٹری اور اخراجات دونوں شیٹس) — Downloads میں محفوظ ہو گئی۔", "✓ All Shops Combined Data — read-only": "✓ تمام دکانوں کا مجموعی ڈیٹا — صرف دیکھنے کے لیے", "✓ Apni Admin screen par wapas aa gaye": "✓ اپنی ایڈمن اسکرین پر واپس آ گئے", "🔔 New shop access request": "🔔 دکان کی نئی رسائی کی درخواست", "✓ Notification messages save ho gaye.": "✓ نوٹیفکیشن پیغامات محفوظ ہو گئے۔", "✓ Login ho gaya — sync shuru.": "✓ لاگ اِن ہو گیا — سنک شروع۔", "✓ Account ban gaya — Mobile Hisab use karein.": "✓ اکاؤنٹ بن گیا — موبائل حساب استعمال کریں۔", "✓ Shop details update ho gayi.": "✓ دکان کی تفصیل اپ ڈیٹ ہو گئی۔", "✓ Google se sign in ho gaya.": "✓ Google سے سائن اِن ہو گیا۔", "Google account ka password Google account settings se manage hota hai.": "Google اکاؤنٹ کا پاسورڈ Google اکاؤنٹ سیٹنگز سے بدلا جاتا ہے۔", "✓ Password reset link email par bhej diya.": "✓ پاسورڈ ری سیٹ لنک ای میل پر بھیج دیا۔", "🟢 Internet wapas aa gaya — sync dobara try hoga.": "🟢 انٹرنیٹ واپس آ گیا — سنک دوبارہ کوشش کرے گا۔", "📴 Offline mode — local save jari rahega.": "📴 آف لائن موڈ — مقامی طور پر محفوظ ہوتا رہے گا۔"};
-const UI_PREFIXES = [["✓ IMEI mil gaya:", "✓ IMEI مل گیا:"], ["✓ Sold ho gaya —", "✓ فروخت ہو گیا —"], ["✓ Privacy amount", "✓ پرائیویسی رقم"], ["Templates save nahi ho sake:", "سانچے محفوظ نہیں ہو سکے:"], ["↶ Last change undo ho gaya", "↶ آخری تبدیلی واپس ہو گئی"], ["Storage:", "اسٹوریج:"], ["Sync status:", "سنک اسٹیٹس:"], ["✓ Reset link", "✓ ری سیٹ لنک"]];
-const UI_NORM = {};
-Object.keys(UI_TRANSLATIONS).forEach(function(k){ UI_NORM[k.replace(/\s+/g,' ').trim().toLowerCase()] = UI_TRANSLATIONS[k]; });
-const UI_DIGITS = null; // numbers stay in Latin digits on purpose (prices/IMEI stay readable)
-function uiLookup(s){
-  const k = s.replace(/\s+/g,' ').trim().toLowerCase();
-  return Object.prototype.hasOwnProperty.call(UI_NORM,k) ? UI_NORM[k] : null;
-}
-function uiTranslateString(value){
-  if(uiLanguage!=='ur' || !value) return value;
-  const full = String(value);
-  const trimmed = full.trim();
-  if(!trimmed || /^[\u0600-\u06FF]/.test(trimmed)) return value;
-  let hit = uiLookup(trimmed);
-  if(hit) return hit;
-  // keep leading emoji / symbols and trailing ':' or '…' untouched
-  const m = trimmed.match(/^([^A-Za-z0-9\u0600-\u06FF{(“"']*)([\s\S]*?)([\s:.…]*)$/);
-  if(m && m[2]){
-    hit = uiLookup(m[2]);
-    if(hit) return m[1] + hit + m[3];
-  }
-  // counters like "5 selected"
-  let c = trimmed.match(/^(\d+)\s+selected$/i);
-  if(c) return c[1] + ' منتخب';
-  // messages that end with dynamic text (model name, amount, error…)
-  for(let i=0;i<UI_PREFIXES.length;i++){
-    if(trimmed.indexOf(UI_PREFIXES[i][0])===0) return UI_PREFIXES[i][1] + trimmed.slice(UI_PREFIXES[i][0].length);
-  }
-  return value;
-}
-// remembers the ORIGINAL English text, so switching back never needs a reverse dictionary
-const uiOrigText = new WeakMap();
-const uiOrigAttr = new WeakMap();
-function uiSkipNode(node){
-  const el = node.nodeType===1 ? node : node.parentElement;
-  if(!el) return true;
-  const tag = el.tagName;
-  if(tag==='SCRIPT'||tag==='STYLE'||tag==='TEXTAREA') return true;
-  return !!(el.closest && el.closest('[data-no-translate]'));
-}
-function uiApplyTextNode(node){
-  if(uiSkipNode(node)) return;
-  const rec = uiOrigText.get(node);
-  if(uiLanguage==='ur'){
-    if(rec && node.nodeValue===rec.tr) return;           // already translated
-    const raw = node.nodeValue; const trimmed = raw.trim();
-    if(!trimmed) return;
-    const tr = uiTranslateString(trimmed);
-    if(tr!==trimmed){ const nv = raw.replace(trimmed,tr); uiOrigText.set(node,{orig:raw,tr:nv}); node.nodeValue = nv; }
-    else if(rec) uiOrigText.delete(node);
-  } else if(rec){
-    if(node.nodeValue===rec.tr) node.nodeValue = rec.orig;
-    uiOrigText.delete(node);
-  }
-}
-function uiApplyAttrs(el){
-  ['placeholder','title','aria-label'].forEach(function(a){
-    if(!el.hasAttribute(a) || (el.closest && el.closest('[data-no-translate]'))) return;
-    const cur = el.getAttribute(a);
-    let store = uiOrigAttr.get(el); if(!store){ store={}; uiOrigAttr.set(el,store); }
-    const rec = store[a];
-    if(uiLanguage==='ur'){
-      if(rec && cur===rec.tr) return;
-      const tr = uiTranslateString(cur);
-      if(tr!==cur){ store[a]={orig:cur,tr:tr}; el.setAttribute(a,tr); } else delete store[a];
-    } else if(rec){
-      if(cur===rec.tr) el.setAttribute(a,rec.orig);
-      delete store[a];
-    }
-  });
-}
-function translateTextTree(root){
-  if(!root) return;
-  if(root.nodeType===3){ uiApplyTextNode(root); return; }
-  const walker=document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  const nodes=[]; let n; while((n=walker.nextNode())) nodes.push(n);
-  nodes.forEach(uiApplyTextNode);
-  if(root.nodeType===1){ uiApplyAttrs(root); root.querySelectorAll('[placeholder],[title],[aria-label]').forEach(uiApplyAttrs); }
-}
-function applyUILanguage(){
-  document.documentElement.lang=uiLanguage==='ur'?'ur':'en';
-  document.body.dir=uiLanguage==='ur'?'rtl':'ltr';
-  document.body.classList.toggle('urdu-ui',uiLanguage==='ur');
-  const b=document.getElementById('languageToggleBtn');
-  if(b){ b.setAttribute('data-no-translate',''); b.textContent=uiLanguage==='ur'?'English':'اردو'; b.title=uiLanguage==='ur'?'Switch to English':'اردو / English'; b.setAttribute('aria-label',b.title); }
-  uiLangObserverPaused = true;
-  translateTextTree(document.body);
-  uiLangObserverPaused = false;
-  try{ localStorage.setItem(UI_LANG_KEY,uiLanguage); }catch(e){}
-}
-function loadUILanguage(){
-  try{ const saved=localStorage.getItem(UI_LANG_KEY); if(saved==='ur'||saved==='en') uiLanguage=saved; }catch(e){}
-  applyUILanguage();
-}
-function toggleUILanguage(){ uiLanguage=uiLanguage==='ur'?'en':'ur'; applyUILanguage(); }
-let uiLangObserverPaused = false;
-const uiLangObserver=new MutationObserver(function(mutations){
-  if(uiLanguage!=='ur' || uiLangObserverPaused) return;
-  mutations.forEach(function(m){
-    if(m.type==='characterData'){ uiApplyTextNode(m.target); }
-    else if(m.type==='attributes'){ uiApplyAttrs(m.target); }
-    else m.addedNodes.forEach(function(n){ if(n.nodeType===1 || n.nodeType===3) translateTextTree(n); });
-  });
-});
-// alert / confirm / prompt dialogs also speak Urdu
-['alert','confirm','prompt'].forEach(function(fn){
-  const orig = window[fn]; if(typeof orig!=='function') return;
-  window[fn] = function(msg){ const a=Array.prototype.slice.call(arguments); if(typeof a[0]==='string') a[0]=uiTranslateString(a[0]); return orig.apply(window,a); };
-});
-function initUILanguage(){
-  const btn=document.getElementById('languageToggleBtn');
-  if(btn) btn.addEventListener('click',function(e){ e.preventDefault(); e.stopPropagation(); toggleUILanguage(); });
-  try{ uiLangObserver.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['placeholder','title','aria-label']}); }catch(e){}
-  loadUILanguage();
-}
-if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initUILanguage); else initUILanguage();
-
-
-const APP_INDEX_VERSION = 'v82';
-const APP_INDEX_UPDATED = '08 Oct 2026 • 01:36 PM PKT • Urdu translation rewritten (natural Urdu, full coverage)';
+const APP_INDEX_VERSION = 'v81';
+const APP_INDEX_UPDATED = '08 Oct 2026 • 11:42:23 AM PKT • iPhone Box/Charger default set to No';
 
 let inventory = [];
 
@@ -9385,6 +9246,15 @@ function initFirebaseSync(){
     firebase.initializeApp(firebaseConfig);
     fbAuth = firebase.auth();
     fbDb = firebase.firestore();
+    // Keep Firestore's local cache enabled so the last synced business data
+    // remains available without internet. When the connection returns,
+    // Firestore automatically reconciles the queued/local changes.
+    let firestorePersistenceReady = Promise.resolve();
+    try{
+      firestorePersistenceReady = fbDb.enablePersistence({synchronizeTabs:false}).catch(function(err){
+        console.warn('Firestore offline persistence unavailable', err);
+      });
+    }catch(e){ console.warn('Firestore persistence setup failed', e); }
     if(firebaseAuthEnvironmentSupported()){
       fbAuth.getRedirectResult().then(function(result){
         if(result && result.user && result.additionalUserInfo && result.additionalUserInfo.isNewUser){
@@ -9435,7 +9305,7 @@ function initFirebaseSync(){
       if(cloudUnsub){ cloudUnsub(); cloudUnsub = null; }
       if(user){
         try{ localStorage.setItem(LS_WAS_LOGGED_IN_KEY, '1'); }catch(e){}
-        resolveUserRoleAndShop(user).then(function(){
+        firestorePersistenceReady.then(function(){ return resolveUserRoleAndShop(user); }).then(function(){
           activateShopStorage(userShopId);
           updateAccountUI();
           globalModelLibrary={};
@@ -10101,7 +9971,11 @@ if(window.visualViewport){
 }
 
 function updateOfflineBanner(){ const el=document.getElementById('offlineBanner'); if(el) el.style.display=navigator.onLine?'none':'block'; }
-window.addEventListener('online',function(){updateOfflineBanner();showToast('🟢 Internet wapas aa gaya — sync dobara try hoga.');schedulePush();});
+window.addEventListener('online',function(){
+  updateOfflineBanner();
+  showToast('🟢 Internet wapas aa gaya — pending data sync ho raha hai.');
+  if(fbUser && hasPendingLocalChanges()) attemptPush();
+});
 window.addEventListener('offline',function(){updateOfflineBanner();showToast('📴 Offline mode — local save jari rahega.');});
 updateOfflineBanner();
 
