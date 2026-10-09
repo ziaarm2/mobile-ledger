@@ -1010,7 +1010,7 @@ body.urdu-ui select { direction:rtl; }
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 08 Oct 2026 • 11:06:37 AM PKT • Android entry Box/Charger no default selection</span><span>All Shops Combined brand filters fixed</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 09 Oct 2026 • 06:02:03 PM PKT • iPhone Battery Health visibility fixed; Company Warranty added</span><span>All Shops Combined brand filters fixed</span></div>
         </div>
       </div>
     </div>
@@ -1136,6 +1136,26 @@ body.urdu-ui select { direction:rtl; }
 
     <div class="sec-label">Charger <span style="color:var(--danger);">*</span></div>
     <div class="chip-row" id="chargerChips"></div>
+
+    <div class="field" id="companyWarrantyField" style="margin-top:8px;">
+      <label for="f-company-warranty">Company Warranty</label>
+      <select id="f-company-warranty">
+        <option value="">Select warranty</option>
+        <option value="Almost 1 month">Almost 1 month</option>
+        <option value="1 month">1 month</option>
+        <option value="2 months">2 months</option>
+        <option value="3 months">3 months</option>
+        <option value="4 months">4 months</option>
+        <option value="5 months">5 months</option>
+        <option value="6 months">6 months</option>
+        <option value="7 months">7 months</option>
+        <option value="8 months">8 months</option>
+        <option value="9 months">9 months</option>
+        <option value="10 months">10 months</option>
+        <option value="11 months">11 months</option>
+        <option value="12 months">12 months</option>
+      </select>
+    </div>
 
     <div class="field imei-field"><label>IMEI 1</label>
       <div style="display:flex;gap:6px;">
@@ -1912,7 +1932,7 @@ body.urdu-ui select { direction:rtl; }
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 08 Oct 2026 • 11:06:37 AM PKT • Android entry Box/Charger no default selection • All Shops Combined brand filters fixed</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 09 Oct 2026 • 06:02:03 PM PKT • iPhone Battery Health visibility fixed; Company Warranty added • All Shops Combined brand filters fixed</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -2018,6 +2038,21 @@ const UI_TRANSLATIONS = {
   "Body":"باڈی",
   "Open aur Repair":"کھلا / ریپئر",
   "Battery health":"بیٹری ہیلتھ",
+  "Company Warranty":"کمپنی وارنٹی",
+  "Select warranty":"وارنٹی منتخب کریں",
+  "Almost 1 month":"تقریباً 1 ماہ",
+  "1 month":"1 ماہ",
+  "2 months":"2 ماہ",
+  "3 months":"3 ماہ",
+  "4 months":"4 ماہ",
+  "5 months":"5 ماہ",
+  "6 months":"6 ماہ",
+  "7 months":"7 ماہ",
+  "8 months":"8 ماہ",
+  "9 months":"9 ماہ",
+  "10 months":"10 ماہ",
+  "11 months":"11 ماہ",
+  "12 months":"12 ماہ",
   "Packing":"پیکنگ",
   "Face ID":"Face ID",
   "True Tone":"True Tone",
@@ -2592,7 +2627,7 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '09 Oct 2026 • 10:21:00 AM PKT • Urdu UI updated using user-approved translation list';
+const APP_INDEX_UPDATED = '09 Oct 2026 • 06:02:03 PM PKT • iPhone Battery Health visibility fixed; Company Warranty added for Android and iPhone';
 
 let inventory = [];
 
@@ -2831,13 +2866,13 @@ function renderUiScaleToggles(){
 }
 
 const DEFAULT_ENTRY_LAYOUT = {
-  main: ['brand','model','photos','status','ram','storage','condition','box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'],
+  main: ['brand','model','photos','status','ram','storage','condition','box','charger','companyWarranty','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'],
   more: ['network','display','touch','camera','body','openrepair','battery','packing','faceid','truetone','notes'],
   hidden: []
 };
 const ENTRY_LAYOUT_LABELS = {
   brand:'Brand', model:'Model', photos:'Pics', status:'Status', ram:'RAM', storage:'Storage', condition:'Condition', imei1:'IMEI 1', imei2:'IMEI 2', buyPrice:'Buy price', phoneExpenses:'Phone expenses', sellRange:'Sell price range', buyDate:'Buy date', seller:'Seller details', extras:'+ Isi model ka aur piece', moreToggle:'+ Add more Details', saleFields:'Sale details',
-  ram:'RAM', storage:'Storage', network:'Network', display:'Display / Panel', touch:'Touch', camera:'Camera', body:'Body', openrepair:'Open aur Repair', battery:'Battery health', box:'Box', packing:'Packing', charger:'Charger', faceid:'Face ID', truetone:'True Tone', customFields:'Custom fields', notes:'Notes'
+  ram:'RAM', storage:'Storage', network:'Network', display:'Display / Panel', touch:'Touch', camera:'Camera', body:'Body', openrepair:'Open aur Repair', battery:'Battery health', box:'Box', packing:'Packing', charger:'Charger', companyWarranty:'Company Warranty', faceid:'Face ID', truetone:'True Tone', customFields:'Custom fields', notes:'Notes'
 };
 const DEFAULT_PLATFORM_CARD_FIELDS = ['display','battery','touch','camera','body','openrepair','ram','storage','network','packing','charger','box','faceid','truetone'];
 function defaultEntryLayout(){ return {main:DEFAULT_ENTRY_LAYOUT.main.slice(), more:DEFAULT_ENTRY_LAYOUT.more.slice(), hidden:[]}; }
@@ -3583,7 +3618,7 @@ function saveRateBook(){
   schedulePush(); return true;
 }
 function rateBookKey(x){ return String(x.brand||'').trim().toLowerCase()+'|||'+String(x.model||'').trim().toLowerCase()+'|||'+String(x.variant||'').trim().toLowerCase()+'|||'+String(x.status||'').trim().toLowerCase(); }
-function mandatoryDetailsHtml(e){ if(!e) return ''; const platform=getEntryPlatform(e.brand||''); const parts=[]; if(e.status) parts.push('Status: '+escapeHtml(e.status)); if(platform!=='iphone' && e.ram) parts.push('RAM: '+escapeHtml(e.ram)); if(e.storage) parts.push('Storage: '+escapeHtml(e.storage)); if(e.condition) parts.push('Condition: '+escapeHtml(e.condition)); if(platform==='iphone' && e.battery) parts.push('Battery health: '+escapeHtml(e.battery)); if(platform!=='iphone' && e.box) parts.push('Box: '+escapeHtml(e.box)); if(platform!=='iphone' && e.charger) parts.push('Charger: '+escapeHtml(e.charger)); return parts.length ? '<div class="rr-sub" style="margin-top:5px;line-height:1.55;"><b>Mandatory details:</b> '+parts.join(' · ')+'</div>' : ''; }
+function mandatoryDetailsHtml(e){ if(!e) return ''; const platform=getEntryPlatform(e.brand||''); const parts=[]; if(e.status) parts.push('Status: '+escapeHtml(e.status)); if(platform!=='iphone' && e.ram) parts.push('RAM: '+escapeHtml(e.ram)); if(e.storage) parts.push('Storage: '+escapeHtml(e.storage)); if(e.condition) parts.push('Condition: '+escapeHtml(e.condition)); if(platform==='iphone' && e.battery) parts.push('Battery health: '+escapeHtml(e.battery)); if(e.companyWarranty) parts.push('Company Warranty: '+escapeHtml(e.companyWarranty)); if(platform!=='iphone' && e.box) parts.push('Box: '+escapeHtml(e.box)); if(platform!=='iphone' && e.charger) parts.push('Charger: '+escapeHtml(e.charger)); return parts.length ? '<div class="rr-sub" style="margin-top:5px;line-height:1.55;"><b>Mandatory details:</b> '+parts.join(' · ')+'</div>' : ''; }
 function rateBookDetailsFromInventory(e){ return {ram:e&&e.ram||'',storage:e&&e.storage||'',condition:e&&e.condition||'',battery:e&&e.battery||'',box:e&&e.box||'',charger:e&&e.charger||''}; }
 function addRateBookEntry(entry, silent){
   const rate=Number(entry.rate); if(!isFinite(rate)||rate<=0) return false;
@@ -5701,6 +5736,8 @@ function prepareEntryLayoutDOM(){
   if(boxChips) addMainGroup('box',[previousSecLabel(boxChips),boxChips]);
   const chargerChips=sheet.querySelector('#chargerChips');
   if(chargerChips) addMainGroup('charger',[previousSecLabel(chargerChips),chargerChips]);
+  const companyWarranty=sheet.querySelector('#companyWarrantyField');
+  if(companyWarranty) wrapEntryGroup('companyWarranty',[companyWarranty],sheet.querySelector('#entryLayoutMainWrap'));
 
   const imei1=sheet.querySelector('#f-imei');
   if(imei1) addMainGroup('imei1',[imei1.closest('.field')]);
@@ -5773,8 +5810,9 @@ function prepareEntryLayoutDOM(){
       }
       if(n.classList && n.classList.contains('sec-label')) current=n;
       else if(current && n.classList && n.classList.contains('chip-row')){
-        const keyMap={RAM:'ram',Storage:'storage',Network:'network',Display:'display',Touch:'touch',Camera:'camera',Body:'body','Open aur Repair':'openrepair','Battery health':'battery',Box:'box',Packing:'packing',Charger:'charger','Face ID':'faceid','True Tone':'truetone'};
-        const key=keyMap[String(current.textContent||'').trim()];
+        const keyMap={RAM:'ram',Storage:'storage',Network:'network',Display:'display',Touch:'touch',Camera:'camera',Body:'body','Open aur Repair':'openrepair','Battery health':'battery','بیٹری ہیلتھ':'battery',Box:'box',Packing:'packing',Charger:'charger','Face ID':'faceid','True Tone':'truetone'};
+        const labelText=String(current.textContent||'').replace(/\*/g,'').trim();
+        const key=keyMap[labelText] || (labelText.toLowerCase().startsWith('battery health') ? 'battery' : '');
         if(key){ wrapEntryGroup(key,[current,n],more); }
         current=null;
       }
@@ -5822,7 +5860,7 @@ function ensureLayoutContainsAll(layout){
 
   // v57: fixed entry order — Box and Charger are mandatory and sit directly
   // below Condition; phone expense stays immediately below Buy price.
-  const fixedMainOrder=['brand','model','photos','status','ram','storage','condition','box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'];
+  const fixedMainOrder=['brand','model','photos','status','ram','storage','condition','box','charger','companyWarranty','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'];
   layout.main=fixedMainOrder.slice();
   layout.more=['network','display','touch','camera','body','openrepair','battery','packing','faceid','truetone','notes'];
   layout.hidden=[];
@@ -5985,7 +6023,7 @@ function applyEntryLayoutToDOM(platform){
   if(platform==='iphone'){
     fixedMainKeys = [
       'brand','model','photos','status','storage','condition','battery',
-      'box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
+      'box','charger','companyWarranty','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
       'seller','saleFields','moreToggle','extras'
     ];
     moreKeys = moreKeys.filter(function(key){ return key!=='battery' && key!=='status' && key!=='ram'; });
@@ -6375,7 +6413,7 @@ function openAdd(){
   rangeInputMode = 'auto';
   document.getElementById('sheetTitle').textContent = 'Nayi stock entry';
   document.getElementById('qtyLabel').textContent = 'Quantity (kitne piece)';
-  formState = {brand:'', status:'', ram:'', storage:'', condition:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'', packing:'No pack', charger:'', faceid:'No', truetone:'No', customFields:{}, isSold:false, __platform:'android'};
+  formState = {brand:'', status:'', ram:'', storage:'', condition:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'', packing:'No pack', charger:'', companyWarranty:'', faceid:'No', truetone:'No', customFields:{}, isSold:false, __platform:'android'};
   applyPlatformDefaultsToForm('android');
   // Android keeps the existing mandatory fields. iPhone has no Status/RAM,
   // Box/Charger are optional and default to absent, while Battery is mandatory.
@@ -6400,6 +6438,7 @@ function openAdd(){
   document.getElementById('f-range-hint').textContent = '';
   if(rangeInputMode==='auto') maybeAutoFillRange();
   document.getElementById('f-buydate').value = todayISO();
+  document.getElementById('f-company-warranty').value = '';
   document.getElementById('f-imei').value = '';
   document.getElementById('f-imei2').value = '';
   document.getElementById('f-seller-name').value = '';
@@ -6465,7 +6504,7 @@ function openEdit(id){
     status: e.status || '',
     ram: e.ram || '', storage: e.storage || '', condition: e.condition || '', network: e.network || '',
     display: e.display || 'Original panel', touch: e.touch || 'Perfect', camera: e.camera || 'Perfect', body: e.body || 'Original', openrepair: e.openrepair || 'No open, no repair', battery: e.battery || 'Perfect',
-    box: e.box || 'No', packing: e.packing || 'No pack', charger: e.charger || 'Original charger',
+    box: e.box || 'No', packing: e.packing || 'No pack', charger: e.charger || 'Original charger', companyWarranty: e.companyWarranty || '',
     faceid: e.faceid || 'No', truetone: e.truetone || 'No',
     customFields: Object.assign({}, e.customFields || {}),
     isSold: !!e.sold,
@@ -6484,6 +6523,7 @@ function openEdit(id){
   document.getElementById('f-range').value = e.range || '';
   document.getElementById('f-range-hint').textContent = '';
   document.getElementById('f-buydate').value = e.buyDate || todayISO();
+  document.getElementById('f-company-warranty').value = e.companyWarranty || '';
   document.getElementById('f-imei').value = e.imei || '';
   document.getElementById('f-imei2').value = e.imei2 || '';
   document.getElementById('f-seller-name').value = e.sellerName || '';
@@ -6594,6 +6634,7 @@ function saveEntry(){
     box: formState.box || 'No',
     packing: formState.packing || 'No pack',
     charger: formState.charger || 'Original charger',
+    companyWarranty: document.getElementById('f-company-warranty').value || '',
     faceid: formState.faceid || 'No',
     truetone: formState.truetone || 'No',
     customFields: Object.assign({}, formState.customFields || {}),
@@ -9228,7 +9269,7 @@ document.getElementById('btnClearData').onclick = function(){
 // Note: 'customer' (not 'customerName') matches the actual field saved on
 // each entry — using the wrong key here silently exported blank customer
 // names in every previous Excel backup.
-const EXCEL_COLUMNS = ['id','brand','model','status','quantity','sold','display','touch','camera','body','openrepair','battery','ram','storage','network','packing','charger','box','faceid','truetone','buy','sell','range','rangeMode','imei','buyDate','sellerName','sellerNumber','saleDate','customer','customerNumber','payment','notes','lastUpdated'];
+const EXCEL_COLUMNS = ['id','brand','model','companyWarranty','status','quantity','sold','display','touch','camera','body','openrepair','battery','ram','storage','network','packing','charger','box','faceid','truetone','buy','sell','range','rangeMode','imei','buyDate','sellerName','sellerNumber','saleDate','customer','customerNumber','payment','notes','lastUpdated'];
 const EXCEL_EXPENSE_COLUMNS = ['id','category','amount','date','notes'];
 
 function exportExcel(){
