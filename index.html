@@ -1010,7 +1010,7 @@ body.urdu-ui select { direction:rtl; }
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 09 Oct 2026 • 06:00:00 PM PKT • Company Warranty mandatory/default fixed; Save Entry feedback hardened</span><span>All Shops Combined brand filters fixed</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 09 Oct 2026 • 06:18:00 PM PKT • Company Warranty options now use standard selection chips</span><span>All Shops Combined brand filters fixed</span></div>
         </div>
       </div>
     </div>
@@ -1137,9 +1137,10 @@ body.urdu-ui select { direction:rtl; }
     <div class="sec-label">Charger <span style="color:var(--danger);">*</span></div>
     <div class="chip-row" id="chargerChips"></div>
 
-    <div class="field" id="companyWarrantyField" style="margin-top:8px;">
-      <label for="f-company-warranty">Company Warranty <span style="color:var(--danger);">*</span></label>
-      <select id="f-company-warranty" required>
+    <div class="entry-layout-group" id="companyWarrantyField" data-entry-group="companyWarranty" style="margin-top:8px;">
+      <div class="sec-label">Company Warranty <span style="color:var(--danger);">*</span></div>
+      <div class="chip-row" id="companyWarrantyChips"></div>
+      <select id="f-company-warranty" required style="display:none;" aria-hidden="true" tabindex="-1">
         <option value="Not Available" selected>Not Available</option>
         <option value="Almost 1 month">Almost 1 month</option>
         <option value="1 month">1 month</option>
@@ -1932,7 +1933,7 @@ body.urdu-ui select { direction:rtl; }
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 09 Oct 2026 • 06:00:00 PM PKT • Company Warranty mandatory/default fixed; Save Entry feedback hardened • All Shops Combined brand filters fixed</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 09 Oct 2026 • 06:18:00 PM PKT • Company Warranty options now use standard selection chips • All Shops Combined brand filters fixed</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -2628,7 +2629,7 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '09 Oct 2026 • 06:00:00 PM PKT • Company Warranty mandatory/default fixed; Save Entry feedback hardened';
+const APP_INDEX_UPDATED = '09 Oct 2026 • 06:18:00 PM PKT • Company Warranty options now use standard selection chips';
 
 let inventory = [];
 
@@ -6110,6 +6111,7 @@ function renderChipGroup(containerId, options, groupKey, extraClass){
       if(e) e.preventDefault();
       const value=c.dataset.val;
       formState[groupKey] = value;
+      if(groupKey==='companyWarranty'){ const warrantySelect=document.getElementById('f-company-warranty'); if(warrantySelect) warrantySelect.value=value; }
       // Update only this row. Do NOT rebuild the whole entry form after a
       // storage/condition/battery tap; rebuilding the DOM is what can make a
       // tap disappear on slower Android WebViews.
@@ -6185,6 +6187,7 @@ function renderAllChips(){
   renderChipGroup('boxChips', getEntryFieldOptions('box', ['No','Yes']), 'box');
   renderChipGroup('packingChips', getEntryFieldOptions('packing', PACKING_OPTS), 'packing');
   renderChipGroup('chargerChips', getEntryFieldOptions('charger', CHARGER_OPTS), 'charger');
+  renderChipGroup('companyWarrantyChips', ['Not Available','Almost 1 month','1 month','2 months','3 months','4 months','5 months','6 months','7 months','8 months','9 months','10 months','11 months','12 months'], 'companyWarranty');
   renderChipGroup('faceidChips', getEntryFieldOptions('faceid', ['No','Yes']), 'faceid');
   renderChipGroup('truetoneChips', getEntryFieldOptions('truetone', ['No','Yes']), 'truetone');
   renderCustomEntryFields();
@@ -6440,6 +6443,7 @@ function openAdd(){
   if(rangeInputMode==='auto') maybeAutoFillRange();
   document.getElementById('f-buydate').value = todayISO();
   document.getElementById('f-company-warranty').value = 'Not Available';
+  formState.companyWarranty = 'Not Available';
   document.getElementById('f-imei').value = '';
   document.getElementById('f-imei2').value = '';
   document.getElementById('f-seller-name').value = '';
@@ -6505,7 +6509,7 @@ function openEdit(id){
     status: e.status || '',
     ram: e.ram || '', storage: e.storage || '', condition: e.condition || '', network: e.network || '',
     display: e.display || 'Original panel', touch: e.touch || 'Perfect', camera: e.camera || 'Perfect', body: e.body || 'Original', openrepair: e.openrepair || 'No open, no repair', battery: e.battery || 'Perfect',
-    box: e.box || 'No', packing: e.packing || 'No pack', charger: e.charger || 'Original charger', companyWarranty: e.companyWarranty || '',
+    box: e.box || 'No', packing: e.packing || 'No pack', charger: e.charger || 'Original charger', companyWarranty: e.companyWarranty || 'Not Available',
     faceid: e.faceid || 'No', truetone: e.truetone || 'No',
     customFields: Object.assign({}, e.customFields || {}),
     isSold: !!e.sold,
@@ -6524,7 +6528,7 @@ function openEdit(id){
   document.getElementById('f-range').value = e.range || '';
   document.getElementById('f-range-hint').textContent = '';
   document.getElementById('f-buydate').value = e.buyDate || todayISO();
-  document.getElementById('f-company-warranty').value = e.companyWarranty || '';
+  document.getElementById('f-company-warranty').value = e.companyWarranty || 'Not Available';
   document.getElementById('f-imei').value = e.imei || '';
   document.getElementById('f-imei2').value = e.imei2 || '';
   document.getElementById('f-seller-name').value = e.sellerName || '';
