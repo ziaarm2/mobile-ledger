@@ -1010,7 +1010,7 @@ body.urdu-ui select { direction:rtl; }
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 09 Oct 2026 • 06:02:03 PM PKT • iPhone Battery Health visibility fixed; Company Warranty added</span><span>All Shops Combined brand filters fixed</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 09 Oct 2026 • 06:00:00 PM PKT • Company Warranty mandatory/default fixed; Save Entry feedback hardened</span><span>All Shops Combined brand filters fixed</span></div>
         </div>
       </div>
     </div>
@@ -1138,9 +1138,9 @@ body.urdu-ui select { direction:rtl; }
     <div class="chip-row" id="chargerChips"></div>
 
     <div class="field" id="companyWarrantyField" style="margin-top:8px;">
-      <label for="f-company-warranty">Company Warranty</label>
-      <select id="f-company-warranty">
-        <option value="">Select warranty</option>
+      <label for="f-company-warranty">Company Warranty <span style="color:var(--danger);">*</span></label>
+      <select id="f-company-warranty" required>
+        <option value="Not Available" selected>Not Available</option>
         <option value="Almost 1 month">Almost 1 month</option>
         <option value="1 month">1 month</option>
         <option value="2 months">2 months</option>
@@ -1932,7 +1932,7 @@ body.urdu-ui select { direction:rtl; }
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 09 Oct 2026 • 06:02:03 PM PKT • iPhone Battery Health visibility fixed; Company Warranty added • All Shops Combined brand filters fixed</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 09 Oct 2026 • 06:00:00 PM PKT • Company Warranty mandatory/default fixed; Save Entry feedback hardened • All Shops Combined brand filters fixed</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -2039,6 +2039,7 @@ const UI_TRANSLATIONS = {
   "Open aur Repair":"کھلا / ریپئر",
   "Battery health":"بیٹری ہیلتھ",
   "Company Warranty":"کمپنی وارنٹی",
+  "Not Available":"دستیاب نہیں",
   "Select warranty":"وارنٹی منتخب کریں",
   "Almost 1 month":"تقریباً 1 ماہ",
   "1 month":"1 ماہ",
@@ -2627,7 +2628,7 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '09 Oct 2026 • 06:02:03 PM PKT • iPhone Battery Health visibility fixed; Company Warranty added for Android and iPhone';
+const APP_INDEX_UPDATED = '09 Oct 2026 • 06:00:00 PM PKT • Company Warranty mandatory/default fixed; Save Entry feedback hardened';
 
 let inventory = [];
 
@@ -6016,7 +6017,7 @@ function applyEntryLayoutToDOM(platform){
   // Box and Charger are explicitly included so they cannot fall back into More Details.
   let fixedMainKeys = [
     'brand','model','photos','status','ram','storage','condition',
-    'box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
+    'box','charger','companyWarranty','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
     'seller','saleFields','moreToggle','extras'
   ];
   let moreKeys = L.more.slice();
@@ -6438,7 +6439,7 @@ function openAdd(){
   document.getElementById('f-range-hint').textContent = '';
   if(rangeInputMode==='auto') maybeAutoFillRange();
   document.getElementById('f-buydate').value = todayISO();
-  document.getElementById('f-company-warranty').value = '';
+  document.getElementById('f-company-warranty').value = 'Not Available';
   document.getElementById('f-imei').value = '';
   document.getElementById('f-imei2').value = '';
   document.getElementById('f-seller-name').value = '';
@@ -6605,6 +6606,8 @@ function saveEntry(){
   if(entryPlatform==='iphone' && !formState.battery){ alert('Battery health select karna zaroori hai'); return; }
   if(entryPlatform!=='iphone' && !formState.box){ alert('Box select karna zaroori hai'); return; }
   if(entryPlatform!=='iphone' && !formState.charger){ alert('Charger select karna zaroori hai'); return; }
+  const warrantyField = document.getElementById('f-company-warranty');
+  if(!warrantyField || !warrantyField.value){ alert('Company Warranty select karna zaroori hai.'); if(warrantyField) warrantyField.focus(); return; }
   const qty = Math.max(1, Number(document.getElementById('f-qty').value || 1));
   const buyFieldRaw = document.getElementById('f-buy').value.trim();
   const parsedBuyForRange = buyFieldRaw==='' ? null : parsePrice(buyFieldRaw);
@@ -6634,7 +6637,7 @@ function saveEntry(){
     box: formState.box || 'No',
     packing: formState.packing || 'No pack',
     charger: formState.charger || 'Original charger',
-    companyWarranty: document.getElementById('f-company-warranty').value || '',
+    companyWarranty: document.getElementById('f-company-warranty').value || 'Not Available',
     faceid: formState.faceid || 'No',
     truetone: formState.truetone || 'No',
     customFields: Object.assign({}, formState.customFields || {}),
@@ -6893,7 +6896,11 @@ document.getElementById('fabAdd').onclick = openAdd;
 document.getElementById('addExtraBuyBtn').onclick = addExtraBuyRow;
 document.getElementById('addSalePhoneExpenseBtn').onclick = function(){ addPhoneExpenseRow('s-phone-expenses'); updateSellProfitPreview(); };
 document.getElementById('btnCancel').onclick = closeSheet;
-document.getElementById('btnSave').onclick = saveEntry;
+document.getElementById('btnSave').type = 'button';
+document.getElementById('btnSave').onclick = function(){
+  try { saveEntry(); }
+  catch(err) { console.error('Save Entry failed:', err); showSaveError('saveErrorBanner', 'Entry save nahi ho saki: '+(err && err.message ? err.message : 'unknown error')); }
+};
 document.getElementById('overlay').onclick = function(e){ if(e.target.id==='overlay') closeSheet(); };
 document.getElementById('btnSellCancel').onclick = closeSellSheet;
 document.getElementById('btnSellConfirm').onclick = confirmSell;
