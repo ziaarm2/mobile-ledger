@@ -2629,7 +2629,7 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '09 Oct 2026 • 06:18:00 PM PKT • Company Warranty options now use standard selection chips';
+const APP_INDEX_UPDATED = '13 Oct 2026 • 04:24:00 PM PKT • Sale return deduction and refund accounting added';
 
 let inventory = [];
 
@@ -4460,7 +4460,7 @@ function renderStats(){
     return dashboardDateInRange(d,range);
   });
   const soldUnits=soldItems.reduce(function(s,e){return s+(Number(e.quantity)||0);},0);
-  const grossProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(Number(e.quantity)||1));},0);
+  const grossProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(Number(e.quantity)||1));},0)+inventory.filter(function(e){return isReturnedSale(e)&&e.returnDeduction!=null&&dashboardDateInRange(e.returnedAt,range);}).reduce(function(s,e){return s+(Number(e.returnDeduction)||0);},0);
   const netProfit=grossProfit-expensesForDashboardRange(range);
   const netProfitColor=netProfit>=0?'var(--pta)':'var(--danger)';
   let periodLabel=range.label;
@@ -5113,11 +5113,16 @@ function returnSoldItem(soldId){
   if(isReturnedSale(sale)){ alert('Ye sale pehle hi returned hai.'); return; }
 
   const qty=Math.max(1,Number(sale.quantity)||1);
-  const original=findOriginalStockForReturn(sale);
-
-  if(!confirm('Kya aap "'+(sale.brand||'')+' '+(sale.model||'')+
-    '" ki sale return karna chahte hain?\n\nQuantity: '+qty+
-    '\nMobile stock mein wapas aa jayega aur sale Returned mark ho jayegi.')) return;
+  const saleTotal=Math.max(0,(Number(sale.sell)||0)*qty);
+  const deductionInput=prompt('Return ki katoti kitni hai?\n\nMobile: '+(sale.brand||'')+' '+(sale.model||'')+'\nSale amount: Rs '+fmt(saleTotal)+'\n\nSirf katoti ki raqam likhein (Rs). Customer ko baqi amount refund hoga.', '0');
+  if(deductionInput===null) return;
+  const deductionText=String(deductionInput).replace(/,/g,'').trim();
+  const deduction=Number(deductionText);
+  if(deductionText==='' || !Number.isFinite(deduction) || deduction<0 || deduction>saleTotal){
+    alert('Katoti ki raqam durust likhein. Ye Rs 0 se Rs '+fmt(saleTotal)+' ke darmiyan honi chahiye.'); return;
+  }
+  const refundAmount=Math.max(0,saleTotal-deduction);
+  if(!confirm('Return ki tasdeeq karein\n\nMobile: '+(sale.brand||'')+' '+(sale.model||'')+'\nQuantity: '+qty+'\nSale amount: Rs '+fmt(saleTotal)+'\nKatoti: Rs '+fmt(deduction)+'\nCustomer ko refund: Rs '+fmt(refundAmount)+'\n\nMobile stock mein wapas aa jayega.')) return;
 
   activityBeforeFromCurrentMutation();
   const returnDate=new Date().toISOString();
@@ -5135,6 +5140,7 @@ function returnSoldItem(soldId){
     delete restored.sell; delete restored.saleDate; delete restored.sold;
     delete restored.saleStatus; delete restored.returned; delete restored.returnedAt;
     delete restored.returnOf;
+    delete restored.phoneExpenses;
     restored.quantity=qty;
     restored.sold=false;
     restored.saleStatus='available';
@@ -5148,6 +5154,9 @@ function returnSoldItem(soldId){
   sale.saleStatus='returned';
   sale.returned=true;
   sale.returnedAt=returnDate;
+  sale.returnDeduction=deduction;
+  sale.returnRefundAmount=refundAmount;
+  sale.returnSaleAmount=saleTotal;
   sale.returnOf=original?String(original.id):String(soldId);
 
   try{
@@ -5159,13 +5168,13 @@ function returnSoldItem(soldId){
     return;
   }
   render();
-  alert('✅ Return complete! Mobile stock mein wapas aa gaya.');
-  logActivity('return','Sale return: '+(sale.brand||'')+' '+(sale.model||''),'Quantity: '+qty);
+  alert('✅ Return complete! Mobile stock mein wapas aa gaya.\nKatoti: Rs '+fmt(deduction)+'\nCustomer refund: Rs '+fmt(refundAmount));
+  logActivity('return','Sale return: '+(sale.brand||'')+' '+(sale.model||''),'Quantity: '+qty+'; Sale: Rs '+fmt(saleTotal)+'; Deduction: Rs '+fmt(deduction)+'; Refund: Rs '+fmt(refundAmount));
 }
 
 function renderSoldCard(e){
   const returned=isReturnedSale(e);
-  const profit=returned ? 0 : saleNetProfit(e);
+  const profit=returned ? (Number(e.returnDeduction)||0) : saleNetProfit(e);
   const profitClass=profit===null?'dim':(profit>=0?'profit-pos':'profit-neg');
   return (
   '<div class="card '+(returned?'returned-card':'')+'">'+
@@ -5184,6 +5193,7 @@ function renderSoldCard(e){
     '</div>'+
     (e.customer||e.payment?'<div class="sale-meta">'+(e.customer||'')+(e.customer&&e.customerNumber?' ('+e.customerNumber+')':'')+(e.customer&&e.payment?' - ':'')+(e.payment||'')+'</div>':'')+
     activityDateHtml(e)+
+    (returned?'<div class="sale-meta">Return katoti: Rs '+fmt(Number(e.returnDeduction)||0)+' · Refund: Rs '+fmt(Number(e.returnRefundAmount)||0)+'</div>':'')+
     (phoneExpensesTotal(e)>0?'<div class="sale-meta" style="color:var(--danger);">Phone expense: -'+displayProfitHtml(phoneExpensesTotal(e))+'</div>':'')+
     '<div class="card-actions">'+
       '<button data-edit="'+e.id+'">Edit</button>'+
@@ -7370,11 +7380,11 @@ function renderDashboard(){
   const pendingUnits=stockItems.reduce(function(s,e){return s+(e.quantity||0);},0);
   const soldPeriod=soldItems.filter(function(e){return dashboardDateInRange(e.saleDate||e.saleAt||e.lastUpdated,range);});
   const unitsSold=soldPeriod.reduce(function(s,e){return s+(e.quantity||0);},0);
-  const grossProfit=soldPeriod.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0);
+  const grossProfit=soldPeriod.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0)+inventory.filter(function(e){return isReturnedSale(e)&&e.returnDeduction!=null&&dashboardDateInRange(e.returnedAt,range);}).reduce(function(s,e){return s+(Number(e.returnDeduction)||0);},0);
   const periodExpenses=expensesForDashboardRange(range);
   const netProfit=grossProfit-periodExpenses;
   const totalExpensesAll=totalExpensesAllTime()+totalPhoneExpensesAllTime();
-  const allTimeProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0);
+  const allTimeProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0)+inventory.filter(function(e){return isReturnedSale(e);}).reduce(function(s,e){return s+(Number(e.returnDeduction)||0);},0);
   const netProfitAllTime=allTimeProfit-totalExpensesAll;
   const cards=[
     {v:displayProfitHtml(totalStockValue),l:'Total stock value'},
@@ -7730,10 +7740,15 @@ function analyticsPurchaseRecords(){
   }).filter(function(e){return e.qty>0;});
 }
 function analyticsSaleRecords(){
-  return inventory.filter(function(e){return e.sold && !isReturnedSale(e) && e.sell!=null;}).map(function(e){
+  const sales=inventory.filter(function(e){return e.sold && !isReturnedSale(e) && e.sell!=null;}).map(function(e){
     const qty=Math.max(1,Number(e.quantity)||1);
     return {id:e.id,date:e.saleDate||e.saleAt||e.lastUpdated,exactTime:e.saleAt||null,qty:qty,amount:(Number(e.sell)||0)*qty,profit:saleBaseProfit(e),brand:e.brand||'Other',model:e.model||'',phoneExpenses:phoneExpensesTotal(e)};
   });
+  const returns=inventory.filter(function(e){return isReturnedSale(e)&&e.returnDeduction!=null;}).map(function(e){
+    const amount=Number(e.returnDeduction)||0;
+    return {id:String(e.id)+'-return',date:e.returnedAt||e.saleDate||e.lastUpdated,exactTime:e.returnedAt||null,qty:0,amount:amount,profit:amount,brand:e.brand||'Other',model:e.model||'',phoneExpenses:0,isReturnAdjustment:true};
+  });
+  return sales.concat(returns);
 }
 function analyticsExpenseTotal(range){return expensesForDashboardRange(range);}
 function analyticsMetrics(range){
@@ -7921,7 +7936,7 @@ function analyticsRenderSnapshot(range,curr){
   const stockItems=inventory.filter(function(e){return !e.sold&&Number(e.quantity||0)>0;});
   const lifetimeSold=inventory.filter(function(e){return e.sold&&!isReturnedSale(e);}).reduce(function(s,e){return s+(Number(e.quantity)||0);},0);
   const totalStockValue=stockItems.reduce(function(s,e){return s+(Number(e.buy)||0)*(Number(e.quantity)||0);},0);
-  const allTimeProfit=inventory.filter(function(e){return e.sold&&!isReturnedSale(e)&&e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+(Number(e.sell)-Number(e.buy))*(Number(e.quantity)||1);},0);
+  const allTimeProfit=inventory.filter(function(e){return e.sold&&!isReturnedSale(e)&&e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+(Number(e.sell)-Number(e.buy))*(Number(e.quantity)||1);},0)+inventory.filter(function(e){return isReturnedSale(e);}).reduce(function(s,e){return s+(Number(e.returnDeduction)||0);},0);
   const lifetimeExpenses=totalExpensesAllTime()+totalPhoneExpensesAllTime();
   const lifetimeNetProfit=allTimeProfit-lifetimeExpenses;
   const cards=[
@@ -9686,7 +9701,7 @@ function adminShopSummary(data){
   const stockUnits=active.reduce(function(s,e){return s+(Math.max(1,Number(e.quantity)||1));},0);
   const stockValue=active.reduce(function(s,e){return s+((Number(e.buy)||0)*(Math.max(1,Number(e.quantity)||1)));},0);
   const salesValue=sold.reduce(function(s,e){return s+((Number(e.sell)||0)*(Math.max(1,Number(e.quantity)||1)));},0);
-  const grossProfit=sold.reduce(function(s,e){return s+saleBaseProfit(e);},0);
+  const grossProfit=sold.reduce(function(s,e){return s+saleBaseProfit(e);},0)+inv.filter(function(e){return isReturnedSale(e);}).reduce(function(s,e){return s+(Number(e.returnDeduction)||0);},0);
   const phoneExp=inv.reduce(function(s,e){return s+phoneExpensesTotal(e);},0);
   const expenses=exp.reduce(function(s,e){return s+Math.abs(Number(e.amount)||0);},0)+phoneExp;
   return {inv:inv,exp:exp,active:active,sold:sold,stockUnits:stockUnits,stockValue:stockValue,salesValue:salesValue,grossProfit:grossProfit,expenses:expenses,netProfit:grossProfit-expenses};
