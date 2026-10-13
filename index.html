@@ -2629,7 +2629,7 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '13 Oct 2026 • 04:24:00 PM PKT • Sale return deduction and refund accounting added';
+const APP_INDEX_UPDATED = '13 Oct 2026 • 04:35:00 PM PKT • Return flow fixed with in-app deduction and refund dialog';
 
 let inventory = [];
 
@@ -5114,62 +5114,95 @@ function returnSoldItem(soldId){
 
   const qty=Math.max(1,Number(sale.quantity)||1);
   const saleTotal=Math.max(0,(Number(sale.sell)||0)*qty);
-  const deductionInput=prompt('Return ki katoti kitni hai?\n\nMobile: '+(sale.brand||'')+' '+(sale.model||'')+'\nSale amount: Rs '+fmt(saleTotal)+'\n\nSirf katoti ki raqam likhein (Rs). Customer ko baqi amount refund hoga.', '0');
-  if(deductionInput===null) return;
-  const deductionText=String(deductionInput).replace(/,/g,'').trim();
-  const deduction=Number(deductionText);
-  if(deductionText==='' || !Number.isFinite(deduction) || deduction<0 || deduction>saleTotal){
-    alert('Katoti ki raqam durust likhein. Ye Rs 0 se Rs '+fmt(saleTotal)+' ke darmiyan honi chahiye.'); return;
+  const existing=document.getElementById('saleReturnDialog');
+  if(existing) existing.remove();
+  const overlay=document.createElement('div');
+  overlay.id='saleReturnDialog';
+  overlay.style.cssText='position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:16px;';
+  overlay.innerHTML='<div role="dialog" aria-modal="true" style="width:100%;max-width:440px;max-height:90vh;overflow:auto;background:var(--card,#fff);color:var(--text,#222);border:1px solid var(--border,#ddd);border-radius:16px;padding:20px;box-shadow:0 18px 55px rgba(0,0,0,.3);direction:inherit;box-sizing:border-box;">'+
+    '<h3 style="margin:0 0 12px;font-size:20px;">↩ Mobile Return</h3>'+
+    '<div style="margin-bottom:14px;line-height:1.65;font-size:14px;"><b>'+String(sale.brand||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];})+' '+String(sale.model||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];})+'</b><br>Quantity: '+qty+'<br>Sale amount: <b>Rs '+fmt(saleTotal)+'</b></div>'+
+    '<label for="saleReturnDeduction" style="display:block;font-weight:700;margin-bottom:7px;">Katoti ki raqam (Rs)</label>'+
+    '<input id="saleReturnDeduction" type="number" inputmode="decimal" min="0" max="'+saleTotal+'" step="any" value="0" style="width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--border,#bbb);border-radius:10px;background:var(--input-bg,var(--card,#fff));color:var(--text,#222);font-size:16px;margin-bottom:10px;" />'+
+    '<div id="saleReturnRefund" style="padding:12px;border-radius:10px;background:var(--surface,var(--bg,#f5f5f5));margin-bottom:16px;line-height:1.7;font-size:14px;">Katoti: Rs 0<br><b>Customer refund: Rs '+fmt(saleTotal)+'</b></div>'+
+    '<div style="display:flex;gap:10px;"><button type="button" id="saleReturnCancel" style="flex:1;padding:12px;border:1px solid var(--border,#bbb);border-radius:10px;background:transparent;color:inherit;font-weight:700;">Cancel</button><button type="button" id="saleReturnConfirm" style="flex:1;padding:12px;border:0;border-radius:10px;background:var(--accent,#d97706);color:#fff;font-weight:800;">Confirm Return</button></div>'+
+    '</div>';
+  document.body.appendChild(overlay);
+  const input=overlay.querySelector('#saleReturnDeduction');
+  const refundBox=overlay.querySelector('#saleReturnRefund');
+  function closeDialog(){ overlay.remove(); }
+  function updateRefund(){
+    const raw=String(input.value||'').trim();
+    const val=Number(raw);
+    const valid=raw!=='' && Number.isFinite(val) && val>=0 && val<=saleTotal;
+    const deduction=valid?val:0;
+    refundBox.innerHTML='Katoti: Rs '+fmt(deduction)+'<br><b>Customer refund: Rs '+fmt(Math.max(0,saleTotal-deduction))+'</b>';
+    overlay.querySelector('#saleReturnConfirm').disabled=!valid;
+    overlay.querySelector('#saleReturnConfirm').style.opacity=valid?'1':'.55';
   }
-  const refundAmount=Math.max(0,saleTotal-deduction);
-  if(!confirm('Return ki tasdeeq karein\n\nMobile: '+(sale.brand||'')+' '+(sale.model||'')+'\nQuantity: '+qty+'\nSale amount: Rs '+fmt(saleTotal)+'\nKatoti: Rs '+fmt(deduction)+'\nCustomer ko refund: Rs '+fmt(refundAmount)+'\n\nMobile stock mein wapas aa jayega.')) return;
+  input.addEventListener('input',updateRefund);
+  overlay.querySelector('#saleReturnCancel').addEventListener('click',closeDialog);
+  overlay.addEventListener('click',function(ev){if(ev.target===overlay) closeDialog();});
+  overlay.querySelector('#saleReturnConfirm').addEventListener('click',function(){
+    const deductionText=String(input.value||'').trim();
+    const deduction=Number(deductionText);
+    if(deductionText===''||!Number.isFinite(deduction)||deduction<0||deduction>saleTotal){
+      alert('Katoti Rs 0 se Rs '+fmt(saleTotal)+' ke darmiyan enter karein.'); return;
+    }
+    const refundAmount=Math.max(0,saleTotal-deduction);
 
-  activityBeforeFromCurrentMutation();
-  const returnDate=new Date().toISOString();
-  if(original){
-    original.quantity=(Number(original.quantity)||0)+qty;
-    original.sold=false;
-    original.saleStatus='available';
-    original.returned=false;
-    original.returnedAt=null;
-    original.availableDate=dateOnly(returnDate);
-    original.lastUpdated=returnDate;
-  }else{
-    const restored=Object.assign({},sale);
-    delete restored.customer; delete restored.customerNumber; delete restored.payment;
-    delete restored.sell; delete restored.saleDate; delete restored.sold;
-    delete restored.saleStatus; delete restored.returned; delete restored.returnedAt;
-    delete restored.returnOf;
-    delete restored.phoneExpenses;
-    restored.quantity=qty;
-    restored.sold=false;
-    restored.saleStatus='available';
-    restored.returned=false;
-    restored.availableDate=dateOnly(returnDate);
-    restored.lastUpdated=returnDate;
-    inventory.push(restored);
-  }
+    const originalCandidate=findOriginalStockForReturn(sale);
+    const original=(originalCandidate && originalCandidate!==sale && !originalCandidate.sold)?originalCandidate:null;
+    activityBeforeFromCurrentMutation();
+    const returnDate=new Date().toISOString();
+    if(original){
+      original.quantity=(Number(original.quantity)||0)+qty;
+      original.sold=false;
+      original.saleStatus='available';
+      original.returned=false;
+      original.returnedAt=null;
+      original.availableDate=dateOnly(returnDate);
+      original.lastUpdated=returnDate;
+    }else{
+      const restored=Object.assign({},sale);
+      restored.id=(typeof generateId==='function'?generateId():('return-'+Date.now()+'-'+Math.random().toString(36).slice(2,8)));
+      delete restored.customer; delete restored.customerNumber; delete restored.payment;
+      delete restored.sell; delete restored.saleDate; delete restored.sold;
+      delete restored.saleStatus; delete restored.returned; delete restored.returnedAt;
+      delete restored.returnOf; delete restored.returnDeduction; delete restored.returnRefundAmount; delete restored.returnSaleAmount;
+      delete restored.phoneExpenses;
+      restored.quantity=qty;
+      restored.sold=false;
+      restored.saleStatus='available';
+      restored.returned=false;
+      restored.availableDate=dateOnly(returnDate);
+      restored.lastUpdated=returnDate;
+      inventory.push(restored);
+    }
 
-  sale.sold=true;
-  sale.saleStatus='returned';
-  sale.returned=true;
-  sale.returnedAt=returnDate;
-  sale.returnDeduction=deduction;
-  sale.returnRefundAmount=refundAmount;
-  sale.returnSaleAmount=saleTotal;
-  sale.returnOf=original?String(original.id):String(soldId);
-
-  try{
-    localStorage.setItem(shopStorageKey(LS_INVENTORY_KEY),JSON.stringify(inventory));
-    schedulePush();
-  }catch(err){
-    console.error(err);
-    alert('Return save nahi ho saka. Data save karte waqt error aaya.');
-    return;
-  }
-  render();
-  alert('✅ Return complete! Mobile stock mein wapas aa gaya.\nKatoti: Rs '+fmt(deduction)+'\nCustomer refund: Rs '+fmt(refundAmount));
-  logActivity('return','Sale return: '+(sale.brand||'')+' '+(sale.model||''),'Quantity: '+qty+'; Sale: Rs '+fmt(saleTotal)+'; Deduction: Rs '+fmt(deduction)+'; Refund: Rs '+fmt(refundAmount));
+    sale.sold=true;
+    sale.saleStatus='returned';
+    sale.returned=true;
+    sale.returnedAt=returnDate;
+    sale.returnDeduction=deduction;
+    sale.returnRefundAmount=refundAmount;
+    sale.returnSaleAmount=saleTotal;
+    sale.returnOf=original?String(original.id):String(soldId);
+    try{
+      localStorage.setItem(shopStorageKey(LS_INVENTORY_KEY),JSON.stringify(inventory));
+      schedulePush();
+    }catch(err){
+      console.error(err);
+      alert('Return save nahi ho saka. Data save karte waqt error aaya.');
+      return;
+    }
+    closeDialog();
+    render();
+    logActivity('return','Sale return: '+(sale.brand||'')+' '+(sale.model||''),'Quantity: '+qty+'; Sale: Rs '+fmt(saleTotal)+'; Deduction: Rs '+fmt(deduction)+'; Refund: Rs '+fmt(refundAmount));
+    alert('Return complete!\nKatoti: Rs '+fmt(deduction)+'\nCustomer refund: Rs '+fmt(refundAmount)+'\nMobile stock mein wapas aa gaya.');
+  });
+  updateRefund();
+  setTimeout(function(){try{input.focus();input.select();}catch(e){}},50);
 }
 
 function renderSoldCard(e){
