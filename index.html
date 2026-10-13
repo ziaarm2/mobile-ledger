@@ -2629,7 +2629,7 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '13 Oct 2026 • 04:35:00 PM PKT • Return flow fixed with in-app deduction and refund dialog';
+const APP_INDEX_UPDATED = '13 Oct 2026 • 05:35:00 PM PKT • Return deductions included in reports and net profit';
 
 let inventory = [];
 
@@ -7496,7 +7496,8 @@ function getFilteredSoldEntries(){
 
   return inventory.filter(function(e){
     if(!e.sold) return false;
-    const d=dateOnly(e.saleDate || e.lastUpdated);
+    // Return belongs to the period it happened, not the original sale date.
+    const d=dateOnly(isReturnedSale(e) ? (e.returnedAt || e.saleDate || e.lastUpdated) : (e.saleDate || e.lastUpdated));
     if(from && (!d || d<from)) return false;
     if(to && (!d || d>to)) return false;
     if(brand!=='all' && e.brand!==brand) return false;
@@ -7577,15 +7578,18 @@ function renderReports(){
   const entries = getFilteredSoldEntries();
   let grossProfit = 0;
   const rowsHtml = entries.map(function(e){
-    const baseProfit = (e.buy!=null && e.sell!=null && !isReturnedSale(e)) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : 0;
+    const returned=isReturnedSale(e);
+    const baseProfit = (e.buy!=null && e.sell!=null && !returned) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : 0;
+    const returnAdjustment = returned ? (Number(e.returnDeduction)||0) : 0;
     if(baseProfit) grossProfit += baseProfit;
-    const netSale = isReturnedSale(e) ? 0 : saleNetProfit(e);
+    if(returnAdjustment) grossProfit += returnAdjustment;
+    const netSale = returned ? returnAdjustment : saleNetProfit(e);
     const profitColor = netSale>=0 ? 'var(--pta)' : 'var(--danger)';
     return '<div class="report-row">'+
       '<div class="rr-top"><span>'+e.brand+' '+e.model+(isReturnedSale(e)?' ↩ Returned':'')+'</span><span class="rr-profit" style="color:'+profitColor+'">'+displayProfitHtml(netSale==null?0:netSale)+'</span></div>'+
       '<div class="rr-sub">'+(isReturnedSale(e)?'Sold: ':'Sale: ')+formatDateDisplay(dateOnly(e.saleDate))+' • Buy: '+fmt(displayBuyPrice(e.buy))+' • Sell: '+fmt(e.sell)+(e.quantity>1?(' • x'+e.quantity):'')+'</div>'+
-      (isReturnedSale(e)?'<div class="rr-sub">Returned: '+formatDateTimeDisplay(e.returnedAt)+'</div>':'')+
-      (phoneExpensesTotal(e)>0?'<div class="rr-sub" style="color:var(--danger);">Phone expenses: -'+displayProfitHtml(phoneExpensesTotal(e))+'</div>':'')+
+      (returned?'<div class="rr-sub">Returned: '+formatDateTimeDisplay(e.returnedAt)+' · Katoti: Rs '+fmt(returnAdjustment)+' · Refund: Rs '+fmt(Number(e.returnRefundAmount)||0)+'</div>':'')+
+      (!returned && phoneExpensesTotal(e)>0?'<div class="rr-sub" style="color:var(--danger);">Phone expenses: -'+displayProfitHtml(phoneExpensesTotal(e))+'</div>':'')+
       (e.customer || e.customerNumber ? '<div class="rr-sub">'+(e.customer||'')+(e.customerNumber?' - '+e.customerNumber:'')+'</div>' : '')+
       mandatoryDetailsHtml(e)+
     '</div>';
@@ -7641,15 +7645,16 @@ document.getElementById('btnReportsPdf').onclick = function(){
   const brand = document.getElementById('rp-brand').value;
   let grossProfit = 0;
   const rows = entries.map(function(e){
-    const profit = isReturnedSale(e) ? 0 : ((e.buy!=null && e.sell!=null) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : 0);
-    if(!isReturnedSale(e) && e.buy!=null && e.sell!=null) grossProfit += profit;
+    const returned=isReturnedSale(e);
+    const profit = returned ? (Number(e.returnDeduction)||0) : ((e.buy!=null && e.sell!=null) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : 0);
+    if(returned || (e.buy!=null && e.sell!=null)) grossProfit += profit;
     return '<tr>'+
       '<td>'+formatDateDisplay(dateOnly(e.saleDate))+(isReturnedSale(e)?'<br>Returned: '+formatDateTimeDisplay(e.returnedAt):'')+'</td>'+
       '<td>'+e.brand+' '+e.model+(e.quantity>1?(' x'+e.quantity):'')+(isReturnedSale(e)?' (RETURNED)':'')+'<br><small>'+[e.status?'Status: '+e.status:'',getEntryPlatform(e.brand||'')!=='iphone'&&e.ram?'RAM: '+e.ram:'',e.storage?'Storage: '+e.storage:'',e.condition?'Condition: '+e.condition:'',getEntryPlatform(e.brand||'')==='iphone'&&e.battery?'Battery health: '+e.battery:'',getEntryPlatform(e.brand||'')!=='iphone'&&e.box?'Box: '+e.box:'',getEntryPlatform(e.brand||'')!=='iphone'&&e.charger?'Charger: '+e.charger:''].filter(Boolean).join(' · ')+'</small></td>'+
       '<td>'+(e.customer||'')+(e.customerNumber?'<br>'+e.customerNumber:'')+'</td>'+
       '<td style="text-align:right;">'+fmt(displayBuyPrice(e.buy))+'</td>'+
       '<td style="text-align:right;">'+fmt(e.sell)+'</td>'+
-      '<td style="text-align:right;">'+fmt(profit-phoneExpensesTotal(e))+'</td>'+
+      '<td style="text-align:right;">'+fmt(returned?profit:(profit-phoneExpensesTotal(e)))+(returned?'<br><small>Katoti · Refund Rs '+fmt(Number(e.returnRefundAmount)||0)+'</small>':'')+'</td>'+
     '</tr>';
   }).join('');
   let expensesTotal = 0;
