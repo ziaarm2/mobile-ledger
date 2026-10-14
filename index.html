@@ -2708,7 +2708,7 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '14 Oct 2026 • 09:12:00 AM PKT • Fixed Employee Access visibility after settings refresh';
+const APP_INDEX_UPDATED = '14 Oct 2026 • 10:13:00 AM PKT • Fixed Employee Access hiding after auth role resolves';
 
 let inventory = [];
 
@@ -9112,7 +9112,7 @@ function settingsDraftPrompt(nextAction){
 
 function openSettingsPage(page){
   if(page==='fields' && userRole!=='admin') return;
-  if(page==='employeeaccess' && (!fbUser || userRole==='admin')) return;
+  if(page==='employeeaccess' && !fbUser) return;
 
   dedupeSettingsHomeCategories();
   if(page==='shopaccess' && userRole!=='admin') page='home';
@@ -10297,7 +10297,7 @@ function updateAccountUI(){
     const menuLogout=document.getElementById('btnMenuLogout'); if(menuLogout) menuLogout.style.display='none';
   }
   const accessCat=document.getElementById('settingsShopAccessCategory'); if(accessCat) accessCat.style.display=(userRole==='admin'?'flex':'none');
-  const empCat=document.getElementById('settingsEmployeeAccessCategory'); if(empCat) empCat.style.display=(fbUser && userRole!=='admin' ? 'flex':'none');
+  const empCat=document.getElementById('settingsEmployeeAccessCategory'); if(empCat) empCat.style.display=(fbUser ? 'flex':'none');
   const bell=document.getElementById('adminNotificationBtn'); if(bell) bell.style.display=(userRole==='admin'?'inline-flex':'none'); try{ if(userRole!=='admin') localStorage.removeItem('mobileLedger_lastAdminSession'); }catch(e){}
   const shareAppBtn=document.getElementById('btnShareApp'); if(shareAppBtn) shareAppBtn.style.display=(userRole==='admin'?'block':'none');
   renderSettingsHomeSummaries();
@@ -10399,7 +10399,7 @@ function renderEmployeeInvitations(){
   el.innerHTML=arr.slice().reverse().map(function(inv){const active=Object.keys(inv.permissions||{}).filter(k=>inv.permissions[k]).map(k=>EMPLOYEE_PERMISSION_LABELS[k]||k);return '<div style="border:1px solid var(--border);border-radius:10px;padding:10px;margin:8px 0;"><b>'+escapeHtml(inv.name||'Employee')+'</b><div>'+escapeHtml(inv.email||'')+'</div><div style="font-size:12px;color:var(--text-dim);margin-top:4px;">Status: '+escapeHtml(inv.status||'Draft')+' · '+active.length+' permissions enabled</div></div>';}).join('');
 }
 function saveEmployeeInvitation(){
-  if(!fbUser || !fbDb || userRole==='admin'){showToast('Employee invite ke liye shop owner account se login karein.');return;}
+  if(!fbUser || !fbDb){showToast('Employee access ke liye login aur cloud sync zaroori hai.');return;}
   const name=(document.getElementById('employeeInviteName').value||'').trim();
   const email=(document.getElementById('employeeInviteEmail').value||'').trim().toLowerCase();
   if(!name){showToast('Employee ka naam enter karein.');return;}
