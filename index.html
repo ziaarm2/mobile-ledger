@@ -843,6 +843,15 @@ body.urdu-ui .header-top { direction:rtl; }
 body.urdu-ui .chips-scroll { direction:rtl; }
 body.urdu-ui select { direction:rtl; }
 
+/* Account switcher dropdown beside the active profile name */
+.menu-profile-name-row{display:flex;align-items:center;gap:7px;min-width:0}
+.menu-profile-name-row .menu-profile-name{min-width:0;flex:0 1 auto}
+.profile-switch-toggle{width:29px;height:29px;flex:0 0 29px;border:1px solid #dfe4eb;border-radius:9px;background:#f8fafc;color:#344054;font-size:19px;font-weight:800;line-height:1;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.profile-switch-toggle:active{background:#e9edf3}
+.profile-account-switcher-panel{margin:0 16px 12px;}
+.profile-account-switcher-panel.open{display:block}
+body.urdu-ui .menu-profile-name-row{direction:rtl}
+
 /* Account switcher: compact Facebook-style saved-account panel */
 .account-switcher-panel{display:none;margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--surface-2)}
 .account-switcher-panel.open{display:block}
@@ -994,12 +1003,21 @@ body.urdu-ui select { direction:rtl; }
       <div class="menu-profile">
         <div class="menu-profile-avatar"><img src="icon-192.png" alt="Z Mobile"></div>
         <div class="menu-profile-info">
-          <div class="menu-profile-name" id="menuOwnerName">Z Mobile</div>
+          <div class="menu-profile-name-row">
+            <div class="menu-profile-name" id="menuOwnerName">Z Mobile</div>
+            <button type="button" class="profile-switch-toggle" id="btnOpenAccountSwitcher" aria-label="Switch account" title="Switch account" aria-expanded="false">▾</button>
+          </div>
           <div class="menu-profile-phone" id="menuOwnerPhone">Mobile Hisab</div>
         </div>
         <button type="button" class="menu-profile-edit" id="btnMenuEditProfile" aria-label="Edit profile" title="Edit profile">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
         </button>
+      </div>
+      <div class="account-switcher-panel profile-account-switcher-panel" id="accountSwitcherPanel" aria-live="polite">
+        <div class="account-switcher-title">Switch account</div>
+        <div class="account-switcher-list" id="accountSwitcherList"></div>
+        <button class="menu-item" id="btnAddAccountSwitcher" type="button" style="width:100%;margin-top:9px;">＋ Add Account</button>
+        <div style="font-size:11px;color:var(--text-dim);line-height:1.4;margin-top:8px;">Account select karne par uska email fill hoga. Security ke liye password dobara enter karna hoga.</div>
       </div>
 
       <div class="menu-scroll">
@@ -1666,13 +1684,6 @@ body.urdu-ui select { direction:rtl; }
             <div class="field"><label>Owner Name</label><input type="text" id="edit-ownername" placeholder="Owner ka naam"></div>
             <div class="field"><label>Shop Phone (contact only)</label><input type="tel" id="edit-shopphone" placeholder="03xx xxxxxxx"></div>
             <div class="sheet-actions" style="position:static;margin-top:8px;"><button class="btn-save" id="btnSaveShopProfile" style="flex:1;">Save</button><button class="btn-cancel" id="btnCancelShopProfile" style="flex:1;">Cancel</button></div>
-          </div>
-          <button class="menu-item" id="btnOpenAccountSwitcher" type="button" style="width:100%;margin-top:12px;">⇄ Switch Account</button>
-          <div class="account-switcher-panel" id="accountSwitcherPanel" aria-live="polite">
-            <div class="account-switcher-title">Saved accounts on this device</div>
-            <div class="account-switcher-list" id="accountSwitcherList"></div>
-            <button class="menu-item" id="btnAddAccountSwitcher" type="button" style="width:100%;margin-top:9px;">＋ Add Account</button>
-            <div style="font-size:11px;color:var(--text-dim);line-height:1.4;margin-top:8px;">Account select karne par uska email fill hoga. Security ke liye password dobara enter karna hoga.</div>
           </div>
           <button class="btn-cancel" id="btnAccountLogout" style="width:100%;margin-top:14px;padding:12px;">Logout from this device</button>
         </div>
@@ -2647,7 +2658,7 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '14 Oct 2026 • 09:09:00 AM PKT • Added saved-account switcher';
+const APP_INDEX_UPDATED = '14 Oct 2026 • 09:35:00 AM PKT • Moved account switcher to profile dropdown';
 
 let inventory = [];
 
@@ -10658,7 +10669,9 @@ document.getElementById('btnAccountForgotPassword').onclick = function(){
 };
 document.getElementById('btnOpenAccountSwitcher').onclick=function(){
   const panel=document.getElementById('accountSwitcherPanel'); if(!panel) return;
-  renderSavedAccountSwitcher(); panel.classList.toggle('open');
+  renderSavedAccountSwitcher();
+  const isOpen=panel.classList.toggle('open');
+  this.setAttribute('aria-expanded',isOpen?'true':'false');
 };
 document.getElementById('btnAddAccountSwitcher').onclick=function(){
   if(!confirm('Doosra account add karne ke liye current account se logout karna hoga. Unsynced changes hon to pehle sync hone dein. Continue?')) return;
