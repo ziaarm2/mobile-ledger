@@ -1976,7 +1976,7 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
           <label class="employee-permission"><input type="checkbox" id="perm_data_export"> Backup / data export</label>
           <label class="employee-permission"><input type="checkbox" id="perm_settings_edit"> App settings badalna</label>
           <label class="employee-permission"><input type="checkbox" id="perm_employee_manage"> Doosre employees manage karna</label>
-          <button class="btn-save" id="btnSendEmployeeInvite" style="width:100%;padding:12px;border:0;border-radius:10px;margin-top:14px;">✉ Save invitation & prepare email</button>
+          <button type="button" class="btn-save" id="btnSendEmployeeInvite" onclick="event.preventDefault();event.stopPropagation();saveEmployeeInvitation();" style="width:100%;padding:12px;border:0;border-radius:10px;margin-top:14px;cursor:pointer;position:relative;z-index:30;pointer-events:auto;">✉ Save invitation & prepare email</button>
           <div class="settings-note" style="margin-top:10px;">Important: Yeh invitation/permission setup record banata hai. Actual employee login aur data restrictions tabhi secure hongi jab Firebase Security Rules aur employee sign-in flow bhi configure hon. Sirf UI checkbox security nahi hoti.</div>
         </div>
         <div class="settings-section-card">
@@ -2708,7 +2708,7 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '14 Oct 2026 • 10:13:00 AM PKT • Fixed Employee Access hiding after auth role resolves';
+const APP_INDEX_UPDATED = '14 Oct 2026 • 10:24:08 AM PKT • Fixed Employee Invitation button click handling';
 
 let inventory = [];
 
@@ -10419,7 +10419,7 @@ function saveEmployeeInvitation(){
     window.location.href='mailto:'+encodeURIComponent(email)+'?subject='+subject+'&body='+body;
   }).catch(function(err){showToast('Invitation save nahi hui: '+(err.message||'Firebase permission/network error'));}).finally(function(){if(btn)btn.disabled=false;});
 }
-const employeeInviteButton=document.getElementById('btnSendEmployeeInvite'); if(employeeInviteButton)employeeInviteButton.addEventListener('click',saveEmployeeInvitation);
+// Employee invitation button uses its inline click handler so it remains active even if other setup listeners fail.
 const employeeAccessCategory=document.getElementById('settingsEmployeeAccessCategory'); if(employeeAccessCategory)employeeAccessCategory.addEventListener('click',renderEmployeeInvitations);
 
 function saveAccessTemplates(){
