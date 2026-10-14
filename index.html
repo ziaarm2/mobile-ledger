@@ -1976,7 +1976,7 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
           <label class="employee-permission"><input type="checkbox" id="perm_data_export"> Backup / data export</label>
           <label class="employee-permission"><input type="checkbox" id="perm_settings_edit"> App settings badalna</label>
           <label class="employee-permission"><input type="checkbox" id="perm_employee_manage"> Doosre employees manage karna</label>
-          <button type="button" class="btn-save" id="btnSendEmployeeInvite" onclick="event.preventDefault();event.stopPropagation();saveEmployeeInvitation();" style="width:100%;padding:12px;border:0;border-radius:10px;margin-top:14px;cursor:pointer;position:relative;z-index:30;pointer-events:auto;">✉ Save invitation & prepare email</button>
+          <button type="button" class="btn-save" id="btnSendEmployeeInvite" style="width:100%;padding:12px;border:0;border-radius:10px;margin-top:14px;cursor:pointer;position:relative;z-index:60;pointer-events:auto;touch-action:manipulation;">✉ Save invitation &amp; prepare email</button>
           <div class="settings-note" style="margin-top:10px;">Important: Yeh invitation/permission setup record banata hai. Actual employee login aur data restrictions tabhi secure hongi jab Firebase Security Rules aur employee sign-in flow bhi configure hon. Sirf UI checkbox security nahi hoti.</div>
         </div>
         <div class="settings-section-card">
@@ -2012,7 +2012,7 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 09 Oct 2026 • 06:18:00 PM PKT • Company Warranty options now use standard selection chips • All Shops Combined brand filters fixed</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 14 Oct 2026 • 10:26:00 AM PKT • Employee invitation button click binding fixed • Company Warranty options now use standard selection chips • All Shops Combined brand filters fixed</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -10419,7 +10419,16 @@ function saveEmployeeInvitation(){
     window.location.href='mailto:'+encodeURIComponent(email)+'?subject='+subject+'&body='+body;
   }).catch(function(err){showToast('Invitation save nahi hui: '+(err.message||'Firebase permission/network error'));}).finally(function(){if(btn)btn.disabled=false;});
 }
-// Employee invitation button uses its inline click handler so it remains active even if other setup listeners fail.
+// Bind the invitation action directly after its function is defined. Capture the click
+// before other settings handlers; ignore repeated clicks while a save is already running.
+const employeeInviteButton=document.getElementById('btnSendEmployeeInvite');
+if(employeeInviteButton){
+  employeeInviteButton.addEventListener('click',function(e){
+    e.preventDefault(); e.stopPropagation();
+    if(employeeInviteButton.dataset.saving==='1') return;
+    saveEmployeeInvitation();
+  },true);
+}
 const employeeAccessCategory=document.getElementById('settingsEmployeeAccessCategory'); if(employeeAccessCategory)employeeAccessCategory.addEventListener('click',renderEmployeeInvitations);
 
 function saveAccessTemplates(){
