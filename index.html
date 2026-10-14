@@ -842,6 +842,17 @@ body.urdu-ui .price-input, body.urdu-ui .amount-input { direction:ltr; text-alig
 body.urdu-ui .header-top { direction:rtl; }
 body.urdu-ui .chips-scroll { direction:rtl; }
 body.urdu-ui select { direction:rtl; }
+
+/* Account switcher: compact Facebook-style saved-account panel */
+.account-switcher-panel{display:none;margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--surface-2)}
+.account-switcher-panel.open{display:block}
+.account-switcher-title{font-weight:800;font-size:14px;margin-bottom:9px;color:var(--text)}
+.account-switcher-list{display:flex;flex-direction:column;gap:7px}
+.account-switcher-row{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px;border:1px solid var(--border);border-radius:11px;background:var(--surface);color:var(--text);cursor:pointer}
+.account-switcher-avatar{width:38px;height:38px;flex:0 0 38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--accent-soft,var(--surface-2));font-weight:800}
+.account-switcher-row-main{min-width:0;flex:1;overflow-wrap:anywhere;font-size:12.5px;font-weight:700}
+.account-switcher-row-sub{display:block;font-size:11px;color:var(--text-dim);font-weight:500;margin-top:2px}
+.account-switcher-row-current{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 </style>
 
 <style id="mandatory-star-style">.required-star{color:#d92d20;font-weight:800;margin-left:2px;}</style>
@@ -1655,6 +1666,13 @@ body.urdu-ui select { direction:rtl; }
             <div class="field"><label>Owner Name</label><input type="text" id="edit-ownername" placeholder="Owner ka naam"></div>
             <div class="field"><label>Shop Phone (contact only)</label><input type="tel" id="edit-shopphone" placeholder="03xx xxxxxxx"></div>
             <div class="sheet-actions" style="position:static;margin-top:8px;"><button class="btn-save" id="btnSaveShopProfile" style="flex:1;">Save</button><button class="btn-cancel" id="btnCancelShopProfile" style="flex:1;">Cancel</button></div>
+          </div>
+          <button class="menu-item" id="btnOpenAccountSwitcher" type="button" style="width:100%;margin-top:12px;">⇄ Switch Account</button>
+          <div class="account-switcher-panel" id="accountSwitcherPanel" aria-live="polite">
+            <div class="account-switcher-title">Saved accounts on this device</div>
+            <div class="account-switcher-list" id="accountSwitcherList"></div>
+            <button class="menu-item" id="btnAddAccountSwitcher" type="button" style="width:100%;margin-top:9px;">＋ Add Account</button>
+            <div style="font-size:11px;color:var(--text-dim);line-height:1.4;margin-top:8px;">Account select karne par uska email fill hoga. Security ke liye password dobara enter karna hoga.</div>
           </div>
           <button class="btn-cancel" id="btnAccountLogout" style="width:100%;margin-top:14px;padding:12px;">Logout from this device</button>
         </div>
@@ -2629,7 +2647,7 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '13 Oct 2026 • 05:35:00 PM PKT • Return deductions included in reports and net profit';
+const APP_INDEX_UPDATED = '14 Oct 2026 • 09:09:00 AM PKT • Added saved-account switcher';
 
 let inventory = [];
 
@@ -10043,6 +10061,8 @@ function initFirebaseSync(){
       fbUser = user;
       if(cloudUnsub){ cloudUnsub(); cloudUnsub = null; }
       if(user){
+        rememberAccount(user);
+        try{ localStorage.removeItem(SWITCH_TARGET_EMAIL_KEY); localStorage.removeItem(SWITCH_TARGET_PROVIDER_KEY); }catch(e){}
         try{ localStorage.setItem(LS_WAS_LOGGED_IN_KEY, '1'); }catch(e){}
         resolveUserRoleAndShop(user).then(function(){
           activateShopStorage(userShopId);
@@ -10088,12 +10108,66 @@ function initFirebaseSync(){
         userAccessReason = '';
         updateAccountUI();
         setAuthGateView('locked');
+        try{
+          const target=localStorage.getItem(SWITCH_TARGET_EMAIL_KEY);
+          if(target!==null){
+            const emailBox=document.getElementById('acc-email');
+            const passBox=document.getElementById('acc-password');
+            if(emailBox) emailBox.value=target;
+            if(passBox) passBox.value='';
+            setAccEmailMode('login');
+            localStorage.removeItem(SWITCH_TARGET_EMAIL_KEY);
+            const provider=localStorage.getItem(SWITCH_TARGET_PROVIDER_KEY)||'password'; localStorage.removeItem(SWITCH_TARGET_PROVIDER_KEY);
+            if(target) showToast(provider==='google'?'Google account select ho gaya — Continue with Google dabayein.':'Doosra account select ho gaya — password enter karke Login karein.');
+          }
+        }catch(e){}
       }
     });
   }catch(e){
     console.error('Firebase init failed', e);
     setAuthGateView('locked');
   }
+}
+
+const SAVED_ACCOUNTS_KEY = 'mobileLedger_savedAccounts_v1';
+const SWITCH_TARGET_EMAIL_KEY = 'mobileLedger_switchTargetEmail_v1';
+const SWITCH_TARGET_PROVIDER_KEY = 'mobileLedger_switchTargetProvider_v1';
+function readSavedAccounts(){
+  try{ const a=JSON.parse(localStorage.getItem(SAVED_ACCOUNTS_KEY)||'[]'); return Array.isArray(a)?a.filter(x=>x&&typeof x.email==='string'&&x.email.trim()):[]; }catch(e){ return []; }
+}
+function rememberAccount(user){
+  if(!user || !user.email) return;
+  const email=String(user.email).trim().toLowerCase(); if(!email) return;
+  const accounts=readSavedAccounts().filter(x=>String(x.email||'').toLowerCase()!==email);
+  accounts.unshift({email:email,displayName:String(user.displayName||'').trim(),provider:(Array.isArray(user.providerData)&&user.providerData.some(function(p){return p&&p.providerId==='google.com';}))?'google':'password',lastUsedAt:Date.now()});
+  try{localStorage.setItem(SAVED_ACCOUNTS_KEY,JSON.stringify(accounts.slice(0,8)));}catch(e){}
+  renderSavedAccountSwitcher();
+}
+function renderSavedAccountSwitcher(){
+  const list=document.getElementById('accountSwitcherList'); if(!list) return;
+  const accounts=readSavedAccounts();
+  const current=String((fbUser&&fbUser.email)||'').toLowerCase();
+  if(!accounts.length){list.innerHTML='<div style="font-size:12px;color:var(--text-dim);padding:8px 2px;">Abhi koi saved account nahi hai.</div>';return;}
+  list.innerHTML=accounts.map(function(a){
+    const email=String(a.email||''); const isCurrent=email.toLowerCase()===current;
+    const label=escapeHtml(a.displayName||email.split('@')[0]||'Account');
+    const safeEmail=escapeHtml(email); const provider=String(a.provider||'password');
+    return '<button type="button" class="account-switcher-row '+(isCurrent?'account-switcher-row-current':'')+'" data-switch-email="'+safeEmail+'" data-switch-provider="'+escapeHtml(provider)+'" '+(isCurrent?'disabled':'')+'><span class="account-switcher-avatar">'+escapeHtml((a.displayName||email).slice(0,2).toUpperCase())+'</span><span class="account-switcher-row-main">'+label+'<span class="account-switcher-row-sub">'+safeEmail+(provider==='google'?' · Google': ' · Email')+(isCurrent?' · Current account':'')+'</span></span><span>'+(isCurrent?'✓':'›')+'</span></button>';
+  }).join('');
+  list.querySelectorAll('[data-switch-email]').forEach(function(btn){btn.onclick=function(){startSavedAccountSwitch(btn.getAttribute('data-switch-email'),btn.getAttribute('data-switch-provider'));};});
+}
+function startSavedAccountSwitch(email,provider){
+  const target=String(email||'').trim(); if(!target || !fbAuth) return;
+  if(fbUser && String(fbUser.email||'').toLowerCase()===target.toLowerCase()){showToast('Yeh account pehle se active hai.');return;}
+  try{localStorage.setItem(SWITCH_TARGET_EMAIL_KEY,target);localStorage.setItem(SWITCH_TARGET_PROVIDER_KEY,String(provider||'password'));}catch(e){}
+  const panel=document.getElementById('accountSwitcherPanel'); if(panel) panel.classList.remove('open');
+  showToast('Account switch ho raha hai…');
+  fbAuth.signOut().catch(function(err){showAccountError(friendlyAuthError(err));});
+}
+function startAddAccountSwitch(){
+  try{localStorage.setItem(SWITCH_TARGET_EMAIL_KEY,'');}catch(e){}
+  if(!fbAuth){setAccEmailMode('login');return;}
+  fbAuth.signOut().catch(function(err){showAccountError(friendlyAuthError(err));});
 }
 
 function accountDisplayId(user){
@@ -10134,6 +10208,7 @@ function updateAccountUI(){
   if(adminBtn) adminBtn.style.display = 'none';
   updateAdminShopContextUI();
   if(fbUser){
+    rememberAccount(fbUser);
     label.textContent = accountDisplayId(fbUser) + ' (sync ON)';
     if(loggedOutView) loggedOutView.style.display = 'none';
     if(loggedInView) loggedInView.style.display = 'block';
@@ -10580,6 +10655,14 @@ document.getElementById('btnAccountForgotPassword').onclick = function(){
   fbAuth.sendPasswordResetEmail(email)
     .then(function(){ showToast('✓ Reset link "' + email + '" par bhej diya — apna inbox check karein.'); })
     .catch(function(err){ showAccountError(friendlyAuthError(err)); });
+};
+document.getElementById('btnOpenAccountSwitcher').onclick=function(){
+  const panel=document.getElementById('accountSwitcherPanel'); if(!panel) return;
+  renderSavedAccountSwitcher(); panel.classList.toggle('open');
+};
+document.getElementById('btnAddAccountSwitcher').onclick=function(){
+  if(!confirm('Doosra account add karne ke liye current account se logout karna hoga. Unsynced changes hon to pehle sync hone dein. Continue?')) return;
+  startAddAccountSwitch();
 };
 document.getElementById('btnAccountLogout').onclick = function(){
   if(!confirm('Is device se logout karna hai? Dobara use karne ke liye login zaroori hoga.')) return;
