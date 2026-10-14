@@ -751,7 +751,12 @@ body.menu-open .app>header{z-index:1!important;}
 .menu-profile-avatar{width:78px;height:78px;flex:0 0 78px;border-radius:50%;overflow:hidden;background:#f5f7fa;border:1px solid #e1e6ed;display:flex;align-items:center;justify-content:center;}
 .menu-profile-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
 .menu-profile-info{min-width:0;flex:1;}
-.menu-profile-name{font-size:19px;line-height:1.25;font-weight:800;color:#101828;word-break:break-word;}
+.menu-profile-name{font-size:19px;line-height:1.25;font-weight:800;color:#101828;word-break:normal;overflow-wrap:normal;white-space:normal;}
+.menu-profile-info{width:0;flex:1 1 0%;min-width:0;}
+.menu-profile-name-row{width:100%;display:flex;align-items:center;gap:7px;min-width:0;}
+.menu-profile-name-row .menu-profile-name{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;}
+.menu-profile-edit{margin-left:auto;}
+@media(max-width:420px){.menu-profile{gap:10px;padding-left:16px;padding-right:16px}.menu-profile-avatar{width:66px;height:66px;flex-basis:66px}.menu-profile-edit{width:36px;height:36px;flex-basis:36px}.menu-profile-edit svg{width:28px;height:28px}.menu-profile-name{font-size:18px}}
 .menu-profile-phone{font-size:14px;color:#7b8493;margin-top:5px;}
 .menu-profile-edit{width:48px;height:48px;flex:0 0 48px;border:0;background:transparent;color:#9aa3af;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0;}
 .menu-profile-edit:active{background:#f5f6f8;color:#667085;}
@@ -2658,7 +2663,7 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '14 Oct 2026 • 09:35:00 AM PKT • Moved account switcher to profile dropdown';
+const APP_INDEX_UPDATED = '14 Oct 2026 • 09:52:00 AM PKT • Fixed profile dropdown toggle, mobile name wrapping, and shop-name account labels';
 
 let inventory = [];
 
@@ -10149,8 +10154,10 @@ function readSavedAccounts(){
 function rememberAccount(user){
   if(!user || !user.email) return;
   const email=String(user.email).trim().toLowerCase(); if(!email) return;
+  const old=readSavedAccounts().find(x=>String(x.email||'').toLowerCase()===email)||{};
   const accounts=readSavedAccounts().filter(x=>String(x.email||'').toLowerCase()!==email);
-  accounts.unshift({email:email,displayName:String(user.displayName||'').trim(),provider:(Array.isArray(user.providerData)&&user.providerData.some(function(p){return p&&p.providerId==='google.com';}))?'google':'password',lastUsedAt:Date.now()});
+  const activeShopName=String((shopProfile&&shopProfile.shopName)||old.shopName||'').trim();
+  accounts.unshift({email:email,displayName:String(user.displayName||old.displayName||'').trim(),shopName:activeShopName,provider:(Array.isArray(user.providerData)&&user.providerData.some(function(p){return p&&p.providerId==='google.com';}))?'google':'password',lastUsedAt:Date.now()});
   try{localStorage.setItem(SAVED_ACCOUNTS_KEY,JSON.stringify(accounts.slice(0,8)));}catch(e){}
   renderSavedAccountSwitcher();
 }
@@ -10161,9 +10168,9 @@ function renderSavedAccountSwitcher(){
   if(!accounts.length){list.innerHTML='<div style="font-size:12px;color:var(--text-dim);padding:8px 2px;">Abhi koi saved account nahi hai.</div>';return;}
   list.innerHTML=accounts.map(function(a){
     const email=String(a.email||''); const isCurrent=email.toLowerCase()===current;
-    const label=escapeHtml(a.displayName||email.split('@')[0]||'Account');
+    const shopLabel=escapeHtml(a.shopName||((isCurrent&&shopProfile&&shopProfile.shopName)||'Shop name not set'));
     const safeEmail=escapeHtml(email); const provider=String(a.provider||'password');
-    return '<button type="button" class="account-switcher-row '+(isCurrent?'account-switcher-row-current':'')+'" data-switch-email="'+safeEmail+'" data-switch-provider="'+escapeHtml(provider)+'" '+(isCurrent?'disabled':'')+'><span class="account-switcher-avatar">'+escapeHtml((a.displayName||email).slice(0,2).toUpperCase())+'</span><span class="account-switcher-row-main">'+label+'<span class="account-switcher-row-sub">'+safeEmail+(provider==='google'?' · Google': ' · Email')+(isCurrent?' · Current account':'')+'</span></span><span>'+(isCurrent?'✓':'›')+'</span></button>';
+    return '<button type="button" class="account-switcher-row '+(isCurrent?'account-switcher-row-current':'')+'" data-switch-email="'+safeEmail+'" data-switch-provider="'+escapeHtml(provider)+'" '+(isCurrent?'disabled':'')+'><span class="account-switcher-avatar">'+escapeHtml((a.shopName||a.displayName||email).slice(0,2).toUpperCase())+'</span><span class="account-switcher-row-main">'+shopLabel+'<span class="account-switcher-row-sub">'+safeEmail+(provider==='google'?' · Google': ' · Email')+(isCurrent?' · Current account':'')+'</span></span><span>'+(isCurrent?'✓':'›')+'</span></button>';
   }).join('');
   list.querySelectorAll('[data-switch-email]').forEach(function(btn){btn.onclick=function(){startSavedAccountSwitch(btn.getAttribute('data-switch-email'),btn.getAttribute('data-switch-provider'));};});
 }
@@ -10667,7 +10674,8 @@ document.getElementById('btnAccountForgotPassword').onclick = function(){
     .then(function(){ showToast('✓ Reset link "' + email + '" par bhej diya — apna inbox check karein.'); })
     .catch(function(err){ showAccountError(friendlyAuthError(err)); });
 };
-document.getElementById('btnOpenAccountSwitcher').onclick=function(){
+document.getElementById('btnOpenAccountSwitcher').onclick=function(e){
+  if(e){e.preventDefault();e.stopPropagation();}
   const panel=document.getElementById('accountSwitcherPanel'); if(!panel) return;
   renderSavedAccountSwitcher();
   const isOpen=panel.classList.toggle('open');
