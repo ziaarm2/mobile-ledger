@@ -956,6 +956,12 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
 .menu-dropdown .menu-profile{padding-top:calc(25px + constant(safe-area-inset-top))!important;}
 }
 </style>
+
+<style>
+.employee-permission{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--border);font-size:14px;cursor:pointer;}
+.employee-permission input{width:18px;height:18px;flex:0 0 18px;accent-color:var(--accent);}
+#employeeInviteName,#employeeInviteEmail{width:100%;box-sizing:border-box;}
+</style>
 </head>
 <body>
 
@@ -1773,6 +1779,7 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
         <div class="settings-category-list">
           <button class="settings-category" data-settings-page="account"><span class="settings-category-icon">👤</span><span class="settings-category-main"><span class="settings-category-title">Account</span><span class="settings-category-sub" id="settingsSummaryAccount">Login & cloud sync</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="shop"><span class="settings-category-icon">🏪</span><span class="settings-category-main"><span class="settings-category-title">Shop</span><span class="settings-category-sub" id="settingsSummaryShop">Shop details & contact</span></span><span class="settings-category-arrow">›</span></button>
+          <button class="settings-category" id="settingsEmployeeAccessCategory" data-settings-page="employeeaccess"><span class="settings-category-icon">👥</span><span class="settings-category-main"><span class="settings-category-title">Employee Access</span><span class="settings-category-sub">Invite employees & choose permissions</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="inventory"><span class="settings-category-icon">📦</span><span class="settings-category-main"><span class="settings-category-title">Stock & Pricing</span><span class="settings-category-sub">Card view, sell range & brands</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="appearance"><span class="settings-category-icon">🎨</span><span class="settings-category-main"><span class="settings-category-title">Appearance</span><span class="settings-category-sub">Badge order & card layout</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category admin-only-setting" id="settingsAdminCategory" data-settings-page="admin" style="display:none;"><span class="settings-category-icon">🛠️</span><span class="settings-category-main"><span class="settings-category-title">Admin</span><span class="settings-category-sub">Brands, badges & field options</span></span><span class="settings-category-arrow">›</span></button>
@@ -1938,6 +1945,44 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
         <div class="settings-page-title">Data Management</div>
         <div class="settings-section-card"><div class="sec-label">Import / Restore</div><div class="settings-action-list"><button class="menu-item" id="btnRestore">⬆ Restore from JSON</button><button class="menu-item" id="btnExcelRestore">📥 Import from Excel</button></div><input type="file" id="restoreFile" accept="application/json" style="display:none;"><input type="file" id="excelFile" accept=".xlsx,.xls" style="display:none;"></div>
         <div class="settings-section-card settings-danger-card"><div class="sec-label" style="color:var(--danger);">Danger Zone</div><div class="settings-note">Clear data se app ka local business data remove ho jayega. Password protection apply hogi.</div><button class="menu-item danger" id="btnClearData" style="margin-top:10px;background:var(--surface-2);border:1px solid var(--border);">🗑️ Clear all data</button></div>
+      </div>
+
+      <div class="settings-view" data-settings-view="employeeaccess">
+        <div class="settings-page-title">Employee Access</div>
+        <div class="settings-section-card">
+          <div class="sec-label">Invite an employee</div>
+          <div class="settings-note" style="margin-top:5px;">Employee ka naam aur Gmail enter karein, phir sirf zaroori permissions select karein. Default mein sensitive permissions band hain.</div>
+          <div class="field"><label for="employeeInviteName">Employee name</label><input id="employeeInviteName" type="text" placeholder="Employee ka naam" autocomplete="name"></div>
+          <div class="field"><label for="employeeInviteEmail">Employee Gmail</label><input id="employeeInviteEmail" type="email" placeholder="employee@gmail.com" autocomplete="email"></div>
+          <div class="sec-label" style="margin-top:14px;">Stock & Entry</div>
+          <label class="employee-permission"><input type="checkbox" id="perm_entry_add" checked> Nayi mobile entry karna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_entry_edit"> Mobile details edit karna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_entry_delete"> Mobile entry delete karna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_buy_price"> Purchase price dekhna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_buy_price_edit"> Purchase price change karna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_stock_view" checked> Available stock dekhna</label>
+          <div class="sec-label" style="margin-top:14px;">Sales & Returns</div>
+          <label class="employee-permission"><input type="checkbox" id="perm_sale_add" checked> Mobile sale karna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_sale_discount"> Sale par discount dena</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_sale_return"> Mobile return karna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_return_deduction"> Return par katoti set karna</label>
+          <div class="sec-label" style="margin-top:14px;">Financial Information</div>
+          <label class="employee-permission"><input type="checkbox" id="perm_profit_view"> Profit dekhna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_expenses_view"> Expenses dekhna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_reports_view"> Financial reports dekhna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_purchase_view"> Purchase records dekhna</label>
+          <div class="sec-label" style="margin-top:14px;">Other Permissions</div>
+          <label class="employee-permission"><input type="checkbox" id="perm_customer_view" checked> Customer details dekhna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_data_export"> Backup / data export</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_settings_edit"> App settings badalna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_employee_manage"> Doosre employees manage karna</label>
+          <button class="btn-save" id="btnSendEmployeeInvite" style="width:100%;padding:12px;border:0;border-radius:10px;margin-top:14px;">✉ Save invitation & prepare email</button>
+          <div class="settings-note" style="margin-top:10px;">Important: Yeh invitation/permission setup record banata hai. Actual employee login aur data restrictions tabhi secure hongi jab Firebase Security Rules aur employee sign-in flow bhi configure hon. Sirf UI checkbox security nahi hoti.</div>
+        </div>
+        <div class="settings-section-card">
+          <div class="sec-label">Invitations on this device</div>
+          <div id="employeeInviteList" class="settings-note" style="margin-top:8px;">Abhi koi invitation nahi.</div>
+        </div>
       </div>
 
       <div class="settings-view" data-settings-view="shopaccess">
@@ -2663,7 +2708,7 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '14 Oct 2026 • 09:52:00 AM PKT • Fixed profile dropdown toggle, mobile name wrapping, and shop-name account labels';
+const APP_INDEX_UPDATED = '14 Oct 2026 • 09:18:00 AM PKT • Added employee access permissions and invitation draft UI';
 
 let inventory = [];
 
@@ -8958,7 +9003,7 @@ document.getElementById('settingsAddBrandBtn').onclick = function(){
   renderBrandFilter();
 };
 
-const SETTINGS_PAGE_TITLES={home:'Settings',account:'Account',shop:'Shop',inventory:'Stock & Pricing',appearance:'Appearance',fields:'Fields & Options',whatsapp:'WhatsApp',privacy:'Privacy & Security',applock:'App Lock',backup:'Backup & Sync',data:'Data Management',about:'About',shopaccess:'Shop Access'};
+const SETTINGS_PAGE_TITLES={home:'Settings',account:'Account',shop:'Shop',inventory:'Stock & Pricing',appearance:'Appearance',fields:'Fields & Options',whatsapp:'WhatsApp',privacy:'Privacy & Security',applock:'App Lock',backup:'Backup & Sync',data:'Data Management',about:'About',shopaccess:'Shop Access',employeeaccess:'Employee Access'};
 let currentSettingsPage='home';
 function renderSettingsHomeSummaries(){
   loadDashboardSettings();
@@ -9067,6 +9112,7 @@ function settingsDraftPrompt(nextAction){
 
 function openSettingsPage(page){
   if(page==='fields' && userRole!=='admin') return;
+  if(page==='employeeaccess' && (!fbUser || userRole==='admin' || userRole==='employee')) return;
 
   dedupeSettingsHomeCategories();
   if(page==='shopaccess' && userRole!=='admin') page='home';
@@ -10251,6 +10297,7 @@ function updateAccountUI(){
     const menuLogout=document.getElementById('btnMenuLogout'); if(menuLogout) menuLogout.style.display='none';
   }
   const accessCat=document.getElementById('settingsShopAccessCategory'); if(accessCat) accessCat.style.display=(userRole==='admin'?'flex':'none');
+  const empCat=document.getElementById('settingsEmployeeAccessCategory'); if(empCat) empCat.style.display=(fbUser && userRole!=='admin' && userRole!=='employee' ? 'flex':'none');
   const bell=document.getElementById('adminNotificationBtn'); if(bell) bell.style.display=(userRole==='admin'?'inline-flex':'none'); try{ if(userRole!=='admin') localStorage.removeItem('mobileLedger_lastAdminSession'); }catch(e){}
   const shareAppBtn=document.getElementById('btnShareApp'); if(shareAppBtn) shareAppBtn.style.display=(userRole==='admin'?'block':'none');
   renderSettingsHomeSummaries();
@@ -10339,6 +10386,42 @@ function refreshAccessState(){
     }else setAccessGate(userAccessStatus,userAccessReason);
   });
 }
+const EMPLOYEE_PERMISSION_LABELS={
+  entry_add:'Nayi mobile entry karna',entry_edit:'Mobile details edit karna',entry_delete:'Mobile entry delete karna',buy_price:'Purchase price dekhna',buy_price_edit:'Purchase price change karna',stock_view:'Available stock dekhna',sale_add:'Mobile sale karna',sale_discount:'Sale par discount dena',sale_return:'Mobile return karna',return_deduction:'Return par katoti set karna',profit_view:'Profit dekhna',expenses_view:'Expenses dekhna',reports_view:'Financial reports dekhna',purchase_view:'Purchase records dekhna',customer_view:'Customer details dekhna',data_export:'Backup / data export',settings_edit:'App settings badalna',employee_manage:'Doosre employees manage karna'
+};
+function getEmployeePermissionSelection(){
+  const out={}; Object.keys(EMPLOYEE_PERMISSION_LABELS).forEach(function(k){const el=document.getElementById('perm_'+k);out[k]=!!(el&&el.checked);}); return out;
+}
+function renderEmployeeInvitations(){
+  const el=document.getElementById('employeeInviteList'); if(!el)return;
+  let arr=[]; try{arr=JSON.parse(localStorage.getItem('mobileLedger_employeeInvites_'+(fbUser&&fbUser.uid||'local'))||'[]');}catch(e){}
+  if(!arr.length){el.textContent='Abhi koi invitation nahi.';return;}
+  el.innerHTML=arr.slice().reverse().map(function(inv){const active=Object.keys(inv.permissions||{}).filter(k=>inv.permissions[k]).map(k=>EMPLOYEE_PERMISSION_LABELS[k]||k);return '<div style="border:1px solid var(--border);border-radius:10px;padding:10px;margin:8px 0;"><b>'+escapeHtml(inv.name||'Employee')+'</b><div>'+escapeHtml(inv.email||'')+'</div><div style="font-size:12px;color:var(--text-dim);margin-top:4px;">Status: '+escapeHtml(inv.status||'Draft')+' · '+active.length+' permissions enabled</div></div>';}).join('');
+}
+function saveEmployeeInvitation(){
+  if(!fbUser || !fbDb || userRole==='admin' || userRole==='employee'){showToast('Employee invite ke liye owner account se login karein.');return;}
+  const name=(document.getElementById('employeeInviteName').value||'').trim();
+  const email=(document.getElementById('employeeInviteEmail').value||'').trim().toLowerCase();
+  if(!name){showToast('Employee ka naam enter karein.');return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showToast('Valid Gmail/email enter karein.');return;}
+  const permissions=getEmployeePermissionSelection();
+  const invite={ownerUid:fbUser.uid,shopId:userShopId||fbUser.uid,shopName:shopProfile.shopName||'',employeeName:name,email:email,permissions:permissions,status:'draft',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+  const btn=document.getElementById('btnSendEmployeeInvite'); if(btn)btn.disabled=true;
+  fbDb.collection('employeeInvitations').add(invite).then(function(ref){
+    invite.id=ref.id;
+    let arr=[];try{arr=JSON.parse(localStorage.getItem('mobileLedger_employeeInvites_'+fbUser.uid)||'[]');}catch(e){}
+    arr.push(invite);try{localStorage.setItem('mobileLedger_employeeInvites_'+fbUser.uid,JSON.stringify(arr));}catch(e){}
+    renderEmployeeInvitations();
+    const enabled=Object.keys(permissions).filter(k=>permissions[k]).map(k=>'• '+EMPLOYEE_PERMISSION_LABELS[k]).join('\n')||'No permissions selected';
+    const subject=encodeURIComponent('Mobile Hisab employee access invitation — '+(shopProfile.shopName||'Shop'));
+    const body=encodeURIComponent('Hi '+name+',\n\nYou are invited to use Mobile Hisab for '+(shopProfile.shopName||'our shop')+'.\n\nRequested permissions:\n'+enabled+'\n\nPlease contact the shop owner to complete secure account setup.\n\nInvitation reference: '+ref.id);
+    showToast('Invitation record save ho gaya. Email draft khol raha hoon.');
+    window.location.href='mailto:'+encodeURIComponent(email)+'?subject='+subject+'&body='+body;
+  }).catch(function(err){showToast('Invitation save nahi hui: '+(err.message||'Firebase permission/network error'));}).finally(function(){if(btn)btn.disabled=false;});
+}
+const employeeInviteButton=document.getElementById('btnSendEmployeeInvite'); if(employeeInviteButton)employeeInviteButton.addEventListener('click',saveEmployeeInvitation);
+const employeeAccessCategory=document.getElementById('settingsEmployeeAccessCategory'); if(employeeAccessCategory)employeeAccessCategory.addEventListener('click',renderEmployeeInvitations);
+
 function saveAccessTemplates(){
   if(userRole!=='admin' || !fbDb || !fbUser) return;
   accessTemplates={
