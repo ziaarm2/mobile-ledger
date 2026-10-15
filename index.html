@@ -1050,7 +1050,7 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 15 Oct 2026 • 09:21:57 AM PKT • Sync startup comparison fix</span><span>All Shops Combined brand filters fixed</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 15 Oct 2026 • 09:31:00 AM PKT • Added local/cloud mismatch diagnostics; kept conflict data-safe</span><span>All Shops Combined brand filters fixed</span></div>
         </div>
       </div>
     </div>
@@ -2012,7 +2012,7 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 15 Oct 2026 • 09:21:57 AM PKT • Sync startup comparison fix • Employee invitation button click binding fixed • Company Warranty options now use standard selection chips • All Shops Combined brand filters fixed</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 15 Oct 2026 • 09:31:00 AM PKT • Added local/cloud mismatch diagnostics; kept conflict data-safe • Employee invitation button click binding fixed • Company Warranty options now use standard selection chips • All Shops Combined brand filters fixed</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -10524,13 +10524,23 @@ function stableSyncValue(value){
   }
   return value;
 }
-function localMatchesCloudSnapshot(data){
-  if(!data || typeof data!=='object') return false;
+function getCloudMismatchFields(data){
+  if(!data || typeof data!=='object') return ['cloud snapshot'];
   const local=buildCloudPayload();
   const keys=['inventory','expenses','customModels','customOptionData','cardDisplaySettings','shopProfile','rateBook'];
-  try{return keys.every(function(k){
-    return JSON.stringify(stableSyncValue(local[k]))===JSON.stringify(stableSyncValue(data[k]));
-  });}catch(e){return false;}
+  const labels={inventory:'Stock/Sales',expenses:'Expenses',customModels:'Models',customOptionData:'Entry options',cardDisplaySettings:'Card settings',shopProfile:'Shop profile',rateBook:'Rate Book'};
+  const mismatches=[];
+  try{keys.forEach(function(k){
+    if(JSON.stringify(stableSyncValue(local[k]))!==JSON.stringify(stableSyncValue(data[k]))) mismatches.push(labels[k]||k);
+  });}catch(e){return ['comparison error'];}
+  return mismatches;
+}
+function localMatchesCloudSnapshot(data){ return getCloudMismatchFields(data).length===0; }
+function getSyncCompareSummary(data){
+  const mismatches=getCloudMismatchFields(data);
+  const remoteInv=Array.isArray(data&&data.inventory)?data.inventory.length:0;
+  const remoteExp=Array.isArray(data&&data.expenses)?data.expenses.length:0;
+  return mismatches.length ? ' Farq: '+mismatches.join(', ')+'. Mobile stock '+(Array.isArray(inventory)?inventory.length:0)+' / Cloud stock '+remoteInv+'; mobile expenses '+(Array.isArray(expenses)?expenses.length:0)+' / Cloud expenses '+remoteExp+'.' : ' Local aur cloud business data match karta hai.';
 }
 
 function buildCloudPayload(){
@@ -10616,7 +10626,7 @@ function startCloudSync(uid){
       }else{
         cloudSyncConflict = true;
         cloudInitialSnapshotResolved = true;
-        setAccountSyncStatus('SYNC CONFLICT: local aur cloud data different hain; automatic upload roki gayi hai. Backup safe rakhein aur compare karein.', 'error');
+        setAccountSyncStatus('SYNC CONFLICT: local aur cloud data different hain; automatic upload roki gayi hai. Backup safe rakhein. '+getSyncCompareSummary(startupData), 'error');
         console.warn('Cloud sync conflict: local and remote payloads differ; automatic push blocked to protect both copies.');
         return;
       }
