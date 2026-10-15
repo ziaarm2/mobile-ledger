@@ -1050,7 +1050,7 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 15 Oct 2026 • 04:09:44 AM PKT • Startup cloud sync conflict protection added</span><span>All Shops Combined brand filters fixed</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 15 Oct 2026 • 09:21:57 AM PKT • Sync startup comparison fix</span><span>All Shops Combined brand filters fixed</span></div>
         </div>
       </div>
     </div>
@@ -2012,7 +2012,7 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 15 Oct 2026 • 04:09:44 AM PKT • Startup cloud sync conflict protection added • Employee invitation button click binding fixed • Company Warranty options now use standard selection chips • All Shops Combined brand filters fixed</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 15 Oct 2026 • 09:21:57 AM PKT • Sync startup comparison fix • Employee invitation button click binding fixed • Company Warranty options now use standard selection chips • All Shops Combined brand filters fixed</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -10512,6 +10512,27 @@ document.addEventListener('click',function(e){
 // device — this keeps each sync write small, fast and free-tier-friendly;
 // Firestore documents are capped at 1MB and photos would blow past that
 // fast across dozens of stock entries).
+function stableSyncValue(value){
+  if(Array.isArray(value)) return value.map(stableSyncValue);
+  if(value && typeof value==='object'){
+    const out={};
+    Object.keys(value).sort().forEach(function(k){
+      if(k==='photos' || k==='updatedAt' || k==='createdAt') return;
+      out[k]=stableSyncValue(value[k]);
+    });
+    return out;
+  }
+  return value;
+}
+function localMatchesCloudSnapshot(data){
+  if(!data || typeof data!=='object') return false;
+  const local=buildCloudPayload();
+  const keys=['inventory','expenses','customModels','customOptionData','cardDisplaySettings','shopProfile','rateBook'];
+  try{return keys.every(function(k){
+    return JSON.stringify(stableSyncValue(local[k]))===JSON.stringify(stableSyncValue(data[k]));
+  });}catch(e){return false;}
+}
+
 function buildCloudPayload(){
   return {
     inventory: inventory.map(function(e){ const c = Object.assign({}, e); delete c.photos; return c; }),
@@ -10585,14 +10606,20 @@ function startCloudSync(uid){
       return;
     }
     if(!cloudInitialSnapshotResolved && hasPendingLocalChanges()){
-      // Local counters belong to this browser only; they cannot prove this
-      // copy is newer than Firestore. Preserve both copies and stop automatic
-      // writes instead of risking another stale-device overwrite.
-      cloudSyncConflict = true;
-      cloudInitialSnapshotResolved = true;
-      setAccountSyncStatus('SYNC CONFLICT: is device ka data safe rakha hai; automatic upload roki gayi hai. Pehle backup/compare karein.', 'error');
-      console.warn('Cloud sync conflict: local data has unconfirmed changes at startup; automatic push blocked to protect cloud data.');
-      return;
+      const startupData=snap.data();
+      // App updates can leave a stale per-device counter. If the actual
+      // business payload matches cloud exactly, reconcile the counter safely.
+      if(localMatchesCloudSnapshot(startupData)){
+        lastPushedVersion=localVersion;
+        try{ localStorage.setItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY), String(lastPushedVersion)); }catch(e){}
+        console.info('Cloud sync startup: local data matches cloud; stale local sync counter reconciled safely.');
+      }else{
+        cloudSyncConflict = true;
+        cloudInitialSnapshotResolved = true;
+        setAccountSyncStatus('SYNC CONFLICT: local aur cloud data different hain; automatic upload roki gayi hai. Backup safe rakhein aur compare karein.', 'error');
+        console.warn('Cloud sync conflict: local and remote payloads differ; automatic push blocked to protect both copies.');
+        return;
+      }
     }
     cloudInitialSnapshotResolved = true;
     if(hasPendingLocalChanges()){
