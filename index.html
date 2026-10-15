@@ -1050,7 +1050,7 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 09 Oct 2026 • 06:18:00 PM PKT • Company Warranty options now use standard selection chips</span><span>All Shops Combined brand filters fixed</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 15 Oct 2026 • 04:09:44 AM PKT • Startup cloud sync conflict protection added</span><span>All Shops Combined brand filters fixed</span></div>
         </div>
       </div>
     </div>
@@ -2012,7 +2012,7 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 14 Oct 2026 • 10:26:00 AM PKT • Employee invitation button click binding fixed • Company Warranty options now use standard selection chips • All Shops Combined brand filters fixed</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 15 Oct 2026 • 04:09:44 AM PKT • Startup cloud sync conflict protection added • Employee invitation button click binding fixed • Company Warranty options now use standard selection chips • All Shops Combined brand filters fixed</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -9558,6 +9558,11 @@ let applyingRemoteUpdate = false; // true while a cloud update is being written 
 let shopConfigReady = false;
 let shopConfigFetchPromise = null;
 let pushDebounceTimer = null;
+// Startup safety: never upload a device's pre-existing local state until the
+// first cloud snapshot has been checked. If both sides may have changes, stop
+// automatic writes rather than guessing which copy is newer.
+let cloudInitialSnapshotResolved = false;
+let cloudSyncConflict = false;
 // Prevent background cloud/config refreshes from rebuilding entry chips while
 // the user is actively filling the form. Replacing chip DOM during a tap can
 // make an option appear visible but miss the click.
@@ -10521,7 +10526,7 @@ function buildCloudPayload(){
 }
 
 function attemptPush(){
-  if(!fbUser || !userShopId || applyingRemoteUpdate || shopStorageSwitching || (userRole!=='admin' && userAccessStatus!=='active')) return;
+  if(!fbUser || !userShopId || applyingRemoteUpdate || shopStorageSwitching || cloudSyncConflict || (userRole!=='admin' && userAccessStatus!=='active')) return;
   clearTimeout(pushDebounceTimer);
   setAccountSyncStatus('save ho raha hai…', 'saving');
   pushDebounceTimer = setTimeout(function(){
@@ -10557,6 +10562,8 @@ window.addEventListener('online', function(){
 });
 
 function startCloudSync(uid){
+  cloudInitialSnapshotResolved = false;
+  cloudSyncConflict = false;
   const syncShopId=String(userShopId||'').trim();
   if(!syncShopId) return;
   if(uid && String(uid)!==syncShopId){ console.warn('Cloud sync requested for a different shop id; using resolved userShopId only.'); }
@@ -10570,13 +10577,24 @@ function startCloudSync(uid){
     // selected-shop snapshot while Admin is viewing another shop.
     if(isAdminShopView()) return;
     if(!snap.exists){
-      // First sync for an existing local account: seed the cloud with the
-      // business data already stored on this device. This is important for
-      // the original Z Mobile/admin account whose data predates cloud sync.
+      // A missing cloud document has no remote business state to overwrite.
+      // It is safe to seed it from this device's existing local data.
+      cloudInitialSnapshotResolved = true;
       setAccountSyncStatus('cloud setup ho raha hai — is device ka data upload ho raha hai', 'saving');
       schedulePush();
       return;
     }
+    if(!cloudInitialSnapshotResolved && hasPendingLocalChanges()){
+      // Local counters belong to this browser only; they cannot prove this
+      // copy is newer than Firestore. Preserve both copies and stop automatic
+      // writes instead of risking another stale-device overwrite.
+      cloudSyncConflict = true;
+      cloudInitialSnapshotResolved = true;
+      setAccountSyncStatus('SYNC CONFLICT: is device ka data safe rakha hai; automatic upload roki gayi hai. Pehle backup/compare karein.', 'error');
+      console.warn('Cloud sync conflict: local data has unconfirmed changes at startup; automatic push blocked to protect cloud data.');
+      return;
+    }
+    cloudInitialSnapshotResolved = true;
     if(hasPendingLocalChanges()){
       // This device has a local change (e.g. an entry added while offline)
       // that hasn't been confirmed written to the cloud yet. The snapshot
