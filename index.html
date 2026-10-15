@@ -1050,7 +1050,7 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 15 Oct 2026 • 09:31:00 AM PKT • Added local/cloud mismatch diagnostics; kept conflict data-safe</span><span>All Shops Combined brand filters fixed</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 15 Oct 2026 • 09:44:00 AM PKT • Blocked startup overwrite when local and cloud business data differ</span><span>All Shops Combined brand filters fixed</span></div>
         </div>
       </div>
     </div>
@@ -2012,7 +2012,7 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 15 Oct 2026 • 09:31:00 AM PKT • Added local/cloud mismatch diagnostics; kept conflict data-safe • Employee invitation button click binding fixed • Company Warranty options now use standard selection chips • All Shops Combined brand filters fixed</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 15 Oct 2026 • 09:44:00 AM PKT • Blocked startup overwrite when local and cloud business data differ • Employee invitation button click binding fixed • Company Warranty options now use standard selection chips • All Shops Combined brand filters fixed</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -10615,20 +10615,36 @@ function startCloudSync(uid){
       schedulePush();
       return;
     }
-    if(!cloudInitialSnapshotResolved && hasPendingLocalChanges()){
+    if(!cloudInitialSnapshotResolved){
       const startupData=snap.data();
-      // App updates can leave a stale per-device counter. If the actual
-      // business payload matches cloud exactly, reconcile the counter safely.
-      if(localMatchesCloudSnapshot(startupData)){
-        lastPushedVersion=localVersion;
-        try{ localStorage.setItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY), String(lastPushedVersion)); }catch(e){}
-        console.info('Cloud sync startup: local data matches cloud; stale local sync counter reconciled safely.');
-      }else{
+      const startupLocalHasBusinessData = (Array.isArray(inventory) && inventory.length>0) || (Array.isArray(expenses) && expenses.length>0);
+      const startupPayloadMatchesCloud = localMatchesCloudSnapshot(startupData);
+      // The per-device counters cannot tell which copy is newer. On startup,
+      // if this device already has business records, never replace them with a
+      // different cloud snapshot automatically—even when the local counter
+      // claims everything was pushed. Preserve both copies and require an
+      // explicit recovery choice instead of guessing which dataset is newest.
+      if(startupLocalHasBusinessData && !startupPayloadMatchesCloud){
         cloudSyncConflict = true;
         cloudInitialSnapshotResolved = true;
-        setAccountSyncStatus('SYNC CONFLICT: local aur cloud data different hain; automatic upload roki gayi hai. Backup safe rakhein. '+getSyncCompareSummary(startupData), 'error');
-        console.warn('Cloud sync conflict: local and remote payloads differ; automatic push blocked to protect both copies.');
+        setAccountSyncStatus('SYNC CONFLICT: mobile aur cloud data mukhtalif hain; automatic sync rok di gayi hai. Mobile backup safe rakhein. '+getSyncCompareSummary(startupData), 'error');
+        console.warn('Cloud sync startup conflict: existing local business data differs from cloud; automatic overwrite and upload blocked.');
         return;
+      }
+      if(hasPendingLocalChanges()){
+        // If the payload is identical, only reconcile the stale local counter.
+        // If it differs, keep both copies untouched and stop automatic writes.
+        if(startupPayloadMatchesCloud){
+          lastPushedVersion=localVersion;
+          try{ localStorage.setItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY), String(lastPushedVersion)); }catch(e){}
+          console.info('Cloud sync startup: local data matches cloud; stale local sync counter reconciled safely.');
+        }else{
+          cloudSyncConflict = true;
+          cloudInitialSnapshotResolved = true;
+          setAccountSyncStatus('SYNC CONFLICT: local aur cloud data different hain; automatic upload roki gayi hai. Backup safe rakhein. '+getSyncCompareSummary(startupData), 'error');
+          console.warn('Cloud sync conflict: local and remote payloads differ; automatic push blocked to protect both copies.');
+          return;
+        }
       }
     }
     cloudInitialSnapshotResolved = true;
