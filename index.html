@@ -1050,7 +1050,7 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 16 Oct 2026 • 09:02:20 AM PKT • Added cloud history snapshots, search, restore and safe merge recovery</span><span>All Shops Combined brand filters fixed</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 16 Oct 2026 • 09:35:00 AM PKT • Added owner-confirmed dated phone-to-cloud sync with pre-sync recovery snapshots</span><span>All Shops Combined brand filters fixed</span></div>
         </div>
       </div>
     </div>
@@ -1935,6 +1935,7 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
             <button type="button" class="menu-item" id="btnCloudHistoryRefresh" style="flex:1;min-width:150px;">↻ Refresh History</button>
             <button type="button" class="menu-item" id="btnCloudHistorySave" style="flex:1;min-width:150px;">☁ Save Current Snapshot</button>
             <button type="button" class="menu-item" id="btnCloudHistoryMerge" style="flex:1;min-width:150px;">⇄ Merge Missing Local Entries</button>
+            <button type="button" class="menu-item" id="btnCloudSyncLatestPhone" style="flex:1;min-width:190px;border:1px solid var(--accent);">☁ Sync Latest Phone Data to Cloud</button>
           </div>
           <input id="cloudHistorySearch" type="search" placeholder="Date, label ya record count se search karein" style="width:100%;margin-top:10px;" autocomplete="off">
           <div class="settings-note" id="cloudHistoryStatus" style="margin-top:8px;">History load nahi hui.</div>
@@ -2024,7 +2025,7 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 16 Oct 2026 • 09:02:20 AM PKT • Added cloud history snapshots, search, restore and safe merge recovery • Employee invitation button click binding fixed • Company Warranty options now use standard selection chips • All Shops Combined brand filters fixed</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 16 Oct 2026 • 09:35:00 AM PKT • Added owner-confirmed dated phone-to-cloud sync with pre-sync recovery snapshots • Employee invitation button click binding fixed • Company Warranty options now use standard selection chips • All Shops Combined brand filters fixed</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -10681,9 +10682,51 @@ async function mergeMissingLocalEntries(){
   localVersion++;lastPushedVersion=localVersion;try{localStorage.setItem(shopStorageKey(LS_LOCAL_VERSION_KEY),String(localVersion));localStorage.setItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY),String(lastPushedVersion));}catch(e){}
   render();updateAccountUI();setAccountSyncStatus('missing local records cloud mein merge ho gaye','ok');if(status)status.textContent='Merge complete. Cloud ke same-ID records overwrite nahi hue; sirf missing local records add hue.';await loadCloudHistory();showToast('Missing local records merge ho gaye.');
 }
+async function syncLatestPhoneDataToCloud(){
+  const status=document.getElementById('cloudHistoryStatus');
+  if(!fbUser||!fbDb||!userShopId)throw new Error('Owner account mein sign in karein.');
+  if(userRole!=='admin' && userAccessStatus!=='active')throw new Error('Shop account active nahi hai.');
+  if(!confirm('Is phone ka current data latest maana jayega. Pehle cloud ka current data aur is phone ka data dono dated history mein save honge, phir phone ka data cloud par upload hoga. Doosre devices is data ko receive karenge. Continue?'))return;
+  if(status)status.textContent='Cloud ki date/revision check ho rahi hai aur dono copies history mein save ho rahi hain…';
+  try{
+    const shopRef=fbDb.collection('shops').doc(userShopId);
+    const before=await shopRef.get();
+    const oldData=before.exists?before.data():null;
+    const nowIso=new Date().toISOString();
+    // Preserve the exact currently stored cloud dataset before replacing it.
+    if(oldData)await archiveCloudSnapshot(oldData,'Before phone-to-cloud sync • '+nowIso,true);
+    // Preserve the exact local dataset as a second recovery point.
+    const localPayload=historySafePayload(buildCloudPayload());
+    await archiveCloudSnapshot(localPayload,'Phone dataset before sync • '+nowIso,true);
+    const oldRevision=Number(oldData&&oldData.syncRevision||0);
+    const payload=Object.assign({},buildCloudPayload(),{
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp(),
+      syncClientAt:nowIso,
+      syncRevision:oldRevision+1,
+      syncSource:'owner-confirmed-phone-sync'
+    });
+    // Only unpause after both recovery snapshots have completed successfully.
+    await shopRef.set(payload,{merge:true});
+    cloudSyncConflict=false;cloudInitialSnapshotResolved=true;
+    localVersion=Math.max(Number(localVersion)||0,Number(lastPushedVersion)||0)+1;
+    lastPushedVersion=localVersion;
+    try{localStorage.setItem(shopStorageKey(LS_LOCAL_VERSION_KEY),String(localVersion));localStorage.setItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY),String(lastPushedVersion));}catch(e){}
+    setAccountSyncStatus('latest phone data cloud par sync ho gaya • revision '+(oldRevision+1),'ok');
+    if(status)status.textContent='Phone ka current data cloud par sync ho gaya. Cloud aur phone dono ke pre-sync snapshots history mein save kiye gaye. Ab Refresh History dabayein.';
+    await loadCloudHistory();
+    showToast('Latest phone data cloud par sync ho gaya.');
+  }catch(err){
+    console.error('Manual latest phone-to-cloud sync failed',err);
+    cloudSyncConflict=true;
+    if(status)status.textContent='Sync nahi hua. Conflict safety ke liye paused rakha hai: '+(err.message||'Firestore rules/network check karein.');
+    setAccountSyncStatus('SYNC PAUSED — recovery snapshot ya cloud write fail hua; phone ka data safe rakhein.','error');
+    throw err;
+  }
+}
+
 (function bindCloudHistoryUI(){
-  const refresh=document.getElementById('btnCloudHistoryRefresh'),save=document.getElementById('btnCloudHistorySave'),merge=document.getElementById('btnCloudHistoryMerge'),search=document.getElementById('cloudHistorySearch');
-  if(refresh)refresh.addEventListener('click',loadCloudHistory);if(save)save.addEventListener('click',saveCurrentCloudSnapshot);if(merge)merge.addEventListener('click',function(){mergeMissingLocalEntries().catch(function(err){console.error('Cloud merge failed',err);const st=document.getElementById('cloudHistoryStatus');if(st)st.textContent='Merge fail hua: '+(err.message||'Firestore rules/network check karein.');showToast('Merge complete nahi hua.');});});if(search)search.addEventListener('input',renderCloudHistoryList);
+  const refresh=document.getElementById('btnCloudHistoryRefresh'),save=document.getElementById('btnCloudHistorySave'),merge=document.getElementById('btnCloudHistoryMerge'),syncLatest=document.getElementById('btnCloudSyncLatestPhone'),search=document.getElementById('cloudHistorySearch');
+  if(refresh)refresh.addEventListener('click',loadCloudHistory);if(save)save.addEventListener('click',saveCurrentCloudSnapshot);if(syncLatest)syncLatest.addEventListener('click',function(){syncLatestPhoneDataToCloud().catch(function(err){console.error(err);showToast('Cloud sync complete nahi hua.');});});if(merge)merge.addEventListener('click',function(){mergeMissingLocalEntries().catch(function(err){console.error('Cloud merge failed',err);const st=document.getElementById('cloudHistoryStatus');if(st)st.textContent='Merge fail hua: '+(err.message||'Firestore rules/network check karein.');showToast('Merge complete nahi hua.');});});if(search)search.addEventListener('input',renderCloudHistoryList);
   const section=document.getElementById('cloudHistorySection');if(section){section.addEventListener('click',function(e){if(e.target&&e.target.id==='btnCloudHistoryRefresh')loadCloudHistory();});}
 })();
 
