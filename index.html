@@ -1050,7 +1050,7 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 15 Oct 2026 • 09:44:00 AM PKT • Blocked startup overwrite when local and cloud business data differ</span><span>All Shops Combined brand filters fixed</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 16 Oct 2026 • 09:02:20 AM PKT • Added cloud history snapshots, search, restore and safe merge recovery</span><span>All Shops Combined brand filters fixed</span></div>
         </div>
       </div>
     </div>
@@ -1928,6 +1928,18 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
         <div class="settings-section-card">
           <div class="sec-label">Cloud Sync</div><div class="settings-note" id="settingsCloudSyncStatus" style="margin-top:6px;">Account sync status loading…</div>
         </div>
+        <div class="settings-section-card" id="cloudHistorySection">
+          <div class="sec-label">☁️ Cloud History & Recovery</div>
+          <div class="settings-note" style="margin-top:6px;">Cloud par save hone wale data ke dated snapshots yahan milenge. Search karke purana snapshot dekh sakte hain ya restore kar sakte hain.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+            <button type="button" class="menu-item" id="btnCloudHistoryRefresh" style="flex:1;min-width:150px;">↻ Refresh History</button>
+            <button type="button" class="menu-item" id="btnCloudHistorySave" style="flex:1;min-width:150px;">☁ Save Current Snapshot</button>
+            <button type="button" class="menu-item" id="btnCloudHistoryMerge" style="flex:1;min-width:150px;">⇄ Merge Missing Local Entries</button>
+          </div>
+          <input id="cloudHistorySearch" type="search" placeholder="Date, label ya record count se search karein" style="width:100%;margin-top:10px;" autocomplete="off">
+          <div class="settings-note" id="cloudHistoryStatus" style="margin-top:8px;">History load nahi hui.</div>
+          <div id="cloudHistoryList" style="display:flex;flex-direction:column;gap:8px;margin-top:8px;"></div>
+        </div>
         <div class="settings-section-card">
           <div class="sec-label">Backup</div>
           <div class="settings-note" style="margin-top:6px;">Manual backup karein, ya app har 12 ghante baad automatic backup le.</div>
@@ -2012,7 +2024,7 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 15 Oct 2026 • 09:44:00 AM PKT • Blocked startup overwrite when local and cloud business data differ • Employee invitation button click binding fixed • Company Warranty options now use standard selection chips • All Shops Combined brand filters fixed</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 16 Oct 2026 • 09:02:20 AM PKT • Added cloud history snapshots, search, restore and safe merge recovery • Employee invitation button click binding fixed • Company Warranty options now use standard selection chips • All Shops Combined brand filters fixed</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -2708,7 +2720,7 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 
 
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '14 Oct 2026 • 10:24:08 AM PKT • Fixed Employee Invitation button click handling';
+const APP_INDEX_UPDATED = '16 Oct 2026 • 08:46:00 AM PKT • Clarified local-only entry saving during sync conflict';
 
 let inventory = [];
 
@@ -7791,6 +7803,8 @@ document.getElementById('btnReportsPdf').onclick = function(){
 
 
 document.getElementById('btnBackup').onclick = function(){ backupData(false); };
+// Refresh recoverable cloud history whenever the Backup, Sync & Data page is opened.
+document.addEventListener('click',function(e){const t=e.target&&e.target.closest?e.target.closest('[data-settings-view]'):null;if(t&&t.getAttribute('data-settings-view')==='backupdata')loadCloudHistory();});
 document.getElementById('btnShareBackup').onclick = function(){ shareBackupFile(); };
 
 // ---------- Analytics ----------
@@ -9127,6 +9141,7 @@ function openSettingsPage(page){
   document.querySelectorAll('#settingsOverlay .settings-view').forEach(function(v){v.classList.toggle('active',v.dataset.settingsView===currentSettingsPage);});
   const back=document.getElementById('settingsBackBtn'); if(back) back.style.visibility=currentSettingsPage==='home'?'hidden':'visible';
   const heading=document.getElementById('settingsPageHeading'); if(heading) heading.textContent=SETTINGS_PAGE_TITLES[currentSettingsPage]||'Settings';
+  if(currentSettingsPage==='backupdata'){ loadCloudHistory(); }
   if(currentSettingsPage==='shopaccess'){ openShopAccessSettings(); }
   if(currentSettingsPage==='appearance'){ renderUiScaleToggles(); }
   if(currentSettingsPage==='shop'){
@@ -10319,7 +10334,10 @@ function setAccountSyncStatus(text, state){
     const who = shopProfile.shopName || accountDisplayId(fbUser);
     const icon = state==='saving' ? '⏳' : state==='error' ? '⚠️' : '✓';
     const color = state==='saving' ? 'var(--text-dim)' : state==='error' ? 'var(--danger)' : 'var(--pta)';
-    line.textContent = icon + ' ' + who + ' — ' + text;
+    // Keep the main header concise on small phones; full diagnostic remains in Account settings.
+    const conflictText = (cloudSyncConflict || /^SYNC CONFLICT|^LOCAL MODE/.test(String(text||'')))
+      ? 'Sync paused — entries save on this phone only' : text;
+    line.textContent = icon + ' ' + who + ' — ' + conflictText;
     line.style.color = color;
     line.style.display = 'block';
   }
@@ -10543,6 +10561,132 @@ function getSyncCompareSummary(data){
   return mismatches.length ? ' Farq: '+mismatches.join(', ')+'. Mobile stock '+(Array.isArray(inventory)?inventory.length:0)+' / Cloud stock '+remoteInv+'; mobile expenses '+(Array.isArray(expenses)?expenses.length:0)+' / Cloud expenses '+remoteExp+'.' : ' Local aur cloud business data match karta hai.';
 }
 
+// Cloud History: large datasets are split into small Firestore documents so a
+// snapshot stays below Firestore's 1 MiB per-document limit. Snapshots are kept
+// under shops/{shopId}/history and are not automatically deleted.
+const CLOUD_HISTORY_CHUNK_SIZE = 80;
+let cloudHistoryCache = [];
+function cloudHistoryRef(shopId){ return fbDb.collection('shops').doc(shopId).collection('history'); }
+function historySafePayload(data){
+  const d=data||{};
+  return {
+    inventory:Array.isArray(d.inventory)?d.inventory.map(function(e){const c=Object.assign({},e);delete c.photos;return c;}):[],
+    expenses:Array.isArray(d.expenses)?d.expenses:[],
+    customModels:d.customModels||{}, customOptionData:d.customOptionData||{},
+    cardDisplaySettings:d.cardDisplaySettings||{}, shopProfile:d.shopProfile||{},
+    rateBook:Array.isArray(d.rateBook)?d.rateBook:[]
+  };
+}
+function historyFingerprint(data){
+  const raw=JSON.stringify(historySafePayload(data)); let h=2166136261;
+  for(let i=0;i<raw.length;i++){h^=raw.charCodeAt(i);h=Math.imul(h,16777619);}
+  return (h>>>0).toString(16)+'-'+raw.length;
+}
+function cloudHistoryCounts(data){const d=historySafePayload(data);return {inventory:d.inventory.length,expenses:d.expenses.length,rateBook:d.rateBook.length};}
+async function archiveCloudSnapshot(data,label,force){
+  if(!fbDb||!userShopId||!fbUser) throw new Error('Owner account/cloud available nahi hai.');
+  const payload=historySafePayload(data); const fingerprint=historyFingerprint(payload); const ref=cloudHistoryRef(userShopId);
+  if(!force){
+    try{const latest=await ref.orderBy('createdAt','desc').limit(1).get();if(!latest.empty&&latest.docs[0].data().fingerprint===fingerprint)return latest.docs[0].id;}catch(e){console.warn('History duplicate check skipped',e);}
+  }
+  const snapRef=ref.doc(); const counts=cloudHistoryCounts(payload);
+  const meta={id:snapRef.id,label:String(label||'Cloud dataset'),fingerprint:fingerprint,createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdAtClient:new Date().toISOString(),schemaVersion:1,inventoryCount:counts.inventory,expenseCount:counts.expenses,rateBookCount:counts.rateBook,chunkCount:0,complete:false};
+  const chunks=[];
+  function addChunks(key,arr){for(let i=0;i<arr.length;i+=CLOUD_HISTORY_CHUNK_SIZE)chunks.push({id:key+'_'+String(Math.floor(i/CLOUD_HISTORY_CHUNK_SIZE)).padStart(4,'0'),key:key,items:arr.slice(i,i+CLOUD_HISTORY_CHUNK_SIZE)});}
+  addChunks('inventory',payload.inventory);addChunks('expenses',payload.expenses);addChunks('rateBook',payload.rateBook);
+  chunks.push({id:'config',key:'config',items:{customModels:payload.customModels,customOptionData:payload.customOptionData,cardDisplaySettings:payload.cardDisplaySettings,shopProfile:payload.shopProfile}});
+  meta.chunkCount=chunks.length;
+  // Mark incomplete until every chunk has been written; partial snapshots are never offered for restore.
+  await snapRef.set(meta);
+  for(let i=0;i<chunks.length;i++){
+    const c=chunks[i]; await snapRef.collection('chunks').doc(c.id).set({key:c.key,items:c.items,chunkIndex:i});
+  }
+  await snapRef.set({complete:true,completedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+  return snapRef.id;
+}
+function historyDateLabel(data){
+  const raw=data&&data.createdAt&&data.createdAt.toDate?data.createdAt.toDate():new Date(data&&data.createdAtClient||0);
+  return isNaN(raw.getTime())?'Date unavailable':raw.toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+}
+function renderCloudHistoryList(){
+  const list=document.getElementById('cloudHistoryList'), search=document.getElementById('cloudHistorySearch');if(!list)return;
+  const q=String(search&&search.value||'').toLowerCase().trim();
+  const rows=cloudHistoryCache.filter(function(x){return x.complete && (!q||[x.label,historyDateLabel(x),x.inventoryCount,x.expenseCount,x.rateBookCount].join(' ').toLowerCase().includes(q));});
+  if(!rows.length){list.innerHTML='<div class="settings-note">'+(cloudHistoryCache.length?'Search se match hota snapshot nahi mila.':'Abhi cloud history mein koi complete snapshot nahi hai.')+'</div>';return;}
+  list.innerHTML=rows.map(function(x){return '<div style="border:1px solid var(--border);border-radius:10px;padding:10px;background:var(--surface-2);"><div style="font-weight:800;">'+escapeHtml(x.label||'Cloud snapshot')+'</div><div class="settings-note" style="margin-top:4px;">'+escapeHtml(historyDateLabel(x))+'<br>Stock: '+Number(x.inventoryCount||0)+' • Expenses: '+Number(x.expenseCount||0)+' • Rate Book: '+Number(x.rateBookCount||0)+'</div><button type="button" class="menu-item cloud-history-restore" data-history-id="'+escapeHtml(x.id)+'" style="margin-top:8px;border:1px solid var(--border);">↩ Restore this snapshot</button></div>';}).join('');
+  list.querySelectorAll('.cloud-history-restore').forEach(function(btn){btn.addEventListener('click',function(){restoreCloudSnapshot(btn.getAttribute('data-history-id'));});});
+}
+async function loadCloudHistory(){
+  const status=document.getElementById('cloudHistoryStatus');if(!status)return;
+  if(!fbUser||!fbDb||!userShopId){status.textContent='Cloud history dekhne ke liye owner account mein sign in karein.';return;}
+  status.textContent='Cloud history load ho rahi hai…';
+  try{
+    const snap=await cloudHistoryRef(userShopId).orderBy('createdAt','desc').get();
+    cloudHistoryCache=snap.docs.map(function(doc){return Object.assign({id:doc.id},doc.data());});
+    renderCloudHistoryList();status.textContent=cloudHistoryCache.filter(function(x){return x.complete;}).length+' complete snapshots milay. Search se history filter kar sakte hain.';
+  }catch(err){console.error('Cloud history load failed',err);status.textContent='History load nahi hui: '+(err.message||'Firestore permission/network check karein.');}
+}
+async function restoreCloudSnapshot(snapshotId){
+  if(!fbUser||!fbDb||!userShopId)return showToast('Pehle owner account sign in karein.');
+  const meta=cloudHistoryCache.find(function(x){return x.id===snapshotId;});
+  if(!meta||!meta.complete)return showToast('Yeh snapshot complete nahi; restore nahi ho sakta.');
+  if(!confirm('Is dated snapshot ko restore karna hai? Current cloud data pehle history mein save hoga. Yeh action sab devices ka current dataset replace karega.'))return;
+  const status=document.getElementById('cloudHistoryStatus');if(status)status.textContent='Snapshot restore ho raha hai…';
+  try{
+    const snapRef=cloudHistoryRef(userShopId).doc(snapshotId);const chunkSnap=await snapRef.collection('chunks').get();
+    const restored={inventory:[],expenses:[],rateBook:[],customModels:{},customOptionData:{},cardDisplaySettings:{},shopProfile:{}};
+    chunkSnap.docs.forEach(function(doc){const c=doc.data();if(c.key==='config'){Object.assign(restored,c.items||{});}else if(Array.isArray(restored[c.key])&&Array.isArray(c.items)){restored[c.key]=restored[c.key].concat(c.items);}});
+    if(restored.inventory.length!==Number(meta.inventoryCount||0)||restored.expenses.length!==Number(meta.expenseCount||0)||restored.rateBook.length!==Number(meta.rateBookCount||0))throw new Error('Snapshot ke chunks mukammal nahi; current data change nahi kiya.');
+    const currentSnap=await fbDb.collection('shops').doc(userShopId).get();if(currentSnap.exists)await archiveCloudSnapshot(currentSnap.data(),'Before restore • '+historyDateLabel(meta),true);
+    const cloudData=Object.assign({},restored,{updatedAt:firebase.firestore.FieldValue.serverTimestamp(),restoredFrom:snapshotId,restoreRequestedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    await fbDb.collection('shops').doc(userShopId).set(cloudData,{merge:true});
+    applyingRemoteUpdate=true;
+    inventory=restored.inventory;expenses=restored.expenses;rateBook=restored.rateBook;customModels=restored.customModels;customOptionData=restored.customOptionData;Object.assign(cardDisplaySettings,restored.cardDisplaySettings||{});shopProfile=Object.assign({shopName:'',ownerName:''},restored.shopProfile||{});
+    const saves=[[LS_INVENTORY_KEY,inventory],[LS_EXPENSES_KEY,expenses],[LS_RATE_BOOK_KEY,rateBook],[LS_CUSTOM_MODELS_KEY,customModels],[LS_CUSTOM_OPTIONS_KEY,customOptionData],[LS_CARD_DISPLAY_KEY,cardDisplaySettings],[LS_SHOP_PROFILE_KEY,shopProfile]];
+    saves.forEach(function(pair){try{localStorage.setItem(shopStorageKey(pair[0]),JSON.stringify(pair[1]));}catch(e){}});
+    localVersion++;lastPushedVersion=localVersion;try{localStorage.setItem(shopStorageKey(LS_LOCAL_VERSION_KEY),String(localVersion));localStorage.setItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY),String(lastPushedVersion));}catch(e){}
+    cloudSyncConflict=false;cloudInitialSnapshotResolved=true;applyingRemoteUpdate=false;render();updateAccountUI();setAccountSyncStatus('history snapshot restore ho gaya','ok');
+    if(status)status.textContent='Snapshot restore ho gaya. Doosre signed-in devices cloud se restored data receive karenge.';
+    await loadCloudHistory();showToast('Cloud history snapshot restore ho gaya.');
+  }catch(err){applyingRemoteUpdate=false;console.error('Cloud snapshot restore failed',err);if(status)status.textContent='Restore fail hua: '+(err.message||'Cloud permission/network check karein.');showToast('Restore complete nahi hua.');}
+}
+async function saveCurrentCloudSnapshot(){
+  const status=document.getElementById('cloudHistoryStatus');
+  try{if(!fbUser||!fbDb||!userShopId)throw new Error('Owner account sign in karein.');const id=await archiveCloudSnapshot(buildCloudPayload(),'Manual snapshot • '+new Date().toLocaleString(),true);if(status)status.textContent='Current data cloud history mein save ho gaya ('+id+').';await loadCloudHistory();showToast('Cloud snapshot save ho gaya.');}
+  catch(err){console.error('Manual cloud snapshot failed',err);if(status)status.textContent='Snapshot save nahi hua: '+(err.message||'Firestore rules/network check karein.');}
+}
+function mergeMissingRecords(cloudList,localList){
+  const out=Array.isArray(cloudList)?cloudList.slice():[];const seen=new Set();
+  out.forEach(function(e){const k=e&&e.id!=null?'id:'+String(e.id):'json:'+JSON.stringify(e);seen.add(k);});
+  (Array.isArray(localList)?localList:[]).forEach(function(e){const k=e&&e.id!=null?'id:'+String(e.id):'json:'+JSON.stringify(e);if(!seen.has(k)){out.push(e);seen.add(k);}});
+  return out;
+}
+async function mergeMissingLocalEntries(){
+  const status=document.getElementById('cloudHistoryStatus');
+  if(!fbUser||!fbDb||!userShopId)throw new Error('Owner account sign in karein.');
+  if(!confirm('Cloud ko base rakha jayega. Sirf is device ke woh records add honge jinke IDs cloud mein nahi hain. Same ID wale records mein cloud version rakha jayega. Continue?'))return;
+  if(status)status.textContent='Cloud data check aur merge ho raha hai…';
+  const shopRef=fbDb.collection('shops').doc(userShopId);const snap=await shopRef.get();if(!snap.exists)throw new Error('Cloud dataset nahi mila; pehle snapshot/backup verify karein.');
+  const cloud=snap.data();await archiveCloudSnapshot(cloud,'Before merge • '+new Date().toLocaleString(),true);
+  const merged=historySafePayload(cloud);const local=historySafePayload(buildCloudPayload());
+  merged.inventory=mergeMissingRecords(merged.inventory,local.inventory);merged.expenses=mergeMissingRecords(merged.expenses,local.expenses);merged.rateBook=mergeMissingRecords(merged.rateBook,local.rateBook);
+  // Cloud settings remain authoritative; this operation only merges missing records.
+  const payload=Object.assign({},merged,{updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+  await archiveCloudSnapshot(payload,'Merged dataset • '+new Date().toLocaleString(),true);await shopRef.set(payload,{merge:true});
+  cloudSyncConflict=false;cloudInitialSnapshotResolved=true;
+  // Update local data to the merged cloud result while retaining this device's local photos by record ID.
+  const photos={};inventory.forEach(function(e){if(e.photos&&e.photos.length)photos[e.id]=e.photos;});
+  inventory=merged.inventory.map(function(e){const c=Object.assign({},e);c.photos=photos[c.id]||[];return c;});expenses=merged.expenses;rateBook=merged.rateBook;
+  [[LS_INVENTORY_KEY,inventory],[LS_EXPENSES_KEY,expenses],[LS_RATE_BOOK_KEY,rateBook]].forEach(function(pair){try{localStorage.setItem(shopStorageKey(pair[0]),JSON.stringify(pair[1]));}catch(e){}});
+  localVersion++;lastPushedVersion=localVersion;try{localStorage.setItem(shopStorageKey(LS_LOCAL_VERSION_KEY),String(localVersion));localStorage.setItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY),String(lastPushedVersion));}catch(e){}
+  render();updateAccountUI();setAccountSyncStatus('missing local records cloud mein merge ho gaye','ok');if(status)status.textContent='Merge complete. Cloud ke same-ID records overwrite nahi hue; sirf missing local records add hue.';await loadCloudHistory();showToast('Missing local records merge ho gaye.');
+}
+(function bindCloudHistoryUI(){
+  const refresh=document.getElementById('btnCloudHistoryRefresh'),save=document.getElementById('btnCloudHistorySave'),merge=document.getElementById('btnCloudHistoryMerge'),search=document.getElementById('cloudHistorySearch');
+  if(refresh)refresh.addEventListener('click',loadCloudHistory);if(save)save.addEventListener('click',saveCurrentCloudSnapshot);if(merge)merge.addEventListener('click',function(){mergeMissingLocalEntries().catch(function(err){console.error('Cloud merge failed',err);const st=document.getElementById('cloudHistoryStatus');if(st)st.textContent='Merge fail hua: '+(err.message||'Firestore rules/network check karein.');showToast('Merge complete nahi hua.');});});if(search)search.addEventListener('input',renderCloudHistoryList);
+  const section=document.getElementById('cloudHistorySection');if(section){section.addEventListener('click',function(e){if(e.target&&e.target.id==='btnCloudHistoryRefresh')loadCloudHistory();});}
+})();
+
 function buildCloudPayload(){
   return {
     inventory: inventory.map(function(e){ const c = Object.assign({}, e); delete c.photos; return c; }),
@@ -10560,28 +10704,41 @@ function attemptPush(){
   if(!fbUser || !userShopId || applyingRemoteUpdate || shopStorageSwitching || cloudSyncConflict || (userRole!=='admin' && userAccessStatus!=='active')) return;
   clearTimeout(pushDebounceTimer);
   setAccountSyncStatus('save ho raha hai…', 'saving');
-  pushDebounceTimer = setTimeout(function(){
-    const versionAtSchedule = localVersion;
-    fbDb.collection('shops').doc(userShopId).set(buildCloudPayload(), {merge:true})
-      .then(function(){
-        if(versionAtSchedule > lastPushedVersion){
-          lastPushedVersion = versionAtSchedule;
-          try{ localStorage.setItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY), String(lastPushedVersion)); }catch(e){}
-        }
-        setAccountSyncStatus('sab devices par sync ho gaya', 'ok');
-      })
-      .catch(function(err){ console.error('Cloud push failed', err); setAccountSyncStatus('sync fail hua — internet check karein', 'error'); });
+  pushDebounceTimer = setTimeout(async function(){
+    const versionAtSchedule = localVersion; const shopRef=fbDb.collection('shops').doc(userShopId);
+    try{
+      const outgoing=buildCloudPayload();
+      // Archive the currently confirmed cloud state before changing it. This
+      // protects pre-history data on the first upgraded upload as well.
+      const before=await shopRef.get();
+      if(before.exists){
+        const oldData=before.data();
+        if(historyFingerprint(oldData)!==historyFingerprint(outgoing)) await archiveCloudSnapshot(oldData,'Before cloud update • '+new Date().toLocaleString(),false);
+      }
+      // Store the intended new dataset as a recoverable snapshot before the
+      // main document write. A failed main write still leaves a safe copy.
+      await archiveCloudSnapshot(outgoing,'Cloud save • '+new Date().toLocaleString(),false);
+      await shopRef.set(outgoing,{merge:true});
+      if(versionAtSchedule > lastPushedVersion){
+        lastPushedVersion = versionAtSchedule;
+        try{ localStorage.setItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY), String(lastPushedVersion)); }catch(e){}
+      }
+      setAccountSyncStatus('sab devices par sync ho gaya • cloud history saved', 'ok');
+    }catch(err){ console.error('Cloud push/history failed', err); setAccountSyncStatus('sync/history fail hua — data phone par safe hai; Firestore rules/network check karein', 'error'); }
   }, 1200);
 }
 
 function schedulePush(){
   if(isAdminShopView() || shopStorageSwitching) return;
-  // Mark that local data now has a change the cloud hasn't confirmed yet.
-  // Persisted immediately, and done unconditionally (even if we can't reach
-  // the cloud right now, or login hasn't finished resolving) so this device
-  // always knows it's "ahead" until a push actually confirms otherwise.
+  // Record local changes even while conflict mode is active. The caller has
+  // already persisted the data locally; never upload either copy until the
+  // owner explicitly resolves the mismatch.
   localVersion++;
   try{ localStorage.setItem(shopStorageKey(LS_LOCAL_VERSION_KEY), String(localVersion)); }catch(e){}
+  if(cloudSyncConflict){
+    setAccountSyncStatus('LOCAL MODE: entry is phone par save hai; cloud sync paused hai. Backup safe rakhein.', 'error');
+    return;
+  }
   attemptPush();
 }
 // If the connection drops mid-save, the entry is already safe on the phone
@@ -10627,7 +10784,7 @@ function startCloudSync(uid){
       if(startupLocalHasBusinessData && !startupPayloadMatchesCloud){
         cloudSyncConflict = true;
         cloudInitialSnapshotResolved = true;
-        setAccountSyncStatus('SYNC CONFLICT: mobile aur cloud data mukhtalif hain; automatic sync rok di gayi hai. Mobile backup safe rakhein. '+getSyncCompareSummary(startupData), 'error');
+        setAccountSyncStatus('SYNC CONFLICT: mobile aur cloud data mukhtalif hain; entries is phone par save hoti rahengi, cloud sync paused hai. Mobile backup safe rakhein. '+getSyncCompareSummary(startupData), 'error');
         console.warn('Cloud sync startup conflict: existing local business data differs from cloud; automatic overwrite and upload blocked.');
         return;
       }
@@ -10641,7 +10798,7 @@ function startCloudSync(uid){
         }else{
           cloudSyncConflict = true;
           cloudInitialSnapshotResolved = true;
-          setAccountSyncStatus('SYNC CONFLICT: local aur cloud data different hain; automatic upload roki gayi hai. Backup safe rakhein. '+getSyncCompareSummary(startupData), 'error');
+          setAccountSyncStatus('SYNC CONFLICT: local aur cloud data different hain; entries is phone par save hoti rahengi, cloud sync paused hai. Backup safe rakhein. '+getSyncCompareSummary(startupData), 'error');
           console.warn('Cloud sync conflict: local and remote payloads differ; automatic push blocked to protect both copies.');
           return;
         }
