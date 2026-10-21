@@ -1050,7 +1050,7 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 16 Oct 2026 • 09:56:00 AM PKT • Fixed confirmed cloud revision handling across devices</span><span>All Shops Combined brand filters fixed</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 21 Oct 2026 • 09:20:00 AM PKT • Prevented stale device counters from overwriting owner-confirmed cloud revisions</span><span>All Shops Combined brand filters fixed</span></div>
         </div>
       </div>
     </div>
@@ -2025,7 +2025,7 @@ body.urdu-ui .menu-profile-name-row{direction:rtl}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 16 Oct 2026 • 09:56:00 AM PKT • Fixed confirmed cloud revision handling across devices • Employee invitation button click binding fixed • Company Warranty options now use standard selection chips • All Shops Combined brand filters fixed</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 21 Oct 2026 • 09:20:00 AM PKT • Prevented stale device counters from overwriting owner-confirmed cloud revisions • Employee invitation button click binding fixed • Company Warranty options now use standard selection chips • All Shops Combined brand filters fixed</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -10828,6 +10828,21 @@ function startCloudSync(uid){
       let lastSeenRevision = 0;
       try { lastSeenRevision = Number(localStorage.getItem(shopStorageKey('mobileLedger_lastSeenCloudRevision')) || 0); } catch(e) {}
       const trustedNewerOwnerRevision = startupData.syncSource === 'owner-confirmed-phone-sync' && incomingRevision > lastSeenRevision;
+      // A newer owner-confirmed cloud revision is authoritative. Reconcile this
+      // device's independent local counters BEFORE checking hasPendingLocalChanges;
+      // otherwise a stale PC counter can make the next branch push old local data
+      // back over the newly confirmed cloud dataset.
+      if(trustedNewerOwnerRevision){
+        const reconciledVersion=Math.max(Number(localVersion)||0,Number(lastPushedVersion)||0);
+        localVersion=reconciledVersion;
+        lastPushedVersion=reconciledVersion;
+        try{
+          localStorage.setItem(shopStorageKey(LS_LOCAL_VERSION_KEY),String(reconciledVersion));
+          localStorage.setItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY),String(reconciledVersion));
+          localStorage.setItem(shopStorageKey('mobileLedger_lastSeenCloudRevision'),String(incomingRevision));
+        }catch(e){}
+        console.info('Cloud sync: accepted newer owner-confirmed revision '+incomingRevision+'; stale local pending counter reconciled without upload.');
+      }
       // The per-device counters cannot tell which copy is newer. On startup,
       // if this device already has business records, never replace them with a
       // different cloud snapshot automatically—even when the local counter
