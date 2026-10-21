@@ -10827,7 +10827,7 @@ function startCloudSync(uid){
       const incomingRevision = Number(startupData.syncRevision || 0);
       let lastSeenRevision = 0;
       try { lastSeenRevision = Number(localStorage.getItem(shopStorageKey('mobileLedger_lastSeenCloudRevision')) || 0); } catch(e) {}
-      const trustedNewerOwnerRevision = startupData.syncSource === 'owner-confirmed-phone-sync' && incomingRevision > lastSeenRevision;
+      const trustedNewerOwnerRevision = startupData.syncSource === 'owner-confirmed-phone-sync' && incomingRevision > 0 && incomingRevision >= lastSeenRevision;
       // A newer owner-confirmed cloud revision is authoritative. Reconcile this
       // device's independent local counters BEFORE checking hasPendingLocalChanges;
       // otherwise a stale PC counter can make the next branch push old local data
