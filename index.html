@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ur-Latn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
@@ -751,7 +751,12 @@ body.menu-open .app>header{z-index:1!important;}
 .menu-profile-avatar{width:78px;height:78px;flex:0 0 78px;border-radius:50%;overflow:hidden;background:#f5f7fa;border:1px solid #e1e6ed;display:flex;align-items:center;justify-content:center;}
 .menu-profile-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
 .menu-profile-info{min-width:0;flex:1;}
-.menu-profile-name{font-size:19px;line-height:1.25;font-weight:800;color:#101828;word-break:break-word;}
+.menu-profile-name{font-size:19px;line-height:1.25;font-weight:800;color:#101828;word-break:normal;overflow-wrap:normal;white-space:normal;}
+.menu-profile-info{width:0;flex:1 1 0%;min-width:0;}
+.menu-profile-name-row{width:100%;display:flex;align-items:center;gap:7px;min-width:0;}
+.menu-profile-name-row .menu-profile-name{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;}
+.menu-profile-edit{margin-left:auto;}
+@media(max-width:420px){.menu-profile{gap:10px;padding-left:16px;padding-right:16px}.menu-profile-avatar{width:66px;height:66px;flex-basis:66px}.menu-profile-edit{width:36px;height:36px;flex-basis:36px}.menu-profile-edit svg{width:28px;height:28px}.menu-profile-name{font-size:18px}}
 .menu-profile-phone{font-size:14px;color:#7b8493;margin-top:5px;}
 .menu-profile-edit{width:48px;height:48px;flex:0 0 48px;border:0;background:transparent;color:#9aa3af;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0;}
 .menu-profile-edit:active{background:#f5f6f8;color:#667085;}
@@ -833,6 +838,35 @@ body.menu-open .app>header{z-index:1!important;}
   padding:16px 16px 20px !important;
   overflow-y:auto !important;
 }
+
+/* Urdu UI direction: keep numeric/IMEI controls naturally readable. */
+body.urdu-ui .app, body.urdu-ui .menu-dropdown, body.urdu-ui .overlay, body.urdu-ui .sheet,
+body.urdu-ui .settings-overlay, body.urdu-ui .dashboard-overlay { direction:rtl; }
+body.urdu-ui input[type="number"], body.urdu-ui input[inputmode="numeric"], body.urdu-ui input[id*="imei"], body.urdu-ui .imei-input,
+body.urdu-ui .price-input, body.urdu-ui .amount-input { direction:ltr; text-align:left; }
+body.urdu-ui .header-top { direction:rtl; }
+body.urdu-ui .chips-scroll { direction:rtl; }
+body.urdu-ui select { direction:rtl; }
+
+/* Account switcher dropdown beside the active profile name */
+.menu-profile-name-row{display:flex;align-items:center;gap:7px;min-width:0}
+.menu-profile-name-row .menu-profile-name{min-width:0;flex:0 1 auto}
+.profile-switch-toggle{width:29px;height:29px;flex:0 0 29px;border:1px solid #dfe4eb;border-radius:9px;background:#f8fafc;color:#344054;font-size:19px;font-weight:800;line-height:1;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.profile-switch-toggle:active{background:#e9edf3}
+.profile-account-switcher-panel{margin:0 16px 12px;}
+.profile-account-switcher-panel.open{display:block}
+body.urdu-ui .menu-profile-name-row{direction:rtl}
+
+/* Account switcher: compact Facebook-style saved-account panel */
+.account-switcher-panel{display:none;margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--surface-2)}
+.account-switcher-panel.open{display:block}
+.account-switcher-title{font-weight:800;font-size:14px;margin-bottom:9px;color:var(--text)}
+.account-switcher-list{display:flex;flex-direction:column;gap:7px}
+.account-switcher-row{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px;border:1px solid var(--border);border-radius:11px;background:var(--surface);color:var(--text);cursor:pointer}
+.account-switcher-avatar{width:38px;height:38px;flex:0 0 38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--accent-soft,var(--surface-2));font-weight:800}
+.account-switcher-row-main{min-width:0;flex:1;overflow-wrap:anywhere;font-size:12.5px;font-weight:700}
+.account-switcher-row-sub{display:block;font-size:11px;color:var(--text-dim);font-weight:500;margin-top:2px}
+.account-switcher-row-current{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 </style>
 
 <style id="mandatory-star-style">.required-star{color:#d92d20;font-weight:800;margin-left:2px;}</style>
@@ -922,6 +956,12 @@ body.menu-open .app>header{z-index:1!important;}
 .menu-dropdown .menu-profile{padding-top:calc(25px + constant(safe-area-inset-top))!important;}
 }
 </style>
+
+<style>
+.employee-permission{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--border);font-size:14px;cursor:pointer;}
+.employee-permission input{width:18px;height:18px;flex:0 0 18px;accent-color:var(--accent);}
+#employeeInviteName,#employeeInviteEmail{width:100%;box-sizing:border-box;}
+</style>
 </head>
 <body>
 
@@ -943,6 +983,7 @@ body.menu-open .app>header{z-index:1!important;}
         <button class="history-icon-btn quick-privacy-btn" id="quickPrivacyHeaderBtn" title="Privacy: tap = ON/OFF, long-press = amount" aria-label="Quick Privacy">
           <svg viewBox="0 0 36 28" fill="none" aria-hidden="true"><path d="M3 14s4.5-9 15-9 15 9 15 9-4.5 9-15 9S3 14 3 14Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><circle cx="18" cy="14" r="4.2" fill="currentColor"/></svg>
         </button>
+        <button class="history-icon-btn" id="languageToggleBtn" title="اردو / English" aria-label="اردو / English" style="font-size:12px;font-weight:800;width:auto;padding:0 9px;">اردو</button>
         <button class="history-icon-btn quick-privacy-amount-btn" id="quickPrivacyAmountBtn" title="Privacy amount" aria-label="Privacy amount">⚙</button>
       </div>
     </div>
@@ -973,12 +1014,21 @@ body.menu-open .app>header{z-index:1!important;}
       <div class="menu-profile">
         <div class="menu-profile-avatar"><img src="icon-192.png" alt="Z Mobile"></div>
         <div class="menu-profile-info">
-          <div class="menu-profile-name" id="menuOwnerName">Z Mobile</div>
+          <div class="menu-profile-name-row">
+            <div class="menu-profile-name" id="menuOwnerName">Z Mobile</div>
+            <button type="button" class="profile-switch-toggle" id="btnOpenAccountSwitcher" aria-label="Switch account" title="Switch account" aria-expanded="false">▾</button>
+          </div>
           <div class="menu-profile-phone" id="menuOwnerPhone">Mobile Hisab</div>
         </div>
         <button type="button" class="menu-profile-edit" id="btnMenuEditProfile" aria-label="Edit profile" title="Edit profile">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4L16.5 3.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
         </button>
+      </div>
+      <div class="account-switcher-panel profile-account-switcher-panel" id="accountSwitcherPanel" aria-live="polite">
+        <div class="account-switcher-title">Switch account</div>
+        <div class="account-switcher-list" id="accountSwitcherList"></div>
+        <button class="menu-item" id="btnAddAccountSwitcher" type="button" style="width:100%;margin-top:9px;">＋ Add Account</button>
+        <div style="font-size:11px;color:var(--text-dim);line-height:1.4;margin-top:8px;">Account select karne par uska email fill hoga. Security ke liye password dobara enter karna hoga.</div>
       </div>
 
       <div class="menu-scroll">
@@ -1000,7 +1050,7 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 08 Oct 2026 • 10:11:26 AM PKT • All Shops Combined brand filter immediate repaint fixed</span><span>All Shops Combined brand filters fixed</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 21 Oct 2026 • 09:34:00 AM PKT • Blocked remote snapshots from replacing mismatched local business data</span><span>All Shops Combined brand filters fixed</span></div>
         </div>
       </div>
     </div>
@@ -1126,6 +1176,27 @@ body.menu-open .app>header{z-index:1!important;}
 
     <div class="sec-label">Charger <span style="color:var(--danger);">*</span></div>
     <div class="chip-row" id="chargerChips"></div>
+
+    <div class="entry-layout-group" id="companyWarrantyField" data-entry-group="companyWarranty" style="margin-top:8px;">
+      <div class="sec-label">Company Warranty <span style="color:var(--danger);">*</span></div>
+      <div class="chip-row" id="companyWarrantyChips"></div>
+      <select id="f-company-warranty" required style="display:none;" aria-hidden="true" tabindex="-1">
+        <option value="Not Available" selected>Not Available</option>
+        <option value="Almost 1 month">Almost 1 month</option>
+        <option value="1 month">1 month</option>
+        <option value="2 months">2 months</option>
+        <option value="3 months">3 months</option>
+        <option value="4 months">4 months</option>
+        <option value="5 months">5 months</option>
+        <option value="6 months">6 months</option>
+        <option value="7 months">7 months</option>
+        <option value="8 months">8 months</option>
+        <option value="9 months">9 months</option>
+        <option value="10 months">10 months</option>
+        <option value="11 months">11 months</option>
+        <option value="12 months">12 months</option>
+      </select>
+    </div>
 
     <div class="field imei-field"><label>IMEI 1</label>
       <div style="display:flex;gap:6px;">
@@ -1708,6 +1779,7 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="settings-category-list">
           <button class="settings-category" data-settings-page="account"><span class="settings-category-icon">👤</span><span class="settings-category-main"><span class="settings-category-title">Account</span><span class="settings-category-sub" id="settingsSummaryAccount">Login & cloud sync</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="shop"><span class="settings-category-icon">🏪</span><span class="settings-category-main"><span class="settings-category-title">Shop</span><span class="settings-category-sub" id="settingsSummaryShop">Shop details & contact</span></span><span class="settings-category-arrow">›</span></button>
+          <button class="settings-category" id="settingsEmployeeAccessCategory" data-settings-page="employeeaccess"><span class="settings-category-icon">👥</span><span class="settings-category-main"><span class="settings-category-title">Employee Access</span><span class="settings-category-sub">Invite employees & choose permissions</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="inventory"><span class="settings-category-icon">📦</span><span class="settings-category-main"><span class="settings-category-title">Stock & Pricing</span><span class="settings-category-sub">Card view, sell range & brands</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="appearance"><span class="settings-category-icon">🎨</span><span class="settings-category-main"><span class="settings-category-title">Appearance</span><span class="settings-category-sub">Badge order & card layout</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category admin-only-setting" id="settingsAdminCategory" data-settings-page="admin" style="display:none;"><span class="settings-category-icon">🛠️</span><span class="settings-category-main"><span class="settings-category-title">Admin</span><span class="settings-category-sub">Brands, badges & field options</span></span><span class="settings-category-arrow">›</span></button>
@@ -1856,6 +1928,19 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="settings-section-card">
           <div class="sec-label">Cloud Sync</div><div class="settings-note" id="settingsCloudSyncStatus" style="margin-top:6px;">Account sync status loading…</div>
         </div>
+        <div class="settings-section-card" id="cloudHistorySection">
+          <div class="sec-label">☁️ Cloud History & Recovery</div>
+          <div class="settings-note" style="margin-top:6px;">Cloud par save hone wale data ke dated snapshots yahan milenge. Search karke purana snapshot dekh sakte hain ya restore kar sakte hain.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+            <button type="button" class="menu-item" id="btnCloudHistoryRefresh" style="flex:1;min-width:150px;">↻ Refresh History</button>
+            <button type="button" class="menu-item" id="btnCloudHistorySave" style="flex:1;min-width:150px;">☁ Save Current Snapshot</button>
+            <button type="button" class="menu-item" id="btnCloudHistoryMerge" style="flex:1;min-width:150px;">⇄ Merge Missing Local Entries</button>
+            <button type="button" class="menu-item" id="btnCloudSyncLatestPhone" style="flex:1;min-width:190px;border:1px solid var(--accent);">☁ Sync Latest Phone Data to Cloud</button>
+          </div>
+          <input id="cloudHistorySearch" type="search" placeholder="Date, label ya record count se search karein" style="width:100%;margin-top:10px;" autocomplete="off">
+          <div class="settings-note" id="cloudHistoryStatus" style="margin-top:8px;">History load nahi hui.</div>
+          <div id="cloudHistoryList" style="display:flex;flex-direction:column;gap:8px;margin-top:8px;"></div>
+        </div>
         <div class="settings-section-card">
           <div class="sec-label">Backup</div>
           <div class="settings-note" style="margin-top:6px;">Manual backup karein, ya app har 12 ghante baad automatic backup le.</div>
@@ -1873,6 +1958,44 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="settings-page-title">Data Management</div>
         <div class="settings-section-card"><div class="sec-label">Import / Restore</div><div class="settings-action-list"><button class="menu-item" id="btnRestore">⬆ Restore from JSON</button><button class="menu-item" id="btnExcelRestore">📥 Import from Excel</button></div><input type="file" id="restoreFile" accept="application/json" style="display:none;"><input type="file" id="excelFile" accept=".xlsx,.xls" style="display:none;"></div>
         <div class="settings-section-card settings-danger-card"><div class="sec-label" style="color:var(--danger);">Danger Zone</div><div class="settings-note">Clear data se app ka local business data remove ho jayega. Password protection apply hogi.</div><button class="menu-item danger" id="btnClearData" style="margin-top:10px;background:var(--surface-2);border:1px solid var(--border);">🗑️ Clear all data</button></div>
+      </div>
+
+      <div class="settings-view" data-settings-view="employeeaccess">
+        <div class="settings-page-title">Employee Access</div>
+        <div class="settings-section-card">
+          <div class="sec-label">Invite an employee</div>
+          <div class="settings-note" style="margin-top:5px;">Employee ka naam aur Gmail enter karein, phir sirf zaroori permissions select karein. Default mein sensitive permissions band hain.</div>
+          <div class="field"><label for="employeeInviteName">Employee name</label><input id="employeeInviteName" type="text" placeholder="Employee ka naam" autocomplete="name"></div>
+          <div class="field"><label for="employeeInviteEmail">Employee Gmail</label><input id="employeeInviteEmail" type="email" placeholder="employee@gmail.com" autocomplete="email"></div>
+          <div class="sec-label" style="margin-top:14px;">Stock & Entry</div>
+          <label class="employee-permission"><input type="checkbox" id="perm_entry_add" checked> Nayi mobile entry karna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_entry_edit"> Mobile details edit karna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_entry_delete"> Mobile entry delete karna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_buy_price"> Purchase price dekhna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_buy_price_edit"> Purchase price change karna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_stock_view" checked> Available stock dekhna</label>
+          <div class="sec-label" style="margin-top:14px;">Sales & Returns</div>
+          <label class="employee-permission"><input type="checkbox" id="perm_sale_add" checked> Mobile sale karna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_sale_discount"> Sale par discount dena</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_sale_return"> Mobile return karna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_return_deduction"> Return par katoti set karna</label>
+          <div class="sec-label" style="margin-top:14px;">Financial Information</div>
+          <label class="employee-permission"><input type="checkbox" id="perm_profit_view"> Profit dekhna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_expenses_view"> Expenses dekhna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_reports_view"> Financial reports dekhna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_purchase_view"> Purchase records dekhna</label>
+          <div class="sec-label" style="margin-top:14px;">Other Permissions</div>
+          <label class="employee-permission"><input type="checkbox" id="perm_customer_view" checked> Customer details dekhna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_data_export"> Backup / data export</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_settings_edit"> App settings badalna</label>
+          <label class="employee-permission"><input type="checkbox" id="perm_employee_manage"> Doosre employees manage karna</label>
+          <button type="button" class="btn-save" id="btnSendEmployeeInvite" style="width:100%;padding:12px;border:0;border-radius:10px;margin-top:14px;cursor:pointer;position:relative;z-index:60;pointer-events:auto;touch-action:manipulation;">✉ Save invitation &amp; prepare email</button>
+          <div class="settings-note" style="margin-top:10px;">Important: Yeh invitation/permission setup record banata hai. Actual employee login aur data restrictions tabhi secure hongi jab Firebase Security Rules aur employee sign-in flow bhi configure hon. Sirf UI checkbox security nahi hoti.</div>
+        </div>
+        <div class="settings-section-card">
+          <div class="sec-label">Invitations on this device</div>
+          <div id="employeeInviteList" class="settings-note" style="margin-top:8px;">Abhi koi invitation nahi.</div>
+        </div>
       </div>
 
       <div class="settings-view" data-settings-view="shopaccess">
@@ -1902,7 +2025,7 @@ body.menu-open .app>header{z-index:1!important;}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 08 Oct 2026 • 10:11:26 AM PKT • All Shops Combined brand filter immediate repaint fixed • All Shops Combined brand filters fixed</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 21 Oct 2026 • 09:34:00 AM PKT • Blocked remote snapshots from replacing mismatched local business data • Employee invitation button click binding fixed • Company Warranty options now use standard selection chips • All Shops Combined brand filters fixed</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1948,8 +2071,657 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
+
+/* ===== Bilingual Urdu / English UI ===== */
+const UI_LANG_KEY = 'mobileLedger_uiLanguage_v1';
+let uiLanguage = 'en';
+const UI_TRANSLATIONS = {
+  "Mobile Hisab":"Mobile Hisab",
+  "by Z Mobile":"by Z Mobile",
+  "Undo":"پچھے",
+  "Redo":"دوبارہ",
+  "Notifications":"نوٹیفکیشنز",
+  "Quick Privacy":"فوری پرائیویسی",
+  "Privacy amount":"رقم چھپائیں",
+  "Privacy fixed amount":"Privacy fixed amount",
+  "Buy price mein itna add hoga":"Buy price میں اتنی رقم شامل ہوگی",
+  "Slider se 500 se 10,000 tak 500 ke steps mein foran change karein. Number box mein exact amount bhi likh sakte hain.":"500 سے 10,000 تک 500 کے steps میں رقم فوراً change کریں۔ Number box میں exact amount بھی لکھ سکتے ہیں۔",
+  "Business":"کاروبار",
+  "Expenses":"اخراجات",
+  "Contacts":"گاہکوں کے نمبرز",
+  "Analytics":"کاروباری جائزہ",
+  "Reports":"رپورٹس",
+  "Activity History":"تبدیلیوں کا ریکارڈ",
+  "App":"ایپ",
+  "Settings":"سیٹنگز",
+  "Sign in nahi hai":"لاگ اِن نہیں ہیں",
+  "Logout":"لاگ آؤٹ",
+  "Close":"بند کریں",
+  "Menu":"مینو",
+  "Account":"اکاؤنٹ",
+  "Admin":"ایڈمن",
+  "Brands, badges & field options":"Brands، badges اور field options",
+  "Backup lein":"بیک اپ لیں",
+  "Baad mein":"بعد میں",
+  "Model, customer se search karein":"ماڈل یا گاہک کے نام سے تلاش کریں",
+  "Model (zyada quantity wala upar)":"Model (زیادہ quantity والا اوپر)",
+  "Brand":"برانڈ",
+  "Model":"ماڈل",
+  "Pics":"تصاویر",
+  "Status":"Status",
+  "RAM":"RAM",
+  "Storage":"اسٹوریج",
+  "Condition":"کنڈیشن",
+  "Box":"ڈبہ",
+  "Charger":"چارجر",
+  "IMEI 1":"IMEI 1 / IMEI 2",
+  "IMEI 2":"IMEI 1 / IMEI 2",
+  "Buy price":"قیمتِ خرید",
+  "Phone expenses":"موبائل پر خرچہ",
+  "Sell price range":"قیمتِ فروخت کی رینج",
+  "Buy date":"خریداری کی تاریخ",
+  "Seller details":"گاہک کی تفصیلات",
+  "Sale details":"سیل کی تفصیلات",
+  "Add more Details":"مزید تفصیلات شامل کریں",
+  "Add another piece":"اسی ماڈل کا ایک اور موبائل شامل کریں",
+  "Network":"نیٹ ورک",
+  "Display / Panel":"ڈسپلے / پینل",
+  "Touch":"ٹچ",
+  "Camera":"کیمرہ",
+  "Body":"باڈی",
+  "Open aur Repair":"کھلا / ریپئر",
+  "Battery health":"بیٹری ہیلتھ",
+  "Company Warranty":"کمپنی وارنٹی",
+  "Not Available":"دستیاب نہیں",
+  "Select warranty":"وارنٹی منتخب کریں",
+  "Almost 1 month":"تقریباً 1 ماہ",
+  "1 month":"1 ماہ",
+  "2 months":"2 ماہ",
+  "3 months":"3 ماہ",
+  "4 months":"4 ماہ",
+  "5 months":"5 ماہ",
+  "6 months":"6 ماہ",
+  "7 months":"7 ماہ",
+  "8 months":"8 ماہ",
+  "9 months":"9 ماہ",
+  "10 months":"10 ماہ",
+  "11 months":"11 ماہ",
+  "12 months":"12 ماہ",
+  "Packing":"پیکنگ",
+  "Face ID":"Face ID",
+  "True Tone":"True Tone",
+  "Notes":"ضافی معلومات",
+  "Custom fields":"کسٹم فیلڈز",
+  "Expense category":"ایکسپینس کیٹیگری",
+  "Save entry":"انٹری سیو کرو",
+  "Cancel":"کینسل",
+  "Scan":"سکین کریں",
+  "Enter Device IMEI":"موبائل کا IMEI درج کریں",
+  "Enter IMEI":"IMEI درج کریں",
+  "15 digit number":"15 ہندسوں کا نمبر",
+  "Naya brand naam":"نئے برانڈ کا نام",
+  "Add":"ایڈ",
+  "Normal":"معمول کے مطابق",
+  "Bara":"بڑا",
+  "Bohat bara":"بہت بڑا",
+  "100%":"100%",
+  "This month":"اس مہینے",
+  "Business month":"کاروباری مہینہ",
+  "Lifetime":"لائف ٹائم",
+  "Available":"دستیاب",
+  "Sold":"فروخت شدہ",
+  "All":"سب",
+  "PTA":"PTA",
+  "Non-PTA":"Non-PTA",
+  "CPID":"CPID",
+  "JV":"JV",
+  "Bypass/MDM":"Bypass/MDM",
+  "No":"نہیں",
+  "Yes":"ہاں",
+  "No charger":"چارجر نہیں ہے",
+  "Original charger":"اصل چارجر",
+  "Perfect":"بہترین",
+  "Original":"اصل",
+  "Original panel":"جینیون پینل",
+  "Original body":"اصل باڈی",
+  "No open, no repair":"نہ کھلا، نہ ریپئر",
+  "Repaired":"ریپئر",
+  "Refurbished":"ریفربشڈ",
+  "Battery changed":"بیٹری تبدیل شدہ",
+  "Below 69%":"69% سے کم",
+  "On service":"سروس پر",
+  "Boosted":"بوسٹڈ",
+  "No pack":"پیکنگ نہیں",
+  "Water pack":"واٹر پیک",
+  "Air tight":"ایئر ٹائٹ",
+  "Rent":"کرایہ",
+  "Refreshment":"ریفریشمنٹ",
+  "Repair":"ریپیئر",
+  "Jelly/Protector":"جیلی / پروٹیکٹر",
+  "Utility Bill":"یوٹیلیٹی بل",
+  "Transport":"ٹرانسپورٹ",
+  "Salary":"تنخواہ",
+  "Other":"کوئی اور",
+  "Search":"تلاش کریں",
+  "Save":"محفوظ کریں",
+  "Delete":"ڈیلیٹ",
+  "Edit":"تبدیلی کریں",
+  "Update":"اپ ڈیٹ کریں",
+  "Done":"مکمل",
+  "Confirm":"تصدیق کریں",
+  "Yes, delete":"ہاں، ڈیلیٹ کریں",
+  "No, cancel":"نہیں، کینسل  کریں",
+  "Open":"کھولیں",
+  "View":"دیکھیں",
+  "Details":"تفصیلات",
+  "Total":"ٹوٹل",
+  "Profit":"منافع",
+  "Loss":"نقصان",
+  "Price":"قیمت",
+  "Quantity":"مقدار",
+  "Date":"تاریخ",
+  "Customer":"گاہک",
+  "Phone":"فون",
+  "Available stock":"دستیاب اسٹاک",
+  "Sold phones":"فروخت شدہ موبائل",
+  "Dead stock":"غیر فروخت شدہ اسٹاک",
+  "Dashboard":"خلاصہ",
+  "Stock":"اسٹاک",
+  "Sales":"سیلز",
+  "Purchase":"خرید",
+  "Rate Book":"ریٹ بک",
+  "Cloud Sync":"کلاؤڈ سنک",
+  "Data Management":"ڈیٹا کنٹرول",
+  "Share Mobile Hisab":"ایپ شیئر کریں",
+  "App version":"ایپ کا ورژن",
+  "Language":"زبان",
+  "English":"English",
+  "Urdu":"اردو",
+  "📴 Offline mode — data phone mein save ho raha hai. Internet wapas aayega to sync ho jayega.":"📴 Offline mode — data phone میں محفوظ ہو رہا ہے۔ Internet واپس آنے پر خودکار sync ہو جائے گا۔",
+  "Settings draft — abhi save nahi hua":"سیٹنگز ڈرافٹ — ابھی محفوظ نہیں ہوا",
+  "+ Add Rate":"+ Rate شامل کریں",
+  "+ Add more Details":"+ مزید Details شامل کریں",
+  "+ Expense add karein":"+ Expense شامل کریں",
+  "+ Isi model ka aur piece add karein":"+ اسی Model کا ایک اور piece شامل کریں",
+  "+ Pic":"+ Photo",
+  "+ Rate add karein":"+ Rate شامل کریں",
+  "+ Sale ka expense add karein":"+ Sale کا Expense شامل کریں",
+  "0 selected":"0 selected",
+  "24 ghante se zyada ho gaye, backup nahi ho saka — abhi le lein.":"24 گھنٹے سے زیادہ ہو گئے ہیں اور بیک اپ نہیں لیا گیا۔ ابھی بیک اپ لیں۔",
+  "About":"ایپ کی معلومات",
+  "About Mobile Hisab":"موبائل حساب کے بارے میں",
+  "Account details loading…":"Account details load ہو رہی ہیں…",
+  "Account sync status loading…":"Account sync status load ہو رہا ہے…",
+  "Active":"فعال",
+  "Admin settings":"ایڈمن سیٹنگز",
+  "All Shops Combined brand filters fixed":"All Shops Combined brand filters fixed",
+  "All status":"All status",
+  "Amount":"Amount",
+  "Android":"Android",
+  "Apna custom App Lock set karein.":"اپنا custom App Lock set کریں۔",
+  "Apne Mobile Hisab account mein login karein. Aap ka stock, sales aur settings devices par sync rahenge.":"اپنے Mobile Hisab account میں login کریں۔ آپ کا stock، sales اور settings تمام devices پر sync رہیں گے۔",
+  "App Lock":"ایپ لاک",
+  "App khulte hi lock screen show hogi. Aap apna custom PIN, Pattern aur Fingerprint methods set kar sakte hain.":"App کھلتے ہی lock screen آئے گی۔ آپ اپنا custom PIN، Pattern اور Fingerprint set کر سکتے ہیں۔",
+  "App ko apne business workflow ke mutabiq manage karein.":"App کو اپنے business workflow کے مطابق manage کریں۔",
+  "Appearance":"ظاہری شکل",
+  "Apply":"نافذ کریں",
+  "Approved":"منظور شدہ",
+  "Auto backup: har 12 ghante":"Auto backup: ہر 12 گھنٹے",
+  "Backup":"Backup",
+  "Backup, Sync & Data":"بیک اپ، سنک اور ڈیٹا",
+  "Backup, sync & data management":"Backup، sync اور data management",
+  "Badge ko 3 states mein set kiya ja sakta hai: Hidden → Card pe → Prominent.":"Badge کو 3 حالتوں میں set کیا جا سکتا ہے: Hidden → Card پر → Prominent۔",
+  "Badge order & card layout":"بیجز کی ترتیب اور کارڈز کی ترتیب",
+  "Badges ka order":"Badges کی ترتیب",
+  "Band karein":"بند کریں",
+  "Battery Health":"Battery Health",
+  "Bechy":"فروخت کیے گئے",
+  "Bilkul WhatsApp message ki tarah message likhein/edit karein. Automatic values buttons se insert karein.":"بالکل WhatsApp message کی طرح message لکھیں یا edit کریں۔ Automatic values buttons سے insert کریں۔",
+  "Box ko drag karein ya corners se resize karein — koi bhi shape/size chun sakte hain":"Box کو drag کریں یا corners سے resize کریں — اپنی مرضی کی shape/size رکھ سکتے ہیں۔",
+  "Brands":"Brands",
+  "Business month start day":"کاروباری مہینے کے آغاز کا دن",
+  "Buy Rate":"قیمتِ خرید",
+  "Buy price ke hisaab se Sell Range automatically banega. Har price band ka markup set karein.":"Buy price کے حساب سے Sell Range خود بنے گا۔ ہر price band کا markup set کریں۔",
+  "Card presentation & readability":"کارڈ کی ترتیب اور وضاحت",
+  "Card view":"کارڈ ویو",
+  "Card view, sell range & brands":"کارڈ ویو، فروخت کی قیمت کی رینج اور برانڈز",
+  "Complete your shop profile":"اپنی دکان کی بنیادی معلومات مکمل کریں",
+  "Confirm PIN":"PIN کی تصدیق کریں",
+  "Confirm Password":"پاس ورڈ کی تصدیق کریں",
+  "Continue with Google":"Google کے ساتھ جاری رکھیں",
+  "Create Account":"اکاؤنٹ بنائیں",
+  "Create account":"Create account",
+  "Current App Lock verify karein.":"Current App Lock verify کریں۔",
+  "Current stock snapshot — not limited to selected period":"موجودہ اسٹاک کی صورتِ حال — منتخب مدت تک محدود نہیں",
+  "Current vs previous comparable period":"موجودہ مدت کا پچھلی مدت سے موازنہ",
+  "Custom":"Custom",
+  "Custom period":"اپنی مرضی کی مدت",
+  "Customer (naam ya number)":"Customer (نام یا number)",
+  "Customer ko jelly/protector ya koi aur cheez dene ka kharcha yahan add karein. Ye is sale ke profit se minus hoga.":"Customer کو jelly/protector یا کوئی اور چیز دینے کا خرچہ یہاں add کریں۔ یہ اس sale کے profit سے minus ہوگا۔",
+  "Customer name":"گاہک کا نام",
+  "Customer number":"گاہک کا نمبر",
+  "Danger Zone":"حساس کارروائیاں",
+  "Dashboard ki key information — isi Analytics page par":"Dashboard کی اہم information — اسی Analytics page پر",
+  "Dashboard par Sold aur Net Profit kis period ke hisaab se dikhana hai. Business month choose karein to har month isi din se naya cycle start hoga.":"Dashboard پر Sold اور Net Profit کس period کے حساب سے دکھانا ہے۔ Business month منتخب کریں تو ہر month اسی دن سے نیا cycle شروع ہوگا۔",
+  "Data load ho raha hai…":"Data load ہو رہا ہے…",
+  "Date filter clear karein":"تاریخ کا فلٹر صاف کریں",
+  "Drag karke card badges ki tarteeb set karein.":"Drag کرکے card badges کی ترتیب set کریں۔",
+  "Draw Pattern":"پیٹرن بنائیں",
+  "Edit cancel karein":"ایڈٹ کینسل کریں",
+  "Editable notification messages":"قابلِ ترمیم اطلاعاتی پیغامات",
+  "Email aur password se continue karein":"Email اور password سے continue کریں",
+  "Enter PIN":"PIN درج کریں",
+  "Existing filled ranges automatic overwrite nahi honge.":"پہلے سے موجود ranges خود overwrite نہیں ہوں گی۔",
+  "Exit":"بند کریں",
+  "Expenses (Kharcha)":"خرچے",
+  "Expenses (filtered date range)":"منتخب تاریخوں کےخرچے",
+  "Expenses (isi date range mein — brand/customer filter is par lagoo nahi)":"Expenses (اسی date range میں — Brand/Customer filter اس پر apply نہیں ہوگا)",
+  "Forgot lock? Gmail se verify karein":"Forgot lock? Gmail سے verify کریں",
+  "From":"یہاں سے",
+  "Google login ke liye app ko":"Google login کے لیے app کو",
+  "Google se sign in ho gaya. Bas shop ki basic details save karein.":"Google سے sign in ہو گیا۔ بس shop کی basic details Save کریں۔",
+  "HTML se Google sign-in nahi chalega.":"HTML سے Google sign-in نہیں چلے گا۔",
+  "IMEI Scan Karein":"IMEI اسکین کریں",
+  "Import / Restore":"امپورٹ / ریسٹور",
+  "Import, restore & clear data":"امپورٹ، ریسٹور اور کلیئر ڈیٹا",
+  "Jab bhi naya mobile purchase/save hoga, uska Buy Rate yahan automatically history mein save ho jayega. Aap manually bhi rate add kar sakte hain.":"جب بھی نیا mobile purchase/save ہوگا، اس کا Buy Rate یہاں خود history میں save ہو جائے گا۔ آپ manually بھی Rate add کر سکتے ہیں۔",
+  "Kam az kam 4 dots ka pattern banayein.":"کم از کم 4 dots کا Pattern بنائیں۔",
+  "Kam quantity pehle":"کم تعداد والے پہلے",
+  "Khareedy":"خریدے گئے",
+  "Kitne piece beche":"کتنے موبائل فروخت ہوئے",
+  "Login":"لاگ اِن",
+  "Login & cloud sync":"لاگ اِن اور کلاؤڈ سنک",
+  "Login method":"لاگ اِن کا طریقہ",
+  "Logout from this device":"اس device سے Logout",
+  "MDM":"MDM",
+  "MH":"MH",
+  "Money invested and money received · same days vs previous period":"Money invested and money received · same days vs previous period",
+  "Naya expense add karein":"نیا خرچہ شامل کریں",
+  "Naya shop hai?":"کیا آپ کی دکان نئی ہے؟",
+  "Naye pehle (Latest)":"نئے پہلے",
+  "Naye shops pehle Pending rahenge. Aap approve, reject, suspend aur baad mein reactivate kar sakte hain.":"نئی shops پہلے Pending رہیں گی۔ آپ approve، reject، suspend اور بعد میں reactivate کر سکتے ہیں۔",
+  "Nayi stock entry":"نئی اسٹاک انٹری",
+  "Net profit (expenses ke baad)":"اخراجات کے بعد خالص منافع",
+  "Notes (optional)":"Notes (optional)",
+  "Open Account":"اکاؤنٹ کھولیں",
+  "Open Combined Data":"مجموعی ڈیٹا کھولیں",
+  "Owner Name":"مالک کا نام",
+  "PDF banayein":"PDF بنائیں",
+  "PIN aur Pattern aapke custom app credentials hain — phone ka screen-lock nahi.":"PIN اور Pattern آپ کے custom app credentials ہیں — phone کا screen-lock نہیں۔",
+  "Phone ka secure biometric authenticator use hoga. Fingerprint data app mein save nahi hota.":"Phone کا secure biometric authenticator استعمال ہوگا۔ Fingerprint data app میں save نہیں ہوتا۔",
+  "Phone ke box/back par jo barcode hai usay camera ke samne rakhein.":"Phone کے box/back پر موجود barcode کو camera کے سامنے رکھیں۔",
+  "Photo crop karein":"تصویر کراپ کریں",
+  "Pics (optional)":"تصاویر",
+  "Privacy & Security":"پرائیویسی اور سیکیورٹی",
+  "Privacy mode":"پرائیویسی موڈ",
+  "Privacy mode & security":"Privacy mode & security",
+  "Profit (is sale par)":"اس سیل کا منافع",
+  "Purchase, sale and net profit over time":"خریداری، فروخت اور خالص منافع کا وقت کے ساتھ موازنہ",
+  "Reactivated":"دوبارہ فعال",
+  "Readable UI":"آسان مطالعے والا انٹرفیس",
+  "Register Fingerprint":"فنگر پرنٹ رجسٹر کریں",
+  "Rejected":"مسترد شدہ",
+  "Report period":"Report period",
+  "Request Received ✅":"Request Received ✅",
+  "Request received":"Request received",
+  "Requests & access":"درخواستیں اور رسائی",
+  "Return":"واپس",
+  "Sale confirm karein":"سیل کی تصدیق کریں",
+  "Sale entry":"سیل  کا اندراج",
+  "Save & Continue":"محفوظ کریں اور جاری رکھیں",
+  "Save PIN":"PIN محفوظ کریں",
+  "Save Pattern":"پیٹرن محفوظ کریں",
+  "Save Shop Profile":"دکان کی معلومات محفوظ کریں",
+  "Save rate":"قیمت محفوظ کریں",
+  "Secure session check ho raha hai…":"Secure session check ہو رہا ہے…",
+  "Select all":"سب سلیکٹ  کریں",
+  "Selected period mein sale aur purchase kis waqt zyada hui":"سب سے زیادہ بکنے اور منافع دینے والے ماڈلز",
+  "Seller / Dealer (optional)":"بیچنے والا  / ڈیلر (ضروری نہیں )",
+  "Seller ka naam (optional)":"بیچنے والے کا نام  (ضروری نہیں )",
+  "Seller ka number (optional)":"بیچنے والے کا نمبر (ضروری نہیں )",
+  "Session check ho raha hai…":"Session check ہو رہا ہے…",
+  "Set App Lock":"ایپ لاک سیٹ کریں",
+  "Shop Access":"دکان تک رسائی",
+  "Shop Access Management":"دکان کی رسائی کا انتظام",
+  "Shop owner ki aankhon ke liye text, buttons aur UI ko thora bara karein. Ye setting Save changes ke baad permanently apply hogi.":"Shop owner کی آسانی کے لیے text، buttons اور UI کو تھوڑا بڑا کریں۔ یہ setting Save changes کے بعد مستقل apply ہوگی۔",
+  "Shop profile":"دکان کی معلومات",
+  "Signed in as":"اس اکاؤنٹ سے لاگ اِن ہیں",
+  "Sirf “Clear data” action ko protect karta hai. Kam az kam 4 characters rakhein.":"صرف “Clear data” action کو protect کرتا ہے۔ کم از کم 4 characters رکھیں۔",
+  "Status refresh karein":"اسٹیٹس ریفریش کریں",
+  "Stock & Pricing":"اسٹاک اور قیمتیں",
+  "Sync status: —":"Sync status: —",
+  "Tamam shops ke mobile records ek hi main-screen style mein dekhein — rates, condition aur tamam available details ke saath.":"تمام shops کے mobile records ایک ہی main-screen style میں دیکھیں — rates، condition اور تمام available details کے ساتھ۔",
+  "Text Undo / Redo":"Text Undo / Redo",
+  "Top models by sold quantity and realized profit":"فروخت شدہ تعداد اور حاصل شدہ منافع کے لحاظ سے نمایاں ماڈلز",
+  "Total expenses (filtered)":"کل اخراجات (فلٹر کے مطابق)",
+  "Use Fingerprint":"فنگر پرنٹ استعمال کریں",
+  "Use another method":"دوسرا طریقہ استعمال کریں",
+  "Use photo":"تصویر استعمال کریں",
+  "Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.":"Used mobile sale & purchase business کے لیے stock، sales، expenses، reports، Rate Book اور Cloud Sync management app۔",
+  "Variant / Storage":"ویریئنٹ / اسٹوریج",
+  "Welcome back":"دوبارہ خوش آمدید",
+  "WhatsApp share message":"واٹس ایپ شیئر میسج",
+  "Zyada quantity pehle":"زیادہ تعداد والے پہلے",
+  "aur":"اور",
+  "aur kitne ne":"اور کتنے نے",
+  "becha":"بیچا",
+  "kharida":"خریدا",
+  "variables use kar sakte hain. Ye text aap kabhi bhi change kar sakte hain.":"variables استعمال کر سکتے ہیں۔ یہ text آپ کبھی بھی change کر سکتے ہیں۔",
+  "ya hosted web app se open karein. Direct":"یا hosted web app سے open کریں۔ Direct",
+  "↩ Refund/Wapasi (amount minus mein record hoga)":"↩ Refund / واپسی (amount minus میں record ہوگا)",
+  "↩️ Default message":"↩️ Default message",
+  "✓ Save changes":"✓ Save changes",
+  "✓ Save message":"✓ Save message",
+  "✓ Save notification messages":"✓ Save notification messages",
+  "➕ Mobile ki information add karein":"➕ Mobile کی information شامل کریں",
+  "⬆ Restore from JSON":"⬆ Restore from JSON",
+  "⬇ Download JSON Backup":"⬇ Download JSON Backup",
+  "🎁 Sale ke sath hua extra kharcha":"🎁 Sale کے ساتھ ہوا extra خرچہ",
+  "📦 All Shops Combined Data":"📦 All Shops Combined Data",
+  "📱 Is mobile par hua extra kharcha":"📱 اس mobile پر ہوا extra خرچہ",
+  "📷 Scan":"📷 Scan",
+  "🔐 Change Password":"🔐 Change Password",
+  "🔐 Test Lock":"🔐 Test Lock",
+  "🔒 App Lock":"🔒 App Lock",
+  "🔢 Set / Change PIN":"🔢 Set / Change PIN",
+  "🕒 Customer Time":"🕒 Customer Time",
+  "🕒 Customer Time Analytics":"🕒 Customer Time Analytics",
+  "🕘 Activity History":"🕘 Activity History",
+  "🗑 Delete":"🗑 Delete",
+  "🗑️ Clear all data":"🗑️ Clear all data",
+  "🗑️ Clear data password":"🗑️ Clear data password",
+  "🙈 Quick Privacy Toggle":"🙈 Quick Privacy Toggle",
+  "🟡 Pending Approval":"🟡 Pending Approval",
+  "Koi entry nahi mili. Naya add karne ke liye + button dabayein.":"کوئی انٹری نہیں ملی... نئی انٹری شامل کرنے کے لیے + دبائیں۔",
+  "Koi rate nahi mila. + Add Rate se manually rate save karein.":"کوئی Rate نہیں ملا۔ + Add Rate سے manually Rate save کریں۔",
+  "Samajh nahi aya, dobara likhein":"سمجھ نہیں آیا، دوبارہ لکھیں",
+  "Camera access nahi mila — phone ki settings mein is browser ko camera permission dein, ya IMEI khud type karein.":"کیمرے تک رسائی نہیں ملی۔ فون کیSettings میں براؤزر کو اجازت دیں یا IMEI خود درج کریں۔",
+  "Aapki Mobile Hisab access request Z Mobile ko bhej di gayi hai. Approval ka intezar karein.":"آپ کی Mobile Hisab تک رسائی کی درخواست Z Mobile کو بھیج دی گئی ہے۔ منظوری کا انتظار کریں۔",
+  "Manual backup karein, ya app har 12 ghante baad automatic backup le.":"دستی بیک اپ لیں، یا ایپ کو ہر 12 گھنٹے بعد خودکار بیک اپ لینے دیں۔",
+  "Message ko share karne se pehle yahan freely edit kar sakte hain.":"Message share کرنے سے پہلے یہاں اپنی مرضی سے edit کر سکتے ہیں۔",
+  "Mobile Hisab":"Mobile Hisab",
+  "by Z Mobile":"by Z Mobile",
+  "Undo":"پچھے",
+  "Redo":"دوبارہ",
+  "Notifications":"نوٹیفکیشنز",
+  "Quick Privacy":"فوری پرائیویسی",
+  "Privacy amount":"رقم چھپائیں",
+  "Business":"کاروبار",
+  "Expenses":"اخراجات",
+  "Contacts":"گاہکوں کے نمبرز",
+  "Analytics":"کاروباری جائزہ",
+  "Reports":"رپورٹس",
+  "Activity History":"تبدیلیوں کا ریکارڈ",
+  "App":"ایپ",
+  "Settings":"سیٹنگز",
+  "Account":"اکاؤنٹ",
+  "Admin":"ایڈمن",
+  "Menu":"مینو",
+  "Close":"بند کریں",
+  "Logout":"لاگ آؤٹ",
+  "Sign in nahi hai":"لاگ اِن نہیں ہیں",
+  "Backup lein":"بیک اپ لیں",
+  "Baad mein":"بعد میں",
+  "Language":"زبان",
+  "About":"ایپ کی معلومات",
+  "About Mobile Hisab":"موبائل حساب کے بارے میں",
+  "Dashboard":"خلاصہ",
+  "Stock":"اسٹاک",
+  "Sales":"سیلز",
+  "Purchase":"خرید",
+  "Rate Book":"ریٹ بک",
+  "Cloud Sync":"کلاؤڈ سنک",
+  "Data Management":"ڈیٹا کنٹرول",
+  "Share Mobile Hisab":"ایپ شیئر کریں",
+  "App version":"ایپ کا ورژن",
+  "Brand":"برانڈ",
+  "Model":"ماڈل",
+  "Status":"Status",
+  "RAM":"RAM",
+  "Storage":"اسٹوریج",
+  "Condition":"کنڈیشن",
+  "Box":"ڈبہ",
+  "Charger":"چارجر",
+  "IMEI 1 / IMEI 2":"IMEI 1 / IMEI 2",
+  "Buy price":"قیمتِ خرید",
+  "Phone expenses":"موبائل پر خرچہ",
+  "Sell price range":"قیمتِ فروخت کی رینج",
+  "Buy date":"خریداری کی تاریخ",
+  "Seller details":"گاہک کی تفصیلات",
+  "Sale details":"سیل کی تفصیلات",
+  "Add more Details":"مزید تفصیلات شامل کریں",
+  "Add another piece":"اسی ماڈل کا ایک اور موبائل شامل کریں",
+  "Network":"نیٹ ورک",
+  "Display / Panel":"ڈسپلے / پینل",
+  "Touch":"ٹچ",
+  "Camera":"کیمرہ",
+  "Body":"باڈی",
+  "Open aur Repair":"کھلا / ریپئر",
+  "Battery health":"بیٹری ہیلتھ",
+  "Packing":"پیکنگ",
+  "Face ID":"Face ID",
+  "True Tone":"True Tone",
+  "Notes":"ضافی معلومات",
+  "Custom fields":"کسٹم فیلڈز",
+  "Expense category":"ایکسپینس کیٹیگری",
+  "Save entry":"انٹری سیو کرو",
+  "Cancel":"کینسل",
+  "Scan":"سکین کریں",
+  "Enter Device IMEI":"موبائل کا IMEI درج کریں",
+  "Enter IMEI":"IMEI درج کریں",
+  "15 digit number":"15 ہندسوں کا نمبر",
+  "Naya brand naam":"نئے برانڈ کا نام",
+  "Add":"ایڈ",
+  "This month":"اس مہینے",
+  "Business month":"کاروباری مہینہ",
+  "Lifetime":"لائف ٹائم",
+  "Available":"دستیاب",
+  "Sold":"فروخت شدہ",
+  "All":"سب",
+  "PTA":"PTA",
+  "Non-PTA":"Non-PTA",
+  "CPID":"CPID",
+  "JV":"JV",
+  "Bypass/MDM":"Bypass/MDM",
+  "No":"نہیں",
+  "Yes":"ہاں",
+  "No charger":"چارجر نہیں ہے",
+  "Original charger":"اصل چارجر",
+  "Perfect":"بہترین",
+  "Original":"اصل",
+  "Original panel":"جینیون پینل",
+  "Original body":"اصل باڈی",
+  "No open, no repair":"نہ کھلا، نہ ریپئر",
+  "Repaired":"ریپئر",
+  "Refurbished":"ریفربشڈ",
+  "Battery changed":"بیٹری تبدیل شدہ",
+  "Below 69%":"69% سے کم",
+  "On service":"سروس پر",
+  "Boosted":"بوسٹڈ",
+  "No pack":"پیکنگ نہیں",
+  "Water pack":"واٹر پیک",
+  "Air tight":"ایئر ٹائٹ",
+  "Search":"تلاش کریں",
+  "Save":"محفوظ کریں",
+  "Delete":"ڈیلیٹ",
+  "Edit":"تبدیلی کریں",
+  "Update":"اپ ڈیٹ کریں",
+  "Done":"مکمل",
+  "Confirm":"تصدیق کریں",
+  "Open":"کھولیں",
+  "View":"دیکھیں",
+  "Details":"تفصیلات",
+  "Total":"ٹوٹل",
+  "Profit":"منافع",
+  "Loss":"نقصان",
+  "Price":"قیمت",
+  "Quantity":"مقدار",
+  "Date":"تاریخ",
+  "Customer":"گاہک",
+  "Phone":"فون",
+  "Available stock":"دستیاب اسٹاک",
+  "Sold phones":"فروخت شدہ موبائل",
+  "Dead stock":"غیر فروخت شدہ اسٹاک",
+  "Normal":"معمول کے مطابق",
+  "Bara":"بڑا",
+  "Bohat bara":"بہت بڑا",
+  "Apply":"نافذ کریں",
+  "Return":"واپس",
+  "Select all":"سب سلیکٹ  کریں",
+  "From":"یہاں سے",
+  "Exit":"بند کریں",
+  "Rent":"کرایہ",
+  "Refreshment":"ریفریشمنٹ",
+  "Repair":"ریپیئر",
+  "Jelly/Protector":"جیلی / پروٹیکٹر",
+  "Utility Bill":"یوٹیلیٹی بل",
+  "Transport":"ٹرانسپورٹ",
+  "Salary":"تنخواہ",
+  "Other":"کوئی اور",
+  "Expenses (Kharcha)":"خرچے",
+  "Expenses (filtered date range)":"منتخب تاریخوں کےخرچے",
+  "Naya expense add karein":"نیا خرچہ شامل کریں",
+  "Nayi stock entry":"نئی اسٹاک انٹری",
+  "Khareedy":"خریدے گئے",
+  "Bechy":"فروخت کیے گئے",
+  "Kitne piece beche":"کتنے موبائل فروخت ہوئے",
+  "Naye pehle (Latest)":"نئے پہلے",
+  "Kam quantity pehle":"کم تعداد والے پہلے",
+  "Zyada quantity pehle":"زیادہ تعداد والے پہلے",
+  "Net profit (expenses ke baad)":"اخراجات کے بعد خالص منافع",
+  "Profit (is sale par)":"اس سیل کا منافع",
+  "Buy Rate":"قیمتِ خرید",
+  "Save rate":"قیمت محفوظ کریں",
+  "Variant / Storage":"ویریئنٹ / اسٹوریج",
+  "Customer name":"گاہک کا نام",
+  "Customer number":"گاہک کا نمبر",
+  "Seller / Dealer (optional)":"بیچنے والا  / ڈیلر (ضروری نہیں )",
+  "Seller ka naam (optional)":"بیچنے والے کا نام  (ضروری نہیں )",
+  "Seller ka number (optional)":"بیچنے والے کا نمبر (ضروری نہیں )",
+  "App Lock":"ایپ لاک",
+  "Set App Lock":"ایپ لاک سیٹ کریں",
+  "Confirm PIN":"PIN کی تصدیق کریں",
+  "Confirm Password":"پاس ورڈ کی تصدیق کریں",
+  "Enter PIN":"PIN درج کریں",
+  "Save PIN":"PIN محفوظ کریں",
+  "Save Pattern":"پیٹرن محفوظ کریں",
+  "Draw Pattern":"پیٹرن بنائیں",
+  "Register Fingerprint":"فنگر پرنٹ رجسٹر کریں",
+  "Use Fingerprint":"فنگر پرنٹ استعمال کریں",
+  "Use another method":"دوسرا طریقہ استعمال کریں",
+  "Change Password":"پاس ورڈ تبدیل کریں",
+  "Login":"لاگ اِن",
+  "Login & cloud sync":"لاگ اِن اور کلاؤڈ سنک",
+  "Login method":"لاگ اِن کا طریقہ",
+  "Continue with Google":"Google کے ساتھ جاری رکھیں",
+  "Create Account":"اکاؤنٹ بنائیں",
+  "Open Account":"اکاؤنٹ کھولیں",
+  "Welcome back":"دوبارہ خوش آمدید",
+  "Signed in as":"اس اکاؤنٹ سے لاگ اِن ہیں",
+  "Owner Name":"مالک کا نام",
+  "Shop profile":"دکان کی معلومات",
+  "Complete your shop profile":"اپنی دکان کی بنیادی معلومات مکمل کریں",
+  "Save Shop Profile":"دکان کی معلومات محفوظ کریں",
+  "Shop Access":"دکان تک رسائی",
+  "Shop Access Management":"دکان کی رسائی کا انتظام",
+  "Requests & access":"درخواستیں اور رسائی",
+  "Approved":"منظور شدہ",
+  "Rejected":"مسترد شدہ",
+  "Pending Approval":"منظوری کا انتظار ہے",
+  "Active":"فعال",
+  "Reactivated":"دوبارہ فعال",
+  "Admin settings":"ایڈمن سیٹنگز",
+  "Danger Zone":"حساس کارروائیاں",
+  "Appearance":"ظاہری شکل",
+  "Readable UI":"آسان مطالعے والا انٹرفیس",
+  "Privacy & Security":"پرائیویسی اور سیکیورٹی",
+  "Privacy mode":"پرائیویسی موڈ",
+  "Stock & Pricing":"اسٹاک اور قیمتیں",
+  "Backup, Sync & Data":"بیک اپ، سنک اور ڈیٹا",
+  "Import / Restore":"امپورٹ / ریسٹور",
+  "Import, restore & clear data":"امپورٹ، ریسٹور اور کلیئر ڈیٹا",
+  "PDF banayein":"PDF بنائیں",
+  "Download JSON Backup":"JSON بیک اپ ڈاؤن لوڈ کریں",
+  "Restore from JSON":"JSON سے ڈیٹا بحال کریں",
+  "Model, customer se search karein":"ماڈل یا گاہک کے نام سے تلاش کریں",
+  "Samajh nahi aya, dobara likhein":"سمجھ نہیں آیا، دوبارہ لکھیں",
+  "Naya shop hai?":"کیا آپ کی دکان نئی ہے؟",
+  "Status refresh karein":"اسٹیٹس ریفریش کریں",
+  "Edit cancel karein":"ایڈٹ کینسل کریں",
+  "Date filter clear karein":"تاریخ کا فلٹر صاف کریں",
+  "IMEI Scan Karein":"IMEI اسکین کریں",
+  "Photo crop karein":"تصویر کراپ کریں",
+  "Use photo":"تصویر استعمال کریں",
+  "Settings draft — abhi save nahi hua":"سیٹنگز ڈرافٹ — ابھی محفوظ نہیں ہوا",
+  "Current App Lock verify karein":"موجودہ ایپ لاک کی تصدیق کریں",
+  "Apna custom App Lock set karein":"اپنی مرضی کا ایپ لاک سیٹ کریں",
+  "App ko apne business workflow ke mutabiq manage karein":"ایپ کو اپنے کاروباری طریقۂ کار کے مطابق ترتیب دیں",
+
+};
+const UI_TRANSLATIONS_REV = Object.keys(UI_TRANSLATIONS).reduce(function(m,k){ m[UI_TRANSLATIONS[k]]=k; return m; },{});
+function uiTranslateString(value){
+  if(uiLanguage!=='ur' || !value) return value;
+  const trimmed=String(value).trim();
+  return UI_TRANSLATIONS[trimmed] || value;
+}
+function uiEnglishString(value){
+  if(!value) return value;
+  const trimmed=String(value).trim();
+  return UI_TRANSLATIONS_REV[trimmed] || value;
+}
+function translateTextTree(root){
+  if(!root) return;
+  const walker=document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes=[];
+  let n; while((n=walker.nextNode())) nodes.push(n);
+  nodes.forEach(function(node){
+    const raw=node.nodeValue;
+    const trimmed=raw.trim();
+    if(!trimmed) return;
+    const translated=uiLanguage==='ur' ? uiTranslateString(trimmed) : uiEnglishString(trimmed);
+    if(translated!==trimmed) node.nodeValue=raw.replace(trimmed,translated);
+  });
+  const attrs=['placeholder','title','aria-label'];
+  root.querySelectorAll('*').forEach(function(el){
+    attrs.forEach(function(a){
+      if(!el.hasAttribute(a)) return;
+      const v=el.getAttribute(a); const nv=uiLanguage==='ur'?uiTranslateString(v):uiEnglishString(v);
+      if(nv!==v) el.setAttribute(a,nv);
+    });
+  });
+}
+function applyUILanguage(){
+  document.documentElement.lang=uiLanguage==='ur'?'ur':'en';
+  document.body.dir=uiLanguage==='ur'?'rtl':'ltr';
+  document.body.classList.toggle('urdu-ui',uiLanguage==='ur');
+  const b=document.getElementById('languageToggleBtn');
+  if(b){ b.textContent=uiLanguage==='ur'?'English':'اردو'; b.title=uiLanguage==='ur'?'Switch to English':'اردو / English'; b.setAttribute('aria-label',b.title); }
+  translateTextTree(document.body);
+  try{ localStorage.setItem(UI_LANG_KEY,uiLanguage); }catch(e){}
+}
+function loadUILanguage(){
+  try{ const saved=localStorage.getItem(UI_LANG_KEY); if(saved==='ur'||saved==='en') uiLanguage=saved; }catch(e){}
+  applyUILanguage();
+}
+function toggleUILanguage(){ uiLanguage=uiLanguage==='ur'?'en':'ur'; applyUILanguage(); }
+const uiLangObserver=new MutationObserver(function(mutations){
+  if(uiLanguage!=='ur') return;
+  mutations.forEach(function(m){
+    m.addedNodes.forEach(function(n){ if(n.nodeType===1 || n.nodeType===3) translateTextTree(n.nodeType===1?n:n.parentElement); });
+  });
+});
+
+function initUILanguage(){
+  const btn=document.getElementById('languageToggleBtn');
+  if(btn) btn.addEventListener('click',function(e){ e.preventDefault(); e.stopPropagation(); toggleUILanguage(); });
+  try{ uiLangObserver.observe(document.body,{childList:true,subtree:true}); }catch(e){}
+  loadUILanguage();
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initUILanguage); else initUILanguage();
+
+
 const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '08 Oct 2026 • 10:11:26 AM PKT • All Shops Combined brand filter immediate repaint fixed';
+const APP_INDEX_UPDATED = '16 Oct 2026 • 08:46:00 AM PKT • Clarified local-only entry saving during sync conflict';
 
 let inventory = [];
 
@@ -2188,13 +2960,13 @@ function renderUiScaleToggles(){
 }
 
 const DEFAULT_ENTRY_LAYOUT = {
-  main: ['brand','model','photos','status','ram','storage','condition','box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'],
+  main: ['brand','model','photos','status','ram','storage','condition','box','charger','companyWarranty','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'],
   more: ['network','display','touch','camera','body','openrepair','battery','packing','faceid','truetone','notes'],
   hidden: []
 };
 const ENTRY_LAYOUT_LABELS = {
   brand:'Brand', model:'Model', photos:'Pics', status:'Status', ram:'RAM', storage:'Storage', condition:'Condition', imei1:'IMEI 1', imei2:'IMEI 2', buyPrice:'Buy price', phoneExpenses:'Phone expenses', sellRange:'Sell price range', buyDate:'Buy date', seller:'Seller details', extras:'+ Isi model ka aur piece', moreToggle:'+ Add more Details', saleFields:'Sale details',
-  ram:'RAM', storage:'Storage', network:'Network', display:'Display / Panel', touch:'Touch', camera:'Camera', body:'Body', openrepair:'Open aur Repair', battery:'Battery health', box:'Box', packing:'Packing', charger:'Charger', faceid:'Face ID', truetone:'True Tone', customFields:'Custom fields', notes:'Notes'
+  ram:'RAM', storage:'Storage', network:'Network', display:'Display / Panel', touch:'Touch', camera:'Camera', body:'Body', openrepair:'Open aur Repair', battery:'Battery health', box:'Box', packing:'Packing', charger:'Charger', companyWarranty:'Company Warranty', faceid:'Face ID', truetone:'True Tone', customFields:'Custom fields', notes:'Notes'
 };
 const DEFAULT_PLATFORM_CARD_FIELDS = ['display','battery','touch','camera','body','openrepair','ram','storage','network','packing','charger','box','faceid','truetone'];
 function defaultEntryLayout(){ return {main:DEFAULT_ENTRY_LAYOUT.main.slice(), more:DEFAULT_ENTRY_LAYOUT.more.slice(), hidden:[]}; }
@@ -2341,7 +3113,7 @@ function setPlatformDefault(platform, fieldKey, value){
 function applyPlatformDefaultsToForm(platform){
   const defs={status:platform==='iphone'?'':'',ram:'',storage:'',condition:'',network:'',display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',battery:platform==='iphone'?'':'Perfect',box:platform==='iphone'?'No':'No',packing:'No pack',charger:platform==='iphone'?'No charger':'Original charger',faceid:platform==='iphone'?'Yes':'No',truetone:platform==='iphone'?'Yes':'No'};
   Object.keys(defs).forEach(function(k){
-    const d=(platform==='iphone' && k==='status') ? '' : ((platform==='iphone' && k==='box') ? 'No' : ((platform==='iphone' && k==='charger') ? 'No charger' : getPlatformDefault(platform,k,defs[k])));
+    const d=(platform==='iphone' && (k==='status' || k==='battery')) ? '' : ((platform==='iphone' && k==='box') ? 'No' : ((platform==='iphone' && k==='charger') ? 'No charger' : (k==='box' || k==='charger' ? '' : getPlatformDefault(platform,k,defs[k]))));
     const opts=getEntryFieldOptionsForPlatform(platform,k);
     formState[k]=(d && opts.indexOf(d)!==-1) ? d : '';
   });
@@ -2940,7 +3712,7 @@ function saveRateBook(){
   schedulePush(); return true;
 }
 function rateBookKey(x){ return String(x.brand||'').trim().toLowerCase()+'|||'+String(x.model||'').trim().toLowerCase()+'|||'+String(x.variant||'').trim().toLowerCase()+'|||'+String(x.status||'').trim().toLowerCase(); }
-function mandatoryDetailsHtml(e){ if(!e) return ''; const platform=getEntryPlatform(e.brand||''); const parts=[]; if(e.status) parts.push('Status: '+escapeHtml(e.status)); if(platform!=='iphone' && e.ram) parts.push('RAM: '+escapeHtml(e.ram)); if(e.storage) parts.push('Storage: '+escapeHtml(e.storage)); if(e.condition) parts.push('Condition: '+escapeHtml(e.condition)); if(platform==='iphone' && e.battery) parts.push('Battery health: '+escapeHtml(e.battery)); if(platform!=='iphone' && e.box) parts.push('Box: '+escapeHtml(e.box)); if(platform!=='iphone' && e.charger) parts.push('Charger: '+escapeHtml(e.charger)); return parts.length ? '<div class="rr-sub" style="margin-top:5px;line-height:1.55;"><b>Mandatory details:</b> '+parts.join(' · ')+'</div>' : ''; }
+function mandatoryDetailsHtml(e){ if(!e) return ''; const platform=getEntryPlatform(e.brand||''); const parts=[]; if(e.status) parts.push('Status: '+escapeHtml(e.status)); if(platform!=='iphone' && e.ram) parts.push('RAM: '+escapeHtml(e.ram)); if(e.storage) parts.push('Storage: '+escapeHtml(e.storage)); if(e.condition) parts.push('Condition: '+escapeHtml(e.condition)); if(platform==='iphone' && e.battery) parts.push('Battery health: '+escapeHtml(e.battery)); if(e.companyWarranty) parts.push('Company Warranty: '+escapeHtml(e.companyWarranty)); if(platform!=='iphone' && e.box) parts.push('Box: '+escapeHtml(e.box)); if(platform!=='iphone' && e.charger) parts.push('Charger: '+escapeHtml(e.charger)); return parts.length ? '<div class="rr-sub" style="margin-top:5px;line-height:1.55;"><b>Mandatory details:</b> '+parts.join(' · ')+'</div>' : ''; }
 function rateBookDetailsFromInventory(e){ return {ram:e&&e.ram||'',storage:e&&e.storage||'',condition:e&&e.condition||'',battery:e&&e.battery||'',box:e&&e.box||'',charger:e&&e.charger||''}; }
 function addRateBookEntry(entry, silent){
   const rate=Number(entry.rate); if(!isFinite(rate)||rate<=0) return false;
@@ -3780,7 +4552,7 @@ function renderStats(){
     return dashboardDateInRange(d,range);
   });
   const soldUnits=soldItems.reduce(function(s,e){return s+(Number(e.quantity)||0);},0);
-  const grossProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(Number(e.quantity)||1));},0);
+  const grossProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(Number(e.quantity)||1));},0)+inventory.filter(function(e){return isReturnedSale(e)&&e.returnDeduction!=null&&dashboardDateInRange(e.returnedAt,range);}).reduce(function(s,e){return s+(Number(e.returnDeduction)||0);},0);
   const netProfit=grossProfit-expensesForDashboardRange(range);
   const netProfitColor=netProfit>=0?'var(--pta)':'var(--danger)';
   let periodLabel=range.label;
@@ -3871,44 +4643,42 @@ function renderBrandFilter(){
   const wrap = document.getElementById('brandFilterChips');
   const isCombinedAdminView = (userRole==='admin' && adminViewActive && adminViewShopId==='__combined__');
   const activeBrandFilter = isCombinedAdminView ? adminCombinedBrandFilter : currentBrandFilter;
+
+  // Brand chips are interaction controls, not a delegated container action.
+  // Each newly-rendered chip owns its own click handler so a tap directly
+  // updates the correct filter state and then runs the SAME list-render path
+  // used by the lower Available/PTA/Sold filters.
   wrap.innerHTML = '<button type="button" class="chip '+(activeBrandFilter==='all'?'active':'')+'" data-brand="all">Sab brands</button>' +
     distinct.map(function(b){
       return '<button type="button" class="chip '+(activeBrandFilter===b?'active':'')+'" data-brand="'+b+'">'+b+'</button>';
     }).join('');
 
-  // Brand filtering has one canonical interaction path: click.
-  // Do not split the state update between pointerdown and click. Repainting
-  // during pointerdown can replace the pressed button before the browser's
-  // click event is dispatched, which makes the tap look like it did nothing
-  // on some touch browsers. A normal click is generated for mouse, touch and
-  // keyboard activation, so it is sufficient and keeps state + repaint atomic.
-  if(!wrap.__brandFilterDelegated){
-    wrap.__brandFilterDelegated = true;
-    wrap.addEventListener('click', function(e){
-      const chip = e.target.closest('.chip[data-brand]');
-      if(!chip || !wrap.contains(chip)) return;
-      e.preventDefault();
-      e.stopPropagation();
-
+  wrap.querySelectorAll('.chip[data-brand]').forEach(function(chip){
+    chip.onclick = function(e){
+      if(e) { e.preventDefault(); e.stopPropagation(); }
       const val = chip.getAttribute('data-brand') || 'all';
-      const isCombined = (userRole==='admin' && adminViewActive && adminViewShopId==='__combined__');
+      const combinedNow = (userRole==='admin' && adminViewActive && adminViewShopId==='__combined__');
 
-      // Combined Data owns its own brand-filter state. Never read/write the
-      // normal shop's currentBrandFilter while Combined Data is open.
-      if(isCombined){
+      if(combinedNow){
         adminCombinedBrandFilter = val;
       }else{
         currentBrandFilter = val;
       }
 
-      // The brand state is changed first, then the list is rendered from that
-      // exact state. This prevents the lower filter row from being required to
-      // trigger a second repaint before the selected brand becomes visible.
-      render();
+      // Update the active visual immediately without rebuilding the chip row.
+      wrap.querySelectorAll('.chip[data-brand]').forEach(function(x){
+        x.classList.toggle('active', x.getAttribute('data-brand') === val);
+      });
 
-      if(!isCombined) saveUIState();
-    });
-  }
+      // IMPORTANT: use renderList() directly, exactly like the lower filter
+      // row. This avoids a second render cycle replacing the chip DOM during
+      // the same interaction and makes the brand filter state take effect
+      // immediately.
+      renderList();
+
+      if(!combinedNow) saveUIState();
+    };
+  });
 }
 
 function renderFilterChips(){
@@ -4435,59 +5205,101 @@ function returnSoldItem(soldId){
   if(isReturnedSale(sale)){ alert('Ye sale pehle hi returned hai.'); return; }
 
   const qty=Math.max(1,Number(sale.quantity)||1);
-  const original=findOriginalStockForReturn(sale);
-
-  if(!confirm('Kya aap "'+(sale.brand||'')+' '+(sale.model||'')+
-    '" ki sale return karna chahte hain?\n\nQuantity: '+qty+
-    '\nMobile stock mein wapas aa jayega aur sale Returned mark ho jayegi.')) return;
-
-  activityBeforeFromCurrentMutation();
-  const returnDate=new Date().toISOString();
-  if(original){
-    original.quantity=(Number(original.quantity)||0)+qty;
-    original.sold=false;
-    original.saleStatus='available';
-    original.returned=false;
-    original.returnedAt=null;
-    original.availableDate=dateOnly(returnDate);
-    original.lastUpdated=returnDate;
-  }else{
-    const restored=Object.assign({},sale);
-    delete restored.customer; delete restored.customerNumber; delete restored.payment;
-    delete restored.sell; delete restored.saleDate; delete restored.sold;
-    delete restored.saleStatus; delete restored.returned; delete restored.returnedAt;
-    delete restored.returnOf;
-    restored.quantity=qty;
-    restored.sold=false;
-    restored.saleStatus='available';
-    restored.returned=false;
-    restored.availableDate=dateOnly(returnDate);
-    restored.lastUpdated=returnDate;
-    inventory.push(restored);
+  const saleTotal=Math.max(0,(Number(sale.sell)||0)*qty);
+  const existing=document.getElementById('saleReturnDialog');
+  if(existing) existing.remove();
+  const overlay=document.createElement('div');
+  overlay.id='saleReturnDialog';
+  overlay.style.cssText='position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:16px;';
+  overlay.innerHTML='<div role="dialog" aria-modal="true" style="width:100%;max-width:440px;max-height:90vh;overflow:auto;background:var(--card,#fff);color:var(--text,#222);border:1px solid var(--border,#ddd);border-radius:16px;padding:20px;box-shadow:0 18px 55px rgba(0,0,0,.3);direction:inherit;box-sizing:border-box;">'+
+    '<h3 style="margin:0 0 12px;font-size:20px;">↩ Mobile Return</h3>'+
+    '<div style="margin-bottom:14px;line-height:1.65;font-size:14px;"><b>'+String(sale.brand||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];})+' '+String(sale.model||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];})+'</b><br>Quantity: '+qty+'<br>Sale amount: <b>Rs '+fmt(saleTotal)+'</b></div>'+
+    '<label for="saleReturnDeduction" style="display:block;font-weight:700;margin-bottom:7px;">Katoti ki raqam (Rs)</label>'+
+    '<input id="saleReturnDeduction" type="number" inputmode="decimal" min="0" max="'+saleTotal+'" step="any" value="0" style="width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--border,#bbb);border-radius:10px;background:var(--input-bg,var(--card,#fff));color:var(--text,#222);font-size:16px;margin-bottom:10px;" />'+
+    '<div id="saleReturnRefund" style="padding:12px;border-radius:10px;background:var(--surface,var(--bg,#f5f5f5));margin-bottom:16px;line-height:1.7;font-size:14px;">Katoti: Rs 0<br><b>Customer refund: Rs '+fmt(saleTotal)+'</b></div>'+
+    '<div style="display:flex;gap:10px;"><button type="button" id="saleReturnCancel" style="flex:1;padding:12px;border:1px solid var(--border,#bbb);border-radius:10px;background:transparent;color:inherit;font-weight:700;">Cancel</button><button type="button" id="saleReturnConfirm" style="flex:1;padding:12px;border:0;border-radius:10px;background:var(--accent,#d97706);color:#fff;font-weight:800;">Confirm Return</button></div>'+
+    '</div>';
+  document.body.appendChild(overlay);
+  const input=overlay.querySelector('#saleReturnDeduction');
+  const refundBox=overlay.querySelector('#saleReturnRefund');
+  function closeDialog(){ overlay.remove(); }
+  function updateRefund(){
+    const raw=String(input.value||'').trim();
+    const val=Number(raw);
+    const valid=raw!=='' && Number.isFinite(val) && val>=0 && val<=saleTotal;
+    const deduction=valid?val:0;
+    refundBox.innerHTML='Katoti: Rs '+fmt(deduction)+'<br><b>Customer refund: Rs '+fmt(Math.max(0,saleTotal-deduction))+'</b>';
+    overlay.querySelector('#saleReturnConfirm').disabled=!valid;
+    overlay.querySelector('#saleReturnConfirm').style.opacity=valid?'1':'.55';
   }
+  input.addEventListener('input',updateRefund);
+  overlay.querySelector('#saleReturnCancel').addEventListener('click',closeDialog);
+  overlay.addEventListener('click',function(ev){if(ev.target===overlay) closeDialog();});
+  overlay.querySelector('#saleReturnConfirm').addEventListener('click',function(){
+    const deductionText=String(input.value||'').trim();
+    const deduction=Number(deductionText);
+    if(deductionText===''||!Number.isFinite(deduction)||deduction<0||deduction>saleTotal){
+      alert('Katoti Rs 0 se Rs '+fmt(saleTotal)+' ke darmiyan enter karein.'); return;
+    }
+    const refundAmount=Math.max(0,saleTotal-deduction);
 
-  sale.sold=true;
-  sale.saleStatus='returned';
-  sale.returned=true;
-  sale.returnedAt=returnDate;
-  sale.returnOf=original?String(original.id):String(soldId);
+    const originalCandidate=findOriginalStockForReturn(sale);
+    const original=(originalCandidate && originalCandidate!==sale && !originalCandidate.sold)?originalCandidate:null;
+    activityBeforeFromCurrentMutation();
+    const returnDate=new Date().toISOString();
+    if(original){
+      original.quantity=(Number(original.quantity)||0)+qty;
+      original.sold=false;
+      original.saleStatus='available';
+      original.returned=false;
+      original.returnedAt=null;
+      original.availableDate=dateOnly(returnDate);
+      original.lastUpdated=returnDate;
+    }else{
+      const restored=Object.assign({},sale);
+      restored.id=(typeof generateId==='function'?generateId():('return-'+Date.now()+'-'+Math.random().toString(36).slice(2,8)));
+      delete restored.customer; delete restored.customerNumber; delete restored.payment;
+      delete restored.sell; delete restored.saleDate; delete restored.sold;
+      delete restored.saleStatus; delete restored.returned; delete restored.returnedAt;
+      delete restored.returnOf; delete restored.returnDeduction; delete restored.returnRefundAmount; delete restored.returnSaleAmount;
+      delete restored.phoneExpenses;
+      restored.quantity=qty;
+      restored.sold=false;
+      restored.saleStatus='available';
+      restored.returned=false;
+      restored.availableDate=dateOnly(returnDate);
+      restored.lastUpdated=returnDate;
+      inventory.push(restored);
+    }
 
-  try{
-    localStorage.setItem(shopStorageKey(LS_INVENTORY_KEY),JSON.stringify(inventory));
-    schedulePush();
-  }catch(err){
-    console.error(err);
-    alert('Return save nahi ho saka. Data save karte waqt error aaya.');
-    return;
-  }
-  render();
-  alert('✅ Return complete! Mobile stock mein wapas aa gaya.');
-  logActivity('return','Sale return: '+(sale.brand||'')+' '+(sale.model||''),'Quantity: '+qty);
+    sale.sold=true;
+    sale.saleStatus='returned';
+    sale.returned=true;
+    sale.returnedAt=returnDate;
+    sale.returnDeduction=deduction;
+    sale.returnRefundAmount=refundAmount;
+    sale.returnSaleAmount=saleTotal;
+    sale.returnOf=original?String(original.id):String(soldId);
+    try{
+      localStorage.setItem(shopStorageKey(LS_INVENTORY_KEY),JSON.stringify(inventory));
+      schedulePush();
+    }catch(err){
+      console.error(err);
+      alert('Return save nahi ho saka. Data save karte waqt error aaya.');
+      return;
+    }
+    closeDialog();
+    render();
+    logActivity('return','Sale return: '+(sale.brand||'')+' '+(sale.model||''),'Quantity: '+qty+'; Sale: Rs '+fmt(saleTotal)+'; Deduction: Rs '+fmt(deduction)+'; Refund: Rs '+fmt(refundAmount));
+    alert('Return complete!\nKatoti: Rs '+fmt(deduction)+'\nCustomer refund: Rs '+fmt(refundAmount)+'\nMobile stock mein wapas aa gaya.');
+  });
+  updateRefund();
+  setTimeout(function(){try{input.focus();input.select();}catch(e){}},50);
 }
 
 function renderSoldCard(e){
   const returned=isReturnedSale(e);
-  const profit=returned ? 0 : saleNetProfit(e);
+  const profit=returned ? (Number(e.returnDeduction)||0) : saleNetProfit(e);
   const profitClass=profit===null?'dim':(profit>=0?'profit-pos':'profit-neg');
   return (
   '<div class="card '+(returned?'returned-card':'')+'">'+
@@ -4506,6 +5318,7 @@ function renderSoldCard(e){
     '</div>'+
     (e.customer||e.payment?'<div class="sale-meta">'+(e.customer||'')+(e.customer&&e.customerNumber?' ('+e.customerNumber+')':'')+(e.customer&&e.payment?' - ':'')+(e.payment||'')+'</div>':'')+
     activityDateHtml(e)+
+    (returned?'<div class="sale-meta">Return katoti: Rs '+fmt(Number(e.returnDeduction)||0)+' · Refund: Rs '+fmt(Number(e.returnRefundAmount)||0)+'</div>':'')+
     (phoneExpensesTotal(e)>0?'<div class="sale-meta" style="color:var(--danger);">Phone expense: -'+displayProfitHtml(phoneExpensesTotal(e))+'</div>':'')+
     '<div class="card-actions">'+
       '<button data-edit="'+e.id+'">Edit</button>'+
@@ -5060,6 +5873,8 @@ function prepareEntryLayoutDOM(){
   if(boxChips) addMainGroup('box',[previousSecLabel(boxChips),boxChips]);
   const chargerChips=sheet.querySelector('#chargerChips');
   if(chargerChips) addMainGroup('charger',[previousSecLabel(chargerChips),chargerChips]);
+  const companyWarranty=sheet.querySelector('#companyWarrantyField');
+  if(companyWarranty) wrapEntryGroup('companyWarranty',[companyWarranty],sheet.querySelector('#entryLayoutMainWrap'));
 
   const imei1=sheet.querySelector('#f-imei');
   if(imei1) addMainGroup('imei1',[imei1.closest('.field')]);
@@ -5132,8 +5947,9 @@ function prepareEntryLayoutDOM(){
       }
       if(n.classList && n.classList.contains('sec-label')) current=n;
       else if(current && n.classList && n.classList.contains('chip-row')){
-        const keyMap={RAM:'ram',Storage:'storage',Network:'network',Display:'display',Touch:'touch',Camera:'camera',Body:'body','Open aur Repair':'openrepair','Battery health':'battery',Box:'box',Packing:'packing',Charger:'charger','Face ID':'faceid','True Tone':'truetone'};
-        const key=keyMap[String(current.textContent||'').trim()];
+        const keyMap={RAM:'ram',Storage:'storage',Network:'network',Display:'display',Touch:'touch',Camera:'camera',Body:'body','Open aur Repair':'openrepair','Battery health':'battery','بیٹری ہیلتھ':'battery',Box:'box',Packing:'packing',Charger:'charger','Face ID':'faceid','True Tone':'truetone'};
+        const labelText=String(current.textContent||'').replace(/\*/g,'').trim();
+        const key=keyMap[labelText] || (labelText.toLowerCase().startsWith('battery health') ? 'battery' : '');
         if(key){ wrapEntryGroup(key,[current,n],more); }
         current=null;
       }
@@ -5181,7 +5997,7 @@ function ensureLayoutContainsAll(layout){
 
   // v57: fixed entry order — Box and Charger are mandatory and sit directly
   // below Condition; phone expense stays immediately below Buy price.
-  const fixedMainOrder=['brand','model','photos','status','ram','storage','condition','box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'];
+  const fixedMainOrder=['brand','model','photos','status','ram','storage','condition','box','charger','companyWarranty','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'];
   layout.main=fixedMainOrder.slice();
   layout.more=['network','display','touch','camera','body','openrepair','battery','packing','faceid','truetone','notes'];
   layout.hidden=[];
@@ -5337,14 +6153,14 @@ function applyEntryLayoutToDOM(platform){
   // Box and Charger are explicitly included so they cannot fall back into More Details.
   let fixedMainKeys = [
     'brand','model','photos','status','ram','storage','condition',
-    'box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
+    'box','charger','companyWarranty','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
     'seller','saleFields','moreToggle','extras'
   ];
   let moreKeys = L.more.slice();
   if(platform==='iphone'){
     fixedMainKeys = [
       'brand','model','photos','status','storage','condition','battery',
-      'box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
+      'box','charger','companyWarranty','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
       'seller','saleFields','moreToggle','extras'
     ];
     moreKeys = moreKeys.filter(function(key){ return key!=='battery' && key!=='status' && key!=='ram'; });
@@ -5430,6 +6246,7 @@ function renderChipGroup(containerId, options, groupKey, extraClass){
       if(e) e.preventDefault();
       const value=c.dataset.val;
       formState[groupKey] = value;
+      if(groupKey==='companyWarranty'){ const warrantySelect=document.getElementById('f-company-warranty'); if(warrantySelect) warrantySelect.value=value; }
       // Update only this row. Do NOT rebuild the whole entry form after a
       // storage/condition/battery tap; rebuilding the DOM is what can make a
       // tap disappear on slower Android WebViews.
@@ -5505,6 +6322,7 @@ function renderAllChips(){
   renderChipGroup('boxChips', getEntryFieldOptions('box', ['No','Yes']), 'box');
   renderChipGroup('packingChips', getEntryFieldOptions('packing', PACKING_OPTS), 'packing');
   renderChipGroup('chargerChips', getEntryFieldOptions('charger', CHARGER_OPTS), 'charger');
+  renderChipGroup('companyWarrantyChips', ['Not Available','Almost 1 month','1 month','2 months','3 months','4 months','5 months','6 months','7 months','8 months','9 months','10 months','11 months','12 months'], 'companyWarranty');
   renderChipGroup('faceidChips', getEntryFieldOptions('faceid', ['No','Yes']), 'faceid');
   renderChipGroup('truetoneChips', getEntryFieldOptions('truetone', ['No','Yes']), 'truetone');
   renderCustomEntryFields();
@@ -5734,13 +6552,18 @@ function openAdd(){
   rangeInputMode = 'auto';
   document.getElementById('sheetTitle').textContent = 'Nayi stock entry';
   document.getElementById('qtyLabel').textContent = 'Quantity (kitne piece)';
-  formState = {brand:'', status:'', ram:'', storage:'', condition:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'', packing:'No pack', charger:'', faceid:'No', truetone:'No', customFields:{}, isSold:false, __platform:'android'};
+  formState = {brand:'', status:'', ram:'', storage:'', condition:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'', packing:'No pack', charger:'', companyWarranty:'', faceid:'No', truetone:'No', customFields:{}, isSold:false, __platform:'android'};
   applyPlatformDefaultsToForm('android');
   // Android keeps the existing mandatory fields. iPhone has no Status/RAM,
   // Box/Charger are optional and default to absent, while Battery is mandatory.
   formState.status = '';
-  formState.box = 'No';
-  formState.charger = 'No charger';
+  // Android entry: Box aur Charger kisi option par default select nahi honge.
+  // User ko entry ke waqt manually select karna hoga. iPhone par applyPlatformDefaultsToForm
+  // No / No charger ko default select karta hai.
+  formState.box = '';
+  formState.charger = '';
+  // iPhone Battery Health must always start unselected for a new entry.
+  // This intentionally overrides any saved platform default/custom setting.
   formState.battery = '';
   formPhotos = [];
   renderPhotoStrip();
@@ -5754,6 +6577,8 @@ function openAdd(){
   document.getElementById('f-range-hint').textContent = '';
   if(rangeInputMode==='auto') maybeAutoFillRange();
   document.getElementById('f-buydate').value = todayISO();
+  document.getElementById('f-company-warranty').value = 'Not Available';
+  formState.companyWarranty = 'Not Available';
   document.getElementById('f-imei').value = '';
   document.getElementById('f-imei2').value = '';
   document.getElementById('f-seller-name').value = '';
@@ -5819,7 +6644,7 @@ function openEdit(id){
     status: e.status || '',
     ram: e.ram || '', storage: e.storage || '', condition: e.condition || '', network: e.network || '',
     display: e.display || 'Original panel', touch: e.touch || 'Perfect', camera: e.camera || 'Perfect', body: e.body || 'Original', openrepair: e.openrepair || 'No open, no repair', battery: e.battery || 'Perfect',
-    box: e.box || 'No', packing: e.packing || 'No pack', charger: e.charger || 'Original charger',
+    box: e.box || 'No', packing: e.packing || 'No pack', charger: e.charger || 'Original charger', companyWarranty: e.companyWarranty || 'Not Available',
     faceid: e.faceid || 'No', truetone: e.truetone || 'No',
     customFields: Object.assign({}, e.customFields || {}),
     isSold: !!e.sold,
@@ -5838,6 +6663,7 @@ function openEdit(id){
   document.getElementById('f-range').value = e.range || '';
   document.getElementById('f-range-hint').textContent = '';
   document.getElementById('f-buydate').value = e.buyDate || todayISO();
+  document.getElementById('f-company-warranty').value = e.companyWarranty || 'Not Available';
   document.getElementById('f-imei').value = e.imei || '';
   document.getElementById('f-imei2').value = e.imei2 || '';
   document.getElementById('f-seller-name').value = e.sellerName || '';
@@ -5919,6 +6745,8 @@ function saveEntry(){
   if(entryPlatform==='iphone' && !formState.battery){ alert('Battery health select karna zaroori hai'); return; }
   if(entryPlatform!=='iphone' && !formState.box){ alert('Box select karna zaroori hai'); return; }
   if(entryPlatform!=='iphone' && !formState.charger){ alert('Charger select karna zaroori hai'); return; }
+  const warrantyField = document.getElementById('f-company-warranty');
+  if(!warrantyField || !warrantyField.value){ alert('Company Warranty select karna zaroori hai.'); if(warrantyField) warrantyField.focus(); return; }
   const qty = Math.max(1, Number(document.getElementById('f-qty').value || 1));
   const buyFieldRaw = document.getElementById('f-buy').value.trim();
   const parsedBuyForRange = buyFieldRaw==='' ? null : parsePrice(buyFieldRaw);
@@ -5948,6 +6776,7 @@ function saveEntry(){
     box: formState.box || 'No',
     packing: formState.packing || 'No pack',
     charger: formState.charger || 'Original charger',
+    companyWarranty: document.getElementById('f-company-warranty').value || 'Not Available',
     faceid: formState.faceid || 'No',
     truetone: formState.truetone || 'No',
     customFields: Object.assign({}, formState.customFields || {}),
@@ -6206,7 +7035,11 @@ document.getElementById('fabAdd').onclick = openAdd;
 document.getElementById('addExtraBuyBtn').onclick = addExtraBuyRow;
 document.getElementById('addSalePhoneExpenseBtn').onclick = function(){ addPhoneExpenseRow('s-phone-expenses'); updateSellProfitPreview(); };
 document.getElementById('btnCancel').onclick = closeSheet;
-document.getElementById('btnSave').onclick = saveEntry;
+document.getElementById('btnSave').type = 'button';
+document.getElementById('btnSave').onclick = function(){
+  try { saveEntry(); }
+  catch(err) { console.error('Save Entry failed:', err); showSaveError('saveErrorBanner', 'Entry save nahi ho saki: '+(err && err.message ? err.message : 'unknown error')); }
+};
 document.getElementById('overlay').onclick = function(e){ if(e.target.id==='overlay') closeSheet(); };
 document.getElementById('btnSellCancel').onclick = closeSellSheet;
 document.getElementById('btnSellConfirm').onclick = confirmSell;
@@ -6672,11 +7505,11 @@ function renderDashboard(){
   const pendingUnits=stockItems.reduce(function(s,e){return s+(e.quantity||0);},0);
   const soldPeriod=soldItems.filter(function(e){return dashboardDateInRange(e.saleDate||e.saleAt||e.lastUpdated,range);});
   const unitsSold=soldPeriod.reduce(function(s,e){return s+(e.quantity||0);},0);
-  const grossProfit=soldPeriod.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0);
+  const grossProfit=soldPeriod.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0)+inventory.filter(function(e){return isReturnedSale(e)&&e.returnDeduction!=null&&dashboardDateInRange(e.returnedAt,range);}).reduce(function(s,e){return s+(Number(e.returnDeduction)||0);},0);
   const periodExpenses=expensesForDashboardRange(range);
   const netProfit=grossProfit-periodExpenses;
   const totalExpensesAll=totalExpensesAllTime()+totalPhoneExpensesAllTime();
-  const allTimeProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0);
+  const allTimeProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0)+inventory.filter(function(e){return isReturnedSale(e);}).reduce(function(s,e){return s+(Number(e.returnDeduction)||0);},0);
   const netProfitAllTime=allTimeProfit-totalExpensesAll;
   const cards=[
     {v:displayProfitHtml(totalStockValue),l:'Total stock value'},
@@ -6755,7 +7588,8 @@ function getFilteredSoldEntries(){
 
   return inventory.filter(function(e){
     if(!e.sold) return false;
-    const d=dateOnly(e.saleDate || e.lastUpdated);
+    // Return belongs to the period it happened, not the original sale date.
+    const d=dateOnly(isReturnedSale(e) ? (e.returnedAt || e.saleDate || e.lastUpdated) : (e.saleDate || e.lastUpdated));
     if(from && (!d || d<from)) return false;
     if(to && (!d || d>to)) return false;
     if(brand!=='all' && e.brand!==brand) return false;
@@ -6836,15 +7670,18 @@ function renderReports(){
   const entries = getFilteredSoldEntries();
   let grossProfit = 0;
   const rowsHtml = entries.map(function(e){
-    const baseProfit = (e.buy!=null && e.sell!=null && !isReturnedSale(e)) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : 0;
+    const returned=isReturnedSale(e);
+    const baseProfit = (e.buy!=null && e.sell!=null && !returned) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : 0;
+    const returnAdjustment = returned ? (Number(e.returnDeduction)||0) : 0;
     if(baseProfit) grossProfit += baseProfit;
-    const netSale = isReturnedSale(e) ? 0 : saleNetProfit(e);
+    if(returnAdjustment) grossProfit += returnAdjustment;
+    const netSale = returned ? returnAdjustment : saleNetProfit(e);
     const profitColor = netSale>=0 ? 'var(--pta)' : 'var(--danger)';
     return '<div class="report-row">'+
       '<div class="rr-top"><span>'+e.brand+' '+e.model+(isReturnedSale(e)?' ↩ Returned':'')+'</span><span class="rr-profit" style="color:'+profitColor+'">'+displayProfitHtml(netSale==null?0:netSale)+'</span></div>'+
       '<div class="rr-sub">'+(isReturnedSale(e)?'Sold: ':'Sale: ')+formatDateDisplay(dateOnly(e.saleDate))+' • Buy: '+fmt(displayBuyPrice(e.buy))+' • Sell: '+fmt(e.sell)+(e.quantity>1?(' • x'+e.quantity):'')+'</div>'+
-      (isReturnedSale(e)?'<div class="rr-sub">Returned: '+formatDateTimeDisplay(e.returnedAt)+'</div>':'')+
-      (phoneExpensesTotal(e)>0?'<div class="rr-sub" style="color:var(--danger);">Phone expenses: -'+displayProfitHtml(phoneExpensesTotal(e))+'</div>':'')+
+      (returned?'<div class="rr-sub">Returned: '+formatDateTimeDisplay(e.returnedAt)+' · Katoti: Rs '+fmt(returnAdjustment)+' · Refund: Rs '+fmt(Number(e.returnRefundAmount)||0)+'</div>':'')+
+      (!returned && phoneExpensesTotal(e)>0?'<div class="rr-sub" style="color:var(--danger);">Phone expenses: -'+displayProfitHtml(phoneExpensesTotal(e))+'</div>':'')+
       (e.customer || e.customerNumber ? '<div class="rr-sub">'+(e.customer||'')+(e.customerNumber?' - '+e.customerNumber:'')+'</div>' : '')+
       mandatoryDetailsHtml(e)+
     '</div>';
@@ -6900,15 +7737,16 @@ document.getElementById('btnReportsPdf').onclick = function(){
   const brand = document.getElementById('rp-brand').value;
   let grossProfit = 0;
   const rows = entries.map(function(e){
-    const profit = isReturnedSale(e) ? 0 : ((e.buy!=null && e.sell!=null) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : 0);
-    if(!isReturnedSale(e) && e.buy!=null && e.sell!=null) grossProfit += profit;
+    const returned=isReturnedSale(e);
+    const profit = returned ? (Number(e.returnDeduction)||0) : ((e.buy!=null && e.sell!=null) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : 0);
+    if(returned || (e.buy!=null && e.sell!=null)) grossProfit += profit;
     return '<tr>'+
       '<td>'+formatDateDisplay(dateOnly(e.saleDate))+(isReturnedSale(e)?'<br>Returned: '+formatDateTimeDisplay(e.returnedAt):'')+'</td>'+
       '<td>'+e.brand+' '+e.model+(e.quantity>1?(' x'+e.quantity):'')+(isReturnedSale(e)?' (RETURNED)':'')+'<br><small>'+[e.status?'Status: '+e.status:'',getEntryPlatform(e.brand||'')!=='iphone'&&e.ram?'RAM: '+e.ram:'',e.storage?'Storage: '+e.storage:'',e.condition?'Condition: '+e.condition:'',getEntryPlatform(e.brand||'')==='iphone'&&e.battery?'Battery health: '+e.battery:'',getEntryPlatform(e.brand||'')!=='iphone'&&e.box?'Box: '+e.box:'',getEntryPlatform(e.brand||'')!=='iphone'&&e.charger?'Charger: '+e.charger:''].filter(Boolean).join(' · ')+'</small></td>'+
       '<td>'+(e.customer||'')+(e.customerNumber?'<br>'+e.customerNumber:'')+'</td>'+
       '<td style="text-align:right;">'+fmt(displayBuyPrice(e.buy))+'</td>'+
       '<td style="text-align:right;">'+fmt(e.sell)+'</td>'+
-      '<td style="text-align:right;">'+fmt(profit-phoneExpensesTotal(e))+'</td>'+
+      '<td style="text-align:right;">'+fmt(returned?profit:(profit-phoneExpensesTotal(e)))+(returned?'<br><small>Katoti · Refund Rs '+fmt(Number(e.returnRefundAmount)||0)+'</small>':'')+'</td>'+
     '</tr>';
   }).join('');
   let expensesTotal = 0;
@@ -6966,6 +7804,8 @@ document.getElementById('btnReportsPdf').onclick = function(){
 
 
 document.getElementById('btnBackup').onclick = function(){ backupData(false); };
+// Refresh recoverable cloud history whenever the Backup, Sync & Data page is opened.
+document.addEventListener('click',function(e){const t=e.target&&e.target.closest?e.target.closest('[data-settings-view]'):null;if(t&&t.getAttribute('data-settings-view')==='backupdata')loadCloudHistory();});
 document.getElementById('btnShareBackup').onclick = function(){ shareBackupFile(); };
 
 // ---------- Analytics ----------
@@ -7032,10 +7872,15 @@ function analyticsPurchaseRecords(){
   }).filter(function(e){return e.qty>0;});
 }
 function analyticsSaleRecords(){
-  return inventory.filter(function(e){return e.sold && !isReturnedSale(e) && e.sell!=null;}).map(function(e){
+  const sales=inventory.filter(function(e){return e.sold && !isReturnedSale(e) && e.sell!=null;}).map(function(e){
     const qty=Math.max(1,Number(e.quantity)||1);
     return {id:e.id,date:e.saleDate||e.saleAt||e.lastUpdated,exactTime:e.saleAt||null,qty:qty,amount:(Number(e.sell)||0)*qty,profit:saleBaseProfit(e),brand:e.brand||'Other',model:e.model||'',phoneExpenses:phoneExpensesTotal(e)};
   });
+  const returns=inventory.filter(function(e){return isReturnedSale(e)&&e.returnDeduction!=null;}).map(function(e){
+    const amount=Number(e.returnDeduction)||0;
+    return {id:String(e.id)+'-return',date:e.returnedAt||e.saleDate||e.lastUpdated,exactTime:e.returnedAt||null,qty:0,amount:amount,profit:amount,brand:e.brand||'Other',model:e.model||'',phoneExpenses:0,isReturnAdjustment:true};
+  });
+  return sales.concat(returns);
 }
 function analyticsExpenseTotal(range){return expensesForDashboardRange(range);}
 function analyticsMetrics(range){
@@ -7223,7 +8068,7 @@ function analyticsRenderSnapshot(range,curr){
   const stockItems=inventory.filter(function(e){return !e.sold&&Number(e.quantity||0)>0;});
   const lifetimeSold=inventory.filter(function(e){return e.sold&&!isReturnedSale(e);}).reduce(function(s,e){return s+(Number(e.quantity)||0);},0);
   const totalStockValue=stockItems.reduce(function(s,e){return s+(Number(e.buy)||0)*(Number(e.quantity)||0);},0);
-  const allTimeProfit=inventory.filter(function(e){return e.sold&&!isReturnedSale(e)&&e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+(Number(e.sell)-Number(e.buy))*(Number(e.quantity)||1);},0);
+  const allTimeProfit=inventory.filter(function(e){return e.sold&&!isReturnedSale(e)&&e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+(Number(e.sell)-Number(e.buy))*(Number(e.quantity)||1);},0)+inventory.filter(function(e){return isReturnedSale(e);}).reduce(function(s,e){return s+(Number(e.returnDeduction)||0);},0);
   const lifetimeExpenses=totalExpensesAllTime()+totalPhoneExpensesAllTime();
   const lifetimeNetProfit=allTimeProfit-lifetimeExpenses;
   const cards=[
@@ -8173,7 +9018,7 @@ document.getElementById('settingsAddBrandBtn').onclick = function(){
   renderBrandFilter();
 };
 
-const SETTINGS_PAGE_TITLES={home:'Settings',account:'Account',shop:'Shop',inventory:'Stock & Pricing',appearance:'Appearance',fields:'Fields & Options',whatsapp:'WhatsApp',privacy:'Privacy & Security',applock:'App Lock',backup:'Backup & Sync',data:'Data Management',about:'About',shopaccess:'Shop Access'};
+const SETTINGS_PAGE_TITLES={home:'Settings',account:'Account',shop:'Shop',inventory:'Stock & Pricing',appearance:'Appearance',fields:'Fields & Options',whatsapp:'WhatsApp',privacy:'Privacy & Security',applock:'App Lock',backup:'Backup & Sync',data:'Data Management',about:'About',shopaccess:'Shop Access',employeeaccess:'Employee Access'};
 let currentSettingsPage='home';
 function renderSettingsHomeSummaries(){
   loadDashboardSettings();
@@ -8282,6 +9127,7 @@ function settingsDraftPrompt(nextAction){
 
 function openSettingsPage(page){
   if(page==='fields' && userRole!=='admin') return;
+  if(page==='employeeaccess' && !fbUser) return;
 
   dedupeSettingsHomeCategories();
   if(page==='shopaccess' && userRole!=='admin') page='home';
@@ -8296,6 +9142,7 @@ function openSettingsPage(page){
   document.querySelectorAll('#settingsOverlay .settings-view').forEach(function(v){v.classList.toggle('active',v.dataset.settingsView===currentSettingsPage);});
   const back=document.getElementById('settingsBackBtn'); if(back) back.style.visibility=currentSettingsPage==='home'?'hidden':'visible';
   const heading=document.getElementById('settingsPageHeading'); if(heading) heading.textContent=SETTINGS_PAGE_TITLES[currentSettingsPage]||'Settings';
+  if(currentSettingsPage==='backupdata'){ loadCloudHistory(); }
   if(currentSettingsPage==='shopaccess'){ openShopAccessSettings(); }
   if(currentSettingsPage==='appearance'){ renderUiScaleToggles(); }
   if(currentSettingsPage==='shop'){
@@ -8582,7 +9429,7 @@ document.getElementById('btnClearData').onclick = function(){
 // Note: 'customer' (not 'customerName') matches the actual field saved on
 // each entry — using the wrong key here silently exported blank customer
 // names in every previous Excel backup.
-const EXCEL_COLUMNS = ['id','brand','model','status','quantity','sold','display','touch','camera','body','openrepair','battery','ram','storage','network','packing','charger','box','faceid','truetone','buy','sell','range','rangeMode','imei','buyDate','sellerName','sellerNumber','saleDate','customer','customerNumber','payment','notes','lastUpdated'];
+const EXCEL_COLUMNS = ['id','brand','model','companyWarranty','status','quantity','sold','display','touch','camera','body','openrepair','battery','ram','storage','network','packing','charger','box','faceid','truetone','buy','sell','range','rangeMode','imei','buyDate','sellerName','sellerNumber','saleDate','customer','customerNumber','payment','notes','lastUpdated'];
 const EXCEL_EXPENSE_COLUMNS = ['id','category','amount','date','notes'];
 
 function exportExcel(){
@@ -8727,6 +9574,11 @@ let applyingRemoteUpdate = false; // true while a cloud update is being written 
 let shopConfigReady = false;
 let shopConfigFetchPromise = null;
 let pushDebounceTimer = null;
+// Startup safety: never upload a device's pre-existing local state until the
+// first cloud snapshot has been checked. If both sides may have changes, stop
+// automatic writes rather than guessing which copy is newer.
+let cloudInitialSnapshotResolved = false;
+let cloudSyncConflict = false;
 // Prevent background cloud/config refreshes from rebuilding entry chips while
 // the user is actively filling the form. Replacing chip DOM during a tap can
 // make an option appear visible but miss the click.
@@ -8988,7 +9840,7 @@ function adminShopSummary(data){
   const stockUnits=active.reduce(function(s,e){return s+(Math.max(1,Number(e.quantity)||1));},0);
   const stockValue=active.reduce(function(s,e){return s+((Number(e.buy)||0)*(Math.max(1,Number(e.quantity)||1)));},0);
   const salesValue=sold.reduce(function(s,e){return s+((Number(e.sell)||0)*(Math.max(1,Number(e.quantity)||1)));},0);
-  const grossProfit=sold.reduce(function(s,e){return s+saleBaseProfit(e);},0);
+  const grossProfit=sold.reduce(function(s,e){return s+saleBaseProfit(e);},0)+inv.filter(function(e){return isReturnedSale(e);}).reduce(function(s,e){return s+(Number(e.returnDeduction)||0);},0);
   const phoneExp=inv.reduce(function(s,e){return s+phoneExpensesTotal(e);},0);
   const expenses=exp.reduce(function(s,e){return s+Math.abs(Number(e.amount)||0);},0)+phoneExp;
   return {inv:inv,exp:exp,active:active,sold:sold,stockUnits:stockUnits,stockValue:stockValue,salesValue:salesValue,grossProfit:grossProfit,expenses:expenses,netProfit:grossProfit-expenses};
@@ -9292,6 +10144,8 @@ function initFirebaseSync(){
       fbUser = user;
       if(cloudUnsub){ cloudUnsub(); cloudUnsub = null; }
       if(user){
+        rememberAccount(user);
+        try{ localStorage.removeItem(SWITCH_TARGET_EMAIL_KEY); localStorage.removeItem(SWITCH_TARGET_PROVIDER_KEY); }catch(e){}
         try{ localStorage.setItem(LS_WAS_LOGGED_IN_KEY, '1'); }catch(e){}
         resolveUserRoleAndShop(user).then(function(){
           activateShopStorage(userShopId);
@@ -9337,12 +10191,68 @@ function initFirebaseSync(){
         userAccessReason = '';
         updateAccountUI();
         setAuthGateView('locked');
+        try{
+          const target=localStorage.getItem(SWITCH_TARGET_EMAIL_KEY);
+          if(target!==null){
+            const emailBox=document.getElementById('acc-email');
+            const passBox=document.getElementById('acc-password');
+            if(emailBox) emailBox.value=target;
+            if(passBox) passBox.value='';
+            setAccEmailMode('login');
+            localStorage.removeItem(SWITCH_TARGET_EMAIL_KEY);
+            const provider=localStorage.getItem(SWITCH_TARGET_PROVIDER_KEY)||'password'; localStorage.removeItem(SWITCH_TARGET_PROVIDER_KEY);
+            if(target) showToast(provider==='google'?'Google account select ho gaya — Continue with Google dabayein.':'Doosra account select ho gaya — password enter karke Login karein.');
+          }
+        }catch(e){}
       }
     });
   }catch(e){
     console.error('Firebase init failed', e);
     setAuthGateView('locked');
   }
+}
+
+const SAVED_ACCOUNTS_KEY = 'mobileLedger_savedAccounts_v1';
+const SWITCH_TARGET_EMAIL_KEY = 'mobileLedger_switchTargetEmail_v1';
+const SWITCH_TARGET_PROVIDER_KEY = 'mobileLedger_switchTargetProvider_v1';
+function readSavedAccounts(){
+  try{ const a=JSON.parse(localStorage.getItem(SAVED_ACCOUNTS_KEY)||'[]'); return Array.isArray(a)?a.filter(x=>x&&typeof x.email==='string'&&x.email.trim()):[]; }catch(e){ return []; }
+}
+function rememberAccount(user){
+  if(!user || !user.email) return;
+  const email=String(user.email).trim().toLowerCase(); if(!email) return;
+  const old=readSavedAccounts().find(x=>String(x.email||'').toLowerCase()===email)||{};
+  const accounts=readSavedAccounts().filter(x=>String(x.email||'').toLowerCase()!==email);
+  const activeShopName=String((shopProfile&&shopProfile.shopName)||old.shopName||'').trim();
+  accounts.unshift({email:email,displayName:String(user.displayName||old.displayName||'').trim(),shopName:activeShopName,provider:(Array.isArray(user.providerData)&&user.providerData.some(function(p){return p&&p.providerId==='google.com';}))?'google':'password',lastUsedAt:Date.now()});
+  try{localStorage.setItem(SAVED_ACCOUNTS_KEY,JSON.stringify(accounts.slice(0,8)));}catch(e){}
+  renderSavedAccountSwitcher();
+}
+function renderSavedAccountSwitcher(){
+  const list=document.getElementById('accountSwitcherList'); if(!list) return;
+  const accounts=readSavedAccounts();
+  const current=String((fbUser&&fbUser.email)||'').toLowerCase();
+  if(!accounts.length){list.innerHTML='<div style="font-size:12px;color:var(--text-dim);padding:8px 2px;">Abhi koi saved account nahi hai.</div>';return;}
+  list.innerHTML=accounts.map(function(a){
+    const email=String(a.email||''); const isCurrent=email.toLowerCase()===current;
+    const shopLabel=escapeHtml(a.shopName||((isCurrent&&shopProfile&&shopProfile.shopName)||'Shop name not set'));
+    const safeEmail=escapeHtml(email); const provider=String(a.provider||'password');
+    return '<button type="button" class="account-switcher-row '+(isCurrent?'account-switcher-row-current':'')+'" data-switch-email="'+safeEmail+'" data-switch-provider="'+escapeHtml(provider)+'" '+(isCurrent?'disabled':'')+'><span class="account-switcher-avatar">'+escapeHtml((a.shopName||a.displayName||email).slice(0,2).toUpperCase())+'</span><span class="account-switcher-row-main">'+shopLabel+'<span class="account-switcher-row-sub">'+safeEmail+(provider==='google'?' · Google': ' · Email')+(isCurrent?' · Current account':'')+'</span></span><span>'+(isCurrent?'✓':'›')+'</span></button>';
+  }).join('');
+  list.querySelectorAll('[data-switch-email]').forEach(function(btn){btn.onclick=function(){startSavedAccountSwitch(btn.getAttribute('data-switch-email'),btn.getAttribute('data-switch-provider'));};});
+}
+function startSavedAccountSwitch(email,provider){
+  const target=String(email||'').trim(); if(!target || !fbAuth) return;
+  if(fbUser && String(fbUser.email||'').toLowerCase()===target.toLowerCase()){showToast('Yeh account pehle se active hai.');return;}
+  try{localStorage.setItem(SWITCH_TARGET_EMAIL_KEY,target);localStorage.setItem(SWITCH_TARGET_PROVIDER_KEY,String(provider||'password'));}catch(e){}
+  const panel=document.getElementById('accountSwitcherPanel'); if(panel) panel.classList.remove('open');
+  showToast('Account switch ho raha hai…');
+  fbAuth.signOut().catch(function(err){showAccountError(friendlyAuthError(err));});
+}
+function startAddAccountSwitch(){
+  try{localStorage.setItem(SWITCH_TARGET_EMAIL_KEY,'');}catch(e){}
+  if(!fbAuth){setAccEmailMode('login');return;}
+  fbAuth.signOut().catch(function(err){showAccountError(friendlyAuthError(err));});
 }
 
 function accountDisplayId(user){
@@ -9383,6 +10293,7 @@ function updateAccountUI(){
   if(adminBtn) adminBtn.style.display = 'none';
   updateAdminShopContextUI();
   if(fbUser){
+    rememberAccount(fbUser);
     label.textContent = accountDisplayId(fbUser) + ' (sync ON)';
     if(loggedOutView) loggedOutView.style.display = 'none';
     if(loggedInView) loggedInView.style.display = 'block';
@@ -9407,6 +10318,7 @@ function updateAccountUI(){
     const menuLogout=document.getElementById('btnMenuLogout'); if(menuLogout) menuLogout.style.display='none';
   }
   const accessCat=document.getElementById('settingsShopAccessCategory'); if(accessCat) accessCat.style.display=(userRole==='admin'?'flex':'none');
+  const empCat=document.getElementById('settingsEmployeeAccessCategory'); if(empCat) empCat.style.display=(fbUser ? 'flex':'none');
   const bell=document.getElementById('adminNotificationBtn'); if(bell) bell.style.display=(userRole==='admin'?'inline-flex':'none'); try{ if(userRole!=='admin') localStorage.removeItem('mobileLedger_lastAdminSession'); }catch(e){}
   const shareAppBtn=document.getElementById('btnShareApp'); if(shareAppBtn) shareAppBtn.style.display=(userRole==='admin'?'block':'none');
   renderSettingsHomeSummaries();
@@ -9423,7 +10335,10 @@ function setAccountSyncStatus(text, state){
     const who = shopProfile.shopName || accountDisplayId(fbUser);
     const icon = state==='saving' ? '⏳' : state==='error' ? '⚠️' : '✓';
     const color = state==='saving' ? 'var(--text-dim)' : state==='error' ? 'var(--danger)' : 'var(--pta)';
-    line.textContent = icon + ' ' + who + ' — ' + text;
+    // Keep the main header concise on small phones; full diagnostic remains in Account settings.
+    const conflictText = (cloudSyncConflict || /^SYNC CONFLICT|^LOCAL MODE/.test(String(text||'')))
+      ? 'Sync paused — entries save on this phone only' : text;
+    line.textContent = icon + ' ' + who + ' — ' + conflictText;
     line.style.color = color;
     line.style.display = 'block';
   }
@@ -9495,6 +10410,51 @@ function refreshAccessState(){
     }else setAccessGate(userAccessStatus,userAccessReason);
   });
 }
+const EMPLOYEE_PERMISSION_LABELS={
+  entry_add:'Nayi mobile entry karna',entry_edit:'Mobile details edit karna',entry_delete:'Mobile entry delete karna',buy_price:'Purchase price dekhna',buy_price_edit:'Purchase price change karna',stock_view:'Available stock dekhna',sale_add:'Mobile sale karna',sale_discount:'Sale par discount dena',sale_return:'Mobile return karna',return_deduction:'Return par katoti set karna',profit_view:'Profit dekhna',expenses_view:'Expenses dekhna',reports_view:'Financial reports dekhna',purchase_view:'Purchase records dekhna',customer_view:'Customer details dekhna',data_export:'Backup / data export',settings_edit:'App settings badalna',employee_manage:'Doosre employees manage karna'
+};
+function getEmployeePermissionSelection(){
+  const out={}; Object.keys(EMPLOYEE_PERMISSION_LABELS).forEach(function(k){const el=document.getElementById('perm_'+k);out[k]=!!(el&&el.checked);}); return out;
+}
+function renderEmployeeInvitations(){
+  const el=document.getElementById('employeeInviteList'); if(!el)return;
+  let arr=[]; try{arr=JSON.parse(localStorage.getItem('mobileLedger_employeeInvites_'+(fbUser&&fbUser.uid||'local'))||'[]');}catch(e){}
+  if(!arr.length){el.textContent='Abhi koi invitation nahi.';return;}
+  el.innerHTML=arr.slice().reverse().map(function(inv){const active=Object.keys(inv.permissions||{}).filter(k=>inv.permissions[k]).map(k=>EMPLOYEE_PERMISSION_LABELS[k]||k);return '<div style="border:1px solid var(--border);border-radius:10px;padding:10px;margin:8px 0;"><b>'+escapeHtml(inv.name||'Employee')+'</b><div>'+escapeHtml(inv.email||'')+'</div><div style="font-size:12px;color:var(--text-dim);margin-top:4px;">Status: '+escapeHtml(inv.status||'Draft')+' · '+active.length+' permissions enabled</div></div>';}).join('');
+}
+function saveEmployeeInvitation(){
+  if(!fbUser || !fbDb){showToast('Employee access ke liye login aur cloud sync zaroori hai.');return;}
+  const name=(document.getElementById('employeeInviteName').value||'').trim();
+  const email=(document.getElementById('employeeInviteEmail').value||'').trim().toLowerCase();
+  if(!name){showToast('Employee ka naam enter karein.');return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showToast('Valid Gmail/email enter karein.');return;}
+  const permissions=getEmployeePermissionSelection();
+  const invite={ownerUid:fbUser.uid,shopId:userShopId||fbUser.uid,shopName:shopProfile.shopName||'',employeeName:name,email:email,permissions:permissions,status:'draft',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+  const btn=document.getElementById('btnSendEmployeeInvite'); if(btn)btn.disabled=true;
+  fbDb.collection('employeeInvitations').add(invite).then(function(ref){
+    invite.id=ref.id;
+    let arr=[];try{arr=JSON.parse(localStorage.getItem('mobileLedger_employeeInvites_'+fbUser.uid)||'[]');}catch(e){}
+    arr.push(invite);try{localStorage.setItem('mobileLedger_employeeInvites_'+fbUser.uid,JSON.stringify(arr));}catch(e){}
+    renderEmployeeInvitations();
+    const enabled=Object.keys(permissions).filter(k=>permissions[k]).map(k=>'• '+EMPLOYEE_PERMISSION_LABELS[k]).join('\n')||'No permissions selected';
+    const subject=encodeURIComponent('Mobile Hisab employee access invitation — '+(shopProfile.shopName||'Shop'));
+    const body=encodeURIComponent('Hi '+name+',\n\nYou are invited to use Mobile Hisab for '+(shopProfile.shopName||'our shop')+'.\n\nRequested permissions:\n'+enabled+'\n\nPlease contact the shop owner to complete secure account setup.\n\nInvitation reference: '+ref.id);
+    showToast('Invitation record save ho gaya. Email draft khol raha hoon.');
+    window.location.href='mailto:'+encodeURIComponent(email)+'?subject='+subject+'&body='+body;
+  }).catch(function(err){showToast('Invitation save nahi hui: '+(err.message||'Firebase permission/network error'));}).finally(function(){if(btn)btn.disabled=false;});
+}
+// Bind the invitation action directly after its function is defined. Capture the click
+// before other settings handlers; ignore repeated clicks while a save is already running.
+const employeeInviteButton=document.getElementById('btnSendEmployeeInvite');
+if(employeeInviteButton){
+  employeeInviteButton.addEventListener('click',function(e){
+    e.preventDefault(); e.stopPropagation();
+    if(employeeInviteButton.dataset.saving==='1') return;
+    saveEmployeeInvitation();
+  },true);
+}
+const employeeAccessCategory=document.getElementById('settingsEmployeeAccessCategory'); if(employeeAccessCategory)employeeAccessCategory.addEventListener('click',renderEmployeeInvitations);
+
 function saveAccessTemplates(){
   if(userRole!=='admin' || !fbDb || !fbUser) return;
   accessTemplates={
@@ -9571,6 +10531,206 @@ document.addEventListener('click',function(e){
 // device — this keeps each sync write small, fast and free-tier-friendly;
 // Firestore documents are capped at 1MB and photos would blow past that
 // fast across dozens of stock entries).
+function stableSyncValue(value){
+  if(Array.isArray(value)) return value.map(stableSyncValue);
+  if(value && typeof value==='object'){
+    const out={};
+    Object.keys(value).sort().forEach(function(k){
+      if(k==='photos' || k==='updatedAt' || k==='createdAt') return;
+      out[k]=stableSyncValue(value[k]);
+    });
+    return out;
+  }
+  return value;
+}
+function getCloudMismatchFields(data){
+  if(!data || typeof data!=='object') return ['cloud snapshot'];
+  const local=buildCloudPayload();
+  const keys=['inventory','expenses','customModels','customOptionData','cardDisplaySettings','shopProfile','rateBook'];
+  const labels={inventory:'Stock/Sales',expenses:'Expenses',customModels:'Models',customOptionData:'Entry options',cardDisplaySettings:'Card settings',shopProfile:'Shop profile',rateBook:'Rate Book'};
+  const mismatches=[];
+  try{keys.forEach(function(k){
+    if(JSON.stringify(stableSyncValue(local[k]))!==JSON.stringify(stableSyncValue(data[k]))) mismatches.push(labels[k]||k);
+  });}catch(e){return ['comparison error'];}
+  return mismatches;
+}
+function localMatchesCloudSnapshot(data){ return getCloudMismatchFields(data).length===0; }
+function getSyncCompareSummary(data){
+  const mismatches=getCloudMismatchFields(data);
+  const remoteInv=Array.isArray(data&&data.inventory)?data.inventory.length:0;
+  const remoteExp=Array.isArray(data&&data.expenses)?data.expenses.length:0;
+  return mismatches.length ? ' Farq: '+mismatches.join(', ')+'. Mobile stock '+(Array.isArray(inventory)?inventory.length:0)+' / Cloud stock '+remoteInv+'; mobile expenses '+(Array.isArray(expenses)?expenses.length:0)+' / Cloud expenses '+remoteExp+'.' : ' Local aur cloud business data match karta hai.';
+}
+
+// Cloud History: large datasets are split into small Firestore documents so a
+// snapshot stays below Firestore's 1 MiB per-document limit. Snapshots are kept
+// under shops/{shopId}/history and are not automatically deleted.
+const CLOUD_HISTORY_CHUNK_SIZE = 80;
+let cloudHistoryCache = [];
+function cloudHistoryRef(shopId){ return fbDb.collection('shops').doc(shopId).collection('history'); }
+function historySafePayload(data){
+  const d=data||{};
+  return {
+    inventory:Array.isArray(d.inventory)?d.inventory.map(function(e){const c=Object.assign({},e);delete c.photos;return c;}):[],
+    expenses:Array.isArray(d.expenses)?d.expenses:[],
+    customModels:d.customModels||{}, customOptionData:d.customOptionData||{},
+    cardDisplaySettings:d.cardDisplaySettings||{}, shopProfile:d.shopProfile||{},
+    rateBook:Array.isArray(d.rateBook)?d.rateBook:[]
+  };
+}
+function historyFingerprint(data){
+  const raw=JSON.stringify(historySafePayload(data)); let h=2166136261;
+  for(let i=0;i<raw.length;i++){h^=raw.charCodeAt(i);h=Math.imul(h,16777619);}
+  return (h>>>0).toString(16)+'-'+raw.length;
+}
+function cloudHistoryCounts(data){const d=historySafePayload(data);return {inventory:d.inventory.length,expenses:d.expenses.length,rateBook:d.rateBook.length};}
+async function archiveCloudSnapshot(data,label,force){
+  if(!fbDb||!userShopId||!fbUser) throw new Error('Owner account/cloud available nahi hai.');
+  const payload=historySafePayload(data); const fingerprint=historyFingerprint(payload); const ref=cloudHistoryRef(userShopId);
+  if(!force){
+    try{const latest=await ref.orderBy('createdAt','desc').limit(1).get();if(!latest.empty&&latest.docs[0].data().fingerprint===fingerprint)return latest.docs[0].id;}catch(e){console.warn('History duplicate check skipped',e);}
+  }
+  const snapRef=ref.doc(); const counts=cloudHistoryCounts(payload);
+  const meta={id:snapRef.id,label:String(label||'Cloud dataset'),fingerprint:fingerprint,createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdAtClient:new Date().toISOString(),schemaVersion:1,inventoryCount:counts.inventory,expenseCount:counts.expenses,rateBookCount:counts.rateBook,chunkCount:0,complete:false};
+  const chunks=[];
+  function addChunks(key,arr){for(let i=0;i<arr.length;i+=CLOUD_HISTORY_CHUNK_SIZE)chunks.push({id:key+'_'+String(Math.floor(i/CLOUD_HISTORY_CHUNK_SIZE)).padStart(4,'0'),key:key,items:arr.slice(i,i+CLOUD_HISTORY_CHUNK_SIZE)});}
+  addChunks('inventory',payload.inventory);addChunks('expenses',payload.expenses);addChunks('rateBook',payload.rateBook);
+  chunks.push({id:'config',key:'config',items:{customModels:payload.customModels,customOptionData:payload.customOptionData,cardDisplaySettings:payload.cardDisplaySettings,shopProfile:payload.shopProfile}});
+  meta.chunkCount=chunks.length;
+  // Mark incomplete until every chunk has been written; partial snapshots are never offered for restore.
+  await snapRef.set(meta);
+  for(let i=0;i<chunks.length;i++){
+    const c=chunks[i]; await snapRef.collection('chunks').doc(c.id).set({key:c.key,items:c.items,chunkIndex:i});
+  }
+  await snapRef.set({complete:true,completedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+  return snapRef.id;
+}
+function historyDateLabel(data){
+  const raw=data&&data.createdAt&&data.createdAt.toDate?data.createdAt.toDate():new Date(data&&data.createdAtClient||0);
+  return isNaN(raw.getTime())?'Date unavailable':raw.toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+}
+function renderCloudHistoryList(){
+  const list=document.getElementById('cloudHistoryList'), search=document.getElementById('cloudHistorySearch');if(!list)return;
+  const q=String(search&&search.value||'').toLowerCase().trim();
+  const rows=cloudHistoryCache.filter(function(x){return x.complete && (!q||[x.label,historyDateLabel(x),x.inventoryCount,x.expenseCount,x.rateBookCount].join(' ').toLowerCase().includes(q));});
+  if(!rows.length){list.innerHTML='<div class="settings-note">'+(cloudHistoryCache.length?'Search se match hota snapshot nahi mila.':'Abhi cloud history mein koi complete snapshot nahi hai.')+'</div>';return;}
+  list.innerHTML=rows.map(function(x){return '<div style="border:1px solid var(--border);border-radius:10px;padding:10px;background:var(--surface-2);"><div style="font-weight:800;">'+escapeHtml(x.label||'Cloud snapshot')+'</div><div class="settings-note" style="margin-top:4px;">'+escapeHtml(historyDateLabel(x))+'<br>Stock: '+Number(x.inventoryCount||0)+' • Expenses: '+Number(x.expenseCount||0)+' • Rate Book: '+Number(x.rateBookCount||0)+'</div><button type="button" class="menu-item cloud-history-restore" data-history-id="'+escapeHtml(x.id)+'" style="margin-top:8px;border:1px solid var(--border);">↩ Restore this snapshot</button></div>';}).join('');
+  list.querySelectorAll('.cloud-history-restore').forEach(function(btn){btn.addEventListener('click',function(){restoreCloudSnapshot(btn.getAttribute('data-history-id'));});});
+}
+async function loadCloudHistory(){
+  const status=document.getElementById('cloudHistoryStatus');if(!status)return;
+  if(!fbUser||!fbDb||!userShopId){status.textContent='Cloud history dekhne ke liye owner account mein sign in karein.';return;}
+  status.textContent='Cloud history load ho rahi hai…';
+  try{
+    const snap=await cloudHistoryRef(userShopId).orderBy('createdAt','desc').get();
+    cloudHistoryCache=snap.docs.map(function(doc){return Object.assign({id:doc.id},doc.data());});
+    renderCloudHistoryList();status.textContent=cloudHistoryCache.filter(function(x){return x.complete;}).length+' complete snapshots milay. Search se history filter kar sakte hain.';
+  }catch(err){console.error('Cloud history load failed',err);status.textContent='History load nahi hui: '+(err.message||'Firestore permission/network check karein.');}
+}
+async function restoreCloudSnapshot(snapshotId){
+  if(!fbUser||!fbDb||!userShopId)return showToast('Pehle owner account sign in karein.');
+  const meta=cloudHistoryCache.find(function(x){return x.id===snapshotId;});
+  if(!meta||!meta.complete)return showToast('Yeh snapshot complete nahi; restore nahi ho sakta.');
+  if(!confirm('Is dated snapshot ko restore karna hai? Current cloud data pehle history mein save hoga. Yeh action sab devices ka current dataset replace karega.'))return;
+  const status=document.getElementById('cloudHistoryStatus');if(status)status.textContent='Snapshot restore ho raha hai…';
+  try{
+    const snapRef=cloudHistoryRef(userShopId).doc(snapshotId);const chunkSnap=await snapRef.collection('chunks').get();
+    const restored={inventory:[],expenses:[],rateBook:[],customModels:{},customOptionData:{},cardDisplaySettings:{},shopProfile:{}};
+    chunkSnap.docs.forEach(function(doc){const c=doc.data();if(c.key==='config'){Object.assign(restored,c.items||{});}else if(Array.isArray(restored[c.key])&&Array.isArray(c.items)){restored[c.key]=restored[c.key].concat(c.items);}});
+    if(restored.inventory.length!==Number(meta.inventoryCount||0)||restored.expenses.length!==Number(meta.expenseCount||0)||restored.rateBook.length!==Number(meta.rateBookCount||0))throw new Error('Snapshot ke chunks mukammal nahi; current data change nahi kiya.');
+    const currentSnap=await fbDb.collection('shops').doc(userShopId).get();if(currentSnap.exists)await archiveCloudSnapshot(currentSnap.data(),'Before restore • '+historyDateLabel(meta),true);
+    const cloudData=Object.assign({},restored,{updatedAt:firebase.firestore.FieldValue.serverTimestamp(),restoredFrom:snapshotId,restoreRequestedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    await fbDb.collection('shops').doc(userShopId).set(cloudData,{merge:true});
+    applyingRemoteUpdate=true;
+    inventory=restored.inventory;expenses=restored.expenses;rateBook=restored.rateBook;customModels=restored.customModels;customOptionData=restored.customOptionData;Object.assign(cardDisplaySettings,restored.cardDisplaySettings||{});shopProfile=Object.assign({shopName:'',ownerName:''},restored.shopProfile||{});
+    const saves=[[LS_INVENTORY_KEY,inventory],[LS_EXPENSES_KEY,expenses],[LS_RATE_BOOK_KEY,rateBook],[LS_CUSTOM_MODELS_KEY,customModels],[LS_CUSTOM_OPTIONS_KEY,customOptionData],[LS_CARD_DISPLAY_KEY,cardDisplaySettings],[LS_SHOP_PROFILE_KEY,shopProfile]];
+    saves.forEach(function(pair){try{localStorage.setItem(shopStorageKey(pair[0]),JSON.stringify(pair[1]));}catch(e){}});
+    localVersion++;lastPushedVersion=localVersion;try{localStorage.setItem(shopStorageKey(LS_LOCAL_VERSION_KEY),String(localVersion));localStorage.setItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY),String(lastPushedVersion));}catch(e){}
+    cloudSyncConflict=false;cloudInitialSnapshotResolved=true;applyingRemoteUpdate=false;render();updateAccountUI();setAccountSyncStatus('history snapshot restore ho gaya','ok');
+    if(status)status.textContent='Snapshot restore ho gaya. Doosre signed-in devices cloud se restored data receive karenge.';
+    await loadCloudHistory();showToast('Cloud history snapshot restore ho gaya.');
+  }catch(err){applyingRemoteUpdate=false;console.error('Cloud snapshot restore failed',err);if(status)status.textContent='Restore fail hua: '+(err.message||'Cloud permission/network check karein.');showToast('Restore complete nahi hua.');}
+}
+async function saveCurrentCloudSnapshot(){
+  const status=document.getElementById('cloudHistoryStatus');
+  try{if(!fbUser||!fbDb||!userShopId)throw new Error('Owner account sign in karein.');const id=await archiveCloudSnapshot(buildCloudPayload(),'Manual snapshot • '+new Date().toLocaleString(),true);if(status)status.textContent='Current data cloud history mein save ho gaya ('+id+').';await loadCloudHistory();showToast('Cloud snapshot save ho gaya.');}
+  catch(err){console.error('Manual cloud snapshot failed',err);if(status)status.textContent='Snapshot save nahi hua: '+(err.message||'Firestore rules/network check karein.');}
+}
+function mergeMissingRecords(cloudList,localList){
+  const out=Array.isArray(cloudList)?cloudList.slice():[];const seen=new Set();
+  out.forEach(function(e){const k=e&&e.id!=null?'id:'+String(e.id):'json:'+JSON.stringify(e);seen.add(k);});
+  (Array.isArray(localList)?localList:[]).forEach(function(e){const k=e&&e.id!=null?'id:'+String(e.id):'json:'+JSON.stringify(e);if(!seen.has(k)){out.push(e);seen.add(k);}});
+  return out;
+}
+async function mergeMissingLocalEntries(){
+  const status=document.getElementById('cloudHistoryStatus');
+  if(!fbUser||!fbDb||!userShopId)throw new Error('Owner account sign in karein.');
+  if(!confirm('Cloud ko base rakha jayega. Sirf is device ke woh records add honge jinke IDs cloud mein nahi hain. Same ID wale records mein cloud version rakha jayega. Continue?'))return;
+  if(status)status.textContent='Cloud data check aur merge ho raha hai…';
+  const shopRef=fbDb.collection('shops').doc(userShopId);const snap=await shopRef.get();if(!snap.exists)throw new Error('Cloud dataset nahi mila; pehle snapshot/backup verify karein.');
+  const cloud=snap.data();await archiveCloudSnapshot(cloud,'Before merge • '+new Date().toLocaleString(),true);
+  const merged=historySafePayload(cloud);const local=historySafePayload(buildCloudPayload());
+  merged.inventory=mergeMissingRecords(merged.inventory,local.inventory);merged.expenses=mergeMissingRecords(merged.expenses,local.expenses);merged.rateBook=mergeMissingRecords(merged.rateBook,local.rateBook);
+  // Cloud settings remain authoritative; this operation only merges missing records.
+  const payload=Object.assign({},merged,{updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+  await archiveCloudSnapshot(payload,'Merged dataset • '+new Date().toLocaleString(),true);await shopRef.set(payload,{merge:true});
+  cloudSyncConflict=false;cloudInitialSnapshotResolved=true;
+  // Update local data to the merged cloud result while retaining this device's local photos by record ID.
+  const photos={};inventory.forEach(function(e){if(e.photos&&e.photos.length)photos[e.id]=e.photos;});
+  inventory=merged.inventory.map(function(e){const c=Object.assign({},e);c.photos=photos[c.id]||[];return c;});expenses=merged.expenses;rateBook=merged.rateBook;
+  [[LS_INVENTORY_KEY,inventory],[LS_EXPENSES_KEY,expenses],[LS_RATE_BOOK_KEY,rateBook]].forEach(function(pair){try{localStorage.setItem(shopStorageKey(pair[0]),JSON.stringify(pair[1]));}catch(e){}});
+  localVersion++;lastPushedVersion=localVersion;try{localStorage.setItem(shopStorageKey(LS_LOCAL_VERSION_KEY),String(localVersion));localStorage.setItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY),String(lastPushedVersion));}catch(e){}
+  render();updateAccountUI();setAccountSyncStatus('missing local records cloud mein merge ho gaye','ok');if(status)status.textContent='Merge complete. Cloud ke same-ID records overwrite nahi hue; sirf missing local records add hue.';await loadCloudHistory();showToast('Missing local records merge ho gaye.');
+}
+async function syncLatestPhoneDataToCloud(){
+  const status=document.getElementById('cloudHistoryStatus');
+  if(!fbUser||!fbDb||!userShopId)throw new Error('Owner account mein sign in karein.');
+  if(userRole!=='admin' && userAccessStatus!=='active')throw new Error('Shop account active nahi hai.');
+  if(!confirm('Is phone ka current data latest maana jayega. Pehle cloud ka current data aur is phone ka data dono dated history mein save honge, phir phone ka data cloud par upload hoga. Doosre devices is data ko receive karenge. Continue?'))return;
+  if(status)status.textContent='Cloud ki date/revision check ho rahi hai aur dono copies history mein save ho rahi hain…';
+  try{
+    const shopRef=fbDb.collection('shops').doc(userShopId);
+    const before=await shopRef.get();
+    const oldData=before.exists?before.data():null;
+    const nowIso=new Date().toISOString();
+    // Preserve the exact currently stored cloud dataset before replacing it.
+    if(oldData)await archiveCloudSnapshot(oldData,'Before phone-to-cloud sync • '+nowIso,true);
+    // Preserve the exact local dataset as a second recovery point.
+    const localPayload=historySafePayload(buildCloudPayload());
+    await archiveCloudSnapshot(localPayload,'Phone dataset before sync • '+nowIso,true);
+    const oldRevision=Number(oldData&&oldData.syncRevision||0);
+    const payload=Object.assign({},buildCloudPayload(),{
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp(),
+      syncClientAt:nowIso,
+      syncRevision:oldRevision+1,
+      syncSource:'owner-confirmed-phone-sync'
+    });
+    // Only unpause after both recovery snapshots have completed successfully.
+    await shopRef.set(payload,{merge:true});
+    cloudSyncConflict=false;cloudInitialSnapshotResolved=true;
+    try{localStorage.setItem(shopStorageKey('mobileLedger_lastSeenCloudRevision'),String(oldRevision+1));}catch(e){}
+    localVersion=Math.max(Number(localVersion)||0,Number(lastPushedVersion)||0)+1;
+    lastPushedVersion=localVersion;
+    try{localStorage.setItem(shopStorageKey(LS_LOCAL_VERSION_KEY),String(localVersion));localStorage.setItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY),String(lastPushedVersion));}catch(e){}
+    setAccountSyncStatus('latest phone data cloud par sync ho gaya • revision '+(oldRevision+1),'ok');
+    if(status)status.textContent='Phone ka current data cloud par sync ho gaya. Cloud aur phone dono ke pre-sync snapshots history mein save kiye gaye. Ab Refresh History dabayein.';
+    await loadCloudHistory();
+    showToast('Latest phone data cloud par sync ho gaya.');
+  }catch(err){
+    console.error('Manual latest phone-to-cloud sync failed',err);
+    cloudSyncConflict=true;
+    if(status)status.textContent='Sync nahi hua. Conflict safety ke liye paused rakha hai: '+(err.message||'Firestore rules/network check karein.');
+    setAccountSyncStatus('SYNC PAUSED — recovery snapshot ya cloud write fail hua; phone ka data safe rakhein.','error');
+    throw err;
+  }
+}
+
+(function bindCloudHistoryUI(){
+  const refresh=document.getElementById('btnCloudHistoryRefresh'),save=document.getElementById('btnCloudHistorySave'),merge=document.getElementById('btnCloudHistoryMerge'),syncLatest=document.getElementById('btnCloudSyncLatestPhone'),search=document.getElementById('cloudHistorySearch');
+  if(refresh)refresh.addEventListener('click',loadCloudHistory);if(save)save.addEventListener('click',saveCurrentCloudSnapshot);if(syncLatest)syncLatest.addEventListener('click',function(){syncLatestPhoneDataToCloud().catch(function(err){console.error(err);showToast('Cloud sync complete nahi hua.');});});if(merge)merge.addEventListener('click',function(){mergeMissingLocalEntries().catch(function(err){console.error('Cloud merge failed',err);const st=document.getElementById('cloudHistoryStatus');if(st)st.textContent='Merge fail hua: '+(err.message||'Firestore rules/network check karein.');showToast('Merge complete nahi hua.');});});if(search)search.addEventListener('input',renderCloudHistoryList);
+  const section=document.getElementById('cloudHistorySection');if(section){section.addEventListener('click',function(e){if(e.target&&e.target.id==='btnCloudHistoryRefresh')loadCloudHistory();});}
+})();
+
 function buildCloudPayload(){
   return {
     inventory: inventory.map(function(e){ const c = Object.assign({}, e); delete c.photos; return c; }),
@@ -9585,31 +10745,44 @@ function buildCloudPayload(){
 }
 
 function attemptPush(){
-  if(!fbUser || !userShopId || applyingRemoteUpdate || shopStorageSwitching || (userRole!=='admin' && userAccessStatus!=='active')) return;
+  if(!fbUser || !userShopId || applyingRemoteUpdate || shopStorageSwitching || cloudSyncConflict || (userRole!=='admin' && userAccessStatus!=='active')) return;
   clearTimeout(pushDebounceTimer);
   setAccountSyncStatus('save ho raha hai…', 'saving');
-  pushDebounceTimer = setTimeout(function(){
-    const versionAtSchedule = localVersion;
-    fbDb.collection('shops').doc(userShopId).set(buildCloudPayload(), {merge:true})
-      .then(function(){
-        if(versionAtSchedule > lastPushedVersion){
-          lastPushedVersion = versionAtSchedule;
-          try{ localStorage.setItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY), String(lastPushedVersion)); }catch(e){}
-        }
-        setAccountSyncStatus('sab devices par sync ho gaya', 'ok');
-      })
-      .catch(function(err){ console.error('Cloud push failed', err); setAccountSyncStatus('sync fail hua — internet check karein', 'error'); });
+  pushDebounceTimer = setTimeout(async function(){
+    const versionAtSchedule = localVersion; const shopRef=fbDb.collection('shops').doc(userShopId);
+    try{
+      const outgoing=buildCloudPayload();
+      // Archive the currently confirmed cloud state before changing it. This
+      // protects pre-history data on the first upgraded upload as well.
+      const before=await shopRef.get();
+      if(before.exists){
+        const oldData=before.data();
+        if(historyFingerprint(oldData)!==historyFingerprint(outgoing)) await archiveCloudSnapshot(oldData,'Before cloud update • '+new Date().toLocaleString(),false);
+      }
+      // Store the intended new dataset as a recoverable snapshot before the
+      // main document write. A failed main write still leaves a safe copy.
+      await archiveCloudSnapshot(outgoing,'Cloud save • '+new Date().toLocaleString(),false);
+      await shopRef.set(outgoing,{merge:true});
+      if(versionAtSchedule > lastPushedVersion){
+        lastPushedVersion = versionAtSchedule;
+        try{ localStorage.setItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY), String(lastPushedVersion)); }catch(e){}
+      }
+      setAccountSyncStatus('sab devices par sync ho gaya • cloud history saved', 'ok');
+    }catch(err){ console.error('Cloud push/history failed', err); setAccountSyncStatus('sync/history fail hua — data phone par safe hai; Firestore rules/network check karein', 'error'); }
   }, 1200);
 }
 
 function schedulePush(){
   if(isAdminShopView() || shopStorageSwitching) return;
-  // Mark that local data now has a change the cloud hasn't confirmed yet.
-  // Persisted immediately, and done unconditionally (even if we can't reach
-  // the cloud right now, or login hasn't finished resolving) so this device
-  // always knows it's "ahead" until a push actually confirms otherwise.
+  // Record local changes even while conflict mode is active. The caller has
+  // already persisted the data locally; never upload either copy until the
+  // owner explicitly resolves the mismatch.
   localVersion++;
   try{ localStorage.setItem(shopStorageKey(LS_LOCAL_VERSION_KEY), String(localVersion)); }catch(e){}
+  if(cloudSyncConflict){
+    setAccountSyncStatus('LOCAL MODE: entry is phone par save hai; cloud sync paused hai. Backup safe rakhein.', 'error');
+    return;
+  }
   attemptPush();
 }
 // If the connection drops mid-save, the entry is already safe on the phone
@@ -9621,6 +10794,8 @@ window.addEventListener('online', function(){
 });
 
 function startCloudSync(uid){
+  cloudInitialSnapshotResolved = false;
+  cloudSyncConflict = false;
   const syncShopId=String(userShopId||'').trim();
   if(!syncShopId) return;
   if(uid && String(uid)!==syncShopId){ console.warn('Cloud sync requested for a different shop id; using resolved userShopId only.'); }
@@ -9634,13 +10809,69 @@ function startCloudSync(uid){
     // selected-shop snapshot while Admin is viewing another shop.
     if(isAdminShopView()) return;
     if(!snap.exists){
-      // First sync for an existing local account: seed the cloud with the
-      // business data already stored on this device. This is important for
-      // the original Z Mobile/admin account whose data predates cloud sync.
+      // A missing cloud document has no remote business state to overwrite.
+      // It is safe to seed it from this device's existing local data.
+      cloudInitialSnapshotResolved = true;
       setAccountSyncStatus('cloud setup ho raha hai — is device ka data upload ho raha hai', 'saving');
       schedulePush();
       return;
     }
+    if(!cloudInitialSnapshotResolved){
+      const startupData=snap.data();
+      const startupLocalHasBusinessData = (Array.isArray(inventory) && inventory.length>0) || (Array.isArray(expenses) && expenses.length>0);
+      const startupPayloadMatchesCloud = localMatchesCloudSnapshot(startupData);
+      // An owner-confirmed phone-to-cloud sync carries an explicit monotonically
+      // increasing revision. Devices that have not yet applied that revision
+      // should accept it as the chosen authoritative dataset rather than flag
+      // the very sync the owner just approved as a conflict.
+      const incomingRevision = Number(startupData.syncRevision || 0);
+      let lastSeenRevision = 0;
+      try { lastSeenRevision = Number(localStorage.getItem(shopStorageKey('mobileLedger_lastSeenCloudRevision')) || 0); } catch(e) {}
+      const trustedNewerOwnerRevision = startupData.syncSource === 'owner-confirmed-phone-sync' && incomingRevision > 0 && incomingRevision >= lastSeenRevision;
+      // A newer owner-confirmed cloud revision is authoritative. Reconcile this
+      // device's independent local counters BEFORE checking hasPendingLocalChanges;
+      // otherwise a stale PC counter can make the next branch push old local data
+      // back over the newly confirmed cloud dataset.
+      if(trustedNewerOwnerRevision){
+        const reconciledVersion=Math.max(Number(localVersion)||0,Number(lastPushedVersion)||0);
+        localVersion=reconciledVersion;
+        lastPushedVersion=reconciledVersion;
+        try{
+          localStorage.setItem(shopStorageKey(LS_LOCAL_VERSION_KEY),String(reconciledVersion));
+          localStorage.setItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY),String(reconciledVersion));
+          localStorage.setItem(shopStorageKey('mobileLedger_lastSeenCloudRevision'),String(incomingRevision));
+        }catch(e){}
+        console.info('Cloud sync: accepted newer owner-confirmed revision '+incomingRevision+'; stale local pending counter reconciled without upload.');
+      }
+      // The per-device counters cannot tell which copy is newer. On startup,
+      // if this device already has business records, never replace them with a
+      // different cloud snapshot automatically—even when the local counter
+      // claims everything was pushed. Preserve both copies and require an
+      // explicit recovery choice instead of guessing which dataset is newest.
+      if(startupLocalHasBusinessData && !startupPayloadMatchesCloud){
+        cloudSyncConflict = true;
+        cloudInitialSnapshotResolved = true;
+        setAccountSyncStatus('SYNC CONFLICT: mobile aur cloud data mukhtalif hain; entries is phone par save hoti rahengi, cloud sync paused hai. Mobile backup safe rakhein. '+getSyncCompareSummary(startupData), 'error');
+        console.warn('Cloud sync startup conflict: existing local business data differs from cloud; automatic overwrite and upload blocked.');
+        return;
+      }
+      if(hasPendingLocalChanges()){
+        // If the payload is identical, only reconcile the stale local counter.
+        // If it differs, keep both copies untouched and stop automatic writes.
+        if(startupPayloadMatchesCloud){
+          lastPushedVersion=localVersion;
+          try{ localStorage.setItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY), String(lastPushedVersion)); }catch(e){}
+          console.info('Cloud sync startup: local data matches cloud; stale local sync counter reconciled safely.');
+        }else{
+          cloudSyncConflict = true;
+          cloudInitialSnapshotResolved = true;
+          setAccountSyncStatus('SYNC CONFLICT: local aur cloud data different hain; entries is phone par save hoti rahengi, cloud sync paused hai. Backup safe rakhein. '+getSyncCompareSummary(startupData), 'error');
+          console.warn('Cloud sync conflict: local and remote payloads differ; automatic push blocked to protect both copies.');
+          return;
+        }
+      }
+    }
+    cloudInitialSnapshotResolved = true;
     if(hasPendingLocalChanges()){
       // This device has a local change (e.g. an entry added while offline)
       // that hasn't been confirmed written to the cloud yet. The snapshot
@@ -9701,6 +10932,7 @@ function startCloudSync(uid){
       try{ localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY), JSON.stringify(shopProfile)); }catch(err){}
     }
     applyingRemoteUpdate = false;
+    if(Number(data.syncRevision||0)>0){try{localStorage.setItem(shopStorageKey('mobileLedger_lastSeenCloudRevision'),String(Number(data.syncRevision)));}catch(e){}}
     render();
     // Entry UI depends on cloud-synced custom fields/options/layout. Refresh it
     // immediately when the latest shop snapshot arrives so a newly opened entry
@@ -9829,6 +11061,17 @@ document.getElementById('btnAccountForgotPassword').onclick = function(){
   fbAuth.sendPasswordResetEmail(email)
     .then(function(){ showToast('✓ Reset link "' + email + '" par bhej diya — apna inbox check karein.'); })
     .catch(function(err){ showAccountError(friendlyAuthError(err)); });
+};
+document.getElementById('btnOpenAccountSwitcher').onclick=function(e){
+  if(e){e.preventDefault();e.stopPropagation();}
+  const panel=document.getElementById('accountSwitcherPanel'); if(!panel) return;
+  renderSavedAccountSwitcher();
+  const isOpen=panel.classList.toggle('open');
+  this.setAttribute('aria-expanded',isOpen?'true':'false');
+};
+document.getElementById('btnAddAccountSwitcher').onclick=function(){
+  if(!confirm('Doosra account add karne ke liye current account se logout karna hoga. Unsynced changes hon to pehle sync hone dein. Continue?')) return;
+  startAddAccountSwitch();
 };
 document.getElementById('btnAccountLogout').onclick = function(){
   if(!confirm('Is device se logout karna hai? Dobara use karne ke liye login zaroori hoga.')) return;
