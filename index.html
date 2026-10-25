@@ -960,6 +960,7 @@ body.menu-open .app>header{z-index:1!important;}
       <div class="privacy-amount-hint">Slider se 500 se 10,000 tak 500 ke steps mein foran change karein. Number box mein exact amount bhi likh sakte hain.</div>
     </div>
     <div id="offlineBanner" style="display:none;background:#3a2610;border:1px solid #6b4a1f;color:#ffdca8;border-radius:10px;padding:9px 11px;font-size:11.5px;margin:0 0 9px;">📴 Offline mode — data phone mein save ho raha hai. Internet wapas aayega to sync ho jayega.</div>
+    <div id="syncConflictBanner" style="display:none;background:#3a1717;border:1px solid #f87171;color:#fecaca;border-radius:10px;padding:9px 11px;font-size:11.5px;margin:0 0 9px;">⚠️ Sync conflict — Settings → Backup, Sync & Data mein ja kar dono versions mein se choose karein.</div>
     <div class="backup-reminder" id="backupReminder">
       <span>24 ghante se zyada ho gaye, backup nahi ho saka — abhi le lein.</span>
       <span style="display:flex;">
@@ -1000,7 +1001,7 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v81<br><span>Updated 08 Oct 2026 • 10:11:26 AM PKT • All Shops Combined brand filter immediate repaint fixed</span><span>All Shops Combined brand filters fixed</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v82<br><span>Updated 08 Oct 2026 • 10:11:26 AM PKT • All Shops Combined brand filter immediate repaint fixed</span><span>All Shops Combined brand filters fixed</span></div>
         </div>
       </div>
     </div>
@@ -1866,6 +1867,24 @@ body.menu-open .app>header{z-index:1!important;}
           </div>
           <div class="settings-note" style="margin-top:10px;">Auto backup: har 12 ghante</div>
         </div>
+        <div class="settings-section-card">
+          <div class="sec-label">Cloud Backup History & Restore</div>
+          <div class="settings-note" style="margin-top:6px;">Cloud par backup banayein, saved backups dekhein, ya kisi date/time tak ki latest saved history restore karein. Is feature ke liye Firestore rules mein shop ke backup/history subcollections ki permission zaroori hai.</div>
+          <div class="settings-action-list" style="margin-top:10px;">
+            <button class="menu-item" id="btnCreateCloudBackup">☁️ Abhi Cloud Backup Banayein</button>
+            <button class="menu-item" id="btnListCloudBackups">🗂️ Cloud Backups Dekhein</button>
+            <button class="menu-item" id="btnListCloudHistory">🕘 Cloud Activity History Dekhein</button>
+          </div>
+          <div class="field" style="margin-top:10px;"><label>Restore date aur time tak (Pakistan time)</label><input type="datetime-local" id="cloudRestoreAt"></div>
+          <button class="menu-item" id="btnRestoreCloudAt" style="margin-top:8px;">↶ Is waqt tak Restore karein</button>
+          <div class="settings-note" id="cloudBackupStatus" style="margin-top:8px;white-space:pre-wrap;">Cloud backup status check nahi hua.</div>
+          <div id="cloudBackupList" style="margin-top:8px;"></div>
+          <div id="cloudActivityHistoryList" style="margin-top:8px;"></div>
+          <div class="sec-label" style="margin-top:14px;">Sync Conflicts</div>
+          <div class="settings-note">Agar ek hi entry mukhtalif devices par edit hui ho, sync rok kar dono versions dikhaye jayenge. Aap select karein ke kaunsa rakhna hai.</div>
+          <button class="menu-item" id="btnShowSyncConflicts" style="margin-top:8px;">⚖️ Sync Conflicts Dekhein</button>
+          <div id="syncConflictList" style="margin-top:8px;"></div>
+        </div>
         <div class="settings-section-card"><div class="sec-label">Import / Restore</div><div class="settings-action-list"><button class="menu-item" id="btnRestore">⬆ Restore from JSON</button><button class="menu-item" id="btnExcelRestore">📥 Import from Excel</button></div><input type="file" id="restoreFile" accept="application/json" style="display:none;"><input type="file" id="excelFile" accept=".xlsx,.xls" style="display:none;"></div>
         <div class="settings-section-card settings-danger-card"><div class="sec-label" style="color:var(--danger);">Danger Zone</div><div class="settings-note">Clear data se app ka local business data remove ho jayega. Password protection apply hogi.</div><button class="menu-item danger" id="btnClearData" style="margin-top:10px;background:var(--surface-2);border:1px solid var(--border);">🗑️ Clear all data</button></div>
       </div>
@@ -1902,7 +1921,7 @@ body.menu-open .app>header{z-index:1!important;}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v81 • Updated 08 Oct 2026 • 10:11:26 AM PKT • All Shops Combined brand filter immediate repaint fixed • All Shops Combined brand filters fixed</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v82 • Updated 25 Oct 2026 • 09:18:29 AM PKT • Offline safety, cloud recovery and collision protection</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1948,8 +1967,8 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_UPDATED = '08 Oct 2026 • 10:11:26 AM PKT • All Shops Combined brand filter immediate repaint fixed';
+const APP_INDEX_VERSION = 'v82';
+const APP_INDEX_UPDATED = '25 Oct 2026 • 09:18:29 AM PKT • Offline safety, cloud recovery and collision protection';
 
 let inventory = [];
 
@@ -2526,6 +2545,7 @@ async function loadExpenses(){
 // write fails, nothing changes and the add-expense form keeps its data.
 function tryCommitExpenses(candidateExpenses){
   if(isAdminShopView()) return false;
+  candidateExpenses=prepareRecordsForCommit(candidateExpenses,expenses,'exp','expenses');
   if(!historyApplying && JSON.stringify(candidateExpenses)!==JSON.stringify(expenses)){
     activityBeforeFromCurrentMutation();
     lastUndoSnapshot=activityBeforeState;
@@ -2535,11 +2555,12 @@ function tryCommitExpenses(candidateExpenses){
   try{
     localStorage.setItem(shopStorageKey(LS_EXPENSES_KEY), json);
     const check = localStorage.getItem(shopStorageKey(LS_EXPENSES_KEY));
-    if(check !== json) return false;
+    if(check !== json){pendingTombstonesAfterCommit=null;return false;}
   }catch(e){
-    console.error('Storage error', e);
+    pendingTombstonesAfterCommit=null;console.error('Storage error', e);
     return false;
   }
+  if(pendingTombstonesAfterCommit){saveSyncTombstones(pendingTombstonesAfterCommit);pendingTombstonesAfterCommit=null;}
   expenses = candidateExpenses;
   schedulePush();
   return true;
@@ -3044,6 +3065,7 @@ async function loadInventory(){
 // so the form still has the person's typed data and nothing is silently lost.
 function tryCommitInventory(candidateInventory){
   if(isAdminShopView()) return false;
+  candidateInventory=prepareRecordsForCommit(candidateInventory,inventory,'e','inventory');
   if(!historyApplying && JSON.stringify(candidateInventory)!==JSON.stringify(inventory)){
     activityBeforeFromCurrentMutation();
     // Keep the last pre-change state in a small, synchronous in-memory fallback.
@@ -3059,12 +3081,13 @@ function tryCommitInventory(candidateInventory){
     // silently ignore writes in private/incognito mode instead of throwing).
     const check = localStorage.getItem(shopStorageKey(LS_INVENTORY_KEY));
     if(check !== json){
-      return false;
+      pendingTombstonesAfterCommit=null;return false;
     }
   }catch(e){
-    console.error('Storage error', e);
+    pendingTombstonesAfterCommit=null;console.error('Storage error', e);
     return false;
   }
+  if(pendingTombstonesAfterCommit){saveSyncTombstones(pendingTombstonesAfterCommit);pendingTombstonesAfterCommit=null;}
   inventory = candidateInventory;
   schedulePush();
   return true;
@@ -3635,7 +3658,7 @@ function readPhoneExpenseRows(containerId){
     if(!category) throw new Error('Phone expense ki category likhein.');
     if(amount===null || amount<=0) throw new Error('Phone expense ka valid amount likhein.');
     out.push({
-      id:'pe_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+      id:createUniqueRecordId('pe', out),
       category:category, amount:amount,
       date:row.dataset.expenseDate || todayISO(),
       notes:''
@@ -6040,7 +6063,7 @@ function saveEntry(){
       });
     }
 
-    const mainEntry = Object.assign({id:'e_'+Date.now(), sold:false, sell:null, customer:'', customerNumber:'', payment:'', purchaseAt:new Date().toISOString()}, data);
+    const mainEntry = Object.assign({id:createUniqueRecordId('e',inventory), sold:false, sell:null, customer:'', customerNumber:'', payment:'', purchaseAt:new Date().toISOString()}, data);
     candidate = [mainEntry].concat(candidate);
     extras.forEach(function(ep, i){
       const extraData = Object.assign({}, data, {
@@ -6066,7 +6089,7 @@ function saveEntry(){
         truetone: ep.truetone || data.truetone,
         notes: ep.notes !== '' ? ep.notes : data.notes
       });
-      const extraEntry = Object.assign({id:'e_'+Date.now()+'_'+i+'_'+Math.random().toString(36).slice(2,6), sold:false, sell:null, customer:'', customerNumber:'', payment:'', purchaseAt:new Date().toISOString()}, extraData);
+      const extraEntry = Object.assign({id:createUniqueRecordId('e',inventory.concat([mainEntry])), sold:false, sell:null, customer:'', customerNumber:'', payment:'', purchaseAt:new Date().toISOString()}, extraData);
       candidate = [extraEntry].concat(candidate);
     });
   }
@@ -6429,7 +6452,10 @@ function logActivity(type,title,detail){
       const fallback=JSON.stringify({id:id,before:before,after:after,savedAt:Date.now()});
       if(fallback.length<=2500000) localStorage.setItem(activityStateFallbackKey(id),fallback);
     }catch(e){}
-    putActivityState(id,before,after).catch(function(err){console.error('Activity state save error',err);});
+    putActivityState(id,before,after).then(function(){
+      try{const q=JSON.parse(localStorage.getItem(shopStorageKey(LS_CLOUD_HISTORY_QUEUE_KEY))||'[]')||[];q.push({id:id,time:new Date().toISOString(),type:type||'info',title:title||'',detail:detail||''});localStorage.setItem(shopStorageKey(LS_CLOUD_HISTORY_QUEUE_KEY),JSON.stringify(q.slice(-1000)));}catch(e){}
+      flushCloudHistoryQueue();
+    }).catch(function(err){console.error('Activity state save error',err);});
   }
 }
 function readActivityList(){try{return JSON.parse(localStorage.getItem(shopStorageKey(LS_ACTIVITY_KEY))||'[]');}catch(e){return [];}}
@@ -6654,12 +6680,10 @@ function checkBackupReminder(){
 // anything on its own — it just makes sure the reminder banner is showing
 // if a manual backup genuinely hasn't been taken in a while.
 function autoBackupIfDue(){
-  if(!inventory.length) return;
-  let lastBackup = 0;
-  try{ lastBackup = Number(localStorage.getItem(LS_LAST_BACKUP_KEY) || 0); }catch(e){}
-  if(!lastBackup || (Date.now() - lastBackup) >= BACKUP_INTERVAL){
-    backupData(true);
-  }
+  // Cloud auto-backup runs after the signed-in shop snapshot is available.
+  // If the app starts offline, it waits until reconnect rather than downloading
+  // an unsolicited file or claiming a cloud backup was completed.
+  autoCloudBackupIfDue();
 }
 
 // ---------- Dashboard ----------
@@ -6966,6 +6990,15 @@ document.getElementById('btnReportsPdf').onclick = function(){
 
 
 document.getElementById('btnBackup').onclick = function(){ backupData(false); };
+const btnCreateCloudBackup=document.getElementById('btnCreateCloudBackup');
+if(btnCreateCloudBackup)btnCreateCloudBackup.onclick=async function(){try{setCloudBackupStatus('Cloud backup ban raha hai…');const id=await createCloudBackup('Manual backup');setCloudBackupStatus('✓ Cloud backup verified: '+id);showToast('Cloud backup verify ho gaya.');await listCloudBackups();}catch(e){setCloudBackupStatus('Cloud backup fail: '+(e.message||String(e)));alert('Cloud backup nahi ban saka: '+(e.message||String(e)));}};
+const btnListCloudBackups=document.getElementById('btnListCloudBackups');if(btnListCloudBackups)btnListCloudBackups.onclick=listCloudBackups;
+const btnListCloudHistory=document.getElementById('btnListCloudHistory');if(btnListCloudHistory)btnListCloudHistory.onclick=listCloudActivityHistory;
+const btnShowSyncConflicts=document.getElementById('btnShowSyncConflicts');if(btnShowSyncConflicts)btnShowSyncConflicts.onclick=renderSyncConflicts;
+updateSyncConflictBanner();
+const btnRestoreCloudAt=document.getElementById('btnRestoreCloudAt');if(btnRestoreCloudAt)btnRestoreCloudAt.onclick=restoreCloudStateAtTime;
+function listCloudBackupsIfVisible(){const p=document.getElementById('cloudBackupList');if(p&&p.offsetParent!==null){listCloudBackups();listCloudActivityHistory();renderSyncConflicts();}}
+
 document.getElementById('btnShareBackup').onclick = function(){ shareBackupFile(); };
 
 // ---------- Analytics ----------
@@ -7515,7 +7548,7 @@ document.getElementById('btnAddExpense').onclick = function(){
       return x.id===editingExpenseId ? Object.assign({}, x, {category:category, amount:amount, date:date, notes:notes}) : x;
     });
   } else {
-    const entry = {id:'exp_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), category:category, amount:amount, date:date, notes:notes};
+    const entry = {id:createUniqueRecordId('exp',expenses), category:category, amount:amount, date:date, notes:notes};
     candidate = [entry].concat(expenses);
   }
   const ok = tryCommitExpenses(candidate);
@@ -8741,6 +8774,99 @@ let entryConfigRefreshPending = false;
 // while offline (or not yet confirmed) would get silently wiped out.
 const LS_LOCAL_VERSION_KEY = 'mobileLedger_localVersion';
 const LS_LAST_PUSHED_VERSION_KEY = 'mobileLedger_lastPushedVersion';
+const LS_SYNC_DEVICE_ID_KEY = 'mobileLedger_syncDeviceId';
+const LS_SYNC_TOMBSTONES_KEY = 'mobileLedger_syncTombstones';
+const LS_SYNC_CONFLICTS_KEY = 'mobileLedger_syncConflicts';
+const LS_CLOUD_HISTORY_QUEUE_KEY = 'mobileLedger_cloudHistoryQueue';
+const LS_CLOUD_HISTORY_UPLOADED_KEY = 'mobileLedger_cloudHistoryUploaded';
+const LS_LAST_CLOUD_BACKUP_KEY = 'mobileLedger_lastCloudBackup';
+let syncDeviceId = '';
+try{
+  syncDeviceId = localStorage.getItem(LS_SYNC_DEVICE_ID_KEY) || '';
+  if(!syncDeviceId){ syncDeviceId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('dev_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2)); localStorage.setItem(LS_SYNC_DEVICE_ID_KEY,syncDeviceId); }
+}catch(e){ syncDeviceId='dev_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2); }
+function createUniqueRecordId(prefix, records){
+  const used = new Set((Array.isArray(records)?records:[]).map(function(x){return x&&x.id!=null?String(x.id):'';}));
+  let id='';
+  do { id = prefix+'_'+((window.crypto&&crypto.randomUUID)?crypto.randomUUID().replace(/-/g,''):Date.now().toString(36)+'_'+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)); } while(used.has(id));
+  return id;
+}
+function loadSyncTombstones(){try{return JSON.parse(localStorage.getItem(shopStorageKey(LS_SYNC_TOMBSTONES_KEY))||'[]')||[];}catch(e){return [];}}
+function saveSyncTombstones(rows){try{localStorage.setItem(shopStorageKey(LS_SYNC_TOMBSTONES_KEY),JSON.stringify(rows.slice(-10000)));}catch(e){console.warn('Tombstone storage failed',e);}}
+let pendingTombstonesAfterCommit=null;
+function prepareRecordsForCommit(candidate,current,prefix,entityType){
+  if(!Array.isArray(candidate)) return candidate;
+  // Work on detached records so a failed localStorage write cannot mutate the live state.
+  try{candidate=JSON.parse(JSON.stringify(candidate));}catch(e){return candidate;}
+  const old=Array.isArray(current)?current:[]; const oldById=new Map(old.filter(Boolean).map(function(r){return [String(r.id||''),r];}));
+  const used=new Set(); const now=Date.now();
+  candidate.forEach(function(r){
+    if(!r||typeof r!=='object')return;
+    let id=String(r.id||'');
+    if(!id || used.has(id)) id=createUniqueRecordId(prefix,candidate.concat(old));
+    r.id=id; used.add(id);
+    const prior=oldById.get(id);
+    if(!prior || JSON.stringify(Object.assign({},prior,{_syncUpdatedAt:0,_syncBaseUpdatedAt:0,_syncDeviceId:''}))!==JSON.stringify(Object.assign({},r,{_syncUpdatedAt:0,_syncBaseUpdatedAt:0,_syncDeviceId:''}))){
+      r._syncBaseUpdatedAt=Number(prior&&prior._syncUpdatedAt||0); r._syncUpdatedAt=now; r._syncDeviceId=syncDeviceId;
+    } else { r._syncUpdatedAt=Number(r._syncUpdatedAt||prior._syncUpdatedAt||0); r._syncBaseUpdatedAt=Number(r._syncBaseUpdatedAt||prior._syncBaseUpdatedAt||0); r._syncDeviceId=r._syncDeviceId||prior._syncDeviceId||syncDeviceId; }
+    if(entityType==='inventory' && Array.isArray(r.phoneExpenses)){
+      const usedNested=new Set(); r.phoneExpenses.forEach(function(pe){if(!pe||typeof pe!=='object')return;let pid=String(pe.id||'');if(!pid||usedNested.has(pid))pid=createUniqueRecordId('pe',r.phoneExpenses);pe.id=pid;usedNested.add(pid);});
+    }
+  });
+  const candidateIds=new Set(candidate.filter(Boolean).map(function(r){return String(r.id||'');}));
+  const tombstones=loadSyncTombstones(); const tombMap=new Map(tombstones.map(function(t){return [entityType+':'+String(t.id),t];}));
+  old.forEach(function(r){if(!r||!r.id||candidateIds.has(String(r.id)))return; const key=entityType+':'+String(r.id); const existing=tombMap.get(key); if(!existing){const t={id:String(r.id),entityType:entityType,deletedAt:now,deviceId:syncDeviceId};tombstones.push(t);tombMap.set(key,t);} });
+  pendingTombstonesAfterCommit=tombstones;
+  return candidate;
+}
+function loadSyncConflicts(){try{return JSON.parse(localStorage.getItem(shopStorageKey(LS_SYNC_CONFLICTS_KEY))||'[]')||[];}catch(e){return [];}}
+function saveSyncConflicts(rows){try{localStorage.setItem(shopStorageKey(LS_SYNC_CONFLICTS_KEY),JSON.stringify(rows));}catch(e){console.warn('Conflict storage failed',e);}updateSyncConflictBanner();}
+function hasUnresolvedSyncConflicts(){return loadSyncConflicts().length>0;}
+function updateSyncConflictBanner(){const el=document.getElementById('syncConflictBanner');if(el)el.style.display=hasUnresolvedSyncConflicts()?'block':'none';}
+function comparableSyncRecord(r){const c=Object.assign({},r||{});delete c._syncUpdatedAt;delete c._syncBaseUpdatedAt;delete c._syncDeviceId;delete c.photos;return JSON.stringify(c);}
+function queueSyncConflict(entityType,id,localRecord,remoteRecord){
+  if(!localRecord||!remoteRecord||!localRecord._syncDeviceId||!remoteRecord._syncDeviceId||localRecord._syncDeviceId===remoteRecord._syncDeviceId)return;
+  if(comparableSyncRecord(localRecord)===comparableSyncRecord(remoteRecord))return;
+  const localTime=Number(localRecord._syncUpdatedAt||0),remoteTime=Number(remoteRecord._syncUpdatedAt||0);
+  const localBase=Number(localRecord._syncBaseUpdatedAt||0),remoteBase=Number(remoteRecord._syncBaseUpdatedAt||0);
+  // Only ask the user when both versions branched from the same known base.
+  // A normal sequential edit (remote base equals the local version timestamp) is not a conflict.
+  if(!localTime||!remoteTime||localBase!==remoteBase||localTime===remoteBase||remoteTime===localBase)return;
+  const rows=loadSyncConflicts();const key=entityType+':'+id;const existing=rows.find(function(c){return c.key===key;});
+  const localCopy=Object.assign({},localRecord),remoteCopy=Object.assign({},remoteRecord);delete localCopy.photos;delete remoteCopy.photos;
+  const conflict={key:key,id:String(id),entityType:entityType,localRecord:localCopy,remoteRecord:remoteCopy,detectedAt:Date.now(),localDevice:localRecord._syncDeviceId,remoteDevice:remoteRecord._syncDeviceId};
+  if(existing){Object.assign(existing,conflict);}else rows.unshift(conflict);
+  saveSyncConflicts(rows);showToast('⚠️ Ek sync conflict mila — decision zaroori hai.');
+}
+function renderSyncConflicts(){
+  const el=document.getElementById('syncConflictList');if(!el)return;const rows=loadSyncConflicts();
+  if(!rows.length){el.innerHTML='<div class="settings-note">Koi pending sync conflict nahi.</div>';return;}
+  el.innerHTML=rows.map(function(c){const a=c.localRecord||{},b=c.remoteRecord||{};const title=c.entityType==='inventory'?((a.brand||b.brand||'Mobile')+' '+(a.model||b.model||'')):(a.category||b.category||'Expense');return '<div style="border:1px solid #f87171;border-radius:10px;padding:10px;margin-top:8px;"><div style="font-weight:800;">'+escapeHtml(title)+' · '+escapeHtml(c.entityType)+'</div><div class="settings-note">Dono devices par record alag edit hua hai. Cloud sync is decision tak roki gayi hai.</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;"><div style="border:1px solid var(--border);border-radius:8px;padding:8px;"><b>Local version</b><div class="settings-note">'+escapeHtml(c.localDevice||'Unknown device')+'</div><div style="font-size:12px;margin-top:4px;">'+escapeHtml(JSON.stringify(a).slice(0,450))+'</div><button type="button" class="menu-item" data-conflict-choice="local" data-conflict-key="'+escapeHtml(c.key)+'" style="margin-top:8px;">Local version rakhein</button></div><div style="border:1px solid var(--border);border-radius:8px;padding:8px;"><b>Cloud version</b><div class="settings-note">'+escapeHtml(c.remoteDevice||'Unknown device')+'</div><div style="font-size:12px;margin-top:4px;">'+escapeHtml(JSON.stringify(b).slice(0,450))+'</div><button type="button" class="menu-item" data-conflict-choice="remote" data-conflict-key="'+escapeHtml(c.key)+'" style="margin-top:8px;">Cloud version rakhein</button></div></div></div>';}).join('');
+  el.querySelectorAll('[data-conflict-choice]').forEach(function(btn){btn.onclick=function(){resolveSyncConflict(btn.getAttribute('data-conflict-key'),btn.getAttribute('data-conflict-choice'));};});
+}
+function resolveSyncConflict(key,choice){
+  const rows=loadSyncConflicts();const conflict=rows.find(function(c){return c.key===key;});if(!conflict)return;
+  const selected=Object.assign({},choice==='local'?conflict.localRecord:conflict.remoteRecord);
+  if(conflict.entityType==='inventory'){
+    const arr=inventory.slice();const idx=arr.findIndex(function(r){return String(r.id)===String(conflict.id);});
+    if(idx>=0){if(!selected.photos&&arr[idx].photos)selected.photos=arr[idx].photos;selected._syncBaseUpdatedAt=Math.max(Number(conflict.localRecord._syncUpdatedAt||0),Number(conflict.remoteRecord._syncUpdatedAt||0));selected._syncUpdatedAt=Date.now();selected._syncDeviceId=syncDeviceId;arr[idx]=selected;tryCommitInventory(arr);}
+    else {selected._syncBaseUpdatedAt=Math.max(Number(conflict.localRecord._syncUpdatedAt||0),Number(conflict.remoteRecord._syncUpdatedAt||0));selected._syncUpdatedAt=Date.now();selected._syncDeviceId=syncDeviceId;tryCommitInventory(inventory.concat([selected]));}
+  }else{
+    const arr=expenses.slice();const idx=arr.findIndex(function(r){return String(r.id)===String(conflict.id);});
+    if(idx>=0){selected._syncBaseUpdatedAt=Math.max(Number(conflict.localRecord._syncUpdatedAt||0),Number(conflict.remoteRecord._syncUpdatedAt||0));selected._syncUpdatedAt=Date.now();selected._syncDeviceId=syncDeviceId;arr[idx]=selected;tryCommitExpenses(arr);}
+    else {selected._syncBaseUpdatedAt=Math.max(Number(conflict.localRecord._syncUpdatedAt||0),Number(conflict.remoteRecord._syncUpdatedAt||0));selected._syncUpdatedAt=Date.now();selected._syncDeviceId=syncDeviceId;tryCommitExpenses(expenses.concat([selected]));}
+  }
+  saveSyncConflicts(rows.filter(function(c){return c.key!==key;}));renderSyncConflicts();render();
+  if(!hasUnresolvedSyncConflicts()){schedulePush();setAccountSyncStatus('Conflict resolve ho gaya — sync dobara try ho rahi hai…','saving');}
+}
+function mergeSyncedRecords(localRows,remoteRows,entityType){
+  const local=Array.isArray(localRows)?localRows:[], remote=Array.isArray(remoteRows)?remoteRows:[];
+  const tombs=loadSyncTombstones(); const tombMap=new Map(tombs.filter(function(t){return t.entityType===entityType;}).map(function(t){return [String(t.id),Number(t.deletedAt)||0];}));
+  (window.__remoteSyncTombstones||[]).filter(function(t){return t.entityType===entityType;}).forEach(function(t){const k=String(t.id),ts=Number(t.deletedAt)||0;if(ts>(tombMap.get(k)||0))tombMap.set(k,ts);});
+  const byId=new Map();
+  local.concat(remote).forEach(function(r){if(!r||!r.id)return;const id=String(r.id);const ts=tombMap.get(id)||0;const recordTs=Number(r._syncUpdatedAt||r.lastUpdatedAt||0);if(ts>=recordTs && ts>0)return;const old=byId.get(id);if(old && old._syncDeviceId && r._syncDeviceId && old._syncDeviceId!==r._syncDeviceId)queueSyncConflict(entityType,id,old,r);if(!old || recordTs>Number(old._syncUpdatedAt||old.lastUpdatedAt||0) || (recordTs===Number(old._syncUpdatedAt||old.lastUpdatedAt||0) && remote.indexOf(r)!==-1))byId.set(id,Object.assign({},r));});
+  return Array.from(byId.values());
+}
 let localVersion = 0;
 let lastPushedVersion = 0;
 try{ localVersion = Number(localStorage.getItem(shopStorageKey(LS_LOCAL_VERSION_KEY))||0) || 0; }catch(e){}
@@ -9567,10 +9693,144 @@ document.addEventListener('click',function(e){
   if(tab){ currentAccessTab=tab.dataset.accessTab; document.querySelectorAll('.access-tab').forEach(function(b){b.classList.toggle('active',b===tab);}); renderShopAccessRequests(); }
 });
 
-// Firestore doc shape: everything except photos (photos stay local-only per
-// device — this keeps each sync write small, fast and free-tier-friendly;
-// Firestore documents are capped at 1MB and photos would blow past that
-// fast across dozens of stock entries).
+// Cloud recovery storage uses small chunk documents to stay below Firestore's
+// per-document size limit. Backups and history are append-only from the app UI.
+function cloudShopRef(){ if(!fbDb||!fbUser||!userShopId) throw new Error('Pehle online account sync connect karein.'); return fbDb.collection('shops').doc(userShopId); }
+function splitCloudText(str,maxChars){const out=[];for(let i=0;i<str.length;i+=maxChars)out.push(str.slice(i,i+maxChars));return out.length?out:[''];}
+async function writeChunkedCloudRecord(collectionName,id,meta,payloadText){
+  const root=cloudShopRef().collection(collectionName).doc(id); const chunks=splitCloudText(payloadText,180000);
+  for(let i=0;i<chunks.length;i++) await root.collection('chunks').doc(String(i).padStart(5,'0')).set({index:i,content:chunks[i],updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+  await root.set(Object.assign({},meta,{id:id,chunkCount:chunks.length,payloadChars:payloadText.length,complete:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()}),{merge:true});
+  return id;
+}
+async function readChunkedCloudRecord(collectionName,id,meta){
+  const root=cloudShopRef().collection(collectionName).doc(id); const snap=await root.get(); if(!snap.exists)throw new Error('Selected cloud record nahi mila.'); const d=snap.data()||{}; if(!d.complete)throw new Error('Ye backup abhi complete nahi hai.');
+  const chunks=await root.collection('chunks').orderBy('index').get(); if(chunks.size!==Number(d.chunkCount||0))throw new Error('Backup ke tamam chunks available nahi hain.'); let raw='';chunks.forEach(function(c){raw+=(c.data()||{}).content||'';}); if(raw.length!==Number(d.payloadChars||raw.length))throw new Error('Backup verification fail hui.'); return {meta:d,payload:JSON.parse(raw)};
+}
+function currentBackupPayload(){return {schemaVersion:2,exportedAt:new Date().toISOString(),state:appStateSnapshot(),inventory:inventory,expenses:expenses,customModels:customModels,customOptionData:customOptionData,cardDisplaySettings:cardDisplaySettings,rateBook:rateBook,shopProfile:shopProfile};}
+function setCloudBackupStatus(msg){const el=document.getElementById('cloudBackupStatus');if(el)el.textContent=msg;}
+async function createCloudBackup(label){
+  if(isAdminShopView())throw new Error('Admin Shop view read-only hai.');
+  if(!navigator.onLine)throw new Error('Internet offline hai. Cloud backup banane ke liye online aayein.');
+  const id='b_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,9); const payload=currentBackupPayload(); const text=JSON.stringify(payload);
+  await writeChunkedCloudRecord('backups',id,{kind:'snapshot',label:label||'Manual backup',createdAtMs:Date.now(),createdBy:fbUser.uid,deviceId:syncDeviceId,schemaVersion:2},text);
+  const verified=await readChunkedCloudRecord('backups',id); if(!verified.payload||!verified.payload.state)throw new Error('Backup verification fail hui.');
+  try{localStorage.setItem(shopStorageKey(LS_LAST_CLOUD_BACKUP_KEY),String(Date.now()));localStorage.setItem(shopStorageKey(LS_LAST_BACKUP_KEY),String(Date.now()));}catch(e){} hideBackupReminder(); return id;
+}
+async function autoCloudBackupIfDue(){
+  if(!fbUser||!userShopId||!navigator.onLine||isAdminShopView()||hasUnresolvedSyncConflicts())return;
+  let last=0;try{last=Number(localStorage.getItem(shopStorageKey(LS_LAST_CLOUD_BACKUP_KEY))||0);}catch(e){}
+  if(last && Date.now()-last < BACKUP_INTERVAL)return;
+  try{await createCloudBackup('Automatic 12-hour backup');setCloudBackupStatus('Automatic cloud backup verified: '+new Date().toLocaleString('en-PK'));}
+  catch(e){console.warn('Automatic cloud backup pending',e);setCloudBackupStatus('Automatic cloud backup pending: '+(e.message||String(e)));}
+}
+async function listCloudBackups(){
+  const list=document.getElementById('cloudBackupList'); if(!list)return;
+  if(!fbUser||!userShopId){list.innerHTML='<div class="settings-note">Cloud backup dekhne ke liye login zaroori hai.</div>';return;}
+  list.innerHTML='<div class="settings-note">Cloud backups load ho rahe hain…</div>';
+  try{
+    const snap=await cloudShopRef().collection('backups').get(); const rows=[];snap.forEach(function(d){const x=d.data()||{};if(x.complete)rows.push(Object.assign({id:d.id},x));});
+    rows.sort(function(a,b){return Number(b.createdAtMs||0)-Number(a.createdAtMs||0);});
+    if(!rows.length){list.innerHTML='<div class="settings-note">Abhi cloud backup nahi hai. Pehla backup banayein.</div>';return;}
+    list.innerHTML=rows.slice(0,100).map(function(b){const date=new Date(Number(b.createdAtMs)||0);const label=escapeHtml(b.label||'Cloud backup');return '<div style="border:1px solid var(--border);border-radius:10px;padding:10px;margin-top:7px;"><div style="font-weight:800;">'+label+'</div><div class="settings-note">'+escapeHtml(date.toLocaleString('en-PK'))+' · '+escapeHtml(b.id)+'</div><button type="button" class="menu-item" data-cloud-restore-id="'+escapeHtml(b.id)+'" style="margin-top:7px;">Restore this backup</button></div>';}).join('');
+    list.querySelectorAll('[data-cloud-restore-id]').forEach(function(btn){btn.onclick=function(){restoreCloudBackupById(btn.getAttribute('data-cloud-restore-id'));};});
+    setCloudBackupStatus('Cloud par '+rows.length+' verified backup(s) ki metadata mili.');
+  }catch(e){list.innerHTML='<div class="settings-note">Cloud backups load nahi ho sake: '+escapeHtml(e.message||String(e))+'</div>';setCloudBackupStatus('Cloud backup access fail: '+(e.message||String(e)));}
+}
+async function listCloudActivityHistory(){
+  const list=document.getElementById('cloudActivityHistoryList');if(!list)return;
+  if(!fbUser||!userShopId){list.innerHTML='<div class="settings-note">Cloud history ke liye login zaroori hai.</div>';return;}
+  list.innerHTML='<div class="settings-note">Cloud activity history load ho rahi hai…</div>';
+  try{
+    const snap=await cloudShopRef().collection('activityHistory').get();const rows=[];
+    snap.forEach(function(d){const x=d.data()||{};if(x.complete)rows.push(Object.assign({id:d.id},x));});
+    rows.sort(function(a,b){return Number(b.timeMs||0)-Number(a.timeMs||0);});
+    if(!rows.length){list.innerHTML='<div class="settings-note">Cloud par abhi activity history nahi. Naye changes online hon to history save hogi.</div>';return;}
+    list.innerHTML='<div class="sec-label" style="margin-top:12px;">Cloud Activity History</div>'+rows.slice(0,100).map(function(a){const dt=new Date(Number(a.timeMs)||0);return '<div style="border:1px solid var(--border);border-radius:10px;padding:10px;margin-top:7px;"><div style="font-weight:800;">'+escapeHtml(a.title||'Change')+'</div><div class="settings-note">'+escapeHtml(dt.toLocaleString('en-PK'))+' · '+escapeHtml(a.detail||'')+'</div><div style="display:flex;gap:7px;margin-top:7px;"><button type="button" class="menu-item" data-cloud-history-undo="'+escapeHtml(a.id)+'">↶ Before change restore</button><button type="button" class="menu-item" data-cloud-history-redo="'+escapeHtml(a.id)+'">↷ After change restore</button></div></div>';}).join('');
+    list.querySelectorAll('[data-cloud-history-undo]').forEach(function(b){b.onclick=function(){restoreCloudHistoryState(b.getAttribute('data-cloud-history-undo'),'before');};});
+    list.querySelectorAll('[data-cloud-history-redo]').forEach(function(b){b.onclick=function(){restoreCloudHistoryState(b.getAttribute('data-cloud-history-redo'),'after');};});
+  }catch(e){list.innerHTML='<div class="settings-note">Cloud history load nahi hui: '+escapeHtml(e.message||String(e))+'</div>';}
+}
+async function restoreCloudHistoryState(id,direction){
+  if(isAdminShopView()){alert('Admin Shop view read-only hai.');return;}
+  if(!confirm((direction==='before'?'Change se pehle':'Change ke baad')+' wali poori app state restore hogi. Current data ka verified safety backup pehle banega. Agar is change ke baad aur kaam hua hai, woh bhi purani state mein revert ho sakta hai. Aage barhein?'))return;
+  try{
+    await createCloudBackup('Before activity history restore safety backup');
+    const got=await readChunkedCloudRecord('activityHistory',id);const state=got.payload[direction];
+    if(!state)throw new Error('Is history item ki state available nahi.');
+    if(!applyAppState(state))throw new Error('State apply nahi ho saki.');
+    await createCloudBackup('After activity history restore');
+    showToast('Activity history state restore ho gayi.');setCloudBackupStatus('Activity state restored: '+(got.meta.title||id));
+    await listCloudActivityHistory();await listCloudBackups();
+  }catch(e){setCloudBackupStatus('Activity restore fail: '+(e.message||String(e)));alert('Activity restore nahi ho saka: '+(e.message||String(e)));}
+}
+async function restoreCloudBackupById(id){
+  if(isAdminShopView()){alert('Admin Shop view read-only hai.');return;}
+  if(!confirm('Restore se pehle current data ka safety backup cloud par banega. Phir selected backup current data ko replace karega. Aage barhein?'))return;
+  try{
+    setCloudBackupStatus('Current data ka safety backup ban raha hai…');
+    await createCloudBackup('Before restore safety backup');
+    setCloudBackupStatus('Selected backup download aur verify ho raha hai…');
+    const got=await readChunkedCloudRecord('backups',id); const state=got.payload.state;
+    if(!state||!state.inventory||!state.expenses)throw new Error('Backup mein required data nahi hai.');
+    if(!applyAppState(state))throw new Error('Backup apply nahi ho saka.');
+    setCloudBackupStatus('Restore complete: '+new Date(Number(got.meta.createdAtMs)||0).toLocaleString('en-PK'));
+    alert('Cloud backup restore ho gaya. Current state ka safety backup bhi save hua.');
+    await createCloudBackup('After restore verification'); await listCloudBackups();
+  }catch(e){setCloudBackupStatus('Restore fail: '+(e.message||String(e)));alert('Restore nahi ho saka: '+(e.message||String(e))+'\nCurrent data ko change karne se pehle backup verify karna zaroori hai.');}
+}
+async function restoreCloudStateAtTime(){
+  const input=document.getElementById('cloudRestoreAt'); if(!input||!input.value){alert('Restore ke liye date aur time select karein.');return;}
+  if(!fbUser||!userShopId){alert('Cloud restore ke liye login zaroori hai.');return;}
+  const targetValue=input.value.length===16?input.value+':00':input.value;const targetMs=new Date(targetValue+'+05:00').getTime(); if(!Number.isFinite(targetMs)){alert('Date/time valid nahi.');return;}
+  try{
+    setCloudBackupStatus('Selected date/time se pehle ke saved history records search ho rahe hain…');
+    const [backupSnap,historySnap]=await Promise.all([cloudShopRef().collection('backups').get(),cloudShopRef().collection('activityHistory').get()]);
+    const candidates=[]; backupSnap.forEach(function(d){const x=d.data()||{};if(x.complete&&Number(x.createdAtMs)<=targetMs)candidates.push({id:d.id,time:Number(x.createdAtMs)||0,kind:'backup'});});
+    historySnap.forEach(function(d){const x=d.data()||{};if(x.complete&&Number(x.timeMs)<=targetMs)candidates.push({id:d.id,time:Number(x.timeMs)||0,kind:'history'});});
+    candidates.sort(function(a,b){return b.time-a.time;}); if(!candidates.length)throw new Error('Selected waqt se pehle koi complete cloud snapshot/history nahi mili.');
+    const chosen=candidates[0];
+    if(!confirm('Selected waqt: '+new Date(targetMs).toLocaleString('en-PK')+'\nRestore source: '+new Date(chosen.time).toLocaleString('en-PK')+'\n\nPehle current state ka verified safety backup banega. Phir app ki state selected waqt ke sab se qareebi saved record se restore hogi. Aage barhein?'))return;
+    await createCloudBackup('Before date-time restore safety backup');
+    const got=await readChunkedCloudRecord(chosen.kind==='backup'?'backups':'activityHistory',chosen.id);
+    const state=chosen.kind==='history'?(got.payload.after||got.payload.state):got.payload.state;
+    if(!state)throw new Error('Selected history mein restore state nahi hai.');
+    if(!applyAppState(state))throw new Error('Restore apply nahi ho saka.');
+    await createCloudBackup('After date-time restore'); await listCloudBackups();
+    setCloudBackupStatus('Restore complete. Selected time: '+new Date(targetMs).toLocaleString('en-PK')+'; actual saved state: '+new Date(chosen.time).toLocaleString('en-PK'));
+    alert('Restore complete. Note: system ne selected waqt se pehle ka sab se qareebi saved snapshot/change use kiya hai; agar us waqt koi change save nahi hua tha to exact second-level state available nahi ho sakti.');
+  }catch(e){setCloudBackupStatus('Date/time restore fail: '+(e.message||String(e)));alert('Restore fail: '+(e.message||String(e)));}
+}
+async function uploadCloudActivityEvent(item,state){
+  if(!fbUser||!userShopId||!navigator.onLine||!state||!state.before||!state.after)return false;
+  const payloadText=JSON.stringify({before:state.before,after:state.after});
+  await writeChunkedCloudRecord('activityHistory',item.id,{kind:'activity',timeMs:new Date(item.time).getTime()||Date.now(),time:item.time,type:item.type||'info',title:item.title||'',detail:item.detail||'',createdBy:fbUser.uid,deviceId:syncDeviceId},payloadText);
+  return true;
+}
+function loadUploadedCloudHistoryIds(){try{return JSON.parse(localStorage.getItem(shopStorageKey(LS_CLOUD_HISTORY_UPLOADED_KEY))||'[]')||[];}catch(e){return [];}}
+function markCloudHistoryUploaded(id){try{const ids=loadUploadedCloudHistoryIds();if(ids.indexOf(id)<0)ids.push(id);localStorage.setItem(shopStorageKey(LS_CLOUD_HISTORY_UPLOADED_KEY),JSON.stringify(ids.slice(-2000)));}catch(e){}}
+async function queueLocalActivityHistoryForCloud(){
+  if(!fbUser||!userShopId||!navigator.onLine)return;
+  try{
+    const arr=readActivityList();let q=JSON.parse(localStorage.getItem(shopStorageKey(LS_CLOUD_HISTORY_QUEUE_KEY))||'[]')||[];const ids=new Set(q.map(function(x){return x.id;}));const uploaded=new Set(loadUploadedCloudHistoryIds());
+    arr.forEach(function(a){if(a&&a.hasState&&!ids.has(a.id)&&!uploaded.has(a.id)){q.push({id:a.id,time:a.time,type:a.type||'info',title:a.title||'',detail:a.detail||''});ids.add(a.id);}});
+    localStorage.setItem(shopStorageKey(LS_CLOUD_HISTORY_QUEUE_KEY),JSON.stringify(q.slice(-1000)));
+  }catch(e){console.warn('Local activity queue recovery failed',e);}
+  await flushCloudHistoryQueue();
+}
+async function flushCloudHistoryQueue(){
+  if(!fbUser||!userShopId||!navigator.onLine)return;
+  let q=[];try{q=JSON.parse(localStorage.getItem(shopStorageKey(LS_CLOUD_HISTORY_QUEUE_KEY))||'[]')||[];}catch(e){}
+  if(!q.length)return;
+  for(const item of q.slice()){
+    try{const state=await getActivityState(item.id);if(!state)continue;await uploadCloudActivityEvent(item,state);markCloudHistoryUploaded(item.id);q=q.filter(function(x){return x.id!==item.id;});localStorage.setItem(shopStorageKey(LS_CLOUD_HISTORY_QUEUE_KEY),JSON.stringify(q));}
+    catch(e){console.warn('Cloud history queue pending',e);break;}
+  }
+}
+
+// Firestore shop document keeps the live data. Large historical backups and
+// activity states are stored in chunked subcollections rather than inflating
+// the main shop document beyond Firestore's 1 MiB document limit.
 function buildCloudPayload(){
   return {
     inventory: inventory.map(function(e){ const c = Object.assign({}, e); delete c.photos; return c; }),
@@ -9580,25 +9840,52 @@ function buildCloudPayload(){
     cardDisplaySettings: cardDisplaySettings,
     shopProfile: shopProfile,
     rateBook: rateBook,
+    syncTombstones: loadSyncTombstones(),
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 }
 
 function attemptPush(){
   if(!fbUser || !userShopId || applyingRemoteUpdate || shopStorageSwitching || (userRole!=='admin' && userAccessStatus!=='active')) return;
+  if(!navigator.onLine){setAccountSyncStatus('offline — local save pending hai','saving');return;}
+  if(hasUnresolvedSyncConflicts()){setAccountSyncStatus('sync conflict — Settings mein decision chahiye','error');updateSyncConflictBanner();return;}
   clearTimeout(pushDebounceTimer);
   setAccountSyncStatus('save ho raha hai…', 'saving');
   pushDebounceTimer = setTimeout(function(){
     const versionAtSchedule = localVersion;
-    fbDb.collection('shops').doc(userShopId).set(buildCloudPayload(), {merge:true})
-      .then(function(){
-        if(versionAtSchedule > lastPushedVersion){
-          lastPushedVersion = versionAtSchedule;
-          try{ localStorage.setItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY), String(lastPushedVersion)); }catch(e){}
-        }
-        setAccountSyncStatus('sab devices par sync ho gaya', 'ok');
-      })
-      .catch(function(err){ console.error('Cloud push failed', err); setAccountSyncStatus('sync fail hua — internet check karein', 'error'); });
+    const shopRef=fbDb.collection('shops').doc(userShopId);
+    const localPayload=buildCloudPayload();
+    // A Firestore transaction serializes concurrent device writes. Each device
+    // merges its pending records against the latest committed cloud document
+    // instead of replacing arrays based on an old snapshot.
+    fbDb.runTransaction(async function(tx){
+      const snap=await tx.get(shopRef);
+      const remote=snap.exists?(snap.data()||{}):{};
+      window.__remoteSyncTombstones=Array.isArray(remote.syncTombstones)?remote.syncTombstones:[];
+      const mergedInventory=mergeSyncedRecords(localPayload.inventory,Array.isArray(remote.inventory)?remote.inventory:[],'inventory');
+      const mergedExpenses=mergeSyncedRecords(localPayload.expenses,Array.isArray(remote.expenses)?remote.expenses:[],'expenses');
+      if(hasUnresolvedSyncConflicts()) throw new Error('SYNC_CONFLICT_PENDING');
+      const tombstones=loadSyncTombstones();
+      const seen=new Set(tombstones.map(function(t){return t.entityType+':'+t.id;}));
+      window.__remoteSyncTombstones.forEach(function(t){const k=t.entityType+':'+t.id;if(!seen.has(k)){tombstones.push(t);seen.add(k);}});
+      saveSyncTombstones(tombstones);
+      const payload=Object.assign({},localPayload,{inventory:mergedInventory.map(function(e){const c=Object.assign({},e);delete c.photos;return c;}),expenses:mergedExpenses,syncTombstones:tombstones,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+      tx.set(shopRef,payload,{merge:true});
+      return {inventory:mergedInventory,expenses:mergedExpenses};
+    }).then(function(result){
+      const localPhotosById={};inventory.forEach(function(e){if(e.photos&&e.photos.length)localPhotosById[e.id]=e.photos;});
+      // Merge transaction results into current state too, so changes made while
+      // the request was in flight are retained and pushed in the next pass.
+      inventory=mergeSyncedRecords(inventory,result.inventory,'inventory').map(function(e){const c=Object.assign({},e);c.photos=localPhotosById[e.id]||c.photos||[];return c;});
+      expenses=mergeSyncedRecords(expenses,result.expenses,'expenses');
+      try{localStorage.setItem(shopStorageKey(LS_INVENTORY_KEY),JSON.stringify(inventory));localStorage.setItem(shopStorageKey(LS_EXPENSES_KEY),JSON.stringify(expenses));}catch(e){}
+      if(versionAtSchedule > lastPushedVersion){
+        lastPushedVersion = versionAtSchedule;
+        try{ localStorage.setItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY), String(lastPushedVersion)); }catch(e){}
+      }
+      if(localVersion>lastPushedVersion){setAccountSyncStatus('mazeed local changes sync ho rahi hain…','saving');attemptPush();}
+      else {setAccountSyncStatus('sab devices par sync ho gaya', 'ok');flushCloudHistoryQueue();autoCloudBackupIfDue();}
+    }).catch(function(err){ console.error('Cloud push failed', err); if(hasUnresolvedSyncConflicts()){setAccountSyncStatus('sync conflict — Settings mein decision chahiye','error');updateSyncConflictBanner();}else setAccountSyncStatus('sync fail hua — internet check karein', 'error'); });
   }, 1200);
 }
 
@@ -9617,7 +9904,7 @@ function schedulePush(){
 // soon as the browser reports the connection is back, retry immediately
 // instead of waiting for the person to add another entry.
 window.addEventListener('online', function(){
-  if(fbUser) attemptPush();
+  if(fbUser){ attemptPush(); queueLocalActivityHistoryForCloud(); listCloudBackupsIfVisible(); }
 });
 
 function startCloudSync(uid){
@@ -9641,19 +9928,21 @@ function startCloudSync(uid){
       schedulePush();
       return;
     }
+    const data = snap.data();
+    window.__remoteSyncTombstones = Array.isArray(data.syncTombstones) ? data.syncTombstones : [];
+    if(window.__remoteSyncTombstones.length){ const all=loadSyncTombstones(); const seen=new Set(all.map(function(t){return t.entityType+':'+t.id;})); window.__remoteSyncTombstones.forEach(function(t){const k=t.entityType+':'+t.id;if(!seen.has(k)){all.push(t);seen.add(k);}});saveSyncTombstones(all); }
     if(hasPendingLocalChanges()){
-      // This device has a local change (e.g. an entry added while offline)
-      // that hasn't been confirmed written to the cloud yet. The snapshot
-      // we just received may be OLDER than that change — applying it now
-      // would silently erase the unconfirmed entry, on this device too.
-      // So: don't touch local data, just keep retrying the push. Once it
-      // succeeds, hasPendingLocalChanges() goes false and the next
-      // snapshot (which will be our own confirmed write) applies normally.
-      setAccountSyncStatus('local entry abhi cloud pe save ho rahi hai…', 'saving');
+      applyingRemoteUpdate=true;
+      if(Array.isArray(data.inventory)) inventory=mergeSyncedRecords(inventory,data.inventory,'inventory');
+      if(Array.isArray(data.expenses)) expenses=mergeSyncedRecords(expenses,data.expenses,'expenses');
+      try{localStorage.setItem(shopStorageKey(LS_INVENTORY_KEY),JSON.stringify(inventory));localStorage.setItem(shopStorageKey(LS_EXPENSES_KEY),JSON.stringify(expenses));}catch(e){}
+      applyingRemoteUpdate=false;
+      localVersion++;
+      try{localStorage.setItem(shopStorageKey(LS_LOCAL_VERSION_KEY),String(localVersion));}catch(e){}
+      setAccountSyncStatus('local aur cloud records merge ho rahe hain…','saving');
       attemptPush();
       return;
     }
-    const data = snap.data();
     // If a cloud document exists but contains no business records while this
     // device already has real inventory/expenses, never wipe the local
     // business state with that empty snapshot. Seed/repair the cloud instead.
@@ -9672,11 +9961,11 @@ function startCloudSync(uid){
     if(Array.isArray(data.inventory)){
       const localPhotosById = {};
       inventory.forEach(function(e){ if(e.photos && e.photos.length) localPhotosById[e.id] = e.photos; });
-      inventory = data.inventory.map(function(e){ const c = Object.assign({}, e); c.photos = localPhotosById[e.id] || []; return c; });
+      inventory = mergeSyncedRecords(inventory,data.inventory,'inventory').map(function(e){ const c = Object.assign({}, e); c.photos = localPhotosById[e.id] || c.photos || []; return c; });
       try{ localStorage.setItem(shopStorageKey(LS_INVENTORY_KEY), JSON.stringify(inventory)); }catch(err){}
     }
     if(Array.isArray(data.expenses)){
-      expenses = data.expenses;
+      expenses = mergeSyncedRecords(expenses,data.expenses,'expenses');
       try{ localStorage.setItem(shopStorageKey(LS_EXPENSES_KEY), JSON.stringify(expenses)); }catch(err){}
     }
     if(data.customModels){
@@ -9719,7 +10008,8 @@ function startCloudSync(uid){
       }
     }catch(e){}
     updateAccountUI();
-    setAccountSyncStatus('sab devices par sync ho gaya', 'ok');
+    if(hasUnresolvedSyncConflicts()){setAccountSyncStatus('sync conflict — Settings mein decision chahiye','error');updateSyncConflictBanner();}
+    else {setAccountSyncStatus('sab devices par sync ho gaya', 'ok');autoCloudBackupIfDue();queueLocalActivityHistoryForCloud();}
   }, function(err){
     console.error('Cloud sync listen failed', err);
     setAccountSyncStatus('sync connect nahi ho saka — internet check karein', 'error');
@@ -9977,13 +10267,14 @@ autoBackupIfDue();
 checkBackupReminder();
 restoreAdminBellHint();
 initFirebaseSync();
+try{setTimeout(function(){flushCloudHistoryQueue();},2500);}catch(e){}
 
 // Restore the exact main-screen position after inventory has rendered.
 restoreUIScroll(savedUIState);
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
-    const SW_VERSION = '42';
+    const SW_VERSION = '43';
     navigator.serviceWorker.register('service-worker.js?v='+SW_VERSION, {updateViaCache:'none'}).then(function(reg){
       try{ reg.update(); }catch(e){}
       if(reg.waiting){ try{ reg.waiting.postMessage({type:'SKIP_WAITING'}); }catch(e){} }
