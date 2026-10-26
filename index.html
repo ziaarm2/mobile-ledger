@@ -650,6 +650,20 @@
   .access-tab{flex:0 0 auto;border:1px solid var(--border);background:var(--surface-2);color:var(--text-dim);padding:8px 11px;border-radius:999px;font-size:11px;font-weight:800;}
   .access-tab.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
   @media(min-width:700px){.settings-shell,.account-shell{height:calc(100vh - 40px);max-height:900px;margin:20px auto;border:1px solid var(--border);border-radius:18px;box-shadow:0 20px 55px rgba(0,0,0,.35)}#accountOverlay{background:rgba(0,0,0,.58);padding:0 12px;}}
+/* v83 responsive settings repair: keep the settings content and save bar usable on narrow phones */
+#settingsOverlay{align-items:stretch;justify-content:center;padding:0!important;overflow:hidden;}
+#settingsOverlay>.settings-shell{width:100%;max-width:480px;min-width:0;height:100dvh;max-height:100dvh;margin:0 auto;border-radius:0;overflow:hidden;}
+#settingsOverlay .settings-page-wrap{min-width:0;width:100%;box-sizing:border-box;}
+#settingsOverlay .settings-view,#settingsOverlay .settings-section-card,#settingsOverlay .settings-category-list{min-width:0;max-width:100%;}
+#settingsOverlay .settings-category-sub{white-space:normal;overflow-wrap:anywhere;}
+#settingsOverlay .settings-draft-bar{position:sticky;bottom:0;display:flex;flex-wrap:wrap;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));box-sizing:border-box;}
+#settingsOverlay .settings-draft-status{flex:1 1 100%;min-width:0;}
+#settingsOverlay .settings-draft-actions{width:100%;display:flex;gap:8px;}
+#settingsOverlay .settings-draft-actions button{flex:1 1 0;min-width:0;white-space:normal;}
+#settingsOverlay input,#settingsOverlay select,#settingsOverlay textarea{max-width:100%;min-width:0;box-sizing:border-box;}
+@media(min-width:700px){#settingsOverlay{padding:0 12px!important;align-items:center;}#settingsOverlay>.settings-shell{height:calc(100dvh - 40px);max-height:900px;border:1px solid var(--border);border-radius:18px;margin:20px auto;}}
+@media(max-width:380px){#settingsOverlay .settings-topbar{padding:10px 11px;}#settingsOverlay .settings-page-wrap{padding:10px 10px calc(18px + env(safe-area-inset-bottom,0px));}#settingsOverlay .settings-section-card{padding:10px;}#settingsOverlay .settings-draft-actions button{font-size:12px;padding:9px 6px;}}
+
 
 
 /* ===== Z MOBILE UI REDESIGN v31 ===== */
@@ -1001,7 +1015,7 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v82<br><span>Updated 08 Oct 2026 • 10:11:26 AM PKT • All Shops Combined brand filter immediate repaint fixed</span><span>All Shops Combined brand filters fixed</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v83<br><span>Updated 26 Oct 2026 • 09:01:00 AM PKT • Offline login feedback, Activity History recovery and mobile Settings layout fixes</span><span>All Shops Combined brand filters fixed</span></div>
         </div>
       </div>
     </div>
@@ -1921,7 +1935,7 @@ body.menu-open .app>header{z-index:1!important;}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v82 • Updated 25 Oct 2026 • 09:18:29 AM PKT • Offline safety, cloud recovery and collision protection</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v83 • Updated 26 Oct 2026 • 09:01:00 AM PKT • Offline login feedback, Activity History recovery and responsive Settings</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1967,7 +1981,7 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v82';
+const APP_INDEX_VERSION = 'v83';
 const APP_INDEX_UPDATED = '25 Oct 2026 • 09:18:29 AM PKT • Offline safety, cloud recovery and collision protection';
 
 let inventory = [];
@@ -6469,10 +6483,9 @@ function activityRestore(index,direction){
     if(!st){alert('Is activity ki reversible state nahi mili.');return;}
     const state=direction==='before'?st.before:st.after;if(!state){alert('Is activity ki required state available nahi hai.');return;}
     const action=direction==='before'?'Undo':'Redo';
-    if(!confirm(action+' karne se app ka data us activity ke '+(direction==='before'?'pehle':'baad')+' wali exact state par chala jayega.\n\n'+target.title+'\n\nAage barhein?')){activityRestoreBusy=false;return;}
+    if(!confirm(action+' karne se app ka data us activity ke '+(direction==='before'?'pehle':'baad')+' wali exact state par chala jayega.\n\n'+target.title+'\n\nAage barhein?'))return;
     if(applyAppState(state)){showToast((direction==='before'?'↶ ':'↷ ')+target.title+' — '+action+' ho gaya.');renderActivityHistory();}
-    activityRestoreBusy=false;
-  }).catch(function(){activityRestoreBusy=false;alert('Activity state load nahi ho saki.');});
+  }).catch(function(){alert('Activity state load nahi ho saki.');}).finally(function(){activityRestoreBusy=false;});
 }
 function undoActivity(index){activityRestore(index,'before');}
 function redoActivity(index){activityRestore(index,'after');}
@@ -6480,7 +6493,10 @@ function renderActivityHistory(){
   const el=document.getElementById('activityHistoryList');if(!el)return;
   const arr=readActivityList();if(!arr.length){el.innerHTML='<div class="empty">Abhi koi activity history nahi hai.</div>';return;}
   const icons={add:'➕',edit:'✏️',sell:'💰',return:'↩️',delete:'🗑️',expense:'💵',settings:'⚙️',share:'📤',restore:'↩️',split:'✂️',rate:'📋',import:'📥',clear:'🗑️',info:'ℹ️'};
-  el.innerHTML=arr.map(function(a,i){const d=new Date(a.time);const dt=isNaN(d.getTime())?'':d.toLocaleString('en-PK',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});return '<div class="activity-history-row"><div class="activity-history-icon">'+(icons[a.type]||'ℹ️')+'</div><div class="activity-history-main"><div class="activity-history-title">'+escapeHtml(a.title)+'</div><div class="activity-history-meta">'+escapeHtml(a.detail||'')+(dt?' · '+escapeHtml(dt):'')+'</div><div class="activity-history-actions"><button type="button" class="activity-action-btn" data-act-undo="'+i+'">↶ Undo</button><button type="button" class="activity-action-btn" data-act-redo="'+i+'">↷ Redo</button></div></div></div>';}).join('');
+  const deleted=arr.map(function(a,i){return {a:a,i:i};}).filter(function(x){return x.a.type==='delete' && x.a.hasState;});
+  const recycleHtml=deleted.length?'<div style="border:1px solid var(--border);border-radius:12px;padding:12px;margin:0 0 14px;"><div style="font-weight:800;margin-bottom:8px;">🗑️ Recently deleted · Recoverable</div><div class="settings-note" style="margin-bottom:8px;">Restore karne se deletion se pehle wali poori app state wapas aayegi; pehle current data ka backup rakhna behtar hai.</div>'+deleted.slice(0,30).map(function(x){const dt=new Date(x.a.time);return '<div style="padding:8px 0;border-top:1px solid var(--border);"><div style="font-weight:700;">'+escapeHtml(x.a.title||'Deleted record')+'</div><div class="settings-note">'+escapeHtml(x.a.detail||'')+' · '+escapeHtml(isNaN(dt.getTime())?'':dt.toLocaleString('en-PK'))+'</div><button type="button" class="activity-action-btn" data-recover-deleted="'+x.i+'">Restore deleted change</button></div>';}).join('')+'</div>':'';
+  el.innerHTML=recycleHtml+arr.map(function(a,i){const d=new Date(a.time);const dt=isNaN(d.getTime())?'':d.toLocaleString('en-PK',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});return '<div class="activity-history-row"><div class="activity-history-icon">'+(icons[a.type]||'ℹ️')+'</div><div class="activity-history-main"><div class="activity-history-title">'+escapeHtml(a.title)+'</div><div class="activity-history-meta">'+escapeHtml(a.detail||'')+(dt?' · '+escapeHtml(dt):'')+'</div><div class="activity-history-actions"><button type="button" class="activity-action-btn" data-act-undo="'+i+'">↶ Undo</button><button type="button" class="activity-action-btn" data-act-redo="'+i+'">↷ Redo</button></div></div></div>';}).join('');
+  el.querySelectorAll('[data-recover-deleted]').forEach(function(b){b.onclick=function(){undoActivity(Number(b.dataset.recoverDeleted));};});
   el.querySelectorAll('[data-act-undo]').forEach(function(b){b.onclick=function(){undoActivity(Number(b.dataset.actUndo));};});
   el.querySelectorAll('[data-act-redo]').forEach(function(b){b.onclick=function(){redoActivity(Number(b.dataset.actRedo));};});
 }
@@ -9455,6 +9471,15 @@ function initFirebaseSync(){
         });
       } else {
         stopNotificationSubscriptions();
+        if(wasLoggedInBefore && !navigator.onLine){
+          // Offline fallback for a previously authenticated device: use only its cached shop data.
+          // Cloud writes remain queued until Firebase authentication and connectivity return.
+          const appEl=document.querySelector('.app'); if(appEl) appEl.style.visibility='visible';
+          const fab=document.getElementById('fabAdd'); if(fab) fab.style.display='flex';
+          setSessionSplash(false); document.getElementById('accountOverlay').classList.add('hidden');
+          showToast('Offline mode: local data available; cloud sync internet par hoga.');
+          return;
+        }
         try{ localStorage.removeItem(LS_WAS_LOGGED_IN_KEY); }catch(e){}
         userRole = 'owner';
         userShopId = null;
@@ -10033,6 +10058,7 @@ function friendlyAuthError(err){
   if(code.indexOf('unauthorized-domain')!==-1) return 'Is website/domain ko Firebase Authentication ke Authorized domains mein add karna hoga.';
   if(code.indexOf('operation-not-allowed')!==-1) return 'Firebase Authentication mein Google sign-in provider enable karein.';
   if(code.indexOf('too-many-requests')!==-1) return 'Bohat zyada koshishein ho gayi hain — thodi der baad try karein.';
+  if(code.indexOf('network-request-failed')!==-1 || code.indexOf('timeout')!==-1) return 'Firebase se connection nahi ho saka. Internet check karein; pehle se login session ho to app ko offline mode mein kholne ki koshish karein.';
   return 'Masla hua: ' + ((err && err.message) || 'dobara try karein.');
 }
 
@@ -10077,13 +10103,19 @@ document.getElementById('btnAccountClose').onclick = function(){
   requestOverlayClose();
 };
 document.getElementById('btnAccountLogin').onclick = function(){
+  const btn=this;
+  if(btn.dataset.busy==='1')return;
   if(!firebaseReady()){ showAccountError('Sync abhi set up nahi hua (Firebase config missing).'); return; }
   const email = document.getElementById('acc-email').value.trim();
   const pass = document.getElementById('acc-password').value;
   if(!email || !pass){ showAccountError('Email aur password dono likhein.'); return; }
+  if(!navigator.onLine){showAccountError('Internet band hai. Agar pehle login kiya hua hai to app ko dobara khol kar cached session check karein; naya login internet ke baghair nahi ho sakta.');return;}
+  btn.dataset.busy='1';btn.disabled=true;btn.setAttribute('aria-busy','true');
+  const oldText=btn.textContent;btn.textContent='Login ho raha hai…';
   fbAuth.signInWithEmailAndPassword(email, pass)
     .then(function(){ showToast('✓ Login ho gaya — sync shuru.'); })
-    .catch(function(err){ showAccountError(friendlyAuthError(err)); });
+    .catch(function(err){ showAccountError(friendlyAuthError(err)); })
+    .finally(function(){btn.dataset.busy='0';btn.disabled=false;btn.removeAttribute('aria-busy');btn.textContent=oldText;});
 };
 document.getElementById('btnAccountSignup').onclick = function(){
   if(!firebaseReady()){ showAccountError('Sync abhi set up nahi hua (Firebase config missing).'); return; }
