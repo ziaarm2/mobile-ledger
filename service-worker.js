@@ -1,8 +1,8 @@
-/* Mobile Hisab offline shell cache — v45.
+/* Mobile Hisab offline shell cache — v43.
  * Keep this file beside index.html at the same hosted path/scope.
  * Firestore/Auth network calls are deliberately never cached.
  */
-const CACHE_NAME = 'mobile-hisab-shell-v45';
+const CACHE_NAME = 'mobile-hisab-shell-v44';
 const OLD_CACHE_PREFIX = 'mobile-hisab-shell-';
 const CORE_FILES = ['index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 const CDN_ASSETS = [
