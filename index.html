@@ -701,7 +701,7 @@ header{background:#fff;border-bottom:1px solid #e2e6ec;padding:0 16px 14px;box-s
 .header-top>div:first-child{min-width:0;}
 .header-top>div:last-child{gap:8px!important;align-items:center!important;display:flex!important;flex:0 0 auto;min-width:52px;}
 .history-icon-btn{width:44px;height:44px;background:transparent;border:0;color:#fff;border-radius:10px;font-size:18px;display:inline-flex;align-items:center;justify-content:center;padding:0;}
-/* v84: global Undo/Redo controls remain visible and usable. */
+#globalUndoBtn,#globalRedoBtn{display:none!important;}
 #adminNotificationBtn{display:inline-flex!important;position:relative!important;background:transparent!important;border:0!important;width:44px;height:44px;font-size:0;color:#fff;padding:0;}
 #adminNotificationBtn svg{width:29px;height:29px;display:block;}
 #adminNotificationBtn[style*="display:none"]{display:none!important;}
@@ -847,16 +847,6 @@ body.menu-open .app>header{z-index:1!important;}
   padding:16px 16px 20px !important;
   overflow-y:auto !important;
 }
-
-/* v84 responsive settings: harden the full-screen panel against inherited drawer widths. */
-#settingsOverlay{position:fixed!important;inset:0!important;width:100vw!important;max-width:100vw!important;height:100dvh!important;box-sizing:border-box!important;z-index:10000!important;align-items:stretch!important;justify-content:center!important;overflow:hidden!important;}
-#settingsOverlay>.settings-shell{position:relative!important;display:flex!important;flex-direction:column!important;width:100%!important;max-width:520px!important;min-width:0!important;height:100%!important;max-height:100%!important;margin:0 auto!important;transform:none!important;left:auto!important;right:auto!important;border-radius:0!important;overflow:hidden!important;box-sizing:border-box!important;}
-#settingsOverlay .settings-page-wrap{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;width:100%!important;box-sizing:border-box!important;}
-#settingsOverlay .settings-draft-bar{flex:0 0 auto!important;position:relative!important;bottom:auto!important;width:100%!important;box-sizing:border-box!important;}
-#settingsOverlay .settings-draft-actions{display:flex!important;width:100%!important;min-width:0!important;}
-#settingsOverlay .settings-draft-actions button{flex:1 1 0!important;min-width:0!important;max-width:100%!important;}
-#settingsOverlay .settings-section-card,#settingsOverlay .settings-category,#settingsOverlay input,#settingsOverlay select,#settingsOverlay textarea{min-width:0!important;max-width:100%!important;box-sizing:border-box!important;}
-@media(min-width:700px){#settingsOverlay{align-items:center!important;padding:20px 12px!important;}#settingsOverlay>.settings-shell{height:calc(100dvh - 40px)!important;max-height:900px!important;border-radius:18px!important;border:1px solid var(--border)!important;}}
 </style>
 
 <style id="mandatory-star-style">.required-star{color:#d92d20;font-weight:800;margin-left:2px;}</style>
@@ -1025,7 +1015,7 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v84<br><span>Updated 26 Oct 2026 • 09:12:00 AM PKT • Offline session recovery, reversible activity controls and responsive settings repair</span><span>All Shops Combined brand filters fixed</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v83<br><span>Updated 26 Oct 2026 • 09:01:00 AM PKT • Offline login feedback, Activity History recovery and mobile Settings layout fixes</span><span>All Shops Combined brand filters fixed</span></div>
         </div>
       </div>
     </div>
@@ -1945,7 +1935,7 @@ body.menu-open .app>header{z-index:1!important;}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v84 • Updated 26 Oct 2026 • 09:12:00 AM PKT • Offline session recovery, reversible activity controls and responsive Settings</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v83 • Updated 26 Oct 2026 • 09:01:00 AM PKT • Offline login feedback, Activity History recovery and responsive Settings</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -1991,7 +1981,7 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v84';
+const APP_INDEX_VERSION = 'v83';
 const APP_INDEX_UPDATED = '25 Oct 2026 • 09:18:29 AM PKT • Offline safety, cloud recovery and collision protection';
 
 let inventory = [];
@@ -6353,7 +6343,7 @@ function globalUndo(){
     redoStack.push({label:item.label,state:current,time:Date.now()});
     if(!applyAppState(item.state)){redoStack.pop();undoStack.push(item);return;}
     lastUndoSnapshot=null;
-    persistHistory(); activityCurrentState=appStateSnapshot(); showToast('↶ '+item.label+' undo ho gaya.');
+    persistHistory(); showToast('↶ '+item.label+' undo ho gaya.');
     return;
   }
   // Synchronous fallback: every real inventory/expense mutation also keeps
@@ -6399,7 +6389,7 @@ function globalRedo(){
   const item=redoStack.pop();
   undoStack.push({label:item.label,state:current,time:Date.now()});
   if(!applyAppState(item.state)){undoStack.pop();redoStack.push(item);return;}
-  persistHistory(); activityCurrentState=appStateSnapshot(); showToast('↷ '+item.label+' redo ho gaya.');
+  persistHistory(); showToast('↷ '+item.label+' redo ho gaya.');
 }
 function updateHistoryButtons(){
   const u=document.getElementById('globalUndoBtn'),r=document.getElementById('globalRedoBtn');
@@ -6494,7 +6484,7 @@ function activityRestore(index,direction){
     const state=direction==='before'?st.before:st.after;if(!state){alert('Is activity ki required state available nahi hai.');return;}
     const action=direction==='before'?'Undo':'Redo';
     if(!confirm(action+' karne se app ka data us activity ke '+(direction==='before'?'pehle':'baad')+' wali exact state par chala jayega.\n\n'+target.title+'\n\nAage barhein?'))return;
-    if(applyAppState(state)){activityCurrentState=appStateSnapshot();showToast((direction==='before'?'↶ ':'↷ ')+target.title+' — '+action+' ho gaya.');renderActivityHistory();}else{throw new Error('Saved state apply nahi ho saki.');}
+    if(applyAppState(state)){showToast((direction==='before'?'↶ ':'↷ ')+target.title+' — '+action+' ho gaya.');renderActivityHistory();}
   }).catch(function(){alert('Activity state load nahi ho saki.');}).finally(function(){activityRestoreBusy=false;});
 }
 function undoActivity(index){activityRestore(index,'before');}
@@ -6507,8 +6497,8 @@ function renderActivityHistory(){
   const recycleHtml=deleted.length?'<div style="border:1px solid var(--border);border-radius:12px;padding:12px;margin:0 0 14px;"><div style="font-weight:800;margin-bottom:8px;">🗑️ Recently deleted · Recoverable</div><div class="settings-note" style="margin-bottom:8px;">Restore karne se deletion se pehle wali poori app state wapas aayegi; pehle current data ka backup rakhna behtar hai.</div>'+deleted.slice(0,30).map(function(x){const dt=new Date(x.a.time);return '<div style="padding:8px 0;border-top:1px solid var(--border);"><div style="font-weight:700;">'+escapeHtml(x.a.title||'Deleted record')+'</div><div class="settings-note">'+escapeHtml(x.a.detail||'')+' · '+escapeHtml(isNaN(dt.getTime())?'':dt.toLocaleString('en-PK'))+'</div><button type="button" class="activity-action-btn" data-recover-deleted="'+x.i+'">Restore deleted change</button></div>';}).join('')+'</div>':'';
   el.innerHTML=recycleHtml+arr.map(function(a,i){const d=new Date(a.time);const dt=isNaN(d.getTime())?'':d.toLocaleString('en-PK',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});return '<div class="activity-history-row"><div class="activity-history-icon">'+(icons[a.type]||'ℹ️')+'</div><div class="activity-history-main"><div class="activity-history-title">'+escapeHtml(a.title)+'</div><div class="activity-history-meta">'+escapeHtml(a.detail||'')+(dt?' · '+escapeHtml(dt):'')+'</div><div class="activity-history-actions"><button type="button" class="activity-action-btn" data-act-undo="'+i+'">↶ Undo</button><button type="button" class="activity-action-btn" data-act-redo="'+i+'">↷ Redo</button></div></div></div>';}).join('');
   el.querySelectorAll('[data-recover-deleted]').forEach(function(b){b.onclick=function(){undoActivity(Number(b.dataset.recoverDeleted));};});
-  el.querySelectorAll('[data-act-undo]').forEach(function(b){const a=arr[Number(b.dataset.actUndo)];b.disabled=!(a&&a.hasState);b.title=b.disabled?'Is purani activity ki before-state saved nahi hai':'Is activity se pehle wali state restore karein';b.onclick=function(){undoActivity(Number(b.dataset.actUndo));};});
-  el.querySelectorAll('[data-act-redo]').forEach(function(b){const a=arr[Number(b.dataset.actRedo)];b.disabled=!(a&&a.hasState);b.title=b.disabled?'Is purani activity ki after-state saved nahi hai':'Is activity ke baad wali state restore karein';b.onclick=function(){redoActivity(Number(b.dataset.actRedo));};});
+  el.querySelectorAll('[data-act-undo]').forEach(function(b){b.onclick=function(){undoActivity(Number(b.dataset.actUndo));};});
+  el.querySelectorAll('[data-act-redo]').forEach(function(b){b.onclick=function(){redoActivity(Number(b.dataset.actRedo));};});
 }
 
 function showToast(msg){
@@ -9430,16 +9420,7 @@ function initFirebaseSync(){
     // a slow/blocked network on first open) — fall through to the login
     // screen so the person isn't stuck waiting forever.
     var checkingTimeout = setTimeout(function(){
-      if(!fbUser){
-        if(wasLoggedInBefore && !navigator.onLine){
-          // Restore the previously selected local shop namespace before exposing cached data.
-          try{ activeShopStorageId = localStorage.getItem(LS_ACTIVE_SHOP_STORAGE_KEY) || activeShopStorageId || ''; }catch(e){}
-          const appEl=document.querySelector('.app'); if(appEl) appEl.style.visibility='visible';
-          const fab=document.getElementById('fabAdd'); if(fab) fab.style.display='flex';
-          setSessionSplash(false);
-          showToast('Offline mode: local data available; cloud sync internet par hoga.');
-        }else setAuthGateView('locked');
-      }
+      if(!fbUser) setAuthGateView('locked');
     }, 6000);
     var resolveSafetyTimeout = setTimeout(function(){
       if(wasLoggedInBefore && fbUser && document.querySelector('.app')?.style.visibility==='hidden'){
@@ -9492,8 +9473,7 @@ function initFirebaseSync(){
         stopNotificationSubscriptions();
         if(wasLoggedInBefore && !navigator.onLine){
           // Offline fallback for a previously authenticated device: use only its cached shop data.
-          // Restore the last shop namespace saved on this device; do not claim Firebase authentication.
-          try{ activeShopStorageId = localStorage.getItem(LS_ACTIVE_SHOP_STORAGE_KEY) || activeShopStorageId || ''; }catch(e){}
+          // Cloud writes remain queued until Firebase authentication and connectivity return.
           const appEl=document.querySelector('.app'); if(appEl) appEl.style.visibility='visible';
           const fab=document.getElementById('fabAdd'); if(fab) fab.style.display='flex';
           setSessionSplash(false); document.getElementById('accountOverlay').classList.add('hidden');
@@ -10326,7 +10306,7 @@ restoreUIScroll(savedUIState);
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
-    const SW_VERSION = '45';
+    const SW_VERSION = '43';
     navigator.serviceWorker.register('service-worker.js?v='+SW_VERSION, {updateViaCache:'none'}).then(function(reg){
       try{ reg.update(); }catch(e){}
       if(reg.waiting){ try{ reg.waiting.postMessage({type:'SKIP_WAITING'}); }catch(e){} }
