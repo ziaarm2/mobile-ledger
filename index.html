@@ -573,19 +573,7 @@
   .settings-topbar h2,.account-topbar h2{margin:0;font-size:18px;flex:1;}
   .settings-back,.settings-close-x,.account-close-x{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:19px;display:flex;align-items:center;justify-content:center;}
   .settings-page-wrap{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px 14px calc(24px + env(safe-area-inset-bottom,0px));}
-  .settings-view{display:none;min-width:0;}
-  #settingsOverlay{align-items:stretch!important;justify-content:center!important;padding:0!important;}
-  #settingsOverlay .settings-shell{width:100vw!important;max-width:100vw!important;min-width:100vw!important;height:100dvh!important;max-height:100dvh!important;margin:0!important;border-radius:0!important;flex:0 0 100vw!important;box-sizing:border-box!important;}
-  #settingsOverlay .settings-page-wrap{width:100%;min-width:0;flex:1 1 auto;box-sizing:border-box;overflow-x:hidden;}
-  #settingsOverlay .settings-draft-bar{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;width:100%!important;box-sizing:border-box!important;margin:0!important;}
-  #settingsOverlay .settings-section-card,#settingsOverlay .settings-category{min-width:0;max-width:100%;box-sizing:border-box;}
-  #settingsOverlay .settings-draft-bar{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));}
-  #settingsOverlay .settings-draft-status{flex:1 0 100%;line-height:1.35;}
-  #settingsOverlay .settings-draft-actions{display:flex;flex:1 1 100%;width:100%;gap:8px;}
-  #settingsOverlay .settings-draft-actions button{flex:1 1 0;min-width:0;white-space:normal;line-height:1.2;padding:10px 8px;}
-  #settingsOverlay input,#settingsOverlay select,#settingsOverlay button{max-width:100%;box-sizing:border-box;}
-  #settingsOverlay .settings-note,#settingsOverlay .settings-category-sub{overflow-wrap:anywhere;white-space:normal;}
-  @media(min-width:700px){#settingsOverlay{align-items:center!important;padding:20px 12px!important;}#settingsOverlay .settings-shell{width:min(100%,480px)!important;height:calc(100vh - 40px)!important;max-height:900px!important;margin:20px auto!important;border-radius:18px!important;}}
+  .settings-view{display:none;}
   .settings-view.active{display:block;}
   .admin-only-setting{display:none !important;}
   body.admin-user .admin-only-setting{display:block !important;}
@@ -848,22 +836,6 @@ body.menu-open .app>header{z-index:1!important;}
   overflow-y:auto !important;
 }
 
-  /* v83.3 Settings-only repair: keep the settings content visible and let JS control draft-bar visibility. */
-  #settingsOverlay{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;overflow:hidden!important;box-sizing:border-box!important;display:flex!important;align-items:stretch!important;justify-content:center!important;padding:0!important;}
-  #settingsOverlay .settings-shell{position:relative!important;display:flex!important;flex-direction:column!important;left:0!important;right:0!important;top:0!important;transform:none!important;zoom:1!important;width:100%!important;min-width:0!important;max-width:100%!important;height:100%!important;min-height:0!important;max-height:100%!important;flex:1 1 auto!important;margin:0!important;padding-top:env(safe-area-inset-top,0px)!important;border-radius:0!important;box-sizing:border-box!important;overflow:hidden!important;}
-  #settingsOverlay .settings-topbar{display:flex!important;flex:0 0 auto!important;width:100%!important;min-width:0!important;box-sizing:border-box!important;}
-  #settingsOverlay .settings-page-wrap{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;min-height:0!important;flex:1 1 auto!important;overflow-x:hidden!important;overflow-y:auto!important;box-sizing:border-box!important;padding:14px 12px calc(20px + env(safe-area-inset-bottom,0px))!important;}
-  #settingsOverlay .settings-view{display:none!important;width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;}
-  #settingsOverlay .settings-view.active{display:block!important;}
-  #settingsOverlay .settings-section-card,#settingsOverlay .settings-category,#settingsOverlay .settings-category-list{width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;}
-  #settingsOverlay .settings-section-card *{max-width:100%;box-sizing:border-box;}
-  /* Do not force display:flex here: the JS/inline display value hides this bar on the home page. */
-  #settingsOverlay .settings-draft-bar{position:relative!important;inset:auto!important;flex:0 0 auto!important;width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;flex-wrap:wrap!important;gap:8px!important;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px))!important;margin:0!important;}
-  #settingsOverlay .settings-draft-status{flex:1 0 100%!important;min-width:0!important;overflow-wrap:anywhere!important;}
-  #settingsOverlay .settings-draft-actions{display:flex!important;flex:1 1 100%!important;width:100%!important;min-width:0!important;gap:8px!important;}
-  #settingsOverlay .settings-draft-actions button{flex:1 1 0!important;width:auto!important;min-width:0!important;max-width:none!important;white-space:normal!important;overflow-wrap:anywhere!important;line-height:1.25!important;padding:10px 8px!important;}
-  #settingsOverlay input,#settingsOverlay select,#settingsOverlay textarea,#settingsOverlay button{min-width:0;max-width:100%;box-sizing:border-box;}
-  @media(min-width:700px){#settingsOverlay{align-items:center!important;justify-content:center!important;padding:20px!important;}#settingsOverlay .settings-shell{width:min(100%,480px)!important;max-width:480px!important;height:calc(100dvh - 40px)!important;max-height:900px!important;margin:0 auto!important;border-radius:18px!important;}}
 </style>
 
 <style id="mandatory-star-style">.required-star{color:#d92d20;font-weight:800;margin-left:2px;}</style>
@@ -1033,7 +1005,7 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v82<br><span>Updated 08 Oct 2026 • 10:11:26 AM PKT • All Shops Combined brand filter immediate repaint fixed</span><span>All Shops Combined brand filters fixed</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v83.3<br><span>Updated 27 Oct 2026 • 09:48:00 AM PKT • Settings overlay visibility fix</span><span>Settings overlay visibility restored</span></div>
         </div>
       </div>
     </div>
@@ -2006,8 +1978,8 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v82';
-const APP_INDEX_UPDATED = '27 Oct 2026 • 09:55:00 AM PKT • Offline session fallback, settings viewport and delete tombstone fixes';
+const APP_INDEX_VERSION = 'v83.3';
+const APP_INDEX_UPDATED = '27 Oct 2026 • 09:48:00 AM PKT • Reverted broken Settings overlay CSS; restored original hidden/visible settings rules';
 
 let inventory = [];
 
