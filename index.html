@@ -575,8 +575,9 @@
   .settings-page-wrap{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px 14px calc(24px + env(safe-area-inset-bottom,0px));}
   .settings-view{display:none;min-width:0;}
   #settingsOverlay{align-items:stretch!important;justify-content:center!important;padding:0!important;}
-  #settingsOverlay .settings-shell{width:100%!important;max-width:480px!important;min-width:0!important;height:100dvh!important;max-height:100dvh!important;margin:0!important;border-radius:0!important;}
-  #settingsOverlay .settings-page-wrap{width:100%;min-width:0;box-sizing:border-box;overflow-x:hidden;}
+  #settingsOverlay .settings-shell{width:100vw!important;max-width:100vw!important;min-width:100vw!important;height:100dvh!important;max-height:100dvh!important;margin:0!important;border-radius:0!important;flex:0 0 100vw!important;box-sizing:border-box!important;}
+  #settingsOverlay .settings-page-wrap{width:100%;min-width:0;flex:1 1 auto;box-sizing:border-box;overflow-x:hidden;}
+  #settingsOverlay .settings-draft-bar{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;width:100%!important;box-sizing:border-box!important;margin:0!important;}
   #settingsOverlay .settings-section-card,#settingsOverlay .settings-category{min-width:0;max-width:100%;box-sizing:border-box;}
   #settingsOverlay .settings-draft-bar{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));}
   #settingsOverlay .settings-draft-status{flex:1 0 100%;line-height:1.35;}
@@ -1942,7 +1943,7 @@ body.menu-open .app>header{z-index:1!important;}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v83 • Updated 27 Oct 2026 • 08:46:00 AM PKT • Offline access, history recovery and responsive settings</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v83.1 • Updated 27 Oct 2026 • 09:35:00 AM PKT • Targeted Recycle Bin restore and mobile settings layout</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -5014,6 +5015,8 @@ function deleteEntry(id){
   }
   render();
   logActivity('delete','Entry delete ki: '+(removedItem.brand||'')+' '+(removedItem.model||''),'');
+  // Recycle Bin stores only this deleted record; restoring it must not roll back the whole app.
+  try{const recycleActivities=readActivityList();if(recycleActivities.length){recycleActivities[0].recycleCollection='inventory';recycleActivities[0].recycleRecord=JSON.parse(JSON.stringify(removedItem));localStorage.setItem(shopStorageKey(LS_ACTIVITY_KEY),JSON.stringify(recycleActivities));}}catch(recycleSaveError){console.warn('Recycle Bin record save failed',recycleSaveError);}
   showUndoToast('Entry delete ho gayi.', function(){
     const restored = inventory.slice(0,idx).concat([removedItem], inventory.slice(idx));
     const ok2 = tryCommitInventory(restored);
@@ -6508,11 +6511,28 @@ function renderActivityHistory(){
 
 function renderRecycleBin(){
   const el=document.getElementById('recycleBinList');if(!el)return;
-  const arr=readActivityList().filter(function(a){return String(a.type||'').toLowerCase()==='delete'||String(a.type||'').toLowerCase()==='clear';});
-  if(!arr.length){el.innerHTML='<div class="empty">Recycle Bin abhi khaali hai. Aage delete hone wale supported records yahan nazar aayenge.</div>';return;}
-  el.innerHTML=arr.map(function(a){const d=new Date(a.time);const dt=isNaN(d.getTime())?'':d.toLocaleString('en-PK');return '<div class="activity-history-row" style="border:1px solid var(--border);border-radius:12px;padding:12px;margin:8px 0;"><div class="activity-history-icon">🗑️</div><div class="activity-history-main"><div class="activity-history-title">'+escapeHtml(a.title||'Deleted item')+'</div><div class="activity-history-meta">'+escapeHtml(a.detail||'')+(dt?' · '+escapeHtml(dt):'')+'</div><button type="button" class="activity-action-btn" data-recycle-restore="'+escapeHtml(a.id)+'">↶ Restore</button></div></div>';}).join('');
-  el.querySelectorAll('[data-recycle-restore]').forEach(function(b){b.onclick=async function(){const id=b.getAttribute('data-recycle-restore');const all=readActivityList();const index=all.findIndex(function(a){return a.id===id;});if(index<0)return;if(!confirm('Is deletion se pehle wali poori app state restore hogi. Agar is ke baad naye changes kiye hain to woh bhi revert ho sakte hain. Restore karna hai?'))return;activityRestore(index,'before');setTimeout(renderRecycleBin,700);};});
+  // Only show deletion events with a separately saved record payload. Older
+  // activity entries that only have a whole-app snapshot are not safely restorable.
+  const arr=readActivityList().filter(function(a){return String(a.type||'').toLowerCase()==='delete' && a.recycleRecord && a.recycleCollection==='inventory';});
+  if(!arr.length){el.innerHTML='<div class="empty">Recycle Bin abhi khaali hai. Nayi supported inventory deletions yahan nazar aayengi.</div>';return;}
+  el.innerHTML=arr.map(function(a){const d=new Date(a.time);const dt=isNaN(d.getTime())?'':d.toLocaleString('en-PK');return '<div class="activity-history-row" style="border:1px solid var(--border);border-radius:12px;padding:12px;margin:8px 0;"><div class="activity-history-icon">🗑️</div><div class="activity-history-main"><div class="activity-history-title">'+escapeHtml(a.title||'Deleted item')+'</div><div class="activity-history-meta">'+escapeHtml(a.detail||'')+(dt?' · '+escapeHtml(dt):'')+'</div><button type="button" class="activity-action-btn" data-recycle-restore="'+escapeHtml(a.id)+'">↶ Restore this entry</button></div></div>';}).join('');
+  el.querySelectorAll('[data-recycle-restore]').forEach(function(b){b.onclick=function(){
+    if(isAdminShopView()){alert('Admin Shop view read-only hai — restore nahi kiya ja sakta.');return;}
+    const id=b.getAttribute('data-recycle-restore');const all=readActivityList();const index=all.findIndex(function(a){return a.id===id;});if(index<0)return;
+    const activity=all[index];const record=activity&&activity.recycleRecord;if(!record||activity.recycleCollection!=='inventory'){alert('Is deleted entry ki separate copy available nahi hai.');return;}
+    if(!confirm('Sirf '+(record.brand||'')+' '+(record.model||'')+' ki deleted entry restore hogi. Baqi stock, sales, expenses aur profit change nahi honge. Restore karein?'))return;
+    const exists=inventory.some(function(x){return String(x.id)===String(record.id);});
+    if(exists){alert('Ye entry pehle se stock mein mojood hai. Duplicate restore nahi ki gayi.');return;}
+    const candidate=inventory.concat([JSON.parse(JSON.stringify(record))]);
+    if(!tryCommitInventory(candidate)){alert(SAVE_FAIL_MSG);return;}
+    // Remove only this recycle-bin item after successful restore.
+    activity.recycleRecord=null;activity.restoredAt=new Date().toISOString();activity.restored=true;
+    try{localStorage.setItem(shopStorageKey(LS_ACTIVITY_KEY),JSON.stringify(all));}catch(e){}
+    logActivity('restore','Recycle Bin se entry restore ki: '+(record.brand||'')+' '+(record.model||''),'Sirf ek inventory record restore hua.');
+    render();renderRecycleBin();showToast('✓ Sirf deleted entry restore ho gayi.');
+  };});
 }
+
 function showToast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg;
