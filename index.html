@@ -848,17 +848,20 @@ body.menu-open .app>header{z-index:1!important;}
   overflow-y:auto !important;
 }
 
-  /* v83.2 settings viewport repair: prevent zoomed shell from being wider than iPhone viewport. */
-  #settingsOverlay{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;overflow:hidden!important;box-sizing:border-box!important;align-items:stretch!important;justify-content:flex-start!important;padding:0!important;}
-  #settingsOverlay .settings-shell{position:relative!important;left:0!important;right:0!important;top:0!important;transform:none!important;zoom:1!important;width:100%!important;min-width:0!important;max-width:100%!important;height:100%!important;min-height:0!important;max-height:100%!important;flex:1 1 auto!important;margin:0!important;padding-top:env(safe-area-inset-top,0px)!important;border-radius:0!important;box-sizing:border-box!important;overflow:hidden!important;}
-  #settingsOverlay .settings-topbar{width:100%!important;min-width:0!important;box-sizing:border-box!important;}
-  #settingsOverlay .settings-page-wrap{width:100%!important;min-width:0!important;max-width:100%!important;flex:1 1 0!important;overflow-x:hidden!important;overflow-y:auto!important;box-sizing:border-box!important;padding-left:12px!important;padding-right:12px!important;}
-  #settingsOverlay .settings-view,#settingsOverlay .settings-section-card,#settingsOverlay .settings-category,#settingsOverlay .settings-category-list{width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;}
+  /* v83.3 Settings-only repair: keep the settings content visible and let JS control draft-bar visibility. */
+  #settingsOverlay{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;overflow:hidden!important;box-sizing:border-box!important;display:flex!important;align-items:stretch!important;justify-content:center!important;padding:0!important;}
+  #settingsOverlay .settings-shell{position:relative!important;display:flex!important;flex-direction:column!important;left:0!important;right:0!important;top:0!important;transform:none!important;zoom:1!important;width:100%!important;min-width:0!important;max-width:100%!important;height:100%!important;min-height:0!important;max-height:100%!important;flex:1 1 auto!important;margin:0!important;padding-top:env(safe-area-inset-top,0px)!important;border-radius:0!important;box-sizing:border-box!important;overflow:hidden!important;}
+  #settingsOverlay .settings-topbar{display:flex!important;flex:0 0 auto!important;width:100%!important;min-width:0!important;box-sizing:border-box!important;}
+  #settingsOverlay .settings-page-wrap{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;min-height:0!important;flex:1 1 auto!important;overflow-x:hidden!important;overflow-y:auto!important;box-sizing:border-box!important;padding:14px 12px calc(20px + env(safe-area-inset-bottom,0px))!important;}
+  #settingsOverlay .settings-view{display:none!important;width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;}
+  #settingsOverlay .settings-view.active{display:block!important;}
+  #settingsOverlay .settings-section-card,#settingsOverlay .settings-category,#settingsOverlay .settings-category-list{width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;}
   #settingsOverlay .settings-section-card *{max-width:100%;box-sizing:border-box;}
-  #settingsOverlay .settings-draft-bar{position:relative!important;inset:auto!important;flex:0 0 auto!important;width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;display:flex!important;flex-wrap:wrap!important;gap:8px!important;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px))!important;margin:0!important;}
+  /* Do not force display:flex here: the JS/inline display value hides this bar on the home page. */
+  #settingsOverlay .settings-draft-bar{position:relative!important;inset:auto!important;flex:0 0 auto!important;width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;flex-wrap:wrap!important;gap:8px!important;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px))!important;margin:0!important;}
   #settingsOverlay .settings-draft-status{flex:1 0 100%!important;min-width:0!important;overflow-wrap:anywhere!important;}
   #settingsOverlay .settings-draft-actions{display:flex!important;flex:1 1 100%!important;width:100%!important;min-width:0!important;gap:8px!important;}
-  #settingsOverlay .settings-draft-actions button{flex:1 1 0!important;width:50%!important;min-width:0!important;max-width:50%!important;white-space:normal!important;overflow-wrap:anywhere!important;line-height:1.25!important;padding:10px 6px!important;}
+  #settingsOverlay .settings-draft-actions button{flex:1 1 0!important;width:auto!important;min-width:0!important;max-width:none!important;white-space:normal!important;overflow-wrap:anywhere!important;line-height:1.25!important;padding:10px 8px!important;}
   #settingsOverlay input,#settingsOverlay select,#settingsOverlay textarea,#settingsOverlay button{min-width:0;max-width:100%;box-sizing:border-box;}
   @media(min-width:700px){#settingsOverlay{align-items:center!important;justify-content:center!important;padding:20px!important;}#settingsOverlay .settings-shell{width:min(100%,480px)!important;max-width:480px!important;height:calc(100dvh - 40px)!important;max-height:900px!important;margin:0 auto!important;border-radius:18px!important;}}
 </style>
@@ -1957,7 +1960,7 @@ body.menu-open .app>header{z-index:1!important;}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v83.2 • Updated 27 Oct 2026 • 09:55:00 AM PKT • Offline session fallback, settings viewport and delete tombstone fixes</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v83.3 • Updated 27 Oct 2026 • 09:47:00 AM PKT • Settings visibility and mobile layout repair</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
