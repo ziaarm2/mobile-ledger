@@ -925,35 +925,24 @@ body.menu-open .app>header{z-index:1!important;}
 .menu-dropdown .menu-profile{padding-top:calc(25px + constant(safe-area-inset-top))!important;}
 }
 </style>
-
-<style id="settings-mobile-layout-polish-20261028">
-/* Targeted fix: keep Settings pages and the draft action bar usable on narrow phones. */
-#settingsOverlay{align-items:stretch!important;justify-content:center!important;padding:0!important;box-sizing:border-box!important;}
-#settingsOverlay>.settings-shell{width:100%!important;max-width:480px!important;min-width:0!important;height:100dvh!important;max-height:100dvh!important;margin:0 auto!important;flex:0 1 480px!important;box-sizing:border-box!important;zoom:1!important;overflow:hidden!important;}
-#settingsOverlay .settings-topbar{width:100%;box-sizing:border-box;gap:10px;}
-#settingsOverlay .settings-topbar h2{min-width:0;overflow-wrap:anywhere;}
-#settingsOverlay .settings-page-wrap{width:100%;min-width:0;box-sizing:border-box;overflow-x:hidden;padding:14px 14px calc(18px + env(safe-area-inset-bottom,0px));}
-#settingsOverlay .settings-view,#settingsOverlay .settings-section-card,#settingsOverlay .settings-category-list{min-width:0;max-width:100%;box-sizing:border-box;}
-#settingsOverlay .settings-section-card{overflow-wrap:anywhere;}
-#settingsOverlay .settings-note{line-height:1.45;overflow-wrap:anywhere;}
-#settingsOverlay .settings-opts,#settingsOverlay .chip-row{display:flex;flex-wrap:wrap;gap:8px;min-width:0;max-width:100%;}
-#settingsOverlay .settings-opt,#settingsOverlay .settings-toggle-chip,#settingsOverlay .chip-row button{max-width:100%;white-space:normal;overflow-wrap:anywhere;box-sizing:border-box;}
-#settingsOverlay .settings-add-row{min-width:0;max-width:100%;}
-#settingsOverlay .settings-add-row>*{min-width:0;max-width:100%;box-sizing:border-box;}
-#settingsOverlay .settings-draft-bar{position:relative;flex:0 0 auto;width:100%;box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));}
-#settingsOverlay .settings-draft-status{flex:1 1 100px;min-width:0;line-height:1.35;overflow-wrap:anywhere;}
-#settingsOverlay .settings-draft-actions{flex:0 1 auto;min-width:0;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:7px;}
-#settingsOverlay .settings-draft-actions button{min-width:0;white-space:normal;line-height:1.25;padding:8px 10px;font-size:12px;}
+<style id="settings-layout-recovery-20261028">
+/* Minimal recovery: preserve original Settings UI and only correct its mobile container sizing. */
+#settingsOverlay{align-items:stretch;justify-content:center;padding:0;}
+#settingsOverlay>.settings-shell{width:100%;max-width:480px;min-width:0;height:100%;max-height:100%;margin:0 auto;flex:1 1 auto;display:flex;flex-direction:column;overflow:hidden;box-sizing:border-box;}
+#settingsOverlay .settings-topbar{flex:0 0 auto;min-width:0;}
+#settingsOverlay .settings-page-wrap{display:block;flex:1 1 auto;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden;box-sizing:border-box;-webkit-overflow-scrolling:touch;}
+#settingsOverlay .settings-view{display:none;}
+#settingsOverlay .settings-view.active{display:block;}
+#settingsOverlay .settings-draft-bar{flex:0 0 auto;position:sticky;bottom:0;width:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));}
+#settingsOverlay .settings-draft-status{flex:1 1 120px;min-width:0;overflow-wrap:break-word;}
+#settingsOverlay .settings-draft-actions{display:flex;flex:0 1 auto;min-width:0;gap:7px;flex-wrap:wrap;justify-content:flex-end;}
+#settingsOverlay .settings-draft-actions button{max-width:100%;white-space:normal;line-height:1.25;}
 @media(max-width:380px){
- #settingsOverlay .settings-page-wrap{padding-left:10px;padding-right:10px;}
- #settingsOverlay .settings-section-card{padding:10px;}
- #settingsOverlay .settings-draft-bar{align-items:stretch;flex-direction:column;gap:8px;}
- #settingsOverlay .settings-draft-actions{width:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
- #settingsOverlay .settings-draft-actions button{width:100%;}
+ #settingsOverlay .settings-draft-bar{align-items:stretch;}
+ #settingsOverlay .settings-draft-actions{flex:1 1 100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
+ #settingsOverlay .settings-draft-actions button{width:100%;min-width:0;}
 }
-@media(min-width:700px){#settingsOverlay{padding:0 12px!important;}#settingsOverlay>.settings-shell{height:calc(100dvh - 40px)!important;max-height:900px!important;margin:20px auto!important;border:1px solid var(--border)!important;border-radius:18px!important;}}
 </style>
-
 </head>
 <body>
 
@@ -1961,7 +1950,7 @@ body.menu-open .app>header{z-index:1!important;}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v83.4 • Updated 28 Oct 2026 • 08:55:00 AM PKT • Settings mobile layout polish</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v83.3 • Updated 27 Oct 2026 • 09:47:00 AM PKT • Settings visibility and mobile layout repair</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
