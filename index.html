@@ -925,6 +925,23 @@ body.menu-open .app>header{z-index:1!important;}
 .menu-dropdown .menu-profile{padding-top:calc(25px + constant(safe-area-inset-top))!important;}
 }
 </style>
+
+<style id="settings-layout-repair">
+/* Mobile Settings layout: keep the shell flex-based and content scrollable without touching app logic. */
+#settingsOverlay{box-sizing:border-box;overflow:hidden;}
+#settingsOverlay > .settings-shell{box-sizing:border-box;width:100%;max-width:480px;min-width:0;height:100%;min-height:0;max-height:none;margin:0 auto;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);overflow:hidden;display:flex;flex-direction:column;}
+#settingsOverlay .settings-topbar{flex:0 0 auto;min-width:0;}
+#settingsOverlay .settings-page-wrap{flex:1 1 0%;min-height:0;height:auto;max-height:none;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;box-sizing:border-box;padding-bottom:24px;}
+#settingsOverlay .settings-view{width:100%;min-width:0;box-sizing:border-box;}
+#settingsOverlay .settings-view:not(.active){display:none;}
+#settingsOverlay .settings-view.active{display:block;}
+#settingsOverlay .settings-draft-bar{flex:0 0 auto;position:relative;box-sizing:border-box;width:100%;min-width:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));}
+#settingsOverlay .settings-draft-status{flex:1 1 110px;min-width:0;overflow-wrap:anywhere;line-height:1.35;}
+#settingsOverlay .settings-draft-actions{display:flex;flex:1 1 200px;min-width:0;justify-content:flex-end;gap:7px;flex-wrap:wrap;}
+#settingsOverlay .settings-draft-actions button{flex:1 1 110px;min-width:0;max-width:100%;white-space:normal;line-height:1.25;padding:9px 10px;}
+#settingsOverlay .settings-section-card,#settingsOverlay .settings-category,#settingsOverlay .settings-add-row,#settingsOverlay .settings-opts{box-sizing:border-box;min-width:0;max-width:100%;}
+@media(max-width:380px){#settingsOverlay .settings-draft-status{flex-basis:100%;}#settingsOverlay .settings-draft-actions{flex-basis:100%;width:100%;}#settingsOverlay .settings-draft-actions button{font-size:12px;}}
+</style>
 </head>
 <body>
 
@@ -7007,24 +7024,7 @@ document.getElementById('btnReportsPdf').onclick = function(){
     '.summary-table td{border:none;padding:4px 8px;}'+
     '.summary-table .net td{border-top:2px solid #333;font-weight:bold;font-size:14px;}'+
     '@media print{ body{padding:0;} }'+
-    '</style>
-<style id="settings-layout-repair-v1">
-/* Settings layout repair: keep the panel full-height and its content independently scrollable. */
-#settingsOverlay{align-items:stretch!important;justify-content:center!important;overflow:hidden!important;padding:0!important;}
-#settingsOverlay>.settings-shell{position:relative!important;width:100%!important;max-width:480px!important;min-width:0!important;height:100vh!important;height:100dvh!important;min-height:0!important;max-height:none!important;margin:0 auto!important;padding-top:env(safe-area-inset-top,0px)!important;padding-bottom:env(safe-area-inset-bottom,0px)!important;box-sizing:border-box!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;}
-#settingsOverlay .settings-topbar{flex:0 0 auto!important;min-width:0!important;}
-#settingsOverlay .settings-page-wrap{display:block!important;flex:1 1 auto!important;min-height:0!important;height:auto!important;max-height:none!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain; -webkit-overflow-scrolling:touch!important;padding:14px 14px 24px!important;box-sizing:border-box!important;}
-#settingsOverlay .settings-view{display:none!important;width:100%!important;min-width:0!important;box-sizing:border-box!important;}
-#settingsOverlay .settings-view.active{display:block!important;}
-#settingsOverlay .settings-section-card,#settingsOverlay .settings-category,#settingsOverlay .settings-add-row,#settingsOverlay .settings-opts{min-width:0!important;max-width:100%!important;box-sizing:border-box!important;}
-#settingsOverlay .settings-draft-bar{position:relative!important;flex:0 0 auto!important;width:100%!important;min-width:0!important;display:flex!important;align-items:center!important;justify-content:space-between!important;flex-wrap:wrap!important;gap:8px!important;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px))!important;box-sizing:border-box!important;background:#f6f8fb!important;}
-#settingsOverlay .settings-draft-status{flex:1 1 100px!important;min-width:0!important;line-height:1.35!important;overflow-wrap:anywhere!important;}
-#settingsOverlay .settings-draft-actions{display:flex!important;flex:1 1 auto!important;min-width:0!important;justify-content:flex-end!important;flex-wrap:wrap!important;gap:7px!important;}
-#settingsOverlay .settings-draft-actions button{min-width:0!important;flex:1 1 110px!important;max-width:100%!important;white-space:normal!important;line-height:1.25!important;padding:9px 10px!important;}
-@media(max-width:380px){#settingsOverlay .settings-draft-status{flex-basis:100%!important;}#settingsOverlay .settings-draft-actions{width:100%!important;}#settingsOverlay .settings-draft-actions button{flex:1 1 105px!important;font-size:12px!important;}}
-@media(min-width:700px){#settingsOverlay>.settings-shell{height:calc(100vh - 40px)!important;height:calc(100dvh - 40px)!important;max-height:900px!important;margin:20px auto!important;border:1px solid #d9dee7!important;border-radius:18px!important;}}
-</style>
-</head><body>'+
+    '</style></head><body>'+
     '<h1>Mobile Hisab — Sales Report</h1>'+
     '<div class="sub">'+rangeLabel+(brand!=='all'?(' • Brand: '+brand):'')+' • Banaya gaya: '+formatDateDisplay(todayISO())+'</div>'+
     '<h2>Sales</h2>'+
