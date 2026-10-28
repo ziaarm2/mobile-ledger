@@ -925,66 +925,6 @@ body.menu-open .app>header{z-index:1!important;}
 .menu-dropdown .menu-profile{padding-top:calc(25px + constant(safe-area-inset-top))!important;}
 }
 </style>
-
-<style id="settings-visibility-layout-repair-20261028">
-/* Targeted Settings repair: keep the settings shell and its active page visible on mobile. */
-#settingsOverlay:not(.hidden){
-  display:flex !important;
-  align-items:stretch !important;
-  justify-content:center !important;
-  padding:0 !important;
-  overflow:hidden !important;
-  z-index:1400 !important;
-}
-#settingsOverlay .settings-shell{
-  display:flex !important;
-  flex:1 1 auto !important;
-  flex-direction:column !important;
-  width:100% !important;
-  max-width:480px !important;
-  min-width:0 !important;
-  height:100% !important;
-  height:100dvh !important;
-  max-height:100% !important;
-  min-height:0 !important;
-  margin:0 auto !important;
-  padding-top:env(safe-area-inset-top, 0px) !important;
-  box-sizing:border-box !important;
-  overflow:hidden !important;
-  position:relative !important;
-}
-#settingsOverlay .settings-topbar{flex:0 0 auto !important;}
-#settingsOverlay .settings-page-wrap{
-  display:block !important;
-  flex:1 1 auto !important;
-  min-height:0 !important;
-  height:auto !important;
-  overflow-y:auto !important;
-  overflow-x:hidden !important;
-  -webkit-overflow-scrolling:touch !important;
-  visibility:visible !important;
-}
-#settingsOverlay .settings-view{visibility:visible;}
-#settingsOverlay .settings-view.active{display:block !important;visibility:visible !important;}
-#settingsOverlay .settings-draft-bar{
-  display:flex;
-  flex:0 0 auto !important;
-  position:relative !important;
-  bottom:auto !important;
-  width:100% !important;
-  box-sizing:border-box !important;
-  padding-bottom:calc(10px + env(safe-area-inset-bottom, 0px)) !important;
-}
-#settingsOverlay .settings-draft-actions{flex-wrap:wrap;justify-content:flex-end;}
-#settingsOverlay .settings-draft-actions button{max-width:100%;white-space:normal;}
-@media(max-width:520px){
-  #settingsOverlay .settings-shell{max-width:none !important;}
-  #settingsOverlay .settings-draft-bar{gap:8px;padding-left:12px;padding-right:12px;}
-  #settingsOverlay .settings-draft-status{min-width:0;flex:1 1 100px;}
-  #settingsOverlay .settings-draft-actions{flex:0 1 auto;}
-}
-</style>
-
 </head>
 <body>
 
@@ -1992,7 +1932,7 @@ body.menu-open .app>header{z-index:1!important;}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v83.4 • Updated 28 Oct 2026 • 09:30:00 AM PKT • Settings panel visibility and mobile layout repair</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v83.3 • Updated 27 Oct 2026 • 09:47:00 AM PKT • Settings visibility and mobile layout repair</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
