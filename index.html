@@ -925,6 +925,30 @@ body.menu-open .app>header{z-index:1!important;}
 .menu-dropdown .menu-profile{padding-top:calc(25px + constant(safe-area-inset-top))!important;}
 }
 </style>
+
+<style id="settings-layout-width-fix-20261029">
+/* Targeted fix: settings shell must not shrink to the width of its contents on mobile. */
+#settingsOverlay{width:100vw!important;max-width:100vw!important;left:0!important;right:0!important;box-sizing:border-box!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;}
+#settingsOverlay > .settings-shell{display:flex!important;flex:0 0 min(100%, 480px)!important;width:min(100%, 480px)!important;min-width:0!important;max-width:480px!important;height:100%!important;max-height:100dvh!important;margin:0 auto!important;box-sizing:border-box!important;align-self:stretch!important;overflow:hidden!important;}
+#settingsOverlay .settings-topbar{flex:0 0 auto!important;min-width:0!important;}
+#settingsOverlay .settings-page-wrap{display:block!important;flex:1 1 auto!important;width:100%!important;min-width:0!important;min-height:0!important;box-sizing:border-box!important;overflow-y:auto!important;overflow-x:hidden!important;}
+#settingsOverlay .settings-view.active{display:block!important;width:100%!important;min-width:0!important;box-sizing:border-box!important;}
+#settingsOverlay .settings-section-card,#settingsOverlay .settings-category,#settingsOverlay .settings-card{max-width:100%;box-sizing:border-box;}
+#settingsOverlay .settings-draft-bar{display:flex;flex:0 0 auto!important;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;flex-wrap:wrap!important;gap:8px!important;}
+#settingsOverlay .settings-draft-status{flex:1 1 120px!important;min-width:0!important;}
+#settingsOverlay .settings-draft-actions{display:flex!important;flex:1 1 220px!important;min-width:0!important;flex-wrap:wrap!important;justify-content:flex-end!important;gap:7px!important;}
+#settingsOverlay .settings-draft-actions button{flex:1 1 112px!important;min-width:0!important;white-space:normal!important;}
+@media(max-width:520px){
+  #settingsOverlay{padding:0!important;}
+  #settingsOverlay > .settings-shell{flex-basis:100vw!important;width:100vw!important;max-width:100vw!important;height:100dvh!important;max-height:100dvh!important;border-radius:0!important;margin:0!important;}
+  #settingsOverlay .settings-topbar{padding-top:calc(14px + env(safe-area-inset-top,0px))!important;}
+  #settingsOverlay .settings-draft-bar{padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px))!important;}
+  #settingsOverlay .settings-draft-status{flex-basis:100%!important;}
+  #settingsOverlay .settings-draft-actions{flex-basis:100%!important;justify-content:stretch!important;}
+  #settingsOverlay .settings-draft-actions button{flex:1 1 0!important;}
+}
+</style>
+
 </head>
 <body>
 
