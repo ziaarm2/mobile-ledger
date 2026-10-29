@@ -1026,6 +1026,27 @@ body.menu-open .app>header{z-index:1!important;}
 }
 </style>
 
+
+<style id="settings-visibility-state-fix">
+/* Hidden overlays must remain hidden; layout rules must never open Settings by themselves. */
+#settingsOverlay.hidden,
+#settingsOverlay[hidden] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+/* Keep the draft bar hidden whenever its original inline state says display:none. */
+#settingsOverlay .settings-draft-bar[style*="display:none"],
+#settingsOverlay .settings-draft-bar[style*="display: none"] {
+  display: none !important;
+}
+#settingsOverlay:not(.hidden) .settings-draft-bar[style*="display:block"],
+#settingsOverlay:not(.hidden) .settings-draft-bar[style*="display: block"],
+#settingsOverlay:not(.hidden) .settings-draft-bar[style*="display:flex"],
+#settingsOverlay:not(.hidden) .settings-draft-bar[style*="display: flex"] {
+  display: flex !important;
+}
+</style>
 </head>
 <body>
 
