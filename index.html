@@ -11231,19 +11231,36 @@ window.addEventListener('online', function(){
 });
 
 let mobileCloudGateTimer=null;
+let mobileCloudGateResolved=false;
 function showMobileCloudStartupGate(){
   const gate=document.getElementById('mobileCloudStartupGate');
   if(!gate || window.matchMedia('(min-width: 768px)').matches || !navigator.onLine) return;
   gate.classList.add('active');
-  // Keep the gate visible until an authoritative server snapshot is applied.
-  // A timeout here would reveal cached data and cause a visible old-to-new flash.
+  mobileCloudGateResolved=false;
+  clearTimeout(mobileCloudGateTimer);
+  // Safety fallback: never leave the app permanently blocked if Firestore's
+  // server snapshot is delayed or fails silently on a mobile browser. This
+  // does NOT write cached data to cloud; it only lets the already-authenticated
+  // app become usable and leaves sync status visible for retry.
+  mobileCloudGateTimer=setTimeout(function(){
+    if(mobileCloudGateResolved) return;
+    const g=document.getElementById('mobileCloudStartupGate');
+    if(g) g.classList.remove('active');
+    mobileCloudGateTimer=null;
+    setAccountSyncStatus('cloud verify mein dair hai — local data dikhaya ja raha hai; sync dobara koshish karega','error');
+    console.warn('Mobile startup gate safety fallback: authoritative Firestore snapshot not received in time. No cloud write performed by fallback.');
+  },12000);
 }
 function hideMobileCloudStartupGate(){
+  mobileCloudGateResolved=true;
   const gate=document.getElementById('mobileCloudStartupGate');
   if(gate) gate.classList.remove('active');
   clearTimeout(mobileCloudGateTimer); mobileCloudGateTimer=null;
 }
-window.addEventListener('offline',hideMobileCloudStartupGate);
+window.addEventListener('offline',function(){
+  hideMobileCloudStartupGate();
+  setAccountSyncStatus('offline — local data use ho raha hai; internet par sync dobara hoga','error');
+});
 
 function startCloudSync(uid){
   const syncShopId=String(userShopId||'').trim();
