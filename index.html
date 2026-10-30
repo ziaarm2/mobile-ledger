@@ -11187,6 +11187,80 @@ document.getElementById('btnAccountChangePassword').onclick=function(){
   }).observe(overlay, {attributes:true, attributeFilter:['class']});
 })();
 
+// ---------- v123: iOS keyboard scrolling for stock-entry and other form sheets ----------
+// Keep the existing, verified Sale Entry (sellOverlay) fix untouched. Apply the same
+// visible-viewport approach to the stock Add/Edit Entry sheet and other form overlays.
+(function installFormSheetKeyboardScrollFix(){
+  const isEditable = el => !!(el && el.matches && el.matches('input, textarea, select'));
+  const timers = new WeakMap();
+  function getSheet(overlay){
+    return overlay.querySelector(':scope > .sheet') || overlay.querySelector('.sheet');
+  }
+  function sync(overlay){
+    if (!overlay || overlay.classList.contains('hidden') || overlay.id === 'sellOverlay') return;
+    const sheet = getSheet(overlay);
+    if (!sheet) return;
+    const vv = window.visualViewport;
+    const top = vv ? Math.max(0, vv.offsetTop) : 0;
+    const height = vv ? vv.height : window.innerHeight;
+    overlay.style.setProperty('top', top + 'px', 'important');
+    overlay.style.setProperty('height', height + 'px', 'important');
+    overlay.style.setProperty('bottom', 'auto', 'important');
+    overlay.style.setProperty('align-items', 'flex-start', 'important');
+    overlay.style.setProperty('overflow', 'hidden', 'important');
+    sheet.style.setProperty('max-height', height + 'px', 'important');
+    sheet.style.setProperty('min-height', '0', 'important');
+    sheet.style.setProperty('overflow-y', 'auto', 'important');
+    sheet.style.setProperty('overflow-x', 'hidden', 'important');
+    sheet.style.setProperty('-webkit-overflow-scrolling', 'touch', 'important');
+    sheet.style.setProperty('overscroll-behavior-y', 'contain', 'important');
+    sheet.style.setProperty('touch-action', 'pan-y', 'important');
+    const active = document.activeElement;
+    if (isEditable(active) && overlay.contains(active)) reveal(overlay, active);
+  }
+  function reveal(overlay, el){
+    const sheet = getSheet(overlay);
+    if (!sheet || !isEditable(el)) return;
+    clearTimeout(timers.get(overlay));
+    timers.set(overlay, setTimeout(() => {
+      if (overlay.classList.contains('hidden') || document.activeElement !== el) return;
+      const vv = window.visualViewport;
+      const top = vv ? vv.offsetTop : 0;
+      const bottom = top + (vv ? vv.height : window.innerHeight);
+      const r = el.getBoundingClientRect();
+      const margin = 18;
+      if (r.bottom > bottom - margin) sheet.scrollTop += r.bottom - bottom + margin;
+      else if (r.top < top + margin) sheet.scrollTop -= top + margin - r.top;
+      setTimeout(() => {
+        if (overlay.classList.contains('hidden') || document.activeElement !== el) return;
+        const r2 = el.getBoundingClientRect();
+        const vv2 = window.visualViewport;
+        const top2 = vv2 ? vv2.offsetTop : 0;
+        const bottom2 = top2 + (vv2 ? vv2.height : window.innerHeight);
+        if (r2.bottom > bottom2 - margin) sheet.scrollTop += r2.bottom - bottom2 + margin;
+      }, 250);
+    }, 100));
+  }
+  function install(overlay){
+    if (!overlay || overlay.id === 'sellOverlay' || overlay.dataset.formKeyboardFix === '1') return;
+    overlay.dataset.formKeyboardFix = '1';
+    overlay.addEventListener('focusin', e => {
+      if (isEditable(e.target)) { sync(overlay); reveal(overlay, e.target); }
+    }, true);
+    new MutationObserver(() => {
+      if (!overlay.classList.contains('hidden')) setTimeout(() => sync(overlay), 80);
+      else ['top','height','bottom','align-items','overflow'].forEach(k => overlay.style.removeProperty(k));
+    }).observe(overlay, {attributes:true, attributeFilter:['class']});
+  }
+  document.querySelectorAll('.overlay').forEach(install);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => document.querySelectorAll('.overlay').forEach(o => sync(o)), {passive:true});
+    window.visualViewport.addEventListener('scroll', () => document.querySelectorAll('.overlay').forEach(o => sync(o)), {passive:true});
+  }
+  window.addEventListener('resize', () => document.querySelectorAll('.overlay').forEach(o => sync(o)), {passive:true});
+  window.addEventListener('orientationchange', () => setTimeout(() => document.querySelectorAll('.overlay').forEach(o => sync(o)), 250));
+})();
+
 function updateOfflineBanner(){ const el=document.getElementById('offlineBanner'); if(el) el.style.display=navigator.onLine?'none':'block'; }
 window.addEventListener('online',function(){updateOfflineBanner();showToast('🟢 Internet wapas aa gaya — sync dobara try hoga.');schedulePush();});
 window.addEventListener('offline',function(){updateOfflineBanner();showToast('📴 Offline mode — local save jari rahega.');});
@@ -11356,4 +11430,12 @@ if('serviceWorker' in navigator){
 #sellOverlay { position:fixed !important; left:0 !important; right:0 !important; bottom:auto !important; overflow:hidden !important; align-items:flex-start !important; }
 #sellOverlay > .sale-sheet { box-sizing:border-box !important; flex:0 0 100% !important; width:100% !important; min-height:0 !important; margin:0 !important; overflow-x:hidden !important; overflow-y:auto !important; -webkit-overflow-scrolling:touch !important; overscroll-behavior-y:contain !important; touch-action:pan-y !important; }
 #sellOverlay > .sale-sheet input, #sellOverlay > .sale-sheet textarea, #sellOverlay > .sale-sheet select { scroll-margin-block:18px !important; }
+</style>
+
+
+<style id="v123-form-sheet-keyboard-scroll">
+/* v123: keyboard-aware scrolling for Add/Edit Entry and other form sheets; Sale Entry stays on its verified v122 fix. */
+.overlay:not(#sellOverlay) { overscroll-behavior-y: contain; }
+.overlay:not(#sellOverlay) > .sheet { box-sizing:border-box !important; min-height:0 !important; overflow-x:hidden !important; overflow-y:auto !important; -webkit-overflow-scrolling:touch !important; overscroll-behavior-y:contain !important; touch-action:pan-y !important; }
+.overlay:not(#sellOverlay) > .sheet input, .overlay:not(#sellOverlay) > .sheet textarea, .overlay:not(#sellOverlay) > .sheet select { scroll-margin-block:18px !important; }
 </style>
