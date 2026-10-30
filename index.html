@@ -1603,9 +1603,8 @@ body.menu-open .app>header{z-index:1!important;}
       <div class="menu-scroll">
         <div class="menu-section-label">Business</div>
         <button class="menu-item" id="btnExpenses"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="14" rx="2" stroke-width="1.8"/><path d="M7 12h10M8 9h8" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Expenses</span></button>
-        <button class="menu-item" id="btnUdhar"><span class="menu-item-icon">💳</span><span class="menu-item-text">Udhar</span></button>
+        <button class="menu-item" id="btnUdhar"><span class="menu-item-icon">💳</span><span class="menu-item-text">Pending payments</span></button>
         <button class="menu-item" id="btnContacts"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke-width="1.8"/><path d="M3.5 19c.5-3.3 2.4-5 5.5-5s5 1.7 5.5 5M17 11a2.5 2.5 0 1 0 0-5M16 14c2.5.2 4 1.7 4.5 5" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Contacts</span></button>
-        <button class="menu-item" id="btnCustomerBook"><span class="menu-item-icon">👥</span><span class="menu-item-text">Customer Book / Baqi Payments</span></button>
         <button class="menu-item" id="btnAnalytics"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19V9M12 19V5M19 19v-8" stroke-width="2" stroke-linecap="round"/><path d="M3.5 19.5h17" stroke-width="1.5" stroke-linecap="round"/></svg></span><span class="menu-item-text">Analytics</span></button>
         <button class="menu-item" id="btnReports"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3.5h9l3 3V20.5H6z" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3.5v4h4M9 12h6M9 16h6" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Reports</span></button>
         <button class="menu-item" id="btnActivityHistory"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke-width="1.8"/><path d="M12 7v5l3 2M4 6l2-2M20 6l-2-2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="menu-item-text">Activity History</span></button>
@@ -1891,7 +1890,7 @@ body.menu-open .app>header{z-index:1!important;}
   </div>
 </div>
 
-<div class="overlay hidden" id="udharOverlay"><div class="sheet" style="max-height:90vh;overflow:auto"><button type="button" class="safe-page-close" id="udharClose" aria-label="Close" title="Close">×</button><div class="sheet-handle"></div><h2>Udhar</h2><div class="settings-note">Sirf un sales ki list jahan customer ke paise baqi hain.</div><div class="field"><label>Naam ya mobile number search karein</label><input id="udharSearch" placeholder="Customer search..."></div><div id="udharSummary" class="cost-summary"></div><div id="udharList"></div></div></div>
+<div class="overlay hidden" id="udharOverlay"><div class="sheet" style="max-height:90vh;overflow:auto"><button type="button" class="safe-page-close" id="udharClose" aria-label="Close" title="Close">×</button><div class="sheet-handle"></div><h2>Pending payments</h2><div class="settings-note">Jin sales ki payment abhi complete nahi hui, unki list aur payment history.</div><div class="field"><label>Naam ya mobile number search karein</label><input id="udharSearch" placeholder="Customer name ya mobile search..."></div><div id="udharSummary" class="cost-summary"></div><div id="udharList"></div></div></div>
 <div class="overlay hidden" id="customerBookOverlay"><div class="sheet" style="max-height:90vh;overflow:auto"><button type="button" class="safe-page-close" id="customerBookClose">×</button><div class="sheet-handle"></div><h2>Customer Book</h2><div class="field"><label>Naam ya mobile number search karein</label><input id="customerBookSearch" placeholder="Customer search..."></div><div id="customerBookSummary" class="cost-summary"></div><div id="customerBookList"></div></div></div>
 
 <div class="overlay hidden" id="cropOverlay">
@@ -4262,7 +4261,15 @@ function entryTotalCost(e){
 }
 function saleBaseProfit(e){
   if(!e || e.buy==null || e.sell==null || isReturnedSale(e)) return 0;
-  return (Number(e.sell)-Number(e.buy))*(Math.max(1,Number(e.quantity)||1));
+  const qty=Math.max(1,Number(e.quantity)||1);
+  const fullProfit=(Number(e.sell)-Number(e.buy))*qty;
+  // Profit is recognized only as received money exceeds the phone's purchase cost.
+  // Example: cost 20,000, sale 23,000, received 21,000 => recognized profit 1,000.
+  const saleTotal=Number(e.saleTotal!=null?e.saleTotal:(Number(e.sell)||0)*qty);
+  const received=Math.max(0,Math.min(saleTotal,Number(e.paymentReceived!=null?e.paymentReceived:saleTotal)));
+  const cost=Math.max(0,(Number(e.buy)||0)*qty);
+  const realized=Math.max(0,received-cost);
+  return Math.min(Math.max(0,fullProfit),realized);
 }
 function saleNetProfit(e){
   if(!e || e.buy==null || e.sell==null) return null;
@@ -11350,7 +11357,7 @@ if('serviceWorker' in navigator){
     cs.sort((a,b)=>b.due-a.due);
     const outstanding=cs.reduce((a,c)=>a+c.due,0);
     document.getElementById('customerBookSummary').innerHTML='<span>Customers: '+cs.length+' · Total baqi</span><strong>Rs. '+money(outstanding)+'</strong>';
-    list.innerHTML=cs.length?cs.map(c=>'<div class="settings-card" style="margin-top:12px;padding:14px;border:1px solid var(--border);border-radius:14px"><b style="font-size:17px">'+escapeHtml(c.name)+'</b><div style="color:var(--text-muted);margin:4px 0 10px">'+escapeHtml(c.number||'Number save nahi')+'</div><div>Total purchases: <b>Rs. '+money(c.total)+'</b></div><div>Received: <b>Rs. '+money(c.received)+'</b></div><div>Baqi: <b style="color:'+(c.due>0?'var(--danger)':'var(--pta)')+'">Rs. '+money(c.due)+'</b></div><details style="margin-top:10px"><summary>Purchase aur payment history ('+c.sales.length+')</summary>'+c.sales.sort((a,b)=>String(b.saleDate||'').localeCompare(String(a.saleDate||''))).map(e=>'<div style="padding:10px 0;border-bottom:1px solid var(--border)"><b>'+escapeHtml((e.brand||'')+' '+(e.model||''))+'</b><div>'+escapeHtml(e.saleDate||'Date nahi')+' '+escapeHtml(e.saleTime||'')+'</div><div>Sale: Rs. '+money(saleTotalOf(e))+' · Received: Rs. '+money(receivedOf(e))+' · Baqi: Rs. '+money(dueOf(e))+'</div><div style="font-size:12px;color:var(--text-muted)">IMEI: '+escapeHtml(e.imei1||'—')+'</div>'+(Array.isArray(e.payments)?e.payments.map(p=>'<div style="font-size:12px">Payment: Rs. '+money(p.amount)+' · '+escapeHtml(p.date||'')+' '+escapeHtml(p.time||'')+' · '+escapeHtml(p.method||'')+'</div>').join(''):'')+(dueOf(e)>0?'<button type="button" class="btn-secondary customer-receive" data-id="'+escapeHtml(e.id)+'" style="margin-top:8px">Receive Payment</button>':'<div style="color:var(--pta)">Payment complete</div>')+'</div>').join('')+'</details></div>').join(''):'<div class="settings-note">Abhi koi matching customer record nahi mila. Customer ka naam/number sale ke waqt enter karein.</div>';
+    list.innerHTML=cs.length?cs.map(c=>'<div class="settings-card" style="margin-top:12px;padding:14px;border:1px solid var(--border);border-radius:14px"><b style="font-size:17px">'+escapeHtml(c.name)+'</b><div style="color:var(--text-muted);margin:4px 0 10px">'+escapeHtml(c.number||'Number save nahi')+'</div><div>Total purchases: <b>Rs. '+money(c.total)+'</b></div><div>Received: <b>Rs. '+money(c.received)+'</b></div><div>Baqi: <b style="color:'+(c.due>0?'var(--danger)':'var(--pta)')+'">Rs. '+money(c.due)+'</b></div><details style="margin-top:10px"><summary>Purchase aur payment history ('+c.sales.length+')</summary>'+c.sales.sort((a,b)=>String(b.saleDate||'').localeCompare(String(a.saleDate||''))).map(e=>'<div style="padding:10px 0;border-bottom:1px solid var(--border)"><b>'+escapeHtml((e.brand||'')+' '+(e.model||''))+'</b><div>'+escapeHtml(e.saleDate||'Date nahi')+' '+escapeHtml(e.saleTime||'')+'</div><div>Sale: Rs. '+money(saleTotalOf(e))+' · Received: Rs. '+money(receivedOf(e))+' · Baqi: Rs. '+money(dueOf(e))+'</div><div style="font-size:12px;color:var(--text-muted)">IMEI: '+escapeHtml(e.imei1||'—')+'</div>'+(Array.isArray(e.payments)?e.payments.map(p=>'<div style="font-size:12px">Payment: Rs. '+money(p.amount)+' · '+escapeHtml(p.date||'')+' '+escapeHtml(p.time||'')+' · '+escapeHtml(p.method||'')+(p.note?' · '+escapeHtml(p.note):'')+'</div>').join(''):'')+(dueOf(e)>0?'<button type="button" class="btn-secondary customer-receive" data-id="'+escapeHtml(e.id)+'" style="margin-top:8px">Receive Payment</button>':'<div style="color:var(--pta)">Payment complete</div>')+'</div>').join('')+'</details></div>').join(''):'<div class="settings-note">Abhi koi matching customer record nahi mila. Customer ka naam/number sale ke waqt enter karein.</div>';
     list.querySelectorAll('.customer-receive').forEach(btn=>btn.onclick=function(){receiveCustomerPayment(this.dataset.id)});
   };
   function receiveCustomerPayment(id){
@@ -11358,8 +11365,9 @@ if('serviceWorker' in navigator){
     const due=dueOf(e);const raw=prompt('Baqi amount: Rs. '+money(due)+'\nAbhi kitne paise receive huay?');if(raw===null||raw.trim()==='')return;
     const amount=Number(raw.replace(/,/g,''));if(!Number.isFinite(amount)||amount<=0||amount>due){alert('Amount 0 se zyada aur baqi amount se kam ya barabar honi chahiye.');return;}
     const method=prompt('Payment method (Cash / Easypaisa / JazzCash / Bank):','Cash');if(method===null)return;
-    const copy=inventory.map(x=>{if(String(x.id)!==String(id))return x;const payments=Array.isArray(x.payments)?x.payments.slice():[];payments.push({amount:amount,date:todayISO(),time:currentLocalTimeInput(),method:method.trim(),note:'Customer se baad ki payment'});const received=receivedOf(x)+amount;return Object.assign({},x,{payments:payments,paymentReceived:received,balanceDue:Math.max(0,dueOf(x)-amount),lastUpdated:todayStr()});});
-    if(!tryCommitInventory(copy)){alert(SAVE_FAIL_MSG);return;}renderCustomerBook();render();showToast('Payment save ho gayi: Rs. '+money(amount));
+    const note=prompt('Is payment ka note likhein (optional):','');if(note===null)return;
+    const copy=inventory.map(x=>{if(String(x.id)!==String(id))return x;const payments=Array.isArray(x.payments)?x.payments.slice():[];payments.push({amount:amount,date:todayISO(),time:currentLocalTimeInput(),method:method.trim(),note:note.trim()});const received=receivedOf(x)+amount;return Object.assign({},x,{payments:payments,paymentReceived:received,balanceDue:Math.max(0,saleTotalOf(x)-received),lastUpdated:todayStr()});});
+    if(!tryCommitInventory(copy)){alert(SAVE_FAIL_MSG);return;}renderCustomerBook();render();showToast('Payment history mein save ho gayi: Rs. '+money(amount));
   }
 
   function renderUdhar(){
@@ -11367,8 +11375,8 @@ if('serviceWorker' in navigator){
     const q=(document.getElementById('udharSearch')?.value||'').trim().toLowerCase();
     const rows=inventory.filter(e=>e.sold&&!isReturnedSale(e)&&dueOf(e)>0&&((e.customer||'')+' '+(e.customerNumber||'')).toLowerCase().includes(q));
     const total=rows.reduce((a,e)=>a+dueOf(e),0);
-    document.getElementById('udharSummary').innerHTML='<span>Pending sales: '+rows.length+' · Total udhar</span><strong>Rs. '+money(total)+'</strong>';
-    list.innerHTML=rows.length?rows.map(e=>'<div class="settings-card" style="margin-top:12px;padding:14px;border:1px solid var(--border);border-radius:14px"><b>'+escapeHtml(e.customer||'Naam save nahi')+'</b><div>'+escapeHtml(e.customerNumber||'Number save nahi')+'</div><div style="margin-top:6px">'+escapeHtml((e.brand||'')+' '+(e.model||''))+' · '+escapeHtml(e.saleDate||'Date nahi')+'</div><div>Sale: Rs. '+money(saleTotalOf(e))+' · Received: Rs. '+money(receivedOf(e))+'</div><div style="color:var(--danger);font-weight:700">Remaining: Rs. '+money(dueOf(e))+'</div><button type="button" class="btn-secondary udhar-receive" data-id="'+escapeHtml(e.id)+'" style="margin-top:8px">Receive Payment</button></div>').join(''):'<div class="settings-note">Koi baqi payment nahi mili.</div>';
+    document.getElementById('udharSummary').innerHTML='<span>Pending sales: '+rows.length+' · Total pending</span><strong>Rs. '+money(total)+'</strong>';
+    list.innerHTML=rows.length?rows.map(e=>'<div class="settings-card" style="margin-top:12px;padding:14px;border:1px solid var(--border);border-radius:14px"><b>'+escapeHtml(e.customer||'Naam save nahi')+'</b><div>'+escapeHtml(e.customerNumber||'Number save nahi')+'</div><div style="margin-top:6px">'+escapeHtml((e.brand||'')+' '+(e.model||''))+' · '+escapeHtml(e.saleDate||'Date nahi')+'</div><div>Sale: Rs. '+money(saleTotalOf(e))+' · Received: Rs. '+money(receivedOf(e))+'</div><div style="color:var(--danger);font-weight:700">Pending: Rs. '+money(dueOf(e))+'</div>'+(Array.isArray(e.payments)&&e.payments.length?'<details style="margin-top:8px"><summary>Payment history ('+e.payments.length+')</summary>'+e.payments.map(p=>'<div style="padding:7px 0;border-bottom:1px solid var(--border);font-size:12px"><b>Rs. '+money(p.amount)+'</b> · '+escapeHtml(p.date||'')+' '+escapeHtml(p.time||'')+' · '+escapeHtml(p.method||'')+(p.note?'<div>'+escapeHtml(p.note)+'</div>':'')+'</div>').join('')+'</details>':'<div class="settings-note" style="margin-top:8px">Abhi payment history nahi.</div>')+'<button type="button" class="btn-secondary udhar-receive" data-id="'+escapeHtml(e.id)+'" style="margin-top:8px">Add payment</button></div>').join(''):'<div class="settings-note">Koi pending payment nahi.</div>';
     list.querySelectorAll('.udhar-receive').forEach(btn=>btn.onclick=function(){receiveCustomerPayment(this.dataset.id);setTimeout(renderUdhar,100);});
   }
 
