@@ -900,6 +900,35 @@ body.menu-open .app>header{z-index:1!important;}
 }
 #overlay > .sheet #addPhoneExpenseInline:active { transform: scale(.96) !important; }
 
+
+/* Compact sale sheet: keep the main sale workflow visible with less scrolling. */
+.sale-sheet{max-height:calc(100dvh - env(safe-area-inset-top,0px))!important;padding:8px 12px calc(10px + env(safe-area-inset-bottom,0px))!important;overflow-y:auto!important;border-radius:18px 18px 0 0!important;}
+.sale-sheet .sheet-handle{margin:0 auto 6px!important;}
+.sale-sheet h2{font-size:15px!important;margin:0 0 5px!important;padding-right:48px;}
+.sale-sheet .sheet-item-name{font-size:12px!important;margin:0 0 6px!important;padding-right:40px;}
+.sale-sheet .field{margin-bottom:5px!important;min-width:0;}
+.sale-sheet .field label{font-size:11.5px!important;margin-bottom:3px!important;line-height:1.15!important;}
+.sale-sheet .field input{font-size:13px!important;padding:7px 9px!important;min-height:36px!important;}
+.sale-sheet .sale-qty-price{grid-template-columns:minmax(86px,.62fr) minmax(0,1.38fr)!important;gap:8px!important;align-items:start;}
+.sale-sheet .sale-price-field input{font-size:15px!important;font-weight:650;}
+.sale-sheet .price-hint{font-size:10px!important;min-height:0!important;margin-top:1px!important;}
+.sale-sheet .two-col{gap:8px!important;}
+.sale-sheet .sale-date-guidance{font-size:10.5px!important;line-height:1.25!important;padding:6px 8px!important;margin:5px 0!important;}
+.sale-sheet .sec-label{font-size:11px!important;margin:6px 0 4px!important;}
+.sale-sheet .settings-note{font-size:10px!important;line-height:1.25!important;padding:0!important;margin:0 0 5px!important;}
+.sale-sheet .phone-expense-list{gap:4px!important;margin-top:4px!important;}
+.sale-sheet .extra-buy-row{gap:5px!important;}
+.sale-sheet .extra-buy-row input{font-size:12px!important;padding:6px 7px!important;min-height:32px!important;}
+.sale-sheet .extra-buy-remove{width:30px!important;height:30px!important;}
+.sale-sheet .add-extra-buy{padding:5px 8px!important;margin-top:4px!important;font-size:11px!important;}
+.sale-sheet .cost-summary{padding:7px 9px!important;margin:5px 0!important;font-size:11px!important;}
+.sale-sheet .cost-summary strong{font-size:13px!important;}
+.sale-sheet .sale-payment-fields .field input{min-height:34px!important;}
+.sale-sheet .profit-preview{padding:7px 9px!important;margin:5px 0!important;font-size:11px!important;}
+.sale-sheet .sheet-actions{margin-top:6px!important;padding-top:4px!important;gap:8px!important;}
+.sale-sheet .sheet-actions button{padding:9px 8px!important;min-height:42px!important;font-size:12px!important;}
+@media(max-height:800px){.sale-sheet{max-height:calc(100dvh - env(safe-area-inset-top,0px))!important}.sale-sheet .sale-date-guidance{display:none!important}}
+
 </style>
 
 <style id="mandatory-star-style">.required-star{color:#d92d20;font-weight:800;margin-left:2px;}</style>
@@ -1653,16 +1682,16 @@ body.menu-open .app>header{z-index:1!important;}
 </div>
 
 <div class="overlay hidden" id="sellOverlay">
-  <div class="sheet">
+  <div class="sheet sale-sheet">
     <button type="button" class="safe-page-close" data-safe-close-overlay="sellOverlay" aria-label="Close" title="Close">×</button>
     <div class="sheet-handle"></div>
     <h2>Sale entry</h2>
     <div class="save-error-banner" id="sellErrorBanner"></div>
     <div class="sheet-item-name" id="sellItemName"></div>
 
-    <div class="field"><label id="sellQtyLabel">Kitne piece beche</label><input id="s-qty" type="number" inputmode="numeric" min="1" value="1"></div>
-    <div class="two-col big-input">
-      <div class="field"><label>Sale price (per piece)</label><input id="s-price" type="text" inputmode="decimal" placeholder="e.g. 45k"><div class="price-hint" id="s-price-hint"></div></div>
+    <div class="two-col sale-qty-price">
+      <div class="field sale-qty-field"><label id="sellQtyLabel">Pieces (max 1)</label><input id="s-qty" type="number" inputmode="numeric" min="1" value="1"></div>
+      <div class="field sale-price-field"><label>Sale price (per piece)</label><input id="s-price" type="text" inputmode="decimal" placeholder="e.g. 45k"><div class="price-hint" id="s-price-hint"></div></div>
     </div>
     <div class="two-col">
       <div class="field"><label>Customer name</label><input id="s-customer" placeholder="Naam"></div>
