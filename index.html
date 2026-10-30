@@ -1894,9 +1894,11 @@ body.menu-open .app>header{z-index:1!important;}
     <div class="sec-label">Charger <span style="color:var(--danger);">*</span></div>
     <div class="chip-row" id="chargerChips"></div>
 
-    <div class="field" id="companyWarrantyField">
-      <label for="f-company-warranty">Company Warranty <span class="required-star">*</span></label>
-      <select id="f-company-warranty" required>
+    <div id="companyWarrantyField">
+      <div class="sec-label">Company Warranty <span style="color:var(--danger);">*</span></div>
+      <div class="chip-row" id="companyWarrantyChips"></div>
+      <!-- Keep the original field value for saving/editing existing records. -->
+      <select id="f-company-warranty" aria-hidden="true" tabindex="-1" style="display:none;">
         <option value="">Select Company Warranty</option>
         <option value="Not Available">Not Available</option>
         <option value="1 month">1 month</option>
@@ -5971,8 +5973,8 @@ function prepareEntryLayoutDOM(){
   if(boxChips) addMainGroup('box',[previousSecLabel(boxChips),boxChips]);
   const chargerChips=sheet.querySelector('#chargerChips');
   if(chargerChips) addMainGroup('charger',[previousSecLabel(chargerChips),chargerChips]);
-  const companyWarranty=sheet.querySelector('#f-company-warranty');
-  if(companyWarranty) addMainGroup('companyWarranty',[companyWarranty.closest('.field')]);
+  const companyWarrantyChips=sheet.querySelector('#companyWarrantyChips');
+  if(companyWarrantyChips) addMainGroup('companyWarranty',[previousSecLabel(companyWarrantyChips),companyWarrantyChips,companyWarrantyChips.parentElement.querySelector('#f-company-warranty')]);
 
   const imei1=sheet.querySelector('#f-imei');
   if(imei1) addMainGroup('imei1',[imei1.closest('.field')]);
@@ -6447,6 +6449,24 @@ function renderCustomEntryFields(){
   });
 }
 
+function renderCompanyWarrantyChips(){
+  const select=document.getElementById('f-company-warranty');
+  const container=document.getElementById('companyWarrantyChips');
+  if(!select || !container) return;
+  const options=Array.from(select.options).filter(function(option){ return option.value; });
+  container.innerHTML=options.map(function(option){
+    const value=option.value;
+    return '<button type="button" class="chip-opt '+(select.value===value?'on':'')+'" data-val="'+escapeHtml(value)+'">'+escapeHtml(option.textContent)+'</button>';
+  }).join('');
+  container.querySelectorAll('.chip-opt').forEach(function(button){
+    button.onclick=function(event){
+      if(event) event.preventDefault();
+      select.value=button.dataset.val;
+      container.querySelectorAll('.chip-opt').forEach(function(chip){ chip.classList.toggle('on',chip.dataset.val===select.value); });
+    };
+  });
+}
+
 function renderAllChips(){
   const orderedEntryBrands = getLiveBrands().slice().filter(function(b){return b!=='Other';});
   const brandCounts = {};
@@ -6476,6 +6496,7 @@ function renderAllChips(){
   renderChipGroup('boxChips', getEntryFieldOptions('box', ['No','Yes']), 'box');
   renderChipGroup('packingChips', getEntryFieldOptions('packing', PACKING_OPTS), 'packing');
   renderChipGroup('chargerChips', getEntryFieldOptions('charger', CHARGER_OPTS), 'charger');
+  renderCompanyWarrantyChips();
   renderChipGroup('faceidChips', getEntryFieldOptions('faceid', ['No','Yes']), 'faceid');
   renderChipGroup('truetoneChips', getEntryFieldOptions('truetone', ['No','Yes']), 'truetone');
   renderCustomEntryFields();
