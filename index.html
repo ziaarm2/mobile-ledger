@@ -4517,7 +4517,7 @@ function renderStats(){
     return dashboardDateInRange(d,range);
   });
   const soldUnits=soldItems.reduce(function(s,e){return s+(Number(e.quantity)||0);},0);
-  const grossProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(Number(e.quantity)||1));},0);
+  const grossProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+saleBaseProfit(e);},0);
   const netProfit=grossProfit-expensesForDashboardRange(range);
   const netProfitColor=netProfit>=0?'var(--pta)':'var(--danger)';
   let periodLabel=range.label;
@@ -7577,11 +7577,11 @@ function renderDashboard(){
   const pendingUnits=stockItems.reduce(function(s,e){return s+(e.quantity||0);},0);
   const soldPeriod=soldItems.filter(function(e){return dashboardDateInRange(e.saleDate||e.saleAt||e.lastUpdated,range);});
   const unitsSold=soldPeriod.reduce(function(s,e){return s+(e.quantity||0);},0);
-  const grossProfit=soldPeriod.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0);
+  const grossProfit=soldPeriod.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+saleBaseProfit(e);},0);
   const periodExpenses=expensesForDashboardRange(range);
   const netProfit=grossProfit-periodExpenses;
   const totalExpensesAll=totalExpensesAllTime()+totalPhoneExpensesAllTime();
-  const allTimeProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0);
+  const allTimeProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+saleBaseProfit(e);},0);
   const netProfitAllTime=allTimeProfit-totalExpensesAll;
   const cards=[
     {v:displayProfitHtml(totalStockValue),l:'Total stock value'},
@@ -7741,7 +7741,7 @@ function renderReports(){
   const entries = getFilteredSoldEntries();
   let grossProfit = 0;
   const rowsHtml = entries.map(function(e){
-    const baseProfit = (e.buy!=null && e.sell!=null && !isReturnedSale(e)) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : 0;
+    const baseProfit = saleBaseProfit(e);
     if(baseProfit) grossProfit += baseProfit;
     const netSale = isReturnedSale(e) ? 0 : saleNetProfit(e);
     const profitColor = netSale>=0 ? 'var(--pta)' : 'var(--danger)';
@@ -7805,7 +7805,7 @@ document.getElementById('btnReportsPdf').onclick = function(){
   const brand = document.getElementById('rp-brand').value;
   let grossProfit = 0;
   const rows = entries.map(function(e){
-    const profit = isReturnedSale(e) ? 0 : ((e.buy!=null && e.sell!=null) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : 0);
+    const profit = saleBaseProfit(e);
     if(!isReturnedSale(e) && e.buy!=null && e.sell!=null) grossProfit += profit;
     return '<tr>'+
       '<td>'+formatDateDisplay(dateOnly(e.saleDate))+(isReturnedSale(e)?'<br>Returned: '+formatDateTimeDisplay(e.returnedAt):'')+'</td>'+
@@ -8137,7 +8137,7 @@ function analyticsRenderSnapshot(range,curr){
   const stockItems=inventory.filter(function(e){return !e.sold&&Number(e.quantity||0)>0;});
   const lifetimeSold=inventory.filter(function(e){return e.sold&&!isReturnedSale(e);}).reduce(function(s,e){return s+(Number(e.quantity)||0);},0);
   const totalStockValue=stockItems.reduce(function(s,e){return s+(Number(e.buy)||0)*(Number(e.quantity)||0);},0);
-  const allTimeProfit=inventory.filter(function(e){return e.sold&&!isReturnedSale(e)&&e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+(Number(e.sell)-Number(e.buy))*(Number(e.quantity)||1);},0);
+  const allTimeProfit=inventory.filter(function(e){return e.sold&&!isReturnedSale(e)&&e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+saleBaseProfit(e);},0);
   const lifetimeExpenses=totalExpensesAllTime()+totalPhoneExpensesAllTime();
   const lifetimeNetProfit=allTimeProfit-lifetimeExpenses;
   const cards=[
@@ -11362,12 +11362,31 @@ if('serviceWorker' in navigator){
   };
   function receiveCustomerPayment(id){
     const e=inventory.find(x=>String(x.id)===String(id));if(!e)return;
-    const due=dueOf(e);const raw=prompt('Baqi amount: Rs. '+money(due)+'\nAbhi kitne paise receive huay?');if(raw===null||raw.trim()==='')return;
-    const amount=Number(raw.replace(/,/g,''));if(!Number.isFinite(amount)||amount<=0||amount>due){alert('Amount 0 se zyada aur baqi amount se kam ya barabar honi chahiye.');return;}
-    const method=prompt('Payment method (Cash / Easypaisa / JazzCash / Bank):','Cash');if(method===null)return;
-    const note=prompt('Is payment ka note likhein (optional):','');if(note===null)return;
-    const copy=inventory.map(x=>{if(String(x.id)!==String(id))return x;const payments=Array.isArray(x.payments)?x.payments.slice():[];payments.push({amount:amount,date:todayISO(),time:currentLocalTimeInput(),method:method.trim(),note:note.trim()});const received=receivedOf(x)+amount;return Object.assign({},x,{payments:payments,paymentReceived:received,balanceDue:Math.max(0,saleTotalOf(x)-received),lastUpdated:todayStr()});});
-    if(!tryCommitInventory(copy)){alert(SAVE_FAIL_MSG);return;}renderCustomerBook();render();showToast('Payment history mein save ho gayi: Rs. '+money(amount));
+    const due=dueOf(e); if(due<=0)return;
+    let modal=document.getElementById('pendingPaymentEntryModal');
+    if(!modal){
+      modal=document.createElement('div');modal.id='pendingPaymentEntryModal';
+      modal.style.cssText='position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(15,23,42,.58);backdrop-filter:blur(3px)';
+      modal.innerHTML='<div class="settings-card" style="width:min(100%,440px);max-height:90dvh;overflow:auto;background:var(--card,var(--surface,#fff));color:var(--text);border:1px solid var(--border);border-radius:20px;padding:20px;box-shadow:0 20px 60px #0003"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px"><h3 style="margin:0;font-size:20px">Add Pending Payment</h3><button type="button" id="ppmClose" class="btn-secondary" style="min-width:42px;padding:8px">✕</button></div><div id="ppmInfo" class="settings-note" style="margin:8px 0 16px"></div><form id="ppmForm"><label style="display:block;margin:10px 0 5px;font-weight:600">Amount received (Rs.)</label><input id="ppmAmount" type="number" min="1" step="1" required style="width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--input-bg,var(--surface));color:var(--text);font:inherit"><label style="display:block;margin:12px 0 5px;font-weight:600">Payment method</label><select id="ppmMethod" style="width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--input-bg,var(--surface));color:var(--text);font:inherit"><option>Cash</option><option>Easypaisa</option><option>JazzCash</option><option>Bank Transfer</option><option>Other</option></select><label style="display:block;margin:12px 0 5px;font-weight:600">Note (optional)</label><textarea id="ppmNote" rows="3" placeholder="Payment ka note..." style="width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--input-bg,var(--surface));color:var(--text);font:inherit;resize:vertical"></textarea><div style="display:flex;gap:10px;margin-top:18px"><button type="button" id="ppmCancel" class="btn-secondary" style="flex:1">Cancel</button><button type="submit" class="btn-primary" style="flex:1">Save Payment</button></div></form></div>';
+      document.body.appendChild(modal);
+    }
+    modal.style.display='flex';
+    modal.querySelector('#ppmInfo').textContent=(e.customer||'Customer')+' · '+(e.brand||'')+' '+(e.model||'')+' · Remaining Rs. '+money(due);
+    modal.querySelector('#ppmAmount').value='';modal.querySelector('#ppmAmount').max=String(due);modal.querySelector('#ppmMethod').value='Cash';modal.querySelector('#ppmNote').value='';
+    const close=()=>{modal.style.display='none';};
+    modal.querySelector('#ppmClose').onclick=close;modal.querySelector('#ppmCancel').onclick=close;
+    modal.onclick=function(ev){if(ev.target===modal)close();};
+    modal.querySelector('#ppmForm').onsubmit=function(ev){
+      ev.preventDefault();const amount=Number(modal.querySelector('#ppmAmount').value),method=modal.querySelector('#ppmMethod').value,note=modal.querySelector('#ppmNote').value.trim();
+      const current=inventory.find(x=>String(x.id)===String(id));if(!current){close();return;}
+      const currentDue=dueOf(current);if(!Number.isFinite(amount)||amount<=0||amount>currentDue){alert('Amount 0 se zyada aur baqi amount se kam ya barabar honi chahiye.');return;}
+      const payments=Array.isArray(current.payments)?current.payments.slice():[];payments.push({amount:amount,date:todayISO(),time:currentLocalTimeInput(),method:method,note:note});
+      const received=receivedOf(current)+amount;
+      const copy=inventory.map(x=>String(x.id)!==String(id)?x:Object.assign({},x,{payments:payments,paymentReceived:received,balanceDue:Math.max(0,saleTotalOf(x)-received),lastUpdated:todayStr()}));
+      if(!tryCommitInventory(copy)){alert(SAVE_FAIL_MSG);return;}
+      close();renderCustomerBook();render();renderUdhar();showToast('Payment history mein save ho gayi: Rs. '+money(amount));
+    };
+    setTimeout(()=>modal.querySelector('#ppmAmount').focus(),80);
   }
 
   function renderUdhar(){
