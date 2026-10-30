@@ -142,7 +142,9 @@
   .overlay.hidden{display:none;}
   .sheet{background:var(--surface);width:min(100%,480px);max-width:480px;min-width:0;border-radius:20px 20px 0 0;max-height:90vh;overflow-y:auto;padding:16px 16px 28px;}
   .sheet-handle{width:36px;height:4px;background:var(--border-strong);border-radius:2px;margin:0 auto 12px;}
-  .sheet h2{font-size:16px;margin:0 0 12px;}
+  h1,h2,h3,h4,h5,h6{font-weight:700;}
+  .sheet h2{font-size:16px;margin:0 0 12px;font-weight:750;}
+  .sheet-head h3,.sec-label,.field label,.sheet-item-name{font-weight:700;}
   .sheet-item-name{font-size:14px;color:var(--text-dim);margin:-6px 0 14px;}
   .sec-label{font-size:11px;color:var(--text-dim);margin:12px 0 6px;text-transform:uppercase;letter-spacing:0.3px;}
   .chip-row{display:flex;gap:6px;flex-wrap:wrap;}
@@ -1229,8 +1231,8 @@ body.menu-open .app>header{z-index:1!important;}
       <select id="f-model-select"></select>
     </div>
 
-    <div class="sec-label">Pics (optional)</div>
-    <div class="photo-add-row">
+    <div class="sec-label" style="display:none">Pics (optional)</div>
+    <div class="photo-add-row" style="display:none">
       <div class="photo-strip" id="photoStrip"></div>
       <label class="photo-add-btn" id="photoAddBtn">+ Pic
         <input type="file" id="photoInput" accept="image/*" multiple style="display:none;">
@@ -2263,7 +2265,7 @@ window.addEventListener('popstate', function(){
 });
 
 
-const BRANDS = ['Samsung','Google','iPhone','OnePlus','Vivo','Oppo','Realme','Infinix','Tecno','Xiaomi','Motorola','Other'];
+const BRANDS = ['Samsung','Google','Apple','OnePlus','Vivo','Oppo','Realme','Infinix','Tecno','Xiaomi','Motorola','ZTE','Itel','Honor','Sparx','SEGO','Other'];
 const STATUS_OPTS = ['PTA','Non-PTA','CPID','JV','Bypass/MDM'];
 const RAM_OPTS = ['2GB','3GB','4GB','6GB','8GB','12GB','16GB'];
 const STORAGE_OPTS = ['32GB','64GB','128GB','256GB','512GB'];
@@ -2340,7 +2342,7 @@ function renderUiScaleToggles(){
 }
 
 const DEFAULT_ENTRY_LAYOUT = {
-  main: ['brand','model','photos','status','ram','storage','condition','box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'],
+  main: ['brand','model','status','ram','storage','condition','box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'],
   more: ['network','display','touch','camera','body','openrepair','battery','packing','faceid','truetone','notes'],
   hidden: []
 };
@@ -2430,8 +2432,8 @@ function saveCustomOptionData(){
   if(oldRaw!==newRaw) logActivity('settings','Entry options update','');
 }
 
-function getEntryPlatform(brand){ return String(brand||'').trim()==='iPhone' ? 'iphone' : 'android'; }
-function platformLabel(platform){ if(platform==='iphone') return '🍎 iPhone'; if(platform==='both') return '📱 Both'; return '🤖 Android'; }
+function getEntryPlatform(brand){ const b=String(brand||'').trim(); return (b==='Apple' || b==='iPhone') ? 'iphone' : 'android'; }
+function platformLabel(platform){ if(platform==='iphone') return '🍎 Apple'; if(platform==='both') return '📱 Both'; return '🤖 Android'; }
 function settingTargetPlatforms(platform){ return platform==='both' ? ['android','iphone'] : [platform]; }
 function fieldTargetsPlatform(field, platform){ const targets=Array.isArray(field.platforms)&&field.platforms.length?field.platforms:['android','iphone']; return settingTargetPlatforms(platform).some(function(pl){return targets.indexOf(pl)!==-1;}); }
 function fieldIsHiddenOnPlatform(platform, fieldKey){ const p=ensurePlatformOptionData(platform); return !!(p.hiddenFields && p.hiddenFields[fieldKey]); }
@@ -2491,7 +2493,7 @@ function setPlatformDefault(platform, fieldKey, value){
 }
 
 function applyPlatformDefaultsToForm(platform){
-  const defs={status:platform==='iphone'?'':'',ram:'',storage:'',condition:'',network:'',display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',battery:platform==='iphone'?'':'Perfect',box:platform==='iphone'?'No':'No',packing:'No pack',charger:platform==='iphone'?'No charger':'Original charger',faceid:platform==='iphone'?'Yes':'No',truetone:platform==='iphone'?'Yes':'No'};
+  const defs={status:platform==='iphone'?'':'PTA',ram:'',storage:'',condition:'',network:'',display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',battery:platform==='iphone'?'':'Perfect',box:'',packing:'No pack',charger:'',faceid:platform==='iphone'?'Yes':'No',truetone:platform==='iphone'?'Yes':'No'};
   Object.keys(defs).forEach(function(k){
     const d=(platform==='iphone' && k==='status') ? '' : ((platform==='iphone' && k==='box') ? 'No' : ((platform==='iphone' && k==='charger') ? 'No charger' : getPlatformDefault(platform,k,defs[k])));
     const opts=getEntryFieldOptionsForPlatform(platform,k);
@@ -2522,7 +2524,7 @@ function getEntryFieldOptionsForPlatform(platform, fieldKey){
 const MODEL_CATALOG = {
   Samsung: ['Galaxy S8','Galaxy S9','Galaxy S9+','Galaxy S10','Galaxy S10+','Galaxy S10+ 5G','Galaxy S10 Lite','Galaxy S20','Galaxy S20+','Galaxy S20 Ultra','Galaxy S21','Galaxy S21+','Galaxy S21 Ultra','Galaxy S22','Galaxy S22 Ultra','Galaxy S23','Galaxy S23 Ultra','Galaxy Note 8','Galaxy Note 9','Galaxy Note 10','Galaxy Note 10+','Galaxy Note 20','Galaxy Note 20 Ultra','Galaxy A10','Galaxy A20','Galaxy A30','Galaxy A50','Galaxy A51','Galaxy A52','Galaxy A54','Galaxy A70','Galaxy A71','Galaxy A73'],
   Google: ['Pixel 3','Pixel 3a','Pixel 4','Pixel 4 XL','Pixel 4a','Pixel 5','Pixel 5a','Pixel 6','Pixel 6a','Pixel 6 Pro','Pixel 7','Pixel 7a','Pixel 7 Pro','Pixel 8','Pixel 8a','Pixel 8 Pro'],
-  iPhone: ['iPhone 6','iPhone 6s','iPhone 7','iPhone 7 Plus','iPhone 8','iPhone 8 Plus','iPhone X','iPhone XR','iPhone XS','iPhone XS Max','iPhone 11','iPhone 11 Pro','iPhone 11 Pro Max','iPhone SE (2020)','iPhone 12','iPhone 12 Mini','iPhone 12 Pro','iPhone 12 Pro Max','iPhone 13','iPhone 13 Mini','iPhone 13 Pro','iPhone 13 Pro Max','iPhone SE (2022)','iPhone 14','iPhone 14 Plus','iPhone 14 Pro','iPhone 14 Pro Max','iPhone 15','iPhone 15 Plus','iPhone 15 Pro','iPhone 15 Pro Max'],
+  Apple: ['iPhone 6','iPhone 6s','iPhone 7','iPhone 7 Plus','iPhone 8','iPhone 8 Plus','iPhone X','iPhone XR','iPhone XS','iPhone XS Max','iPhone 11','iPhone 11 Pro','iPhone 11 Pro Max','iPhone SE (2020)','iPhone 12','iPhone 12 Mini','iPhone 12 Pro','iPhone 12 Pro Max','iPhone 13','iPhone 13 Mini','iPhone 13 Pro','iPhone 13 Pro Max','iPhone SE (2022)','iPhone 14','iPhone 14 Plus','iPhone 14 Pro','iPhone 14 Pro Max','iPhone 15','iPhone 15 Plus','iPhone 15 Pro','iPhone 15 Pro Max'],
   OnePlus: ['OnePlus 6','OnePlus 6T','OnePlus 7','OnePlus 7 Pro','OnePlus 7T','OnePlus 7T Pro','OnePlus 8','OnePlus 8 Pro','OnePlus 8T','OnePlus 9','OnePlus 9 Pro','OnePlus 9R','OnePlus 9RT','OnePlus Nord','OnePlus Nord 2','OnePlus Nord CE','OnePlus 10 Pro','OnePlus 10T','OnePlus 11'],
   Vivo: ['Y12','Y15','Y17','Y19','Y19s','Y20','Y21','Y30','Y50','Y71','V15','V17','V20','V21','V23','X50','X60','X70','X80','S1'],
   Oppo: ['A5','A5s','A7','A9','A12','A15','A31','A37','A52','A54','A57','A74','A76','A77','F9','F11','F17','F19','Reno 4','Reno 5','Reno 6','Reno 7','Reno 8'],
@@ -4462,7 +4464,7 @@ function pieceSpecBadges(e){
     return pa - pb;
   });
   let html=prominentFirst.map(function(field){
-    if((field==='faceid' || field==='truetone') && e.brand!=='iPhone') return '';
+    if((field==='faceid' || field==='truetone') && getEntryPlatform(e.brand)!=='iphone') return '';
     return fieldBadge(field, e[field], getEntryPlatform(e.brand));
   }).join('');
   const customFields=getPlatformCustomFields(getEntryPlatform(e.brand));
@@ -4971,8 +4973,8 @@ function buildShareFieldValue(e,key){
   if(key==='charger') return chargerShareLine(e);
   if(key==='box') return e.box==='Yes' ? 'Box: Available' : '';
   if(key==='packing') return e.packing && e.packing!=='No pack' ? 'Packing: '+e.packing : '';
-  if(key==='faceid') return e.brand==='iPhone' && e.faceid==='Yes' ? 'Face ID: Working' : '';
-  if(key==='truetone') return e.brand==='iPhone' && e.truetone==='Yes' ? 'True Tone: Working' : '';
+  if(key==='faceid') return getEntryPlatform(e.brand)==='iphone' && e.faceid==='Yes' ? 'Face ID: Working' : '';
+  if(key==='truetone') return getEntryPlatform(e.brand)==='iphone' && e.truetone==='Yes' ? 'True Tone: Working' : '';
   if(key==='notes') return e.notes ? 'Notes: '+e.notes : '';
   if(key==='warranty') return '✅ 3 days check warranty';
   if(String(key).indexOf('custom:')===0){
@@ -5348,7 +5350,7 @@ function ensureLayoutContainsAll(layout){
 
   // v57: fixed entry order — Box and Charger are mandatory and sit directly
   // below Condition; phone expense stays immediately below Buy price.
-  const fixedMainOrder=['brand','model','photos','status','ram','storage','condition','box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'];
+  const fixedMainOrder=['brand','model','status','ram','storage','condition','box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'];
   layout.main=fixedMainOrder.slice();
   layout.more=['network','display','touch','camera','body','openrepair','battery','packing','faceid','truetone','notes'];
   layout.hidden=[];
@@ -5503,14 +5505,14 @@ function applyEntryLayoutToDOM(platform){
   // Saved/legacy layout ordering must not move these fields around.
   // Box and Charger are explicitly included so they cannot fall back into More Details.
   let fixedMainKeys = [
-    'brand','model','photos','status','ram','storage','condition',
+    'brand','model','status','ram','storage','condition',
     'box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
     'seller','saleFields','moreToggle','extras'
   ];
   let moreKeys = L.more.slice();
   if(platform==='iphone'){
     fixedMainKeys = [
-      'brand','model','photos','status','storage','condition','battery',
+      'brand','model','status','storage','condition','battery',
       'box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
       'seller','saleFields','moreToggle','extras'
     ];
@@ -5905,9 +5907,9 @@ function openAdd(){
   applyPlatformDefaultsToForm('android');
   // Android keeps the existing mandatory fields. iPhone has no Status/RAM,
   // Box/Charger are optional and default to absent, while Battery is mandatory.
-  formState.status = '';
-  formState.box = 'No';
-  formState.charger = 'No charger';
+  formState.status = 'PTA';
+  formState.box = '';
+  formState.charger = '';
   formState.battery = '';
   formPhotos = [];
   renderPhotoStrip();
