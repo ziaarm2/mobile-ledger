@@ -1129,7 +1129,7 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v84.0<br><span>Updated 30 Oct 2026 • 09:41:00 AM PKT • Mandatory Company Warranty field</span><span>Company Warranty added below Charger</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v85.0<br><span>Updated 30 Oct 2026 • Apple Battery Health default cleared and mandatory stars added</span><span>Company Warranty preserved below Charger</span></div>
         </div>
       </div>
     </div>
@@ -2059,7 +2059,7 @@ body.menu-open .app>header{z-index:1!important;}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v84.0 • Updated 30 Oct 2026 • 09:41:00 AM PKT • Mandatory Company Warranty field</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v85.0 • Updated 30 Oct 2026 • Apple Battery Health default cleared and mandatory stars added</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -2499,7 +2499,7 @@ function setPlatformDefault(platform, fieldKey, value){
 function applyPlatformDefaultsToForm(platform){
   const defs={status:platform==='iphone'?'':'PTA',ram:'',storage:'',condition:'',network:'',display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',battery:platform==='iphone'?'':'Perfect',box:'',packing:'No pack',charger:'',companyWarranty:'Not Available',faceid:platform==='iphone'?'Yes':'No',truetone:platform==='iphone'?'Yes':'No'};
   Object.keys(defs).forEach(function(k){
-    const d=(platform==='iphone' && k==='status') ? '' : ((platform==='iphone' && k==='box') ? 'No' : ((platform==='iphone' && k==='charger') ? 'No charger' : getPlatformDefault(platform,k,defs[k])));
+    const d=(platform==='iphone' && (k==='status' || k==='battery')) ? '' : ((platform==='iphone' && k==='box') ? 'No' : ((platform==='iphone' && k==='charger') ? 'No charger' : getPlatformDefault(platform,k,defs[k])));
     const opts=getEntryFieldOptionsForPlatform(platform,k);
     formState[k]=(d && opts.indexOf(d)!==-1) ? d : '';
   });
@@ -5533,7 +5533,7 @@ function applyEntryLayoutToDOM(platform){
       const g=groups[key];
       if(!g) return;
       const label=g.querySelector('.sec-label');
-      if(label) label.textContent=key==='box'?'Box':'Charger';
+      if(label) label.innerHTML=(key==='box'?'Box':'Charger')+' <span style="color:var(--danger);">*</span>';
     });
   }else{
     const batteryGroup=groups.battery;
@@ -5545,6 +5545,14 @@ function applyEntryLayoutToDOM(platform){
     if(boxGroup){ const label=boxGroup.querySelector('.sec-label'); if(label) label.innerHTML='Box <span style="color:var(--danger);">*</span>'; }
     if(chargerGroup){ const label=chargerGroup.querySelector('.sec-label'); if(label) label.innerHTML='Charger <span style="color:var(--danger);">*</span>'; }
   }
+  // Show required-field markers consistently on Brand and Model, like other mandatory fields.
+  ['brand','model'].forEach(function(key){
+    const g=groups[key];
+    if(!g) return;
+    const label=g.querySelector('.sec-label');
+    if(label) label.innerHTML=(key==='brand'?'Brand':'Model')+' <span style="color:var(--danger);">*</span>';
+  });
+
   fixedMainKeys.forEach(function(key,i){
     const g=groups[key];
     if(!g) return;
@@ -6121,7 +6129,7 @@ function saveEntry(){
     camera: formState.camera || 'Perfect',
     body: formState.body || 'Original',
     openrepair: formState.openrepair || 'No open, no repair',
-    battery: formState.battery || 'Perfect',
+    battery: entryPlatform==='iphone' ? (formState.battery || '') : (formState.battery || 'Perfect'),
     box: formState.box || 'No',
     packing: formState.packing || 'No pack',
     charger: formState.charger || 'Original charger',
