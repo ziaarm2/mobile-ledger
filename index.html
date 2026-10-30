@@ -11585,6 +11585,15 @@ loadCustomModels();
 loadExpenses();
 loadRateBook();
 loadInventory();
+// Apply locally saved entry-layout/config immediately at startup instead of
+// waiting for the first Firestore snapshot to trigger the same refresh.
+// This is UI-only: it does not write, merge, or replace any business records.
+try{
+  renderAllChips();
+  prepareEntryLayoutDOM();
+  applyEntryLayoutToDOM(getEntryPlatform(formState && formState.brand));
+  renderEntryLayoutSettings();
+}catch(startupLayoutError){ console.warn('Initial entry layout refresh skipped', startupLayoutError); }
 autoBackupIfDue();
 checkBackupReminder();
 // v83: auto cloud backup runs without a reminder banner; retries when online.
@@ -11600,7 +11609,7 @@ restoreUIScroll(savedUIState);
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
-    const SW_VERSION = '44';
+    const SW_VERSION = '45';
     navigator.serviceWorker.register('service-worker.js?v='+SW_VERSION, {updateViaCache:'none'}).then(function(reg){
       try{ reg.update(); }catch(e){}
       if(reg.waiting){ try{ reg.waiting.postMessage({type:'SKIP_WAITING'}); }catch(e){} }
