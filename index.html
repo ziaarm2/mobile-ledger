@@ -8215,7 +8215,26 @@ function syncMenuOpenState(){
   const menu=document.getElementById('menuDropdown');
   const open=menu && !menu.classList.contains('hidden');
   document.body.classList.toggle('menu-open', !!open);
+  // Safety recovery: if any menu action changes the drawer state without
+  // going through closeMainMenu(), remove stale inline hiding from the
+  // main-screen search/filter rows when the drawer is closed.
+  if(!open){
+    ['.search-row','#brandFilterChips','#filterChips','.activity-filter-row'].forEach(function(selector){
+      document.querySelectorAll(selector).forEach(function(el){
+        el.style.removeProperty('visibility');
+        el.style.removeProperty('pointer-events');
+      });
+    });
+  }
 }
+// Keep the body/menu state in sync even when another menu action toggles the
+// drawer directly. This prevents the filter rows staying hidden until refresh.
+(function(){
+  const menu=document.getElementById('menuDropdown');
+  if(!menu || menu.__menuStateObserverInstalled) return;
+  menu.__menuStateObserverInstalled=true;
+  new MutationObserver(function(){ syncMenuOpenState(); }).observe(menu,{attributes:true,attributeFilter:['class']});
+})();
 function closeMainMenu(){
   const menu=document.getElementById('menuDropdown');
   if(menu) menu.classList.add('hidden');
