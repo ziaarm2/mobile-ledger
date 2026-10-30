@@ -1652,7 +1652,19 @@ body.menu-open .app>header{z-index:1!important;}
 
 </head>
 <body>
-<div id="mobileCloudStartupGate" role="status" aria-live="polite"><div class="gate-card"><div class="gate-spinner"></div><div>Latest data load ho raha hai…</div><div style="font-size:13px;font-weight:400;opacity:.75;margin-top:7px">Cloud sync complete hone tak thora intezar karein.</div></div></div>
+<div id="mobileCloudStartupGate" role="status" aria-live="polite"><div class="gate-card"><div class="gate-spinner"></div><div>Mobile Hisab tayyar ho raha hai…</div><div style="font-size:13px;font-weight:400;opacity:.75;margin-top:7px">Latest data verify kiya ja raha hai.</div></div></div>
+<script>
+/* Prevent the cached/local dashboard from flashing before the cloud listener starts on a mobile refresh. */
+(function(){
+  try {
+    var previouslySignedIn = localStorage.getItem('mobileLedger_wasLoggedIn') === '1';
+    if (previouslySignedIn && navigator.onLine && window.matchMedia('(max-width: 767px)').matches) {
+      var gate = document.getElementById('mobileCloudStartupGate');
+      if (gate) gate.classList.add('active');
+    }
+  } catch (e) {}
+})();
+</script>
 
 <div class="app" style="visibility:hidden;">
   <header style="position:relative;">
@@ -10660,6 +10672,7 @@ function initFirebaseSync(){
           showToast('Offline mode — local data available; internet aane par sync hoga.');
           return;
         }
+        hideMobileCloudStartupGate();
         try{ localStorage.removeItem(LS_WAS_LOGGED_IN_KEY); }catch(e){}
         userRole = 'owner';
         userShopId = null;
@@ -11117,9 +11130,8 @@ function showMobileCloudStartupGate(){
   const gate=document.getElementById('mobileCloudStartupGate');
   if(!gate || window.matchMedia('(min-width: 768px)').matches || !navigator.onLine) return;
   gate.classList.add('active');
-  clearTimeout(mobileCloudGateTimer);
-  // If the server is unusually slow, let the user access local data rather than trapping them.
-  mobileCloudGateTimer=setTimeout(function(){hideMobileCloudStartupGate();},10000);
+  // Keep the gate visible until an authoritative server snapshot is applied.
+  // A timeout here would reveal cached data and cause a visible old-to-new flash.
 }
 function hideMobileCloudStartupGate(){
   const gate=document.getElementById('mobileCloudStartupGate');
@@ -11145,7 +11157,7 @@ function startCloudSync(uid){
       setAccountSyncStatus('latest server data ka intezar hai…','saving');
       return;
     }
-    hideMobileCloudStartupGate();
+    // Keep the startup gate up until the authoritative snapshot has been applied.
     // Never let the owner's background listener replace the read-only
     // selected-shop snapshot while Admin is viewing another shop.
     if(isAdminShopView()) return;
@@ -11155,6 +11167,7 @@ function startCloudSync(uid){
       // the original Z Mobile/admin account whose data predates cloud sync.
       setAccountSyncStatus('cloud setup ho raha hai — is device ka data upload ho raha hai', 'saving');
       schedulePush();
+      hideMobileCloudStartupGate();
       return;
     }
     const data = snap.data();
@@ -11169,6 +11182,8 @@ function startCloudSync(uid){
       localVersion++;
       try{localStorage.setItem(shopStorageKey(LS_LOCAL_VERSION_KEY),String(localVersion));}catch(e){}
       setAccountSyncStatus('local aur cloud records merge ho rahe hain…','saving');
+      render();
+      hideMobileCloudStartupGate();
       attemptPush();
       return;
     }
@@ -11184,6 +11199,7 @@ function startCloudSync(uid){
       try{ localStorage.setItem(shopStorageKey(LS_LOCAL_VERSION_KEY), String(localVersion)); }catch(e){}
       attemptPush();
       setAccountSyncStatus('existing device ka data cloud par sync ho raha hai…', 'saving');
+      hideMobileCloudStartupGate();
       return;
     }
     applyingRemoteUpdate = true;
@@ -11237,6 +11253,7 @@ function startCloudSync(uid){
       }
     }catch(e){}
     updateAccountUI();
+    hideMobileCloudStartupGate();
     if(hasUnresolvedSyncConflicts()){setAccountSyncStatus('sync conflict — Settings mein decision chahiye','error');updateSyncConflictBanner();}
     else {setAccountSyncStatus('sab devices par sync ho gaya', 'ok');autoCloudBackupIfDue();queueLocalActivityHistoryForCloud();}
   }, function(err){
