@@ -1553,7 +1553,7 @@ body.menu-open .app>header{z-index:1!important;}
     <div class="add-expense-inline" id="addPhoneExpenseInline" role="button" tabindex="0" aria-label="Add phone expense">+</div>
     <div class="cost-summary" id="entryTotalCostSummary"><span>Total Cost on This Mobile</span><strong id="entryTotalCostValue">—</strong></div>
 
-    <div class="field"><label>Sell price range</label><input id="f-range" placeholder="45k-47k"><div class="price-hint" id="f-range-hint"></div></div>
+    <div class="field"><label>Sell Price Range</label><div class="two-col" style="gap:8px;"><div><label for="f-range-from" style="font-size:12px;color:var(--text-muted);">From (Rs.)</label><input id="f-range-from" type="text" inputmode="decimal" placeholder="e.g. 45k"></div><div><label for="f-range-to" style="font-size:12px;color:var(--text-muted);">To (Rs.)</label><input id="f-range-to" type="text" inputmode="decimal" placeholder="e.g. 47k"></div></div><input id="f-range" type="hidden"><div class="price-hint" id="f-range-hint"></div><button type="button" id="resetRangeAutoBtn" class="btn-cancel" style="display:none;margin-top:6px;padding:6px 10px;">Reset to Auto</button></div>
 
     <div class="settings-note entry-date-guidance">📊 <b>Accurate Analytics ke liye:</b> Mobile khareedne aur bechne ki sahi date aur time enter karein. Is se daily purchases, sales aur busiest hours ki reports zyada accurate hongi.</div>
     <div class="two-col entry-date-time"><div class="field date-time-field"><label>Buy Date</label><input id="f-buydate" type="date"></div><div class="field date-time-field"><label>Buy Time</label><input id="f-buytime" type="time"></div></div>
@@ -3727,6 +3727,25 @@ function currentEntryExpenseTotal(){
     return Array.from(el.querySelectorAll('.pe-amount')).reduce(function(sum,input){return sum+(parseExpenseAmount(input.value)||0);},0);
   }
 }
+function splitRangeIntoInputs(range){
+  const raw=String(range||'').replace(/[–—−]/g,'-').trim();
+  const parts=raw.split('-');
+  const from=document.getElementById('f-range-from'), to=document.getElementById('f-range-to');
+  if(from) from.value=parts[0]||'';
+  if(to) to.value=parts.length>1?parts.slice(1).join('-'):'';
+  const hidden=document.getElementById('f-range'); if(hidden) hidden.value=raw;
+  const reset=document.getElementById('resetRangeAutoBtn'); if(reset) reset.style.display=rangeInputMode==='manual'?'inline-block':'none';
+}
+function syncRangeFromInputs(){
+  const from=(document.getElementById('f-range-from')?.value||'').trim();
+  const to=(document.getElementById('f-range-to')?.value||'').trim();
+  const hidden=document.getElementById('f-range');
+  if(hidden) hidden.value=from&&to?(from+'-'+to):(from||to);
+  const hint=document.getElementById('f-range-hint');
+  if(hint) hint.textContent=(from||to)?'Manual range: '+(from||'—')+' to '+(to||'—'):'';
+  rangeInputMode=(from||to)?'manual':'auto';
+  const reset=document.getElementById('resetRangeAutoBtn'); if(reset) reset.style.display=rangeInputMode==='manual'?'inline-block':'none';
+}
 function updateEntryTotalCost(){
   const buyRaw=(document.getElementById('f-buy')?.value||'').trim();
   const buy=buyRaw===''?null:parsePrice(buyRaw);
@@ -3738,7 +3757,8 @@ function updateEntryTotalCost(){
     const hint=document.getElementById('f-range-hint');
     const auto=autoSellRangeForBuy(Math.max(0,buy)+expenses);
     if(rangeEl) rangeEl.value=auto;
-    if(hint) hint.textContent=auto?'= '+auto:'';
+    splitRangeIntoInputs(auto);
+    if(hint) hint.textContent=auto?'Auto range: '+auto:'';
   }
   updateSellProfitPreview();
 }
@@ -3747,7 +3767,7 @@ function maybeAutoFillRange(){
   const rangeEl = document.getElementById('f-range');
   if(!rangeEl) return;
   if(buyRaw===''){
-    if(rangeInputMode==='auto') rangeEl.value = '';
+    if(rangeInputMode==='auto'){ rangeEl.value = ''; splitRangeIntoInputs(''); }
     document.getElementById('f-range-hint').textContent = '';
     updateEntryTotalCost();
     return;
@@ -3756,7 +3776,8 @@ function maybeAutoFillRange(){
   if(rangeInputMode==='auto'){
     const auto = buy===null ? '' : autoSellRangeForBuy(Math.max(0,buy)+currentEntryExpenseTotal());
     rangeEl.value = auto;
-    document.getElementById('f-range-hint').textContent = auto ? '= '+auto : '';
+    splitRangeIntoInputs(auto);
+    document.getElementById('f-range-hint').textContent = auto ? 'Auto range: '+auto : '';
   }
   updateEntryTotalCost();
 }
@@ -3847,6 +3868,11 @@ wirePriceHint('f-sellprice','f-sellprice-hint');
 wirePriceHint('f-buy-insale','f-buy-insale-hint');
 wirePriceHint('s-price','s-price-hint');
 wireRangeHint('f-range','f-range-hint');
+['f-range-from','f-range-to'].forEach(function(id){
+  const el=document.getElementById(id); if(el) el.addEventListener('input',function(){syncRangeFromInputs();});
+});
+const resetRangeAutoBtn=document.getElementById('resetRangeAutoBtn');
+if(resetRangeAutoBtn) resetRangeAutoBtn.addEventListener('click',function(){rangeInputMode='auto';maybeAutoFillRange();});
 
 document.getElementById('f-qty').addEventListener('input', function(){
   const warn = document.getElementById('qtyWarning');
@@ -6284,6 +6310,7 @@ function openAdd(){
   document.getElementById('f-buy').value = '';
   document.getElementById('f-buy-hint').textContent = '';
   document.getElementById('f-range').value = '';
+  splitRangeIntoInputs('');
   document.getElementById('f-range-hint').textContent = '';
   if(rangeInputMode==='auto') maybeAutoFillRange();
   document.getElementById('f-buydate').value = todayISO();
@@ -6372,6 +6399,7 @@ function openEdit(id){
   document.getElementById('qtyWarning').classList.toggle('show', (e.quantity||1) > 1);
   document.getElementById('f-buy').value = e.buy != null ? e.buy : '';
   document.getElementById('f-range').value = e.range || '';
+  splitRangeIntoInputs(e.range || '');
   document.getElementById('f-range-hint').textContent = '';
   document.getElementById('f-buydate').value = e.buyDate || todayISO();
   document.getElementById('f-buytime').value = e.buyTime || '';
@@ -6473,7 +6501,7 @@ function saveEntry(){
   const buyFieldRaw = document.getElementById('f-buy').value.trim();
   const parsedBuyForRange = buyFieldRaw==='' ? null : parsePrice(buyFieldRaw);
   let rangeValue = normalizeRange(document.getElementById('f-range').value.trim());
-  if(rangeInputMode==='auto') rangeValue = parsedBuyForRange===null ? '' : autoSellRangeForBuy(parsedBuyForRange);
+  if(rangeInputMode==='auto') rangeValue = parsedBuyForRange===null ? '' : autoSellRangeForBuy(Math.max(0,parsedBuyForRange)+currentEntryExpenseTotal());
   const data = {
     brand: brand, model: model,
     range: rangeValue,
@@ -6520,7 +6548,7 @@ function saveEntry(){
     if(parsedSoldBuy===null || parsedSoldBuy<=0){ alert('Buy price sahi likhein. "40000" ya "40k" jese likhein.'); document.getElementById('f-buy-insale').focus(); return; }
     data.sell = sellVal === '' ? null : parsePrice(sellVal);
     data.buy = parsedSoldBuy;
-    if(rangeInputMode==='auto') data.range = autoSellRangeForBuy(parsedSoldBuy);
+    if(rangeInputMode==='auto') data.range = autoSellRangeForBuy(Math.max(0,parsedSoldBuy)+currentEntryExpenseTotal());
     document.getElementById('f-buy').value = String(parsedSoldBuy);
     document.getElementById('f-buy-insale').value = String(parsedSoldBuy);
     data.customer = document.getElementById('f-customer').value.trim();
