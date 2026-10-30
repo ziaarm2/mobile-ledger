@@ -1571,6 +1571,14 @@ body.menu-open .app>header{z-index:1!important;}
 <style id="contact-picker-enhancements">
 .contact-pick-actions{display:flex;gap:8px;flex-wrap:wrap;margin:-4px 0 10px}.contact-pick-actions button{flex:1;min-width:130px;padding:8px 10px;border-radius:10px;font-size:12px}.contact-phone-save{margin-top:8px;border-color:var(--accent);background:var(--surface);color:var(--text)}
 </style>
+
+<style id="entry-add-from-inline-fix">
+.entry-add-from-row{display:flex;align-items:center;gap:10px;margin:5px 0 8px;width:100%;min-width:0}
+.entry-add-from-row .entry-add-from-label{flex:0 0 auto;margin:0!important;padding:0!important;background:transparent!important;border:0!important;font-size:12px;color:var(--text-dim);white-space:nowrap}
+.entry-add-from-row .entry-add-from-actions{display:flex;flex:1 1 auto;flex-wrap:nowrap;gap:7px;min-width:0;margin:0!important}
+.entry-add-from-row .entry-add-from-actions button{flex:1 1 0;min-width:0;width:0;padding:8px 5px;font-size:12px;white-space:nowrap}
+@media(max-width:390px){.entry-add-from-row{gap:6px}.entry-add-from-row .entry-add-from-actions{gap:5px}.entry-add-from-row .entry-add-from-actions button{font-size:11px;padding:8px 3px}}
+</style>
 </head>
 <body>
 
@@ -1817,7 +1825,7 @@ body.menu-open .app>header{z-index:1!important;}
     <div class="two-col entry-date-time"><div class="field date-time-field"><label>Buy Date</label><input id="f-buydate" type="date"></div><div class="field date-time-field"><label>Buy Time</label><input id="f-buytime" type="time"></div></div>
 
     <div class="two-col"><div class="field"><label>Seller ka naam (optional)</label><input id="f-seller-name" list="appContactNames" placeholder="Kis se khareeda" autocomplete="off"></div><div class="field"><label>Seller ka number (optional)</label><input id="f-seller-number" list="appContactNumbers" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx" autocomplete="off"></div></div>
-    <div class="settings-note entry-add-from-label" style="margin:8px 0 6px;padding:7px 10px;font-size:12px">Add from</div><div class="contact-pick-actions entry-add-from-actions"><button type="button" class="btn-cancel" onclick="openAppContactPicker('f-seller-name','f-seller-number')">👥 App contacts</button><button type="button" class="btn-cancel" onclick="pickPhoneContact('f-seller-name','f-seller-number')">📱 Phone contacts</button></div>
+    <div class="entry-add-from-row"><div class="entry-add-from-label">Add from</div><div class="contact-pick-actions entry-add-from-actions"><button type="button" class="btn-cancel" onclick="openAppContactPicker('f-seller-name','f-seller-number')">👥 App contacts</button><button type="button" class="btn-cancel" onclick="pickPhoneContact('f-seller-name','f-seller-number')">📱 Phone contacts</button></div></div>
 
     <div class="more-section" id="saleFieldsWrap">
       <div class="two-col big-input">
@@ -1900,7 +1908,7 @@ body.menu-open .app>header{z-index:1!important;}
       <div class="field"><label>Customer name</label><input id="s-customer" list="appContactNames" placeholder="Naam" autocomplete="off"></div>
       <div class="field"><label>Customer number</label><input id="s-customer-number" list="appContactNumbers" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx" autocomplete="off"></div>
     </div>
-    <div class="settings-note entry-add-from-label" style="margin:8px 0 6px;padding:7px 10px;font-size:12px">Add from</div><div class="contact-pick-actions entry-add-from-actions"><button type="button" class="btn-cancel" onclick="openAppContactPicker('s-customer','s-customer-number')">👥 App contacts</button><button type="button" class="btn-cancel" onclick="pickPhoneContact('s-customer','s-customer-number')">📱 Phone contacts</button></div>
+    <div class="entry-add-from-row"><div class="entry-add-from-label">Add from</div><div class="contact-pick-actions entry-add-from-actions"><button type="button" class="btn-cancel" onclick="openAppContactPicker('s-customer','s-customer-number')">👥 App contacts</button><button type="button" class="btn-cancel" onclick="pickPhoneContact('s-customer','s-customer-number')">📱 Phone contacts</button></div></div>
     <div class="settings-note entry-date-guidance sale-date-guidance">📊 <b>Accurate Analytics ke liye:</b> Mobile bechne ki sahi date aur time enter karein. Is se daily sales aur busiest hours ki reports zyada accurate hongi.</div>
     <div class="two-col entry-date-time">
       <div class="field date-time-field"><label>Sale Date</label><input id="s-saledate" type="date"></div>
@@ -5876,12 +5884,9 @@ function prepareEntryLayoutDOM(){
   const seller=sheet.querySelector('#f-seller-name');
   if(seller){
     const sellerRow=seller.closest('.two-col');
-    const addFromLabel=sheet.querySelector('.entry-add-from-label');
-    const addFromActions=sheet.querySelector('.entry-add-from-actions');
-    // Keep Add from attached to the seller row when the entry layout is rebuilt.
-    // Previously only the seller fields were wrapped, leaving these controls
-    // behind in the original DOM and causing them to fall near the form bottom.
-    addMainGroup('seller',[sellerRow,addFromLabel,addFromActions]);
+    const addFromRow=sheet.querySelector('.entry-add-from-row');
+    // Keep the compact inline Add from row attached to seller fields when layout rebuilds.
+    addMainGroup('seller',[sellerRow,addFromRow]);
   }
   const extraList=sheet.querySelector('#extraBuyList');
   const extraButton=sheet.querySelector('#addExtraBuyBtn');
