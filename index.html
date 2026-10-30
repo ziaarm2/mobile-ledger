@@ -1896,7 +1896,7 @@ body.menu-open .app>header{z-index:1!important;}
 
     <div class="field" id="companyWarrantyField">
       <label for="f-company-warranty">Company Warranty <span class="required-star">*</span></label>
-      <select id="f-company-warranty" aria-hidden="true" tabindex="-1" style="display:none">
+      <select id="f-company-warranty" required>
         <option value="">Select Company Warranty</option>
         <option value="Not Available">Not Available</option>
         <option value="1 month">1 month</option>
@@ -1912,7 +1912,6 @@ body.menu-open .app>header{z-index:1!important;}
         <option value="11 months">11 months</option>
         <option value="12 months">12 months</option>
       </select>
-      <div class="chip-row company-warranty-chips" id="companyWarrantyChips" role="group" aria-label="Company Warranty options"></div>
     </div>
 
     <div class="field imei-field"><label>IMEI 1</label>
@@ -6448,29 +6447,6 @@ function renderCustomEntryFields(){
   });
 }
 
-function renderCompanyWarrantyChips(){
-  const select=document.getElementById('f-company-warranty');
-  const container=document.getElementById('companyWarrantyChips');
-  if(!select || !container) return;
-  const selected=select.value;
-  const options=Array.from(select.options).filter(function(option){ return option.value!==''; });
-  container.innerHTML=options.map(function(option){
-    const value=option.value;
-    return '<button type="button" class="chip-opt '+(selected===value?'on':'')+'" data-val="'+escapeHtml(value)+'" aria-pressed="'+(selected===value?'true':'false')+'">'+escapeHtml(option.textContent)+'</button>';
-  }).join('');
-  container.querySelectorAll('.chip-opt').forEach(function(button){
-    button.onclick=function(){
-      select.value=button.dataset.val;
-      container.querySelectorAll('.chip-opt').forEach(function(item){
-        const active=item.dataset.val===select.value;
-        item.classList.toggle('on',active);
-        item.setAttribute('aria-pressed',active?'true':'false');
-      });
-      select.dispatchEvent(new Event('change',{bubbles:true}));
-    };
-  });
-}
-
 function renderAllChips(){
   const orderedEntryBrands = getLiveBrands().slice().filter(function(b){return b!=='Other';});
   const brandCounts = {};
@@ -6500,7 +6476,6 @@ function renderAllChips(){
   renderChipGroup('boxChips', getEntryFieldOptions('box', ['No','Yes']), 'box');
   renderChipGroup('packingChips', getEntryFieldOptions('packing', PACKING_OPTS), 'packing');
   renderChipGroup('chargerChips', getEntryFieldOptions('charger', CHARGER_OPTS), 'charger');
-  renderCompanyWarrantyChips();
   renderChipGroup('faceidChips', getEntryFieldOptions('faceid', ['No','Yes']), 'faceid');
   renderChipGroup('truetoneChips', getEntryFieldOptions('truetone', ['No','Yes']), 'truetone');
   renderCustomEntryFields();
@@ -6739,7 +6714,6 @@ function openAdd(){
   formState.box = '';
   formState.charger = '';
   document.getElementById('f-company-warranty').value = '';
-  renderCompanyWarrantyChips();
   formState.battery = '';
   formPhotos = [];
   renderPhotoStrip();
@@ -6842,7 +6816,6 @@ function openEdit(id){
   splitRangeIntoInputs(e.range || '');
   document.getElementById('f-range-hint').textContent = '';
   document.getElementById('f-company-warranty').value = e.companyWarranty || '';
-  renderCompanyWarrantyChips();
   document.getElementById('f-buydate').value = e.buyDate || todayISO();
   document.getElementById('f-buytime').value = e.buyTime || '';
   document.getElementById('f-imei').value = e.imei || '';
