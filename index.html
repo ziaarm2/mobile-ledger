@@ -948,6 +948,13 @@ body.menu-open .app>header{z-index:1!important;}
   .contact-action-btn svg{width:16px!important;height:16px!important;flex:0 0 16px!important}
   .contact-action-btn span{display:inline-block;min-width:0;overflow:hidden;text-overflow:clip}
   @media(max-width:380px){.contact-head{grid-template-columns:minmax(0,1fr) 126px}.contact-head>.contact-phone-save{width:126px;font-size:11px!important}.contact-actions{gap:4px!important}.contact-action-btn{font-size:10px!important}}
+  /* Contact action row must use the full card width so all three actions remain visible on phones. */
+  .contact-head{grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
+  .contact-head>div:first-child{grid-column:1!important;grid-row:1!important;width:100%;min-width:0}
+  .contact-head>.contact-phone-save{grid-column:1!important;grid-row:2!important;justify-self:start;width:auto;max-width:100%;min-width:0}
+  .contact-head>.contact-badges{grid-column:1!important;grid-row:3!important;justify-self:end}
+  .contact-actions{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .contact-action-btn{font-family:inherit!important;font-weight:600!important;line-height:1.15!important}
 
 </style>
 
@@ -8699,33 +8706,45 @@ function normalizePickedPhone(value){
   return raw.startsWith('+')?('+'+digits):digits;
 }
 async function pickPhoneContact(nameId,numberId){
-  try{
-    if(navigator.contacts && typeof navigator.contacts.select==='function'){
+  const nameField=document.getElementById(nameId),numberField=document.getElementById(numberId);
+  if(!nameField||!numberField){showToast('Contact fields nahi milay. Form dobara khol kar try karein.');return;}
+  // Use the native Contact Picker where the browser supports it (typically Android Chromium).
+  // If unsupported, cancelled, or it throws, provide the same manual fallback so the button remains useful.
+  if(navigator.contacts && typeof navigator.contacts.select==='function'){
+    try{
       const picked=await navigator.contacts.select(['name','tel'],{multiple:false});
       if(picked&&picked[0]){
-        document.getElementById(nameId).value=(picked[0].name||[])[0]||'';
-        document.getElementById(numberId).value=normalizePickedPhone((picked[0].tel||[])[0]||'');
-        document.getElementById(nameId).dispatchEvent(new Event('change',{bubbles:true}));
-        document.getElementById(numberId).dispatchEvent(new Event('change',{bubbles:true}));
+        nameField.value=(picked[0].name||[])[0]||'';
+        numberField.value=normalizePickedPhone((picked[0].tel||[])[0]||'');
+        nameField.dispatchEvent(new Event('change',{bubbles:true}));
+        numberField.dispatchEvent(new Event('change',{bubbles:true}));
         return;
       }
+      // An empty result generally means the picker was dismissed; do not force a fallback on cancellation.
+      return;
+    }catch(e){
+      if(e&&e.name==='AbortError')return;
+      console.warn('Native contact picker unavailable; opening manual fallback.',e);
     }
-    // Safari/iOS does not expose the Contact Picker API to web pages. Keep the button useful
-    // by opening an in-theme fallback with fields and clear instructions, rather than doing nothing.
+  }
+  // Safari/iOS does not expose the Contact Picker API. User can paste copied details from Contacts.
+  try{
     const old=document.getElementById('phoneContactFallback');if(old)old.remove();
     const overlay=document.createElement('div');overlay.id='phoneContactFallback';overlay.className='overlay';overlay.style.cssText='display:flex;z-index:10080;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.62)';
-    overlay.innerHTML='<div class="sheet" role="dialog" aria-modal="true" style="width:min(100%,420px);padding:20px"><div class="sheet-handle"></div><h2>Phone Contacts</h2><p style="color:var(--text-dim);font-size:13px;line-height:1.5">iPhone Safari direct contact picker support nahi karta. Contacts app se number copy karein aur yahan paste karein, ya Android par supported browser mein picker use karein.</p><div class="field"><label>Naam</label><input id="phoneFallbackName" autocomplete="off" placeholder="Contact ka naam"></div><div class="field"><label>Phone number</label><input id="phoneFallbackNumber" type="tel" inputmode="tel" autocomplete="tel" placeholder="03xxxxxxxxx"></div><div style="display:flex;gap:8px;margin-top:12px"><button type="button" class="btn-cancel" id="phoneFallbackCancel" style="flex:1">Cancel</button><button type="button" class="btn-primary" id="phoneFallbackUse" style="flex:1">Use contact</button></div></div>';
+    overlay.innerHTML='<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="phoneFallbackTitle" style="width:min(100%,420px);padding:20px"><div class="sheet-handle"></div><h2 id="phoneFallbackTitle">Phone Contacts</h2><p style="color:var(--text-dim);font-size:13px;line-height:1.5">Is browser mein direct phone contact picker available nahi. Phone ki Contacts app se naam/number copy karke yahan paste ya enter karein.</p><div class="field"><label>Naam</label><input id="phoneFallbackName" autocomplete="off" placeholder="Contact ka naam"></div><div class="field"><label>Phone number</label><input id="phoneFallbackNumber" type="tel" inputmode="tel" autocomplete="tel" placeholder="03xxxxxxxxx"></div><div style="display:flex;gap:8px;margin-top:12px"><button type="button" class="btn-cancel" id="phoneFallbackCancel" style="flex:1">Cancel</button><button type="button" class="btn-primary" id="phoneFallbackUse" style="flex:1">Use contact</button></div></div>';
     document.body.appendChild(overlay);
     overlay.querySelector('#phoneFallbackCancel').onclick=()=>overlay.remove();
     overlay.querySelector('#phoneFallbackUse').onclick=()=>{
       const n=overlay.querySelector('#phoneFallbackName').value.trim();
       const ph=normalizePickedPhone(overlay.querySelector('#phoneFallbackNumber').value);
       if(!n&&!ph){showToast('Naam ya phone number enter karein.');return;}
-      document.getElementById(nameId).value=n;document.getElementById(numberId).value=ph;
-      document.getElementById(nameId).dispatchEvent(new Event('change',{bubbles:true}));document.getElementById(numberId).dispatchEvent(new Event('change',{bubbles:true}));overlay.remove();
+      nameField.value=n;numberField.value=ph;
+      nameField.dispatchEvent(new Event('change',{bubbles:true}));numberField.dispatchEvent(new Event('change',{bubbles:true}));
+      overlay.remove();showToast('Contact details form mein add ho gayi hain.');
     };
     overlay.onclick=e=>{if(e.target===overlay)overlay.remove();};
-  }catch(e){if(e&&e.name!=='AbortError')showToast('Phone contacts access nahi ho saka. Naam/number manually paste kar sakte hain.');}
+    setTimeout(()=>{const input=overlay.querySelector('#phoneFallbackName');if(input)input.focus();},40);
+  }catch(e){console.error('Phone contact fallback failed',e);showToast('Phone contact form nahi khul saka. Naam aur number manually fields mein enter karein.');}
 }
 async function exportPhoneContact(encodedName,encodedNumber){
   const name=decodeURIComponent(encodedName||'').trim()||'Contact';
