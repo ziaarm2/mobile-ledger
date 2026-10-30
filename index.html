@@ -1370,6 +1370,30 @@ body.menu-open .app>header{z-index:1!important;}
 .entry-date-time .field.date-time-field > label {top:-8px !important; font-size:11px !important;}
 #overlay > .sheet .entry-date-time {gap:10px !important; margin-bottom:8px !important;}
 </style>
+
+<style id="sale-sheet-layout-fix-v115">
+/* Repair compact sale sheet alignment on small iPhone screens. */
+#sellOverlay { align-items:flex-end !important; justify-content:center !important; }
+#sellOverlay > .sale-sheet {
+  position:relative !important; display:block !important; box-sizing:border-box !important;
+  width:100% !important; max-width:480px !important; height:auto !important; min-height:0 !important;
+  max-height:calc(100dvh - env(safe-area-inset-top, 0px)) !important;
+  margin:0 !important; padding:10px 12px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+  overflow-y:auto !important; border-radius:20px 20px 0 0 !important;
+}
+#sellOverlay > .sale-sheet > .sheet-handle { display:none !important; }
+#sellOverlay > .sale-sheet > h2 { margin:0 48px 5px 0 !important; padding:0 !important; line-height:1.2 !important; }
+#sellOverlay .safe-page-close { top:8px !important; right:12px !important; width:40px !important; height:40px !important; }
+#sellOverlay .sale-qty-price { display:grid !important; grid-template-columns:minmax(76px,.58fr) minmax(0,1.42fr) !important; gap:8px !important; align-items:start !important; }
+#sellOverlay .sale-qty-price .field { min-width:0 !important; margin-bottom:5px !important; }
+#sellOverlay .sale-qty-price .field label { font-size:11.5px !important; line-height:1.15 !important; min-height:27px !important; margin-bottom:3px !important; }
+#sellOverlay .sale-qty-price input { box-sizing:border-box !important; width:100% !important; min-width:0 !important; min-height:36px !important; padding:7px 9px !important; font-size:13px !important; }
+#sellOverlay .sale-price-field input { padding-right:46px !important; }
+#sellOverlay .sale-date-guidance { font-size:10.5px !important; line-height:1.25 !important; padding:6px 8px !important; margin:5px 0 !important; }
+#sellOverlay .sheet-actions { position:sticky !important; bottom:0 !important; margin:6px 0 0 !important; padding:6px 0 0 !important; background:#fff !important; }
+@media(max-height:800px){ #sellOverlay .sale-date-guidance { display:none !important; } }
+</style>
+
 </head>
 <body>
 
