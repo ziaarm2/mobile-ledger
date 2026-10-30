@@ -2419,6 +2419,14 @@ body.menu-open .app>header{z-index:1!important;}
           </div>
           <div class="settings-note" id="accountSyncStatus" style="margin-top:12px;">Sync status: —</div>
           <div class="settings-action-list" style="margin-top:12px;">
+            <button class="menu-item" id="btnShowSavedAccounts">⇄ Switch Account</button>
+            <div id="savedAccountsPanel" style="display:none;border:1px solid var(--border);border-radius:12px;padding:10px;margin-top:6px;">
+              <div style="font-weight:800;margin:2px 0 8px;">Saved accounts</div>
+              <div id="savedAccountsList" style="display:grid;gap:7px;"></div>
+              <button class="menu-item" id="btnAddSavedAccount" style="margin-top:8px;">＋ Add Account</button>
+            </div>
+          </div>
+          <div class="settings-action-list" style="margin-top:12px;">
             <button class="menu-item" id="btnEditShopProfile">✏️ Shop Profile</button>
             <button class="menu-item" id="btnAccountChangePassword">🔐 Change Password</button>
           </div>
@@ -10704,6 +10712,7 @@ function initFirebaseSync(){
       fbUser = user;
       if(cloudUnsub){ cloudUnsub(); cloudUnsub = null; }
       if(user){
+        saveCurrentAccountEmail(user.email || '');
         try{ localStorage.setItem(LS_WAS_LOGGED_IN_KEY, '1'); }catch(e){}
         resolveUserRoleAndShop(user).then(function(){
           activateShopStorage(userShopId);
@@ -10795,6 +10804,19 @@ function updateAdminOnlySettingsUI(){
     if(home){ fieldsView.classList.remove('active'); home.classList.add('active'); }
   }
 }
+
+const SAVED_ACCOUNTS_KEY = 'mobileLedger_savedAccountEmails_v1';
+function getSavedAccountEmails(){ try { const a=JSON.parse(localStorage.getItem(SAVED_ACCOUNTS_KEY)||'[]'); return Array.isArray(a)?a.filter(x=>typeof x==='string'&&x.includes('@')):[]; } catch(e){ return []; } }
+function saveCurrentAccountEmail(email){ if(!email||!String(email).includes('@')) return; try { const a=getSavedAccountEmails(); const n=String(email).trim().toLowerCase(); localStorage.setItem(SAVED_ACCOUNTS_KEY,JSON.stringify([n].concat(a.filter(x=>x.toLowerCase()!==n)).slice(0,10))); } catch(e){} }
+function renderSavedAccounts(){
+  const list=document.getElementById('savedAccountsList'); if(!list) return;
+  const current=fbUser&&fbUser.email?fbUser.email.toLowerCase():'';
+  const emails=getSavedAccountEmails(); list.innerHTML='';
+  if(!emails.length){ const empty=document.createElement('div'); empty.textContent='Abhi koi saved account nahi hai.'; empty.style.cssText='font-size:12px;color:var(--text-dim);padding:5px 0;'; list.appendChild(empty); }
+  emails.forEach(function(email){ const b=document.createElement('button'); b.type='button'; b.className='menu-item'; b.style.cssText='display:flex;justify-content:space-between;align-items:center;gap:8px;'; const label=document.createElement('span'); label.textContent=email; const state=document.createElement('span'); state.textContent=email.toLowerCase()===current?'✓ Current':'Switch'; state.style.cssText='font-size:11px;color:var(--accent);font-weight:800;'; b.append(label,state); b.disabled=email.toLowerCase()===current; b.style.opacity=b.disabled?'.65':'1'; b.onclick=function(){ if(b.disabled)return; document.getElementById('acc-email').value=email; document.getElementById('acc-password').value=''; document.getElementById('savedAccountsPanel').style.display='none'; document.getElementById('accountLoggedInView').style.display='none'; document.getElementById('accountLoggedOutView').style.display='block'; document.getElementById('accountTopbar').style.display='flex'; document.getElementById('authWelcomeTitle').textContent='Switch account'; document.getElementById('authWelcomeText').textContent='Selected account ka password enter karein. Password save nahi hota.'; setAccEmailMode('login'); document.getElementById('acc-password').focus(); }; list.appendChild(b); });
+}
+document.getElementById('btnShowSavedAccounts').onclick=function(){ const panel=document.getElementById('savedAccountsPanel'); panel.style.display=panel.style.display==='none'?'block':'none'; renderSavedAccounts(); };
+document.getElementById('btnAddSavedAccount').onclick=function(){ document.getElementById('acc-email').value=''; document.getElementById('acc-password').value=''; document.getElementById('savedAccountsPanel').style.display='none'; document.getElementById('accountLoggedInView').style.display='none'; document.getElementById('accountLoggedOutView').style.display='block'; document.getElementById('accountTopbar').style.display='flex'; document.getElementById('authWelcomeTitle').textContent='Add account'; document.getElementById('authWelcomeText').textContent='Existing account se login karein. Password device par save nahi hoga.'; setAccEmailMode('login'); document.getElementById('acc-email').focus(); };
 
 function updateAccountUI(){
   updateAdminOnlySettingsUI();
@@ -11410,7 +11432,7 @@ document.getElementById('btnAccountLogin').onclick = function(){
   const pass = document.getElementById('acc-password').value;
   if(!email || !pass){ showAccountError('Email aur password dono likhein.'); return; }
   fbAuth.signInWithEmailAndPassword(email, pass)
-    .then(function(){ showToast('✓ Login ho gaya — sync shuru.'); })
+    .then(function(){ saveCurrentAccountEmail(email); showToast('✓ Login ho gaya — sync shuru.'); })
     .catch(function(err){ showAccountError(friendlyAuthError(err)); });
 };
 document.getElementById('btnAccountSignup').onclick = function(){
