@@ -2844,9 +2844,11 @@ function loadUIState(){
     if(!raw) return null;
     const state = JSON.parse(raw);
     if(!state || typeof state !== 'object') return null;
-    if(typeof state.filter === 'string') currentFilter = state.filter;
-    if(typeof state.brandFilter === 'string') currentBrandFilter = state.brandFilter;
-    if(typeof state.sort === 'string') currentSort = state.sort==='default' ? 'newest' : state.sort;
+    // Every app launch/refresh starts with the requested default filters.
+    // Keep saved search/scroll state, but do not restore previous filter or sort choices.
+    currentFilter = 'available';
+    currentBrandFilter = 'all';
+    currentSort = 'newest';
     if(typeof state.search === 'string' && document.getElementById('search')){
       document.getElementById('search').value = state.search;
     }
@@ -4771,7 +4773,7 @@ function renderBrandFilter(){
   const wrap = document.getElementById('brandFilterChips');
   const isCombinedAdminView = (userRole==='admin' && adminViewActive && adminViewShopId==='__combined__');
   const activeBrandFilter = isCombinedAdminView ? adminCombinedBrandFilter : currentBrandFilter;
-  wrap.innerHTML = '<button type="button" class="chip '+(activeBrandFilter==='all'?'active':'')+'" data-brand="all">Sab brands</button>' +
+  wrap.innerHTML = '<button type="button" class="chip '+(activeBrandFilter==='all'?'active':'')+'" data-brand="all">All brands</button>' +
     distinct.map(function(b){
       return '<button type="button" class="chip '+(activeBrandFilter===b?'active':'')+'" data-brand="'+b+'">'+b+'</button>';
     }).join('');
@@ -11683,6 +11685,9 @@ window.addEventListener('offline',function(){updateOfflineBanner();showToast('ðŸ
 updateOfflineBanner();
 
 const savedUIState = loadUIState();
+currentFilter = 'available';
+currentBrandFilter = 'all';
+currentSort = 'newest';
 if(document.getElementById('sortSelect')) document.getElementById('sortSelect').value = currentSort;
 loadUiScale();
 loadCardDisplaySettings();
