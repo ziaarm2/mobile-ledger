@@ -8532,11 +8532,35 @@ function buildContactsList(){
 }
 
 function contactActionNumber(value){
-  const digits = String(value||'').replace(/\D/g,'');
+  let digits = String(value||'').replace(/\D/g,'');
   if(!digits) return '';
-  if(digits.startsWith('0')) return '92'+digits.slice(1);
-  if(digits.startsWith('92')) return digits;
+  if(digits.startsWith('0')) digits = '92'+digits.slice(1);
+  else if(!digits.startsWith('92')) digits = '92'+digits;
   return digits;
+}
+
+function editContactDetails(encodedName, encodedNumber){
+  if(isAdminShopView()){ alert('Admin Shop view read-only hai.'); return; }
+  const oldName = decodeURIComponent(encodedName || '');
+  const oldNumber = decodeURIComponent(encodedNumber || '');
+  const newNameRaw = prompt('Contact ka naam edit karein:', oldName);
+  if(newNameRaw === null) return;
+  const newNumberRaw = prompt('Contact ka phone number edit karein:', oldNumber);
+  if(newNumberRaw === null) return;
+  const newName = newNameRaw.trim();
+  const newNumber = newNumberRaw.trim();
+  if(!newName && !newNumber){ alert('Naam ya phone number mein se kam az kam ek zaroor dein.'); return; }
+  let changed = 0;
+  inventory.forEach(function(e){
+    const matchesSale = String(e.customer||'').trim()===oldName && String(e.customerNumber||'').trim()===oldNumber;
+    const matchesPurchase = String(e.sellerName||'').trim()===oldName && String(e.sellerNumber||'').trim()===oldNumber;
+    if(matchesSale){ e.customer = newName; e.customerNumber = newNumber; changed++; }
+    if(matchesPurchase){ e.sellerName = newName; e.sellerNumber = newNumber; changed++; }
+  });
+  if(!changed){ alert('Is contact ki matching transaction nahi mili.'); return; }
+  saveInventory();
+  renderContacts();
+  showToast('✓ Contact name/number update ho gaya');
 }
 
 function renderContacts(){
@@ -8567,10 +8591,11 @@ function renderContacts(){
     return '<div class="contact-card">'+
       '<div class="contact-head">'+
         '<div><div class="contact-name">'+escapeHtml(c.name)+'</div>'+(c.number?'<div class="contact-number">'+escapeHtml(c.number)+'</div>':'')+
-          (c.number?'<div class="contact-actions" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">'+
-            '<a href="https://wa.me/'+escapeHtml(contactActionNumber(c.number))+'" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--surface-2);color:var(--text);text-decoration:none;font-size:12px;font-weight:600">WhatsApp</a>'+
-            '<a href="sms:'+escapeHtml(String(c.number).replace(/[^0-9+]/g,''))+'" style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--surface-2);color:var(--text);text-decoration:none;font-size:12px;font-weight:600">Message</a>'+
-            '<a href="tel:'+escapeHtml(String(c.number).replace(/[^0-9+]/g,''))+'" style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--surface-2);color:var(--text);text-decoration:none;font-size:12px;font-weight:600">Call</a></div>':'')+
+          (c.number?'<div class="contact-actions" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:8px;align-items:center">'+
+            '<a aria-label="WhatsApp" title="WhatsApp" href="https://wa.me/'+escapeHtml(contactActionNumber(c.number))+'" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:34px;border-radius:9px;background:var(--surface-2);color:var(--text);text-decoration:none;font-size:18px">☘</a>'+
+            '<a aria-label="Message" title="Message" href="sms:'+escapeHtml(String(c.number).replace(/[^0-9+]/g,''))+'" style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:34px;border-radius:9px;background:var(--surface-2);color:var(--text);text-decoration:none;font-size:18px">✉</a>'+
+            '<a aria-label="Call" title="Call" href="tel:'+escapeHtml(String(c.number).replace(/[^0-9+]/g,''))+'" style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:34px;border-radius:9px;background:var(--surface-2);color:var(--text);text-decoration:none;font-size:18px">☎</a>'+
+            '<button type="button" title="Edit contact" aria-label="Edit contact" onclick="editContactDetails(\''+encodeURIComponent(c.name==='(Naam nahi diya)'?'':c.name)+'\',\''+encodeURIComponent(c.number)+'\')" style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:34px;border:0;border-radius:9px;background:var(--surface-2);color:var(--text);font-size:17px;cursor:pointer">✎</button></div>':'<button type="button" title="Edit contact" onclick="editContactDetails(\''+encodeURIComponent(c.name==='(Naam nahi diya)'?'':c.name)+'\',\''+encodeURIComponent(c.number)+'\')" style="margin-top:8px;display:inline-flex;align-items:center;justify-content:center;width:36px;height:34px;border:0;border-radius:9px;background:var(--surface-2);color:var(--text);font-size:17px;cursor:pointer">✎</button>')+
         '</div>'+
         '<div class="contact-badges">'+
           (buyCount?'<span class="badge qty">Seller</span>':'')+
