@@ -1408,6 +1408,19 @@ body.menu-open .app>header{z-index:1!important;}
 #sellOverlay .sheet-actions button { min-height:52px !important; font-size:16px !important; padding:12px 10px !important; }
 </style>
 
+<style id="sale-keyboard-scroll-v120">
+/* v120: allow natural touch scrolling in Sale Entry while the iPhone keyboard is open. */
+#sellOverlay { align-items:flex-start !important; overflow-y:auto !important; -webkit-overflow-scrolling:touch !important; }
+#sellOverlay > .sale-sheet {
+  align-self:flex-start !important; margin-top:env(safe-area-inset-top, 0px) !important;
+  max-height:calc(var(--sale-visible-height, 100dvh) - env(safe-area-inset-top, 0px)) !important;
+  overflow-y:auto !important; overflow-x:hidden !important;
+  -webkit-overflow-scrolling:touch !important; touch-action:pan-y !important;
+  overscroll-behavior-y:contain !important;
+  padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+}
+#sellOverlay input, #sellOverlay select, #sellOverlay textarea { touch-action:manipulation; scroll-margin-bottom:24px; }
+</style>
 
 <style id="sale-entry-layout-polish-v118">
 /* v118: compact, balanced Sale Entry layout; behavior and calculations unchanged. */
@@ -11099,31 +11112,59 @@ document.getElementById('btnAccountChangePassword').onclick=function(){
   fbAuth.sendPasswordResetEmail(fbUser.email).then(function(){ showToast('✓ Password reset link email par bhej diya.'); }).catch(function(err){ showAccountError(friendlyAuthError(err)); });
 };
 
-// ---------- Keyboard-aware scrolling ----------
-// On phones the on-screen keyboard often covers the field the user just
-// tapped (or the next one below it), forcing them to close the keyboard and
-// scroll manually before they can continue typing entries. To fix this, any
-// time a field inside a bottom sheet (stock entry, expense entry, etc.)
-// gets focus, we nudge it into the middle of the visible area — giving the
-// keyboard a moment to finish opening first so the scroll lands correctly.
-document.addEventListener('focusin', function(e){
-  const el = e.target;
-  if(!el || !el.matches || !el.matches('input, select, textarea')) return;
-  if(!el.closest('.sheet, .settings-shell, .account-shell, .shop-setup-card')) return;
-  setTimeout(function(){
-    el.scrollIntoView({block:'center', behavior:'smooth'});
-  }, 300);
-});
-// Also re-nudge if the keyboard resizes the visible viewport after opening
-// (common on Android), so the currently-focused field stays visible.
-if(window.visualViewport){
-  window.visualViewport.addEventListener('resize', function(){
-    const el = document.activeElement;
-    if(el && el.matches && el.matches('input, select, textarea') && el.closest('.sheet, .settings-shell, .account-shell, .shop-setup-card')){
-      setTimeout(function(){ el.scrollIntoView({block:'center', behavior:'smooth'}); }, 60);
+// ---------- Keyboard-aware scrolling (v120) ----------
+// Keep Sale Entry scrollable while the iOS keyboard remains open. Scroll the
+// sheet itself instead of relying on page-level scrollIntoView, which can be
+// blocked by iOS visual-viewport behavior.
+(function(){
+  function updateSaleVisibleHeight(){
+    if(!window.visualViewport) return;
+    document.documentElement.style.setProperty('--sale-visible-height', Math.round(window.visualViewport.height) + 'px');
+  }
+  function keepFocusedFieldVisible(el){
+    if(!el || !el.matches || !el.matches('input, select, textarea')) return;
+    const saleSheet = el.closest('#sellOverlay > .sale-sheet');
+    if(saleSheet){
+      updateSaleVisibleHeight();
+      const sheetRect = saleSheet.getBoundingClientRect();
+      const fieldRect = el.getBoundingClientRect();
+      const visibleBottom = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      const topLimit = Math.max(sheetRect.top + 8, 8);
+      const bottomLimit = Math.min(visibleBottom - 18, window.innerHeight - 18);
+      if(fieldRect.bottom > bottomLimit){
+        saleSheet.scrollTop += fieldRect.bottom - bottomLimit + 18;
+      } else if(fieldRect.top < topLimit){
+        saleSheet.scrollTop -= topLimit - fieldRect.top + 12;
+      }
+      return;
     }
+    if(el.closest('.sheet, .settings-shell, .account-shell, .shop-setup-card')){
+      el.scrollIntoView({block:'nearest', behavior:'smooth'});
+    }
+  }
+  document.addEventListener('focusin', function(e){
+    const el=e.target;
+    if(!el || !el.matches || !el.matches('input, select, textarea')) return;
+    setTimeout(function(){ keepFocusedFieldVisible(el); }, 250);
+    setTimeout(function(){ keepFocusedFieldVisible(el); }, 500);
   });
-}
+  if(window.visualViewport){
+    updateSaleVisibleHeight();
+    window.visualViewport.addEventListener('resize', function(){
+      updateSaleVisibleHeight();
+      const el=document.activeElement;
+      setTimeout(function(){ keepFocusedFieldVisible(el); }, 100);
+    });
+    window.visualViewport.addEventListener('scroll', function(){ updateSaleVisibleHeight(); });
+  }
+  // Ensure a swipe that starts on the sheet can scroll without blurring inputs.
+  document.addEventListener('touchstart', function(e){
+    if(e.target && e.target.closest && e.target.closest('#sellOverlay > .sale-sheet')){
+      const sheet=e.target.closest('#sellOverlay > .sale-sheet');
+      if(sheet) sheet.style.webkitOverflowScrolling='touch';
+    }
+  }, {passive:true});
+})();
 
 function updateOfflineBanner(){ const el=document.getElementById('offlineBanner'); if(el) el.style.display=navigator.onLine?'none':'block'; }
 window.addEventListener('online',function(){updateOfflineBanner();showToast('🟢 Internet wapas aa gaya — sync dobara try hoga.');schedulePush();});
