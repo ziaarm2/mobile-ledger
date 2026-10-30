@@ -867,9 +867,9 @@ body.menu-open .app>header{z-index:1!important;}
   .entry-date-time{margin-bottom:10px;gap:12px}
   .entry-date-time .field input{min-width:0;width:100%;box-sizing:border-box}
   /* Date and time controls styled as one coordinated pair, like the supplied reference */
-  .entry-date-time .field.date-time-field{position:relative;min-width:0;border:1.5px solid #b9c2cf;border-radius:10px;background:#fff;padding:7px 10px 5px;box-sizing:border-box;margin-top:8px}
+  .entry-date-time .field.date-time-field{position:relative;min-width:0;height:58px;min-height:58px;border:1.5px solid #b9c2cf;border-radius:10px;background:#fff;padding:5px 10px 2px;box-sizing:border-box;margin-top:8px}
   .entry-date-time .field.date-time-field>label{position:absolute;top:-10px;left:12px;z-index:1;padding:0 5px;background:#fff;color:#465166!important;font-size:12px!important;font-weight:800!important;line-height:1.2;letter-spacing:.01em;margin:0!important;white-space:nowrap}
-  .entry-date-time .field.date-time-field>input{border:0!important;box-shadow:none!important;background:transparent!important;border-radius:0!important;padding:8px 2px!important;margin:0!important;min-height:40px;font-size:15px;color:#172033;width:100%;max-width:100%;}
+  .entry-date-time .field.date-time-field>input{border:0!important;box-shadow:none!important;background:transparent!important;border-radius:0!important;padding:7px 2px 2px!important;margin:0!important;height:48px;min-height:48px;font-size:15px;color:#172033;text-align:left!important;width:100%;max-width:100%;}
   .entry-date-time .field.date-time-field>input:focus{outline:none!important;box-shadow:none!important}
   @media(max-width:360px){.entry-date-time{gap:8px}.entry-date-time .field.date-time-field{padding-left:6px;padding-right:6px}.entry-date-time .field.date-time-field>label{left:7px;font-size:11px!important}}
 </style>
@@ -6334,18 +6334,28 @@ function saveEntry(){
   hideSaveError('saveErrorBanner');
   const brand = formState.brand==='Other' ? document.getElementById('f-brand-other').value.trim() : formState.brand;
   const model = getFormModel();
-  if(!brand || !model){
-    alert('Brand aur model zaroori hai');
+  const entryPlatform = getEntryPlatform(brand);
+  const missingMandatory = [];
+  if(!brand) missingMandatory.push('Brand');
+  if(!model) missingMandatory.push('Model');
+  if(!formState.status) missingMandatory.push('Status');
+  if(entryPlatform!=='iphone' && !formState.ram) missingMandatory.push('RAM');
+  if(!formState.storage) missingMandatory.push('Storage');
+  if(!formState.condition) missingMandatory.push('Condition');
+  if(entryPlatform==='iphone' && !formState.battery) missingMandatory.push('Battery Health');
+  if(entryPlatform!=='iphone' && !formState.box) missingMandatory.push('Box');
+  if(entryPlatform!=='iphone' && !formState.charger) missingMandatory.push('Charger');
+  const buyRawForRequired = document.getElementById('f-buy').value.trim();
+  if(!buyRawForRequired && !formState.isSold) missingMandatory.push('Buy Price');
+  if(missingMandatory.length){
+    alert('Ye mandatory fields complete/select karein:\n\n• ' + missingMandatory.join('\n• '));
+    const firstMissing = missingMandatory[0];
+    const targetMap = {'Brand':'entryBrandSection','Model':'f-model','Status':'entryStatusSection','RAM':'entryRamSection','Storage':'entryStorageSection','Condition':'entryConditionSection','Battery Health':'f-battery','Box':'entryBoxSection','Charger':'entryChargerSection','Buy Price':'f-buy'};
+    const targetId = targetMap[firstMissing];
+    const target = targetId ? document.getElementById(targetId) : null;
+    if(target && target.scrollIntoView) target.scrollIntoView({behavior:'smooth',block:'center'});
     return;
   }
-  const entryPlatform = getEntryPlatform(brand);
-  if(!formState.status){ alert('Status select karna zaroori hai'); return; }
-  if(entryPlatform!=='iphone' && !formState.ram){ alert('RAM select karna zaroori hai'); return; }
-  if(!formState.storage){ alert('Storage select karna zaroori hai'); return; }
-  if(!formState.condition){ alert('Condition select karna zaroori hai'); return; }
-  if(entryPlatform==='iphone' && !formState.battery){ alert('Battery health select karna zaroori hai'); return; }
-  if(entryPlatform!=='iphone' && !formState.box){ alert('Box select karna zaroori hai'); return; }
-  if(entryPlatform!=='iphone' && !formState.charger){ alert('Charger select karna zaroori hai'); return; }
   const qty = Math.max(1, Number(document.getElementById('f-qty').value || 1));
   const buyFieldRaw = document.getElementById('f-buy').value.trim();
   const parsedBuyForRange = buyFieldRaw==='' ? null : parsePrice(buyFieldRaw);
