@@ -1408,6 +1408,125 @@ body.menu-open .app>header{z-index:1!important;}
 #sellOverlay .sheet-actions button { min-height:52px !important; font-size:16px !important; padding:12px 10px !important; }
 </style>
 
+
+<style id="sale-entry-layout-polish-v118">
+/* v118: compact, balanced Sale Entry layout; behavior and calculations unchanged. */
+#sellOverlay > .sale-sheet{
+  padding:12px 14px calc(18px + env(safe-area-inset-bottom,0px)) !important;
+  max-height:calc(100dvh - env(safe-area-inset-top,0px)) !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
+}
+#sellOverlay > .sale-sheet > h2{
+  font-size:20px !important; line-height:1.2 !important;
+  margin:0 48px 8px 0 !important;
+}
+#sellOverlay .sheet-item-name{
+  font-size:16px !important; line-height:1.3 !important;
+  margin:0 0 10px !important; padding-right:42px !important;
+}
+#sellOverlay .safe-page-close{
+  top:8px !important; right:12px !important;
+  width:40px !important; height:40px !important;
+  min-width:40px !important; min-height:40px !important;
+}
+#sellOverlay .sale-qty-price{
+  grid-template-columns:minmax(88px,.62fr) minmax(0,1.38fr) !important;
+  gap:10px !important; align-items:start !important;
+}
+#sellOverlay .sale-qty-price .field,
+#sellOverlay .sale-sheet .field{
+  min-width:0 !important; margin-bottom:9px !important;
+}
+#sellOverlay .sale-sheet .field label,
+#sellOverlay .sale-qty-price .field label{
+  font-size:13px !important; line-height:1.25 !important;
+  margin-bottom:5px !important;
+}
+#sellOverlay .sale-sheet .field input,
+#sellOverlay .sale-sheet .field select,
+#sellOverlay .sale-sheet .field textarea,
+#sellOverlay .sale-qty-price input{
+  min-height:43px !important; height:43px !important;
+  padding:8px 10px !important; font-size:15px !important;
+  border-radius:9px !important; box-sizing:border-box !important;
+  width:100% !important; min-width:0 !important;
+}
+#sellOverlay .sale-price-field input{padding-right:42px !important;}
+#sellOverlay .two-col:not(.sale-qty-price):not(.entry-date-time){
+  display:grid !important; grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  gap:9px !important;
+}
+#sellOverlay .sale-date-guidance{
+  font-size:12px !important; line-height:1.4 !important;
+  padding:9px 10px !important; margin:5px 0 9px !important;
+  border-radius:10px !important;
+}
+#sellOverlay .entry-date-time{gap:9px !important; margin:2px 0 9px !important;}
+#sellOverlay .entry-date-time .field.date-time-field{
+  height:43px !important; min-height:43px !important;
+  margin:5px 0 7px !important; padding:2px 8px 0 !important;
+}
+#sellOverlay .entry-date-time .field.date-time-field>input{
+  height:37px !important; min-height:37px !important;
+  padding:2px 1px 0 !important; font-size:14px !important;
+}
+#sellOverlay .entry-date-time .field.date-time-field>label{
+  top:-7px !important; left:8px !important; font-size:11px !important;
+}
+#sellOverlay .sec-label{
+  font-size:14px !important; line-height:1.3 !important;
+  margin:8px 0 5px !important;
+}
+#sellOverlay .settings-note:not(.sale-date-guidance){
+  font-size:12px !important; line-height:1.4 !important;
+  padding:0 !important; margin:0 0 8px !important;
+}
+#sellOverlay .phone-expense-list{gap:6px !important; margin-top:4px !important;}
+#sellOverlay .extra-buy-row{gap:6px !important;}
+#sellOverlay .extra-buy-row input{
+  min-height:38px !important; height:38px !important;
+  font-size:14px !important; padding:7px 8px !important;
+}
+#sellOverlay .extra-buy-remove{width:32px !important;height:32px !important;}
+#sellOverlay .add-extra-buy{
+  font-size:13px !important; padding:8px 10px !important;
+  min-height:38px !important; margin:3px 0 8px !important;
+  border-radius:9px !important;
+}
+#sellOverlay .cost-summary{
+  display:flex !important; align-items:center !important; justify-content:space-between !important;
+  gap:10px !important; padding:10px 11px !important; margin:7px 0 9px !important;
+  font-size:13px !important; line-height:1.25 !important; border-radius:10px !important;
+}
+#sellOverlay .cost-summary span{min-width:0 !important;}
+#sellOverlay .cost-summary strong{font-size:16px !important;white-space:nowrap !important;}
+#sellOverlay .sale-payment-fields .field input{min-height:43px !important;height:43px !important;}
+#sellOverlay .profit-preview{
+  display:flex !important; align-items:center !important; justify-content:space-between !important;
+  gap:10px !important; padding:10px 11px !important; margin:8px 0 !important;
+  font-size:14px !important; line-height:1.3 !important; border-radius:10px !important;
+}
+#sellOverlay .sheet-actions{
+  position:sticky !important; bottom:calc(-1px - env(safe-area-inset-bottom,0px)) !important;
+  display:grid !important; grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  gap:9px !important; margin:9px 0 0 !important;
+  padding:8px 0 calc(2px + env(safe-area-inset-bottom,0px)) !important;
+  background:#fff !important; z-index:3 !important;
+}
+#sellOverlay .sheet-actions button{
+  min-width:0 !important; min-height:44px !important; height:auto !important;
+  padding:9px 7px !important; font-size:14px !important; line-height:1.2 !important;
+  border-radius:10px !important; white-space:normal !important;
+}
+@media(max-width:380px){
+  #sellOverlay > .sale-sheet{padding-left:11px !important;padding-right:11px !important;}
+  #sellOverlay .sale-qty-price{grid-template-columns:minmax(78px,.58fr) minmax(0,1.42fr) !important;gap:7px !important;}
+  #sellOverlay .two-col:not(.sale-qty-price):not(.entry-date-time){gap:7px !important;}
+  #sellOverlay .sale-sheet .field label{font-size:12px !important;}
+  #sellOverlay .cost-summary strong{font-size:14px !important;}
+}
+</style>
 </head>
 <body>
 
