@@ -11138,7 +11138,7 @@ function startCloudSync(uid){
   // normal listener must simply stand by while that view is active.
   setAccountSyncStatus('data la rahe hain…', 'saving');
   showMobileCloudStartupGate();
-  cloudUnsub = fbDb.collection('shops').doc(syncShopId).onSnapshot(function(snap){
+  cloudUnsub = fbDb.collection('shops').doc(syncShopId).onSnapshot({includeMetadataChanges:true}, function(snap){
     // Mobile browsers may immediately emit an old Firestore cache snapshot. Do not
     // apply it as authoritative data while online; wait for the server snapshot.
     if(snap && snap.metadata && snap.metadata.fromCache && navigator.onLine){
