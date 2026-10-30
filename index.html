@@ -1511,6 +1511,10 @@ body.menu-open .app>header{z-index:1!important;}
 
     <div class="sec-label">Status <span style="color:var(--danger);">*</span></div>
     <div class="chip-row" id="statusChips"></div>
+    <div id="statusDetailWrap" style="display:none;margin-top:8px;">
+      <div class="sec-label" id="statusDetailLabel" style="margin-top:8px;">Status detail</div>
+      <div class="chip-row" id="statusDetailChips"></div>
+    </div>
 
     <div class="sec-label">RAM <span style="color:var(--danger);">*</span></div>
     <div class="chip-row" id="ramChips"></div>
@@ -3364,7 +3368,7 @@ function saveRateBook(){
   schedulePush(); return true;
 }
 function rateBookKey(x){ return String(x.brand||'').trim().toLowerCase()+'|||'+String(x.model||'').trim().toLowerCase()+'|||'+String(x.variant||'').trim().toLowerCase()+'|||'+String(x.status||'').trim().toLowerCase(); }
-function mandatoryDetailsHtml(e){ if(!e) return ''; const platform=getEntryPlatform(e.brand||''); const parts=[]; if(e.status) parts.push('Status: '+escapeHtml(e.status)); if(platform!=='iphone' && e.ram) parts.push('RAM: '+escapeHtml(e.ram)); if(e.storage) parts.push('Storage: '+escapeHtml(e.storage)); if(e.condition) parts.push('Condition: '+escapeHtml(e.condition)); if(platform==='iphone' && e.battery) parts.push('Battery health: '+escapeHtml(e.battery)); if(platform!=='iphone' && e.box) parts.push('Box: '+escapeHtml(e.box)); if(platform!=='iphone' && e.charger) parts.push('Charger: '+escapeHtml(e.charger)); return parts.length ? '<div class="rr-sub" style="margin-top:5px;line-height:1.55;"><b>Mandatory details:</b> '+parts.join(' · ')+'</div>' : ''; }
+function mandatoryDetailsHtml(e){ if(!e) return ''; const platform=getEntryPlatform(e.brand||''); const parts=[]; if(e.status) parts.push('Status: '+escapeHtml(formatEntryStatus(e))); if(platform!=='iphone' && e.ram) parts.push('RAM: '+escapeHtml(e.ram)); if(e.storage) parts.push('Storage: '+escapeHtml(e.storage)); if(e.condition) parts.push('Condition: '+escapeHtml(e.condition)); if(platform==='iphone' && e.battery) parts.push('Battery health: '+escapeHtml(e.battery)); if(platform!=='iphone' && e.box) parts.push('Box: '+escapeHtml(e.box)); if(platform!=='iphone' && e.charger) parts.push('Charger: '+escapeHtml(e.charger)); return parts.length ? '<div class="rr-sub" style="margin-top:5px;line-height:1.55;"><b>Mandatory details:</b> '+parts.join(' · ')+'</div>' : ''; }
 function rateBookDetailsFromInventory(e){ return {ram:e&&e.ram||'',storage:e&&e.storage||'',condition:e&&e.condition||'',battery:e&&e.battery||'',box:e&&e.box||'',charger:e&&e.charger||''}; }
 function addRateBookEntry(entry, silent){
   const rate=Number(entry.rate); if(!isFinite(rate)||rate<=0) return false;
@@ -3395,7 +3399,7 @@ function rateBookDisplayEntry(r){
 function rateBookMandatoryGrid(e){
   e=rateBookDisplayEntry(e);
   var platform=getEntryPlatform(e.brand||'');
-  var items=[['Status',e.status||'—']];
+  var items=[['Status',formatEntryStatus(e)||'—']];
   if(platform!=='iphone') items.push(['RAM',e.ram||'—']);
   items.push(['Storage',e.storage||'—'],['Condition',e.condition||'—']);
   if(platform==='iphone') items.push(['Battery Health',e.battery||'—']);
@@ -4432,7 +4436,7 @@ function renderList(){
 
 function pieceStatusBadges(e, outOfStock){
   return (
-    '<span class="badge '+statusBadgeClass(e.status)+'">'+e.status+'</span>'+
+    '<span class="badge '+statusBadgeClass(e.status)+'">'+escapeHtml(formatEntryStatus(e))+'</span>'+
     '<span class="badge qty">'+(outOfStock?'Out of stock':(e.quantity+' piece'+(e.quantity>1?'s':'')))+'</span>'
   );
 }
@@ -4920,7 +4924,7 @@ function renderSoldCard(e){
     '<div class="card-title">'+e.brand+' '+e.model+'</div>'+
     adminCombinedShopBadge(e)+
     '<div class="badges">'+
-      '<span class="badge '+statusBadgeClass(e.status)+'">'+e.status+'</span>'+
+      '<span class="badge '+statusBadgeClass(e.status)+'">'+escapeHtml(formatEntryStatus(e))+'</span>'+
       '<span class="badge sold-badge">Sold'+(e.quantity>1?(' x'+e.quantity):'')+'</span>'+
       (returned?'<span class="badge returned-badge">↩ Returned</span>':'')+
     '</div>'+
@@ -5856,6 +5860,64 @@ function applyEntryLayoutToDOM(platform){
   });
 }
 
+function formatEntryStatus(e){
+  if(!e) return '';
+  const platform=getEntryPlatform(e.brand||'');
+  const detail=String(e.statusDetail||'');
+  if(detail) return detail;
+  const st=String(e.status||'');
+  if(st==='JV') return 'JV/Sim locked';
+  if(st==='CPID' || st==='Patch') return 'CPID/Patch';
+  if(platform==='iphone' && st==='PTA') return 'Official PTA';
+  return st;
+}
+
+function statusPrimaryOptions(){
+  return getEntryPlatform(formState && formState.brand)==='iphone' ? ['Official PTA','Non-PTA'] : ['PTA','Non-PTA'];
+}
+function statusPrimarySelected(){
+  const platform=getEntryPlatform(formState && formState.brand);
+  const st=String(formState.status||'');
+  if(platform==='iphone') return (['JV','CPID','Bypass/MDM','Factory Unlock','JV/Sim locked'].indexOf(st)!==-1 || st==='Non-PTA') ? 'Non-PTA' : (st==='PTA' || st==='Official PTA' ? 'Official PTA' : '');
+  return (st==='CPID' || st==='Patch' || st==='CPID/Patch' || st==='Official' || st==='PTA') ? 'PTA' : (st==='Non-PTA' ? 'Non-PTA' : '');
+}
+function statusDetailSelected(){
+  const platform=getEntryPlatform(formState && formState.brand);
+  if(formState.statusDetail) return formState.statusDetail;
+  const st=String(formState.status||'');
+  if(platform==='iphone'){
+    if(st==='JV' || st==='JV/Sim locked') return 'JV/Sim locked';
+    if(st==='Bypass/MDM') return 'Bypass/MDM';
+    if(st==='Factory Unlock') return 'Factory Unlock';
+  }else if(st==='CPID' || st==='Patch' || st==='CPID/Patch') return 'CPID/Patch';
+  else if(st==='PTA' || st==='Official') return 'Official';
+  return '';
+}
+function renderStatusDetail(){
+  const wrap=document.getElementById('statusDetailWrap'), label=document.getElementById('statusDetailLabel'), row=document.getElementById('statusDetailChips');
+  if(!wrap||!row) return;
+  const platform=getEntryPlatform(formState && formState.brand);
+  const primary=statusPrimarySelected();
+  let options=[];
+  if(platform==='android' && primary==='PTA'){ options=['Official','CPID/Patch']; label.textContent='PTA Type'; }
+  else if(platform==='iphone' && primary==='Non-PTA'){ options=['Factory Unlock','JV/Sim locked','Bypass/MDM']; label.textContent='Non-PTA Type'; }
+  wrap.style.display=options.length?'block':'none';
+  row.innerHTML=options.map(function(o){return '<button type="button" class="chip-opt status-opt '+(statusDetailSelected()===o?'on':'')+'" data-val="'+escapeHtml(o)+'">'+escapeHtml(o)+'</button>';}).join('');
+  row.querySelectorAll('button').forEach(function(btn){btn.onclick=function(e){if(e)e.preventDefault(); const v=btn.dataset.val; formState.statusDetail=v; if(platform==='android') formState.status=(v==='CPID/Patch'?'CPID':'PTA'); else formState.status=(v==='JV/Sim locked'?'JV':v==='Bypass/MDM'?'Bypass/MDM':'Non-PTA'); renderStatusDetail();};});
+}
+function selectStatusPrimary(value){
+  const platform=getEntryPlatform(formState && formState.brand);
+  formState.statusDetail='';
+  if(platform==='iphone'){
+    formState.status=(value==='Official PTA'?'PTA':'Non-PTA');
+  }else{
+    formState.status=value;
+    if(value==='PTA') formState.statusDetail='Official';
+  }
+  renderChipGroup('statusChips', statusPrimaryOptions(), 'status', 'status-opt');
+  renderStatusDetail();
+}
+
 function renderChipGroup(containerId, options, groupKey, extraClass){
   const container = document.getElementById(containerId);
   if(!container) return;
@@ -5863,12 +5925,16 @@ function renderChipGroup(containerId, options, groupKey, extraClass){
   // replaced div[onclick] can lose the tap; buttons give the browser a stable,
   // native interactive target.
   container.innerHTML = options.map(function(o){
-    return '<button type="button" class="chip-opt '+(extraClass||'')+' '+(formState[groupKey]===o?'on':'')+'" data-val="'+escapeHtml(String(o))+'">'+escapeHtml(String(o))+'</button>';
+    return '<button type="button" class="chip-opt '+(extraClass||'')+' '+((groupKey==='status'?statusPrimarySelected()===o:formState[groupKey]===o)?'on':'')+'" data-val="'+escapeHtml(String(o))+'">'+escapeHtml(String(o))+'</button>';
   }).join('');
   container.querySelectorAll('.chip-opt').forEach(function(c){
     c.onclick = function(e){
       if(e) e.preventDefault();
       const value=c.dataset.val;
+      if(groupKey==='status'){
+        selectStatusPrimary(value);
+        return;
+      }
       formState[groupKey] = value;
       // Update only this row. Do NOT rebuild the whole entry form after a
       // storage/condition/battery tap; rebuilding the DOM is what can make a
@@ -5882,6 +5948,7 @@ function renderChipGroup(containerId, options, groupKey, extraClass){
         renderModelSuggestions('');
         const platform=getEntryPlatform(value);
         if(formState.__platform!==platform) applyPlatformDefaultsToForm(platform);
+        formState.status=''; formState.statusDetail='';
         // Brand changes platform, so only then rebuild the complete chip set.
         renderAllChips();
         applyEntryLayoutToDOM(platform);
@@ -5931,7 +5998,8 @@ function renderAllChips(){
   });
   orderedEntryBrands.push('Other');
   renderChipGroup('brandChips', orderedEntryBrands, 'brand');
-  renderChipGroup('statusChips', getEntryFieldOptions('status', STATUS_OPTS), 'status', 'status-opt');
+  renderChipGroup('statusChips', statusPrimaryOptions(), 'status', 'status-opt');
+  renderStatusDetail();
   renderChipGroup('ramChips', getEntryFieldOptions('ram', RAM_OPTS), 'ram');
   renderChipGroup('storageChips', getEntryFieldOptions('storage', STORAGE_OPTS), 'storage');
   renderChipGroup('conditionChips', getEntryFieldOptions('condition', CONDITION_OPTS), 'condition');
@@ -6176,7 +6244,7 @@ function openAdd(){
   rangeInputMode = 'auto';
   document.getElementById('sheetTitle').textContent = 'Nayi stock entry';
   document.getElementById('qtyLabel').textContent = 'Quantity (kitne piece)';
-  formState = {brand:'', status:'', ram:'', storage:'', condition:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'', packing:'No pack', charger:'', faceid:'No', truetone:'No', customFields:{}, isSold:false, __platform:'android'};
+  formState = {brand:'', status:'', statusDetail:'', ram:'', storage:'', condition:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'', packing:'No pack', charger:'', faceid:'No', truetone:'No', customFields:{}, isSold:false, __platform:'android'};
   applyPlatformDefaultsToForm('android');
   // Status must remain unselected by default on both Android and Apple.
   // Android still requires the user to choose a Status before saving.
@@ -6259,7 +6327,7 @@ function openEdit(id){
   const brandKnown = BRANDS.indexOf(e.brand)!==-1;
   formState = {
     brand: brandKnown ? e.brand : 'Other',
-    status: e.status || '',
+    status: e.status || '', statusDetail: e.statusDetail || '',
     ram: e.ram || '', storage: e.storage || '', condition: e.condition || '', network: e.network || '',
     display: e.display || 'Original panel', touch: e.touch || 'Perfect', camera: e.camera || 'Perfect', body: e.body || 'Original', openrepair: e.openrepair || 'No open, no repair', battery: e.battery || 'Perfect',
     box: e.box || 'No', packing: e.packing || 'No pack', charger: e.charger || 'Original charger',
@@ -6396,6 +6464,7 @@ function saveEntry(){
     condition: formState.condition || '',
     network: formState.network || '',
     status: formState.status || 'PTA',
+    statusDetail: formState.statusDetail || statusDetailSelected() || '',
     display: formState.display || 'Original panel',
     touch: formState.touch || 'Perfect',
     camera: formState.camera || 'Perfect',
