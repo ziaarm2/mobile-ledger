@@ -1896,7 +1896,8 @@ body.menu-open .app>header{z-index:1!important;}
 
     <div class="field" id="companyWarrantyField">
       <label for="f-company-warranty">Company Warranty <span class="required-star">*</span></label>
-      <select id="f-company-warranty" required>
+      <div class="chip-row" id="companyWarrantyChips" role="group" aria-label="Company Warranty options"></div>
+      <select id="f-company-warranty" required aria-hidden="true" tabindex="-1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden;">
         <option value="">Select Company Warranty</option>
         <option value="Not Available">Not Available</option>
         <option value="1 month">1 month</option>
@@ -6447,6 +6448,27 @@ function renderCustomEntryFields(){
   });
 }
 
+function renderCompanyWarrantyChips(){
+  const container=document.getElementById('companyWarrantyChips');
+  const select=document.getElementById('f-company-warranty');
+  if(!container || !select) return;
+  container.innerHTML=Array.from(select.options).filter(function(o){return !!o.value;}).map(function(o){
+    return '<button type="button" class="chip-opt company-warranty-opt '+(select.value===o.value?'on':'')+'" data-val="'+escapeHtml(o.value)+'">'+escapeHtml(o.textContent)+'</button>';
+  }).join('');
+  container.querySelectorAll('.company-warranty-opt').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      select.value=btn.dataset.val;
+      container.querySelectorAll('.company-warranty-opt').forEach(function(b){b.classList.toggle('on',b===btn);});
+    });
+  });
+}
+function syncCompanyWarrantyChips(){
+  const container=document.getElementById('companyWarrantyChips');
+  const select=document.getElementById('f-company-warranty');
+  if(!container || !select) return;
+  container.querySelectorAll('.company-warranty-opt').forEach(function(btn){btn.classList.toggle('on',btn.dataset.val===select.value);});
+}
+
 function renderAllChips(){
   const orderedEntryBrands = getLiveBrands().slice().filter(function(b){return b!=='Other';});
   const brandCounts = {};
@@ -6476,6 +6498,7 @@ function renderAllChips(){
   renderChipGroup('boxChips', getEntryFieldOptions('box', ['No','Yes']), 'box');
   renderChipGroup('packingChips', getEntryFieldOptions('packing', PACKING_OPTS), 'packing');
   renderChipGroup('chargerChips', getEntryFieldOptions('charger', CHARGER_OPTS), 'charger');
+  renderCompanyWarrantyChips();
   renderChipGroup('faceidChips', getEntryFieldOptions('faceid', ['No','Yes']), 'faceid');
   renderChipGroup('truetoneChips', getEntryFieldOptions('truetone', ['No','Yes']), 'truetone');
   renderCustomEntryFields();
@@ -6714,6 +6737,7 @@ function openAdd(){
   formState.box = '';
   formState.charger = '';
   document.getElementById('f-company-warranty').value = '';
+  syncCompanyWarrantyChips();
   formState.battery = '';
   formPhotos = [];
   renderPhotoStrip();
@@ -6816,6 +6840,7 @@ function openEdit(id){
   splitRangeIntoInputs(e.range || '');
   document.getElementById('f-range-hint').textContent = '';
   document.getElementById('f-company-warranty').value = e.companyWarranty || '';
+  syncCompanyWarrantyChips();
   document.getElementById('f-buydate').value = e.buyDate || todayISO();
   document.getElementById('f-buytime').value = e.buyTime || '';
   document.getElementById('f-imei').value = e.imei || '';
@@ -8052,6 +8077,9 @@ document.getElementById('btnReportsPdf').onclick = function(){
 #overlay > .sheet #f-company-warranty option {
   background:#fff; color:#172033; font-size:16px;
 }
+#overlay > .sheet #companyWarrantyChips { display:flex; gap:6px; flex-wrap:wrap; row-gap:8px; }
+#overlay > .sheet #companyWarrantyChips .chip-opt { flex:0 0 auto; min-height:36px; padding:8px 12px; border-radius:9px; font:inherit; font-size:13px; line-height:1.2; cursor:pointer; }
+#overlay > .sheet #companyWarrantyChips .chip-opt:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 </style>
 </head><body>'+
     '<h1>Mobile Hisab — Sales Report</h1>'+
