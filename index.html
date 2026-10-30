@@ -6914,7 +6914,7 @@ function openSell(id){
   if(!e) return;
   sellingId = id;
   document.getElementById('sellItemName').textContent = e.brand+' '+e.model+' - '+formatEntryStatus(e)+' ('+e.quantity+' available)';
-  document.getElementById('sellQtyLabel').textContent = 'Kitne piece beche (max '+e.quantity+')';
+  document.getElementById('sellQtyLabel').textContent = 'Piece';
   document.getElementById('s-qty').value = 1;
   document.getElementById('s-qty').max = e.quantity;
   document.getElementById('s-price').value = '';
