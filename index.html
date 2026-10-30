@@ -5245,9 +5245,8 @@ function renderSingleStockCard(e){
     cardPhotoHtml(e)+
     '<div class="badges">'+pieceStatusBadges(e, outOfStock)+'</div>'+
     (pieceSpecBadges(e) ? '<div class="badges spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
-    (e.buy!=null ? '<div class="sale-meta">Buy price: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span></div>' : '')+
+    (e.buy!=null ? (expenseArrayTotal(e.phoneExpenses)>0 ? '<div class="sale-meta">Total Cost: <span class="num">'+fmt(entryTotalCost(e))+'</span></div>' : '<div class="sale-meta">Buy price: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span></div>') : '')+
     activityDateHtml(e)+
-    (phoneExpensesTotal(e)>0 ? '<div class="sale-meta" style="color:var(--danger);">Phone expense: -'+displayProfitHtml(phoneExpensesTotal(e))+'</div>' : '')+
     (e.notes ? '<div class="sale-meta">'+e.notes+'</div>' : '')+
     (canSplit ? '<div class="sale-meta">Ye '+e.quantity+' pieces ek sath ek hi price/condition ke sath saved hain. Agar inki price/condition alag karni hai to Split dabayein.</div>' : '')+
     '<div class="card-actions">'+
@@ -5278,9 +5277,8 @@ function renderStockGroup(g){
       (pieceSpecBadges(e) ? '<div class="piece-row-top spec-badges">'+pieceSpecBadges(e)+'</div>' : '')+
       cardPhotoHtml(e)+
       prominentSellRangeHtml(e.range)+
-      (e.buy!=null ? '<div class="sale-meta">Buy: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span></div>' : '')+
+      (e.buy!=null ? (expenseArrayTotal(e.phoneExpenses)>0 ? '<div class="sale-meta">Total Cost: <span class="num">'+fmt(entryTotalCost(e))+'</span></div>' : '<div class="sale-meta">Buy: <span class="num">'+fmt(displayBuyPrice(e.buy))+'</span></div>') : '')+
       activityDateHtml(e)+
-      (phoneExpensesTotal(e)>0 ? '<div class="sale-meta" style="color:var(--danger);">Phone expense: -'+displayProfitHtml(phoneExpensesTotal(e))+'</div>' : '')+
       (e.notes ? '<div class="sale-meta">'+e.notes+'</div>' : '')+
       '<div class="card-actions">'+
         '<button data-edit="'+e.id+'">Edit</button>'+
