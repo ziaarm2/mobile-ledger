@@ -1896,8 +1896,7 @@ body.menu-open .app>header{z-index:1!important;}
 
     <div class="field" id="companyWarrantyField">
       <label for="f-company-warranty">Company Warranty <span class="required-star">*</span></label>
-      <div class="chip-row" id="companyWarrantyChips" role="group" aria-label="Company Warranty options"></div>
-      <select id="f-company-warranty" required aria-hidden="true" tabindex="-1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden;">
+      <select id="f-company-warranty" aria-hidden="true" tabindex="-1" style="display:none">
         <option value="">Select Company Warranty</option>
         <option value="Not Available">Not Available</option>
         <option value="1 month">1 month</option>
@@ -1913,6 +1912,7 @@ body.menu-open .app>header{z-index:1!important;}
         <option value="11 months">11 months</option>
         <option value="12 months">12 months</option>
       </select>
+      <div class="chip-row company-warranty-chips" id="companyWarrantyChips" role="group" aria-label="Company Warranty options"></div>
     </div>
 
     <div class="field imei-field"><label>IMEI 1</label>
@@ -6449,24 +6449,26 @@ function renderCustomEntryFields(){
 }
 
 function renderCompanyWarrantyChips(){
-  const container=document.getElementById('companyWarrantyChips');
   const select=document.getElementById('f-company-warranty');
-  if(!container || !select) return;
-  container.innerHTML=Array.from(select.options).filter(function(o){return !!o.value;}).map(function(o){
-    return '<button type="button" class="chip-opt company-warranty-opt '+(select.value===o.value?'on':'')+'" data-val="'+escapeHtml(o.value)+'">'+escapeHtml(o.textContent)+'</button>';
+  const container=document.getElementById('companyWarrantyChips');
+  if(!select || !container) return;
+  const selected=select.value;
+  const options=Array.from(select.options).filter(function(option){ return option.value!==''; });
+  container.innerHTML=options.map(function(option){
+    const value=option.value;
+    return '<button type="button" class="chip-opt '+(selected===value?'on':'')+'" data-val="'+escapeHtml(value)+'" aria-pressed="'+(selected===value?'true':'false')+'">'+escapeHtml(option.textContent)+'</button>';
   }).join('');
-  container.querySelectorAll('.company-warranty-opt').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      select.value=btn.dataset.val;
-      container.querySelectorAll('.company-warranty-opt').forEach(function(b){b.classList.toggle('on',b===btn);});
-    });
+  container.querySelectorAll('.chip-opt').forEach(function(button){
+    button.onclick=function(){
+      select.value=button.dataset.val;
+      container.querySelectorAll('.chip-opt').forEach(function(item){
+        const active=item.dataset.val===select.value;
+        item.classList.toggle('on',active);
+        item.setAttribute('aria-pressed',active?'true':'false');
+      });
+      select.dispatchEvent(new Event('change',{bubbles:true}));
+    };
   });
-}
-function syncCompanyWarrantyChips(){
-  const container=document.getElementById('companyWarrantyChips');
-  const select=document.getElementById('f-company-warranty');
-  if(!container || !select) return;
-  container.querySelectorAll('.company-warranty-opt').forEach(function(btn){btn.classList.toggle('on',btn.dataset.val===select.value);});
 }
 
 function renderAllChips(){
@@ -6737,7 +6739,7 @@ function openAdd(){
   formState.box = '';
   formState.charger = '';
   document.getElementById('f-company-warranty').value = '';
-  syncCompanyWarrantyChips();
+  renderCompanyWarrantyChips();
   formState.battery = '';
   formPhotos = [];
   renderPhotoStrip();
@@ -6840,7 +6842,7 @@ function openEdit(id){
   splitRangeIntoInputs(e.range || '');
   document.getElementById('f-range-hint').textContent = '';
   document.getElementById('f-company-warranty').value = e.companyWarranty || '';
-  syncCompanyWarrantyChips();
+  renderCompanyWarrantyChips();
   document.getElementById('f-buydate').value = e.buyDate || todayISO();
   document.getElementById('f-buytime').value = e.buyTime || '';
   document.getElementById('f-imei').value = e.imei || '';
@@ -8077,9 +8079,6 @@ document.getElementById('btnReportsPdf').onclick = function(){
 #overlay > .sheet #f-company-warranty option {
   background:#fff; color:#172033; font-size:16px;
 }
-#overlay > .sheet #companyWarrantyChips { display:flex; gap:6px; flex-wrap:wrap; row-gap:8px; }
-#overlay > .sheet #companyWarrantyChips .chip-opt { flex:0 0 auto; min-height:36px; padding:8px 12px; border-radius:9px; font:inherit; font-size:13px; line-height:1.2; cursor:pointer; }
-#overlay > .sheet #companyWarrantyChips .chip-opt:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 </style>
 </head><body>'+
     '<h1>Mobile Hisab — Sales Report</h1>'+
@@ -11231,36 +11230,19 @@ window.addEventListener('online', function(){
 });
 
 let mobileCloudGateTimer=null;
-let mobileCloudGateResolved=false;
 function showMobileCloudStartupGate(){
   const gate=document.getElementById('mobileCloudStartupGate');
   if(!gate || window.matchMedia('(min-width: 768px)').matches || !navigator.onLine) return;
   gate.classList.add('active');
-  mobileCloudGateResolved=false;
-  clearTimeout(mobileCloudGateTimer);
-  // Safety fallback: never leave the app permanently blocked if Firestore's
-  // server snapshot is delayed or fails silently on a mobile browser. This
-  // does NOT write cached data to cloud; it only lets the already-authenticated
-  // app become usable and leaves sync status visible for retry.
-  mobileCloudGateTimer=setTimeout(function(){
-    if(mobileCloudGateResolved) return;
-    const g=document.getElementById('mobileCloudStartupGate');
-    if(g) g.classList.remove('active');
-    mobileCloudGateTimer=null;
-    setAccountSyncStatus('cloud verify mein dair hai — local data dikhaya ja raha hai; sync dobara koshish karega','error');
-    console.warn('Mobile startup gate safety fallback: authoritative Firestore snapshot not received in time. No cloud write performed by fallback.');
-  },12000);
+  // Keep the gate visible until an authoritative server snapshot is applied.
+  // A timeout here would reveal cached data and cause a visible old-to-new flash.
 }
 function hideMobileCloudStartupGate(){
-  mobileCloudGateResolved=true;
   const gate=document.getElementById('mobileCloudStartupGate');
   if(gate) gate.classList.remove('active');
   clearTimeout(mobileCloudGateTimer); mobileCloudGateTimer=null;
 }
-window.addEventListener('offline',function(){
-  hideMobileCloudStartupGate();
-  setAccountSyncStatus('offline — local data use ho raha hai; internet par sync dobara hoga','error');
-});
+window.addEventListener('offline',hideMobileCloudStartupGate);
 
 function startCloudSync(uid){
   const syncShopId=String(userShopId||'').trim();
