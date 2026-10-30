@@ -1642,10 +1642,17 @@ body.menu-open .app>header{z-index:1!important;}
 @supports (height: 100dvh) {
   #contactsOverlay, #contactsOverlay > .sheet, #udharOverlay, #udharOverlay > .sheet { height: 100dvh !important; }
 }
+/* Mobile startup: conceal stale local/cache totals while the authoritative server snapshot is being fetched. */
+#mobileCloudStartupGate{display:none;position:fixed;inset:0;z-index:2147483000;background:var(--bg,#f8fafc);color:var(--text,#172033);align-items:center;justify-content:center;padding:28px;text-align:center;font:600 16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+#mobileCloudStartupGate .gate-card{max-width:340px;border:1px solid var(--border,#d8dee8);border-radius:18px;background:var(--card,#fff);padding:24px;box-shadow:0 10px 35px rgba(0,0,0,.12)}
+#mobileCloudStartupGate .gate-spinner{width:30px;height:30px;border:3px solid #d9e2ef;border-top-color:#ef233c;border-radius:50%;margin:0 auto 16px;animation:mhGateSpin .8s linear infinite}
+@keyframes mhGateSpin{to{transform:rotate(360deg)}}
+@media (max-width:767px){#mobileCloudStartupGate.active{display:flex}}
 </style>
 
 </head>
 <body>
+<div id="mobileCloudStartupGate" role="status" aria-live="polite"><div class="gate-card"><div class="gate-spinner"></div><div>Latest data load ho raha hai…</div><div style="font-size:13px;font-weight:400;opacity:.75;margin-top:7px">Cloud sync complete hone tak thora intezar karein.</div></div></div>
 
 <div class="app" style="visibility:hidden;">
   <header style="position:relative;">
@@ -11105,6 +11112,22 @@ window.addEventListener('online', function(){
   if(fbUser){ attemptPush(); queueLocalActivityHistoryForCloud(); listCloudBackupsIfVisible(); }
 });
 
+let mobileCloudGateTimer=null;
+function showMobileCloudStartupGate(){
+  const gate=document.getElementById('mobileCloudStartupGate');
+  if(!gate || window.matchMedia('(min-width: 768px)').matches || !navigator.onLine) return;
+  gate.classList.add('active');
+  clearTimeout(mobileCloudGateTimer);
+  // If the server is unusually slow, let the user access local data rather than trapping them.
+  mobileCloudGateTimer=setTimeout(function(){hideMobileCloudStartupGate();},10000);
+}
+function hideMobileCloudStartupGate(){
+  const gate=document.getElementById('mobileCloudStartupGate');
+  if(gate) gate.classList.remove('active');
+  clearTimeout(mobileCloudGateTimer); mobileCloudGateTimer=null;
+}
+window.addEventListener('offline',hideMobileCloudStartupGate);
+
 function startCloudSync(uid){
   const syncShopId=String(userShopId||'').trim();
   if(!syncShopId) return;
@@ -11114,7 +11137,15 @@ function startCloudSync(uid){
   // read-only Shop View is handled separately by enterAdminShop(), so the
   // normal listener must simply stand by while that view is active.
   setAccountSyncStatus('data la rahe hain…', 'saving');
+  showMobileCloudStartupGate();
   cloudUnsub = fbDb.collection('shops').doc(syncShopId).onSnapshot(function(snap){
+    // Mobile browsers may immediately emit an old Firestore cache snapshot. Do not
+    // apply it as authoritative data while online; wait for the server snapshot.
+    if(snap && snap.metadata && snap.metadata.fromCache && navigator.onLine){
+      setAccountSyncStatus('latest server data ka intezar hai…','saving');
+      return;
+    }
+    hideMobileCloudStartupGate();
     // Never let the owner's background listener replace the read-only
     // selected-shop snapshot while Admin is viewing another shop.
     if(isAdminShopView()) return;
@@ -11210,6 +11241,7 @@ function startCloudSync(uid){
     else {setAccountSyncStatus('sab devices par sync ho gaya', 'ok');autoCloudBackupIfDue();queueLocalActivityHistoryForCloud();}
   }, function(err){
     console.error('Cloud sync listen failed', err);
+    hideMobileCloudStartupGate();
     setAccountSyncStatus('sync connect nahi ho saka — internet check karein', 'error');
   });
 }
