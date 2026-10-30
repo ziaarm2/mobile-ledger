@@ -629,6 +629,17 @@
   .password-eye{position:absolute;right:7px;bottom:7px;width:34px;height:34px;border:0;background:transparent;color:var(--text-dim);font-size:17px;}
   .account-profile-card{max-width:410px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;}
   .account-avatar{width:48px;height:48px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;margin-bottom:10px;}
+  .saved-accounts-panel{display:none;border:1px solid var(--border)!important;border-radius:16px!important;padding:12px!important;margin-top:8px!important;background:var(--surface-2);box-shadow:0 8px 24px rgba(0,0,0,.07);}
+  .saved-accounts-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:800;font-size:14px;margin:2px 2px 10px;}
+  .saved-account-card{width:100%;min-width:0;display:flex;align-items:center;gap:11px;padding:11px;border:1px solid var(--border);border-radius:13px;background:var(--surface);color:var(--text);text-align:left;cursor:pointer;}
+  .saved-account-card:active{transform:scale(.99);}
+  .saved-account-avatar{width:42px;height:42px;flex:0 0 42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--surface-2);border:1px solid var(--border);font-size:15px;font-weight:900;color:var(--text);}
+  .saved-account-copy{flex:1;min-width:0;}
+  .saved-account-email{font-size:12.5px;font-weight:750;overflow-wrap:anywhere;line-height:1.35;}
+  .saved-account-caption{font-size:11px;color:var(--text-dim);margin-top:3px;}
+  .saved-account-state{font-size:11px;white-space:nowrap;font-weight:800;color:var(--accent);}
+  .saved-account-card.is-current{border-color:var(--accent);background:var(--surface);}
+  .saved-account-add{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border:1px dashed var(--border-strong);border-radius:13px;background:transparent;color:var(--accent);font-weight:800;margin-top:9px;}
   .account-meta-label{font-size:10.5px;text-transform:uppercase;color:var(--text-faint);letter-spacing:.04em;}
   .account-meta-value{font-size:14px;font-weight:700;margin-top:2px;word-break:break-word;}
   .account-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px;}
@@ -2420,10 +2431,10 @@ body.menu-open .app>header{z-index:1!important;}
           <div class="settings-note" id="accountSyncStatus" style="margin-top:12px;">Sync status: —</div>
           <div class="settings-action-list" style="margin-top:12px;">
             <button class="menu-item" id="btnShowSavedAccounts">⇄ Switch Account</button>
-            <div id="savedAccountsPanel" style="display:none;border:1px solid var(--border);border-radius:12px;padding:10px;margin-top:6px;">
-              <div style="font-weight:800;margin:2px 0 8px;">Saved accounts</div>
-              <div id="savedAccountsList" style="display:grid;gap:7px;"></div>
-              <button class="menu-item" id="btnAddSavedAccount" style="margin-top:8px;">＋ Add Account</button>
+            <div id="savedAccountsPanel" class="saved-accounts-panel">
+              <div class="saved-accounts-heading"><span>Switch account</span><span style="font-size:11px;color:var(--text-dim);font-weight:600;">Saved on this device</span></div>
+              <div id="savedAccountsList" style="display:grid;gap:8px;"></div>
+              <button type="button" class="saved-account-add" id="btnAddSavedAccount"><span style="font-size:19px;line-height:1;">＋</span> Add another account</button>
             </div>
           </div>
           <div class="settings-action-list" style="margin-top:12px;">
@@ -10812,10 +10823,41 @@ function renderSavedAccounts(){
   const list=document.getElementById('savedAccountsList'); if(!list) return;
   const current=fbUser&&fbUser.email?fbUser.email.toLowerCase():'';
   const emails=getSavedAccountEmails(); list.innerHTML='';
-  if(!emails.length){ const empty=document.createElement('div'); empty.textContent='Abhi koi saved account nahi hai.'; empty.style.cssText='font-size:12px;color:var(--text-dim);padding:5px 0;'; list.appendChild(empty); }
-  emails.forEach(function(email){ const b=document.createElement('button'); b.type='button'; b.className='menu-item'; b.style.cssText='display:flex;justify-content:space-between;align-items:center;gap:8px;'; const label=document.createElement('span'); label.textContent=email; const state=document.createElement('span'); state.textContent=email.toLowerCase()===current?'✓ Current':'Switch'; state.style.cssText='font-size:11px;color:var(--accent);font-weight:800;'; b.append(label,state); b.disabled=email.toLowerCase()===current; b.style.opacity=b.disabled?'.65':'1'; b.onclick=function(){ if(b.disabled)return; document.getElementById('acc-email').value=email; document.getElementById('acc-password').value=''; document.getElementById('savedAccountsPanel').style.display='none'; document.getElementById('accountLoggedInView').style.display='none'; document.getElementById('accountLoggedOutView').style.display='block'; document.getElementById('accountTopbar').style.display='flex'; document.getElementById('authWelcomeTitle').textContent='Switch account'; document.getElementById('authWelcomeText').textContent='Selected account ka password enter karein. Password save nahi hota.'; setAccEmailMode('login'); document.getElementById('acc-password').focus(); }; list.appendChild(b); });
+  if(!emails.length){
+    const empty=document.createElement('div');
+    empty.textContent='Abhi koi saved account nahi hai.';
+    empty.style.cssText='font-size:12px;color:var(--text-dim);padding:10px 4px;text-align:center;';
+    list.appendChild(empty);
+  }
+  emails.forEach(function(email){
+    const isCurrent=email.toLowerCase()===current;
+    const b=document.createElement('button'); b.type='button';
+    b.className='saved-account-card'+(isCurrent?' is-current':'');
+    const avatar=document.createElement('span'); avatar.className='saved-account-avatar';
+    avatar.textContent=(email.split('@')[0].replace(/[._-]+/g,' ').trim().split(/\s+/).map(function(x){return x.charAt(0);}).join('').slice(0,2)||'AC').toUpperCase();
+    const copy=document.createElement('span'); copy.className='saved-account-copy';
+    const label=document.createElement('span'); label.className='saved-account-email'; label.textContent=email;
+    const caption=document.createElement('span'); caption.className='saved-account-caption'; caption.textContent=isCurrent?'Currently active account':'Tap to switch account';
+    copy.append(label,caption);
+    const state=document.createElement('span'); state.className='saved-account-state'; state.textContent=isCurrent?'✓ Current':'Switch  ›';
+    b.append(avatar,copy,state); b.disabled=isCurrent; b.setAttribute('aria-label',isCurrent?email+' current account':'Switch to '+email);
+    b.onclick=function(){
+      if(b.disabled)return;
+      document.getElementById('acc-email').value=email;
+      document.getElementById('acc-password').value='';
+      document.getElementById('savedAccountsPanel').style.display='none';
+      document.getElementById('accountLoggedInView').style.display='none';
+      document.getElementById('accountLoggedOutView').style.display='block';
+      document.getElementById('accountTopbar').style.display='flex';
+      document.getElementById('authWelcomeTitle').textContent='Switch account';
+      document.getElementById('authWelcomeText').textContent='Selected account ka password enter karein. Password save nahi hota.';
+      setAccEmailMode('login');
+      document.getElementById('acc-password').focus();
+    };
+    list.appendChild(b);
+  });
 }
-document.getElementById('btnShowSavedAccounts').onclick=function(){ const panel=document.getElementById('savedAccountsPanel'); panel.style.display=panel.style.display==='none'?'block':'none'; renderSavedAccounts(); };
+document.getElementById('btnShowSavedAccounts').onclick=function(){ const panel=document.getElementById('savedAccountsPanel'); const opening=getComputedStyle(panel).display==='none'; panel.style.display=opening?'block':'none'; if(opening) renderSavedAccounts(); };
 document.getElementById('btnAddSavedAccount').onclick=function(){ document.getElementById('acc-email').value=''; document.getElementById('acc-password').value=''; document.getElementById('savedAccountsPanel').style.display='none'; document.getElementById('accountLoggedInView').style.display='none'; document.getElementById('accountLoggedOutView').style.display='block'; document.getElementById('accountTopbar').style.display='flex'; document.getElementById('authWelcomeTitle').textContent='Add account'; document.getElementById('authWelcomeText').textContent='Existing account se login karein. Password device par save nahi hoga.'; setAccEmailMode('login'); document.getElementById('acc-email').focus(); };
 
 function updateAccountUI(){
