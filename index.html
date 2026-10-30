@@ -1154,6 +1154,90 @@ body.menu-open .app>header{z-index:1!important;}
 }
 </style>
 
+
+<style id="v93-consistent-form-rhythm">
+/* v93: consistent spacing, typography, contrast, and safe scroll clearance */
+#overlay > .sheet {
+  padding: 16px 16px calc(100px + env(safe-area-inset-bottom, 0px)) !important;
+  scroll-padding-bottom: 110px;
+}
+#overlay > .sheet .sheet-head h3,
+#overlay > .sheet .sheet-title,
+#overlay > .sheet h3 {
+  font-size: 22px !important; font-weight: 750 !important; line-height: 1.25 !important;
+}
+#overlay > .sheet .field { margin: 0 0 24px !important; }
+#overlay > .sheet .field label,
+#overlay > .sheet label.field-label,
+#overlay > .sheet .field > label {
+  display:block !important; font-size:14px !important; font-weight:600 !important;
+  text-transform:none !important; letter-spacing:0 !important; line-height:1.35 !important;
+  margin:0 0 8px !important; color:#263449 !important; opacity:1 !important;
+}
+#overlay > .sheet .entry-field-heading,
+#overlay > .sheet .sec-label {
+  font-size:14px !important; font-weight:600 !important; text-transform:none !important;
+  letter-spacing:0 !important; line-height:1.35 !important; margin:0 0 8px !important;
+}
+#overlay > .sheet .field input,
+#overlay > .sheet .field select,
+#overlay > .sheet .model-input-row input,
+#overlay > .sheet textarea {
+  font-size:16px !important; text-align:left !important; color:#172033 !important;
+}
+#overlay > .sheet input::placeholder,
+#overlay > .sheet textarea::placeholder { color:#737d8c !important; opacity:1 !important; }
+#overlay > .sheet .chip-opt,
+#overlay > .sheet .model-suggestion-chip { color:#4b586b !important; }
+#overlay > .sheet .chips,
+#overlay > .sheet .chip-options,
+#overlay > .sheet .option-chips,
+#overlay > .sheet #conditionChips {
+  row-gap:12px !important; column-gap:8px !important; margin-bottom:0 !important;
+}
+#overlay > .sheet .chip-opt { font-size:14px !important; }
+#overlay > .sheet .model-suggestions { row-gap:10px !important; column-gap:8px !important; margin-top:8px !important; }
+#overlay > .sheet .entry-layout-main,
+#overlay > .sheet #entryLayoutMainWrap { row-gap:0 !important; }
+#overlay > .sheet .entry-date-time .field input { text-align:left !important; }
+#overlay > .sheet .entry-date-time .field.date-time-field { margin-bottom:24px !important; }
+#overlay > .sheet .entry-date-guidance,
+#overlay > .sheet .analytics-notice,
+#overlay > .sheet .analytics-entry-notice,
+#overlay > .sheet .entry-analytics-notice,
+#overlay > .sheet .sale-analytics-notice {
+  font-size:14px !important; line-height:1.5 !important; padding:12px 14px !important;
+  margin:0 0 24px !important;
+}
+#overlay > .sheet .extra-buy-list { margin-top:8px !important; gap:10px !important; }
+#overlay > .sheet .extra-buy-row { margin-bottom:0 !important; }
+#overlay > .sheet .extra-buy-row input { font-size:16px !important; }
+#overlay > .sheet .add-extra-buy,
+#overlay > .sheet .add-piece-btn { margin-top:10px !important; }
+#overlay > .sheet .extra-buy-heading,
+#overlay > .sheet .extra-buy-title,
+#overlay > .sheet .extra-buy-section-title {
+  font-size:14px !important; font-weight:600 !important; text-transform:none !important;
+  letter-spacing:0 !important; margin:0 0 8px !important; line-height:1.35 !important;
+}
+#overlay > .sheet .seller-number-label,
+#overlay > .sheet label[for*="sellerPhone"],
+#overlay > .sheet label[for*="sellerNumber"],
+#overlay > .sheet label[for*="sellerMobile"] { font-size:12.5px !important; line-height:1.25 !important; }
+#overlay > .sheet .sheet-actions {
+  margin-top:12px !important; padding:8px 0 calc(4px + env(safe-area-inset-bottom, 0px)) !important;
+  background:#fff !important;
+}
+@media(max-width:520px){
+  #overlay > .sheet { padding-bottom:calc(110px + env(safe-area-inset-bottom, 0px)) !important; }
+  #overlay > .sheet .field { margin-bottom:24px !important; }
+  #overlay > .sheet .seller-number-label,
+  #overlay > .sheet label[for*="sellerPhone"],
+  #overlay > .sheet label[for*="sellerNumber"],
+  #overlay > .sheet label[for*="sellerMobile"] { font-size:12px !important; }
+}
+</style>
+
 </head>
 <body>
 
