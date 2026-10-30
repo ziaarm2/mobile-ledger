@@ -1588,90 +1588,8 @@ body.menu-open .app>header{z-index:1!important;}
 .entry-add-from-row .entry-add-from-actions button{min-height:34px!important;padding:6px 5px!important;border-radius:8px!important;font-size:11.5px!important;line-height:1.1!important;box-shadow:none!important;background:var(--surface)!important}
 @media(max-width:390px){.entry-add-from-row{gap:6px!important;padding:5px!important}.entry-add-from-row .entry-add-from-actions{gap:4px!important}.entry-add-from-row .entry-add-from-actions button{font-size:10.5px!important;padding:6px 3px!important}}
 </style>
-<style id="purchase-add-from-spacing-refinement">
-/* Purchase form has a larger default row gap than the sale sheet; tighten only this contact group. */
-#overlay > .sheet .entry-layout-group[data-entry-group="seller"] .entry-add-from-row {
-  margin-top: -25px !important;
-  margin-bottom: 5px !important;
-}
-</style>
-
-<style id="contacts-overlay-viewport-repair">
-/* Keep Contacts screen inside the full available mobile viewport, like other repaired panels. */
-#contactsOverlay { align-items: stretch; padding: 0; box-sizing: border-box; }
-#contactsOverlay > .sheet {
-  width: 100%; max-width: none; min-width: 0; height: 100vh; height: 100dvh;
-  max-height: none; min-height: 0; box-sizing: border-box;
-  border-radius: 0; overflow-y: auto; overscroll-behavior: contain;
-  padding-top: calc(16px + env(safe-area-inset-top, 0px));
-  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-}
-#contactsOverlay .safe-page-close { top: calc(8px + env(safe-area-inset-top, 0px)); }
-#contactsOverlay .sheet-handle { margin-top: 4px; }
-@supports (height: 100dvh) { #contactsOverlay > .sheet { height: 100dvh; } }
-</style>
-
-<style id="contacts-and-pending-fullscreen-final-fix">
-/* Final iPhone viewport fix: Contacts and Pending Payments use a true full-screen panel. */
-#contactsOverlay, #udharOverlay {
-  position: fixed !important; inset: 0 !important;
-  width: 100% !important; height: 100vh !important; height: 100dvh !important;
-  padding: 0 !important; margin: 0 !important;
-  display: flex; align-items: stretch !important; justify-content: stretch !important;
-  box-sizing: border-box !important; overflow: hidden !important;
-  background: rgba(15, 23, 42, .52) !important;
-  z-index: 10000 !important;
-}
-#contactsOverlay.hidden, #udharOverlay.hidden { display: none !important; }
-#contactsOverlay > .sheet, #udharOverlay > .sheet {
-  position: relative !important; flex: 1 1 auto !important;
-  width: 100% !important; max-width: none !important; min-width: 0 !important;
-  height: 100vh !important; height: 100dvh !important;
-  max-height: none !important; min-height: 0 !important;
-  margin: 0 !important; border-radius: 0 !important;
-  box-sizing: border-box !important;
-  padding: calc(18px + env(safe-area-inset-top, 0px)) 16px calc(24px + env(safe-area-inset-bottom, 0px)) !important;
-  overflow-y: auto !important; overscroll-behavior: contain !important;
-  -webkit-overflow-scrolling: touch !important;
-}
-#contactsOverlay .safe-page-close, #udharOverlay .safe-page-close {
-  position: sticky !important; top: 0 !important; z-index: 5 !important;
-  float: right !important; margin: 0 0 8px 8px !important;
-}
-#contactsOverlay .sheet-handle, #udharOverlay .sheet-handle { clear: both; margin-top: 4px !important; }
-@supports (height: 100dvh) {
-  #contactsOverlay, #contactsOverlay > .sheet, #udharOverlay, #udharOverlay > .sheet { height: 100dvh !important; }
-}
-/* Mobile startup: hide cached business records until the authoritative cloud snapshot is applied. */
-#mobileCloudStartupGate{display:none;position:fixed;inset:0;z-index:2147483000;background:linear-gradient(180deg,#f8fafc 0%,#eef2f7 100%);color:#172033;align-items:center;justify-content:center;padding:24px;text-align:center;font:500 15px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-sizing:border-box}
-#mobileCloudStartupGate .gate-card{width:min(100%,340px);box-sizing:border-box;border:1px solid #e1e6ee;border-radius:22px;background:rgba(255,255,255,.98);padding:30px 24px 25px;box-shadow:0 18px 55px rgba(15,23,42,.10)}
-#mobileCloudStartupGate .gate-brand{font-size:11px;letter-spacing:2.2px;font-weight:800;color:#64748b;margin-bottom:20px;text-transform:uppercase}
-#mobileCloudStartupGate .gate-spinner{width:34px;height:34px;border:3px solid #dce5f0;border-top-color:#e11d48;border-right-color:#e11d48;border-radius:50%;margin:0 auto 19px;animation:mhGateSpin .85s linear infinite}
-#mobileCloudStartupGate .gate-title{font-size:19px;line-height:1.35;font-weight:750;letter-spacing:-.3px;color:#172033}
-#mobileCloudStartupGate .gate-subtitle{font-size:13px;line-height:1.55;font-weight:400;color:#64748b;margin-top:9px;min-height:40px}
-#mobileCloudStartupGate .gate-track{height:3px;border-radius:999px;background:#e8edf4;overflow:hidden;margin:22px 0 0}
-#mobileCloudStartupGate .gate-track span{display:block;height:100%;width:35%;border-radius:999px;background:linear-gradient(90deg,#e11d48,#fb7185);animation:mhGateProgress 1.5s ease-in-out infinite}
-@keyframes mhGateSpin{to{transform:rotate(360deg)}}
-@keyframes mhGateProgress{0%{transform:translateX(-110%)}100%{transform:translateX(320%)}}
-@media (prefers-reduced-motion:reduce){#mobileCloudStartupGate .gate-spinner,#mobileCloudStartupGate .gate-track span{animation:none}}
-@media (max-width:767px){#mobileCloudStartupGate.active{display:flex}}
-</style>
-
 </head>
 <body>
-<div id="mobileCloudStartupGate" role="status" aria-live="polite"><div class="gate-card"><div class="gate-brand">Z MOBILE · MOBILE HISAB</div><div class="gate-spinner" aria-hidden="true"></div><div class="gate-title">Aapka business data sync ho raha hai</div><div class="gate-subtitle" id="mobileCloudStartupStatus">Cloud se latest records securely verify kiye ja rahe hain.</div><div class="gate-track" aria-hidden="true"><span></span></div></div></div>
-<script>
-/* Prevent the cached/local dashboard from flashing before the cloud listener starts on a mobile refresh. */
-(function(){
-  try {
-    var previouslySignedIn = localStorage.getItem('mobileLedger_wasLoggedIn') === '1';
-    if (previouslySignedIn && navigator.onLine && window.matchMedia('(max-width: 767px)').matches) {
-      var gate = document.getElementById('mobileCloudStartupGate');
-      if (gate) gate.classList.add('active');
-    }
-  } catch (e) {}
-})();
-</script>
 
 <div class="app" style="visibility:hidden;">
   <header style="position:relative;">
@@ -1915,7 +1833,7 @@ body.menu-open .app>header{z-index:1!important;}
     <div class="settings-note entry-date-guidance">📊 <b>Accurate Analytics ke liye:</b> Mobile khareedne aur bechne ki sahi date aur time enter karein. Is se daily purchases, sales aur busiest hours ki reports zyada accurate hongi.</div>
     <div class="two-col entry-date-time"><div class="field date-time-field"><label>Buy Date</label><input id="f-buydate" type="date"></div><div class="field date-time-field"><label>Buy Time</label><input id="f-buytime" type="time"></div></div>
 
-    <div class="two-col"><div class="field"><label>Seller ka naam</label><input id="f-seller-name" list="appContactNames" placeholder="Kis se khareeda" autocomplete="off"></div><div class="field"><label>Seller ka number</label><input id="f-seller-number" list="appContactNumbers" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx" autocomplete="off"></div></div>
+    <div class="two-col"><div class="field"><label>Seller ka naam (optional)</label><input id="f-seller-name" list="appContactNames" placeholder="Kis se khareeda" autocomplete="off"></div><div class="field"><label>Seller ka number (optional)</label><input id="f-seller-number" list="appContactNumbers" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx" autocomplete="off"></div></div>
     <div class="entry-add-from-row"><div class="entry-add-from-label">Add from</div><div class="contact-pick-actions entry-add-from-actions"><button type="button" class="btn-cancel" onclick="openAppContactPicker('f-seller-name','f-seller-number')">👥 App contacts</button><button type="button" class="btn-cancel" onclick="pickPhoneContact('f-seller-name','f-seller-number')">📱 Phone contacts</button></div></div>
 
     <div class="more-section" id="saleFieldsWrap">
@@ -10679,7 +10597,6 @@ function initFirebaseSync(){
           showToast('Offline mode — local data available; internet aane par sync hoga.');
           return;
         }
-        hideMobileCloudStartupGate();
         try{ localStorage.removeItem(LS_WAS_LOGGED_IN_KEY); }catch(e){}
         userRole = 'owner';
         userShopId = null;
@@ -11132,30 +11049,6 @@ window.addEventListener('online', function(){
   if(fbUser){ attemptPush(); queueLocalActivityHistoryForCloud(); listCloudBackupsIfVisible(); }
 });
 
-let mobileCloudGateTimer=null;
-let mobileCloudStatusTimer=null;
-function showMobileCloudStartupGate(){
-  const gate=document.getElementById('mobileCloudStartupGate');
-  if(!gate || window.matchMedia('(min-width: 768px)').matches || !navigator.onLine) return;
-  gate.classList.add('active');
-  // Never time out into stale cached records. Rotate truthful status copy while
-  // the existing Firestore listener waits for an authoritative server snapshot.
-  const status=document.getElementById('mobileCloudStartupStatus');
-  if(status){
-    const messages=['Cloud se latest records securely verify kiye ja rahe hain.','Inventory, expenses aur settings ko latest snapshot ke saath milaya ja raha hai.','Bas thora sa intezar — purana data dikhane ke bajaye latest data load ho raha hai.'];
-    let i=0; status.textContent=messages[0];
-    clearInterval(mobileCloudStatusTimer);
-    mobileCloudStatusTimer=setInterval(function(){ if(!gate.classList.contains('active')) return; i=(i+1)%messages.length; status.textContent=messages[i]; },2600);
-  }
-}
-function hideMobileCloudStartupGate(){
-  const gate=document.getElementById('mobileCloudStartupGate');
-  if(gate) gate.classList.remove('active');
-  clearInterval(mobileCloudStatusTimer); mobileCloudStatusTimer=null;
-  clearTimeout(mobileCloudGateTimer); mobileCloudGateTimer=null;
-}
-window.addEventListener('offline',hideMobileCloudStartupGate);
-
 function startCloudSync(uid){
   const syncShopId=String(userShopId||'').trim();
   if(!syncShopId) return;
@@ -11165,15 +11058,7 @@ function startCloudSync(uid){
   // read-only Shop View is handled separately by enterAdminShop(), so the
   // normal listener must simply stand by while that view is active.
   setAccountSyncStatus('data la rahe hain…', 'saving');
-  showMobileCloudStartupGate();
-  cloudUnsub = fbDb.collection('shops').doc(syncShopId).onSnapshot({includeMetadataChanges:true}, function(snap){
-    // Mobile browsers may immediately emit an old Firestore cache snapshot. Do not
-    // apply it as authoritative data while online; wait for the server snapshot.
-    if(snap && snap.metadata && snap.metadata.fromCache && navigator.onLine){
-      setAccountSyncStatus('latest server data ka intezar hai…','saving');
-      return;
-    }
-    // Keep the startup gate up until the authoritative snapshot has been applied.
+  cloudUnsub = fbDb.collection('shops').doc(syncShopId).onSnapshot(function(snap){
     // Never let the owner's background listener replace the read-only
     // selected-shop snapshot while Admin is viewing another shop.
     if(isAdminShopView()) return;
@@ -11183,7 +11068,6 @@ function startCloudSync(uid){
       // the original Z Mobile/admin account whose data predates cloud sync.
       setAccountSyncStatus('cloud setup ho raha hai — is device ka data upload ho raha hai', 'saving');
       schedulePush();
-      hideMobileCloudStartupGate();
       return;
     }
     const data = snap.data();
@@ -11198,8 +11082,6 @@ function startCloudSync(uid){
       localVersion++;
       try{localStorage.setItem(shopStorageKey(LS_LOCAL_VERSION_KEY),String(localVersion));}catch(e){}
       setAccountSyncStatus('local aur cloud records merge ho rahe hain…','saving');
-      render();
-      hideMobileCloudStartupGate();
       attemptPush();
       return;
     }
@@ -11215,7 +11097,6 @@ function startCloudSync(uid){
       try{ localStorage.setItem(shopStorageKey(LS_LOCAL_VERSION_KEY), String(localVersion)); }catch(e){}
       attemptPush();
       setAccountSyncStatus('existing device ka data cloud par sync ho raha hai…', 'saving');
-      hideMobileCloudStartupGate();
       return;
     }
     applyingRemoteUpdate = true;
@@ -11269,12 +11150,10 @@ function startCloudSync(uid){
       }
     }catch(e){}
     updateAccountUI();
-    hideMobileCloudStartupGate();
     if(hasUnresolvedSyncConflicts()){setAccountSyncStatus('sync conflict — Settings mein decision chahiye','error');updateSyncConflictBanner();}
     else {setAccountSyncStatus('sab devices par sync ho gaya', 'ok');autoCloudBackupIfDue();queueLocalActivityHistoryForCloud();}
   }, function(err){
     console.error('Cloud sync listen failed', err);
-    hideMobileCloudStartupGate();
     setAccountSyncStatus('sync connect nahi ho saka — internet check karein', 'error');
   });
 }
@@ -11650,15 +11529,6 @@ loadCustomModels();
 loadExpenses();
 loadRateBook();
 loadInventory();
-// Apply locally saved entry-layout/config immediately at startup instead of
-// waiting for the first Firestore snapshot to trigger the same refresh.
-// This is UI-only: it does not write, merge, or replace any business records.
-try{
-  renderAllChips();
-  prepareEntryLayoutDOM();
-  applyEntryLayoutToDOM(getEntryPlatform(formState && formState.brand));
-  renderEntryLayoutSettings();
-}catch(startupLayoutError){ console.warn('Initial entry layout refresh skipped', startupLayoutError); }
 autoBackupIfDue();
 checkBackupReminder();
 // v83: auto cloud backup runs without a reminder banner; retries when online.
@@ -11674,7 +11544,7 @@ restoreUIScroll(savedUIState);
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
-    const SW_VERSION = '45';
+    const SW_VERSION = '44';
     navigator.serviceWorker.register('service-worker.js?v='+SW_VERSION, {updateViaCache:'none'}).then(function(reg){
       try{ reg.update(); }catch(e){}
       if(reg.waiting){ try{ reg.waiting.postMessage({type:'SKIP_WAITING'}); }catch(e){} }
@@ -11841,43 +11711,4 @@ if('serviceWorker' in navigator){
 .overlay:not(#sellOverlay) { overscroll-behavior-y: contain; }
 .overlay:not(#sellOverlay) > .sheet { box-sizing:border-box !important; min-height:0 !important; overflow-x:hidden !important; overflow-y:auto !important; -webkit-overflow-scrolling:touch !important; overscroll-behavior-y:contain !important; touch-action:pan-y !important; }
 .overlay:not(#sellOverlay) > .sheet input, .overlay:not(#sellOverlay) > .sheet textarea, .overlay:not(#sellOverlay) > .sheet select { scroll-margin-block:18px !important; }
-</style>
-
-
-<style id="v138-ios-modal-viewport-fix">
-/* v138: make detailed payment/contact panels full-screen on mobile so they do not look cropped over the dashboard. */
-#udharOverlay.hidden, #customerBookOverlay.hidden { display:none !important; }
-#udharOverlay, #customerBookOverlay {
-  position:fixed !important; inset:0 !important;
-  width:100% !important; height:100vh !important; height:100dvh !important;
-  padding:0 !important; margin:0 !important;
-  box-sizing:border-box !important;
-  display:flex; align-items:stretch !important; justify-content:center !important;
-  overflow:hidden !important;
-  background:rgba(15,23,42,.52) !important;
-  z-index:1400 !important;
-}
-#udharOverlay > .sheet, #customerBookOverlay > .sheet {
-  position:relative !important; flex:1 1 auto !important;
-  width:100% !important; max-width:none !important;
-  height:100vh !important; height:100dvh !important;
-  min-height:0 !important; max-height:none !important;
-  margin:0 !important; box-sizing:border-box !important;
-  border:0 !important; border-radius:0 !important;
-  padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px)) !important;
-  overflow-x:hidden !important; overflow-y:auto !important;
-  -webkit-overflow-scrolling:touch !important; overscroll-behavior-y:contain !important;
-  box-shadow:none !important;
-}
-#udharOverlay > .sheet > .safe-page-close, #customerBookOverlay > .sheet > .safe-page-close {
-  position:sticky !important; top:calc(8px + env(safe-area-inset-top,0px)) !important;
-  float:right !important; margin:0 0 -40px auto !important; z-index:20 !important;
-}
-#udharOverlay .sheet-handle, #customerBookOverlay .sheet-handle { margin-top:0 !important; }
-@supports (padding-top:constant(safe-area-inset-top)) {
- #udharOverlay > .sheet, #customerBookOverlay > .sheet {
-   padding-top:calc(16px + constant(safe-area-inset-top)) !important;
-   padding-bottom:calc(24px + constant(safe-area-inset-bottom)) !important;
- }
-}
 </style>
