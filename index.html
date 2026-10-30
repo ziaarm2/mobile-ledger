@@ -5648,7 +5648,14 @@ function prepareEntryLayoutDOM(){
   }
   const phoneList=sheet.querySelector('#f-phone-expenses');
   if(phoneList){
-    addMainGroup('phoneExpenses',[previousSecLabel(phoneList),phoneList,sheet.querySelector('#addPhoneExpenseInline')]);
+    // Keep the total-cost summary attached to the phone-expense section.
+    // Otherwise the layout builder can leave it behind and it appears near the bottom.
+    addMainGroup('phoneExpenses',[
+      previousSecLabel(phoneList),
+      phoneList,
+      sheet.querySelector('#addPhoneExpenseInline'),
+      sheet.querySelector('#entryTotalCostSummary')
+    ]);
   }
   const sale=sheet.querySelector('#saleFieldsWrap');
   if(sale) addMainGroup('saleFields',[sale]);
