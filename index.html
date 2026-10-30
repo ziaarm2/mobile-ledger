@@ -355,12 +355,13 @@
   .wa-template-preview{white-space:pre-wrap;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 12px;margin-top:10px;font-size:12.5px;line-height:1.55;color:var(--text);max-height:230px;overflow:auto;}
   .wa-template-custom-row{display:flex;gap:7px;margin-top:8px;}
   .wa-template-custom-row input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 11px;color:var(--text);font-size:13px;}
-  .contact-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px;align-items:center;width:100%}
+  .contact-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px;align-items:center;width:100%}
   .contact-action-btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:0;width:100%;min-height:40px;padding:8px 6px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface-2);color:var(--text);text-decoration:none;font:600 12px/1.1 inherit;cursor:pointer;transition:transform .12s ease,filter .12s ease;white-space:nowrap}
   .contact-action-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
   .contact-action-btn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
   .contact-whatsapp{border-color:rgba(37,211,102,.45);color:var(--text)} .contact-sms{border-color:var(--border-strong)} .contact-call{border-color:rgba(45,212,191,.45)} .contact-edit{border-color:var(--accent);background:var(--surface);}
-  @media(max-width:420px){.contact-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.contact-action-btn{padding:8px 7px;gap:6px;font-size:12px}}
+  @media(max-width:420px){.contact-actions{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.contact-actions .contact-action-btn{padding:8px 3px;gap:4px;font-size:11px;min-height:38px}.contact-actions .contact-action-btn svg{width:15px;height:15px}}
+  .contact-title-row{display:flex;align-items:center;gap:7px}.contact-edit-icon{border:0;background:transparent;color:var(--text-dim);padding:3px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border-radius:7px}.contact-edit-icon svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.contact-edit-icon:hover{background:var(--surface-2);color:var(--accent)}
   .wa-message-editor{width:100%;min-height:280px;resize:vertical;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:12px;padding:12px;color:var(--text);font-size:13px;line-height:1.6;font-family:inherit;outline:none;}
   .wa-message-editor:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(45,212,191,.12);}
   .wa-field-toolbar{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
@@ -8614,12 +8615,12 @@ function renderContacts(){
       }).join('');
     return '<div class="contact-card">'+
       '<div class="contact-head">'+
-        '<div><div class="contact-name">'+escapeHtml(c.name)+'</div>'+(c.number?'<div class="contact-number">'+escapeHtml(c.number)+'</div>':'')+
-          (c.number?'<div class="contact-actions" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:8px;align-items:center">'+
+        '<div><div class="contact-title-row"><div class="contact-name">'+escapeHtml(c.name)+'</div><button type="button" class="contact-edit-icon" title="Edit contact" aria-label="Edit contact" onclick="editContactDetails(\''+encodeURIComponent(c.name==='(Naam nahi diya)'?'':c.name)+'\',\''+encodeURIComponent(c.number)+'\')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16.5-.8 4.3 4.3-.8L19.8 7.7a2.1 2.1 0 0 0-3-3L4 16.5Z"/><path d="m14.8 6.7 3 3"/></svg></button></div>'+(c.number?'<div class="contact-number">'+escapeHtml(c.number)+'</div>':'')+
+          (c.number?'<div class="contact-actions">'+
             '<a class="contact-action-btn contact-whatsapp" aria-label="WhatsApp" title="WhatsApp" href="https://wa.me/'+escapeHtml(contactActionNumber(c.number))+'" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.6a8 8 0 0 1-11.8 7L4 20l1.4-4A8 8 0 1 1 20 11.6Z"/><path d="M9 8.5c.5 2.4 2.1 4 4.5 4.6l1-1 2 1c-.2 1.4-1 2-2.3 2-3.6-.3-6.5-3.2-6.8-6.8 0-1.2.7-2.1 2-2.3l1 2Z"/></svg><span>WhatsApp</span></a>'+
             '<a class="contact-action-btn contact-sms" aria-label="SMS" title="SMS" href="sms:'+escapeHtml(String(c.number).replace(/[^0-9+]/g,''))+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v12H9l-5 3v-15Z"/><path d="m5 7 7 5 7-5"/></svg><span>SMS</span></a>'+
             '<a class="contact-action-btn contact-call" aria-label="Call" title="Call" href="tel:'+escapeHtml(String(c.number).replace(/[^0-9+]/g,''))+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5 10 7 8.5 9.5c1.3 2.5 3.2 4.4 5.7 5.7L16.7 14l3.8 3c-.4 2-1.8 3-3.6 3C10.5 19.2 4.8 13.5 4 7.1 4 5.2 5 3.9 7 3.5Z"/></svg><span>Call</span></a>'+
-            '<button type="button" class="contact-action-btn contact-edit" title="Edit contact" aria-label="Edit contact" onclick="editContactDetails(\''+encodeURIComponent(c.name==='(Naam nahi diya)'?'':c.name)+'\',\''+encodeURIComponent(c.number)+'\')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16.5-.8 4.3 4.3-.8L19.8 7.7a2.1 2.1 0 0 0-3-3L4 16.5Z"/><path d="m14.8 6.7 3 3"/></svg><span>Edit</span></button></div>':'<button type="button" class="contact-action-btn contact-edit" style="margin-top:8px" title="Edit contact" onclick="editContactDetails(\''+encodeURIComponent(c.name==='(Naam nahi diya)'?'':c.name)+'\',\''+encodeURIComponent(c.number)+'\')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16.5-.8 4.3 4.3-.8L19.8 7.7a2.1 2.1 0 0 0-3-3L4 16.5Z"/><path d="m14.8 6.7 3 3"/></svg><span>Edit</span></button>')+
+            '</div>':'')+
         '</div>'+
         (c.number?'<button type="button" class="contact-action-btn contact-phone-save" onclick="exportPhoneContact('+JSON.stringify(encodeURIComponent(c.name==='(Naam nahi diya)'?'':c.name))+','+JSON.stringify(encodeURIComponent(c.number))+')">＋ Save to Phone</button>':'')+
         '<div class="contact-badges">'+
@@ -8674,11 +8675,22 @@ function openAppContactPicker(nameId,numberId){
   draw();document.getElementById('appContactPickerSearch').oninput=draw;document.getElementById('appContactPickerClose').onclick=()=>overlay.remove();overlay.onclick=e=>{if(e.target===overlay)overlay.remove();};
 }
 function normalizePickedPhone(value){
-  // Remove spaces, hyphens, brackets and other formatting; retain a leading + if supplied.
+  // Store phone numbers without spaces, hyphens, brackets or other presentation characters.
   const raw=String(value||'').trim();
   const digits=raw.replace(/\D/g,'');
-  return raw.startsWith('+')?('+'+digits):digits;
+  if(!digits)return '';
+  if(raw.startsWith('+'))return '+'+digits;
+  if(digits.startsWith('0092'))return '+92'+digits.slice(4);
+  if(digits.startsWith('92') && digits.length>=12)return '+'+digits;
+  return digits;
 }
+function bindPhoneNumberCleanup(){
+  ['f-seller-number','f-customer-number','s-customer-number','contactEditNumber','phoneFallbackNumber'].forEach(function(id){
+    const el=document.getElementById(id);if(!el||el.dataset.phoneCleanupBound)return;el.dataset.phoneCleanupBound='1';
+    el.addEventListener('blur',function(){const raw=String(el.value||'').trim();const digits=raw.replace(/\D/g,'');if(!digits){el.value='';return;}if(raw.startsWith('+'))el.value='+'+digits;else if(digits.startsWith('0092'))el.value='+92'+digits.slice(4);else el.value=digits;});
+  });
+}
+document.addEventListener('DOMContentLoaded',bindPhoneNumberCleanup);setTimeout(bindPhoneNumberCleanup,0);
 async function pickPhoneContact(nameId,numberId){
   try{
     if(navigator.contacts && typeof navigator.contacts.select==='function'){
@@ -8695,7 +8707,7 @@ async function pickPhoneContact(nameId,numberId){
     // by opening an in-theme fallback with fields and clear instructions, rather than doing nothing.
     const old=document.getElementById('phoneContactFallback');if(old)old.remove();
     const overlay=document.createElement('div');overlay.id='phoneContactFallback';overlay.className='overlay';overlay.style.cssText='display:flex;z-index:10080;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.62)';
-    overlay.innerHTML='<div class="sheet" role="dialog" aria-modal="true" style="width:min(100%,420px);padding:20px"><div class="sheet-handle"></div><h2>Phone Contacts</h2><p style="color:var(--text-dim);font-size:13px;line-height:1.5">iPhone Safari direct contact picker support nahi karta. Contacts app se number copy karein aur yahan paste karein, ya Android par supported browser mein picker use karein.</p><div class="field"><label>Naam</label><input id="phoneFallbackName" autocomplete="off" placeholder="Contact ka naam"></div><div class="field"><label>Phone number</label><input id="phoneFallbackNumber" type="tel" inputmode="tel" autocomplete="tel" placeholder="03xxxxxxxxx"></div><div style="display:flex;gap:8px;margin-top:12px"><button type="button" class="btn-cancel" id="phoneFallbackCancel" style="flex:1">Cancel</button><button type="button" class="btn-primary" id="phoneFallbackUse" style="flex:1">Use contact</button></div></div>';
+    overlay.innerHTML='<div class="sheet" role="dialog" aria-modal="true" style="width:min(100%,420px);padding:20px"><div class="sheet-handle"></div><h2>Phone Contacts</h2><p style="color:var(--text-dim);font-size:13px;line-height:1.5">iPhone par website se direct Contacts list kholna supported nahi hota. Contacts app mein contact khol kar number copy karein, yahan paste karein; phir Use contact dabayein.</p><div class="field"><label>Naam</label><input id="phoneFallbackName" autocomplete="off" placeholder="Contact ka naam"></div><div class="field"><label>Phone number</label><input id="phoneFallbackNumber" type="tel" inputmode="tel" autocomplete="tel" placeholder="03xxxxxxxxx"></div><div style="display:flex;gap:8px;margin-top:12px"><button type="button" class="btn-cancel" id="phoneFallbackCancel" style="flex:1">Cancel</button><button type="button" class="btn-primary" id="phoneFallbackUse" style="flex:1">Use contact</button></div></div>';
     document.body.appendChild(overlay);
     overlay.querySelector('#phoneFallbackCancel').onclick=()=>overlay.remove();
     overlay.querySelector('#phoneFallbackUse').onclick=()=>{
@@ -8712,21 +8724,20 @@ async function exportPhoneContact(encodedName,encodedNumber){
   const name=decodeURIComponent(encodedName||'').trim()||'Contact';
   const number=normalizePickedPhone(decodeURIComponent(encodedNumber||''));
   if(!number){showToast('Is contact ka phone number nahi hai.');return;}
-  const esc=v=>String(v).replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
+  const esc=v=>String(v).replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
   const vcard='BEGIN:VCARD\r\nVERSION:3.0\r\nFN:'+esc(name)+'\r\nTEL;TYPE=CELL:'+esc(number)+'\r\nEND:VCARD\r\n';
   const blob=new Blob([vcard],{type:'text/vcard;charset=utf-8'});
-  const file=new File([blob],(name.replace(/[^a-z0-9_-]/gi,'_')||'contact')+'.vcf',{type:'text/vcard'});
+  const fileName=(name.replace(/[^a-z0-9_-]/gi,'_')||'contact')+'.vcf';
   try{
-    // Native share sheet is the most reliable path on iOS and Android for importing a vCard.
-    if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
-      await navigator.share({files:[file],title:'Save contact: '+name,text:'Open this contact card and choose Add to Contacts.'});
-      showToast('Contact card share ho gaya. Contacts mein Add/Save select karein.');return;
-    }
-  }catch(e){if(e&&e.name==='AbortError')return;}
-  try{
-    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=file.name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);
-    showToast('VCF contact file download ho rahi hai. File open karke Add to Contacts karein.');
-  }catch(e){showToast('Contact export nahi ho saka. Browser download/share permission check karein.');}
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=fileName;a.setAttribute('type','text/vcard');a.style.cssText='position:fixed;left:-9999px;top:0';
+    document.body.appendChild(a);a.click();
+    setTimeout(function(){try{a.remove();URL.revokeObjectURL(url);}catch(e){}},15000);
+    showToast('Contact file tayar hai. Downloads/Files se .vcf open karke Add to Contacts karein.');
+  }catch(e){
+    try{const url=URL.createObjectURL(blob);window.open(url,'_blank');showToast('Contact file open karein aur phone Contacts mein add karein.');setTimeout(()=>URL.revokeObjectURL(url),30000);}
+    catch(err){showToast('Contact file create nahi hui. Browser download permission check karein.');}
+  }
 }
 function wireContactAutofill(nameId,numberId){
   const name=document.getElementById(nameId), number=document.getElementById(numberId);if(!name||!number)return;
