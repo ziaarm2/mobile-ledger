@@ -8518,12 +8518,12 @@ function buildContactsList(){
   inventory.forEach(function(e){
     if(e.sold && (e.customer || e.customerNumber)){
       addContactTx(map, e.customer, e.customerNumber, {
-        type:'sale', brand:e.brand, model:e.model, date:e.saleDate||e.lastUpdated, amount:e.sell, qty:e.quantity||1
+        type:'sale', contactName:e.customer||'', contactNumber:e.customerNumber||'', brand:e.brand, model:e.model, date:e.saleDate||e.lastUpdated, amount:e.sell, qty:e.quantity||1
       });
     }
     if(!e.sold && (e.sellerName || e.sellerNumber)){
       addContactTx(map, e.sellerName, e.sellerNumber, {
-        type:'purchase', brand:e.brand, model:e.model, date:e.buyDate||e.lastUpdated, amount:e.buy, qty:e.quantity||1
+        type:'purchase', contactName:e.sellerName||'', contactNumber:e.sellerNumber||'', brand:e.brand, model:e.model, date:e.buyDate||e.lastUpdated, amount:e.buy, qty:e.quantity||1
       });
     }
   });
@@ -8548,8 +8548,11 @@ function renderContacts(){
     const txHtml = c.transactions.slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); })
       .map(function(t){
         const isSale=t.type==='sale';
+        const personName=(t.contactName||'').trim();
+        const personNumber=(t.contactNumber||'').trim();
+        const personLabel=personName ? personName : (personNumber ? ('contact ('+personNumber+')') : 'contact');
         return '<div class="contact-tx">'+
-          '<span class="tx-main">'+(isSale?'Sold to contact':'Bought from contact')+': '+escapeHtml((t.brand||'')+' '+(t.model||''))+(t.qty>1?(' x'+t.qty):'')+' — Rs '+fmt((Number(t.amount)||0)*(Number(t.qty)||1))+'</span>'+
+          '<span class="tx-main">'+(isSale?'Sold to ':'Bought from ')+escapeHtml(personLabel)+': '+escapeHtml((t.brand||'')+' '+(t.model||''))+(t.qty>1?(' x'+t.qty):'')+' — Rs '+fmt((Number(t.amount)||0)*(Number(t.qty)||1))+'</span>'+
           '<span class="tx-date">'+formatDateDisplay(t.date)+'</span>'+
         '</div>';
       }).join('');
