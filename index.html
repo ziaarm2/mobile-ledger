@@ -5873,47 +5873,31 @@ function formatEntryStatus(e){
 }
 
 function statusPrimaryOptions(){
-  return getEntryPlatform(formState && formState.brand)==='iphone' ? ['Official PTA','Non-PTA'] : ['PTA','Non-PTA'];
+  return ['PTA','Non-PTA','CPID/Patch','Factory Unlock','JV/Sim locked','Bypass/MDM'];
 }
 function statusPrimarySelected(){
-  const platform=getEntryPlatform(formState && formState.brand);
+  const valid=statusPrimaryOptions();
+  const detail=String(formState.statusDetail||'');
   const st=String(formState.status||'');
-  if(platform==='iphone') return (['JV','CPID','Bypass/MDM','Factory Unlock','JV/Sim locked'].indexOf(st)!==-1 || st==='Non-PTA') ? 'Non-PTA' : (st==='PTA' || st==='Official PTA' ? 'Official PTA' : '');
-  return (st==='CPID' || st==='Patch' || st==='CPID/Patch' || st==='Official' || st==='PTA') ? 'PTA' : (st==='Non-PTA' ? 'Non-PTA' : '');
-}
-function statusDetailSelected(){
-  const platform=getEntryPlatform(formState && formState.brand);
-  if(formState.statusDetail) return formState.statusDetail;
-  const st=String(formState.status||'');
-  if(platform==='iphone'){
-    if(st==='JV' || st==='JV/Sim locked') return 'JV/Sim locked';
-    if(st==='Bypass/MDM') return 'Bypass/MDM';
-    if(st==='Factory Unlock') return 'Factory Unlock';
-  }else if(st==='CPID' || st==='Patch' || st==='CPID/Patch') return 'CPID/Patch';
-  else if(st==='PTA' || st==='Official') return 'Official';
+  if(valid.indexOf(detail)!==-1) return detail;
+  if(valid.indexOf(st)!==-1) return st;
+  // Keep older saved entries editable while presenting the new shared options.
+  if(st==='CPID' || st==='Patch') return 'CPID/Patch';
+  if(st==='JV') return 'JV/Sim locked';
+  if(st==='Official' || st==='Official PTA') return 'PTA';
+  if(st==='PTA' || st==='Non-PTA' || st==='Bypass/MDM' || st==='Factory Unlock') return st;
   return '';
 }
+function statusDetailSelected(){ return ''; }
 function renderStatusDetail(){
-  const wrap=document.getElementById('statusDetailWrap'), label=document.getElementById('statusDetailLabel'), row=document.getElementById('statusDetailChips');
-  if(!wrap||!row) return;
-  const platform=getEntryPlatform(formState && formState.brand);
-  const primary=statusPrimarySelected();
-  let options=[];
-  if(platform==='android' && primary==='PTA'){ options=['Official','CPID/Patch']; label.textContent='PTA Type'; }
-  else if(platform==='iphone' && primary==='Non-PTA'){ options=['Factory Unlock','JV/Sim locked','Bypass/MDM']; label.textContent='Non-PTA Type'; }
-  wrap.style.display=options.length?'block':'none';
-  row.innerHTML=options.map(function(o){return '<button type="button" class="chip-opt status-opt '+(statusDetailSelected()===o?'on':'')+'" data-val="'+escapeHtml(o)+'">'+escapeHtml(o)+'</button>';}).join('');
-  row.querySelectorAll('button').forEach(function(btn){btn.onclick=function(e){if(e)e.preventDefault(); const v=btn.dataset.val; formState.statusDetail=v; if(platform==='android') formState.status=(v==='CPID/Patch'?'CPID':'PTA'); else formState.status=(v==='JV/Sim locked'?'JV':v==='Bypass/MDM'?'Bypass/MDM':'Non-PTA'); renderStatusDetail();};});
+  const wrap=document.getElementById('statusDetailWrap');
+  const row=document.getElementById('statusDetailChips');
+  if(wrap) wrap.style.display='none';
+  if(row) row.innerHTML='';
 }
 function selectStatusPrimary(value){
-  const platform=getEntryPlatform(formState && formState.brand);
+  formState.status=value;
   formState.statusDetail='';
-  if(platform==='iphone'){
-    formState.status=(value==='Official PTA'?'PTA':'Non-PTA');
-  }else{
-    formState.status=value;
-    if(value==='PTA') formState.statusDetail='Official';
-  }
   renderChipGroup('statusChips', statusPrimaryOptions(), 'status', 'status-opt');
   renderStatusDetail();
 }
