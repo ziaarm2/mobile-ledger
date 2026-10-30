@@ -862,8 +862,14 @@ body.menu-open .app>header{z-index:1!important;}
   .entry-field-heading{color:#172033!important;font-weight:900!important;font-size:15px!important;letter-spacing:.045em;margin-bottom:8px!important}
   .entry-field-heading .required-star{color:#f12b3a!important;font-weight:900!important}
   .entry-date-guidance{background:#eef4ff!important;border:1px solid #c9d8f4!important;color:#233653!important;border-radius:10px!important;padding:10px 12px!important;line-height:1.45!important;margin:14px 0 10px!important;font-size:12.5px!important}
-  .entry-date-time{margin-bottom:10px}
+  .entry-date-time{margin-bottom:10px;gap:12px}
   .entry-date-time .field input{min-width:0;width:100%;box-sizing:border-box}
+  /* Date and time controls styled as one coordinated pair, like the supplied reference */
+  .entry-date-time .field.date-time-field{position:relative;min-width:0;border:1.5px solid #b9c2cf;border-radius:10px;background:#fff;padding:7px 10px 5px;box-sizing:border-box;margin-top:8px}
+  .entry-date-time .field.date-time-field>label{position:absolute;top:-10px;left:12px;z-index:1;padding:0 5px;background:#fff;color:#465166!important;font-size:12px!important;font-weight:800!important;line-height:1.2;letter-spacing:.01em;margin:0!important;white-space:nowrap}
+  .entry-date-time .field.date-time-field>input{border:0!important;box-shadow:none!important;background:transparent!important;border-radius:0!important;padding:8px 2px!important;margin:0!important;min-height:40px;font-size:15px;color:#172033;width:100%;max-width:100%;}
+  .entry-date-time .field.date-time-field>input:focus{outline:none!important;box-shadow:none!important}
+  @media(max-width:360px){.entry-date-time{gap:8px}.entry-date-time .field.date-time-field{padding-left:6px;padding-right:6px}.entry-date-time .field.date-time-field>label{left:7px;font-size:11px!important}}
 </style>
 
 <style id="mandatory-star-style">.required-star{color:#d92d20;font-weight:800;margin-left:2px;}</style>
@@ -1312,7 +1318,7 @@ body.menu-open .app>header{z-index:1!important;}
     <div class="field"><label>Sell price range</label><input id="f-range" placeholder="45k-47k"><div class="price-hint" id="f-range-hint"></div></div>
 
     <div class="settings-note entry-date-guidance">📊 <b>Accurate Analytics ke liye:</b> Mobile khareedne aur bechne ki sahi date aur time enter karein. Is se daily purchases, sales aur busiest hours ki reports zyada accurate hongi.</div>
-    <div class="two-col entry-date-time"><div class="field"><label>Buy Date</label><input id="f-buydate" type="date"></div><div class="field"><label>Buy Time</label><input id="f-buytime" type="time"></div></div>
+    <div class="two-col entry-date-time"><div class="field date-time-field"><label>Buy Date</label><input id="f-buydate" type="date"></div><div class="field date-time-field"><label>Buy Time</label><input id="f-buytime" type="time"></div></div>
 
     <div class="two-col"><div class="field"><label>Seller ka naam (optional)</label><input id="f-seller-name" placeholder="Kis se khareeda"></div><div class="field"><label>Seller ka number (optional)</label><input id="f-seller-number" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx"></div></div>
 
@@ -1325,9 +1331,9 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="field"><label>Customer name</label><input id="f-customer" placeholder="Naam"></div>
         <div class="field"><label>Customer number</label><input id="f-customer-number" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx"></div>
       </div>
-      <div class="two-col">
-        <div class="field"><label>Sale Date</label><input id="f-saledate" type="date"></div>
-        <div class="field"><label>Sale Time</label><input id="f-saletime" type="time"></div>
+      <div class="two-col entry-date-time">
+        <div class="field date-time-field"><label>Sale Date</label><input id="f-saledate" type="date"></div>
+        <div class="field date-time-field"><label>Sale Time</label><input id="f-saletime" type="time"></div>
       </div>
       <div class="field"><label>Payment method</label><input id="f-payment" placeholder="Cash / Easypaisa"></div>
     </div>
@@ -1395,9 +1401,9 @@ body.menu-open .app>header{z-index:1!important;}
       <div class="field"><label>Customer name</label><input id="s-customer" placeholder="Naam"></div>
       <div class="field"><label>Customer number</label><input id="s-customer-number" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx"></div>
     </div>
-    <div class="two-col">
-      <div class="field"><label>Sale Date</label><input id="s-saledate" type="date"></div>
-      <div class="field"><label>Sale Time</label><input id="s-saletime" type="time"></div>
+    <div class="two-col entry-date-time">
+      <div class="field date-time-field"><label>Sale Date</label><input id="s-saledate" type="date"></div>
+      <div class="field date-time-field"><label>Sale Time</label><input id="s-saletime" type="time"></div>
     </div>
     <div class="field"><label>Payment method</label><input id="s-payment" placeholder="Cash / Easypaisa"></div>
     <div class="sec-label" style="margin-top:14px;">🎁 Sale ke sath hua extra kharcha</div>
