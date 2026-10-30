@@ -1610,6 +1610,40 @@ body.menu-open .app>header{z-index:1!important;}
 #contactsOverlay .sheet-handle { margin-top: 4px; }
 @supports (height: 100dvh) { #contactsOverlay > .sheet { height: 100dvh; } }
 </style>
+
+<style id="contacts-and-pending-fullscreen-final-fix">
+/* Final iPhone viewport fix: Contacts and Pending Payments use a true full-screen panel. */
+#contactsOverlay, #udharOverlay {
+  position: fixed !important; inset: 0 !important;
+  width: 100% !important; height: 100vh !important; height: 100dvh !important;
+  padding: 0 !important; margin: 0 !important;
+  display: flex; align-items: stretch !important; justify-content: stretch !important;
+  box-sizing: border-box !important; overflow: hidden !important;
+  background: rgba(15, 23, 42, .52) !important;
+  z-index: 10000 !important;
+}
+#contactsOverlay.hidden, #udharOverlay.hidden { display: none !important; }
+#contactsOverlay > .sheet, #udharOverlay > .sheet {
+  position: relative !important; flex: 1 1 auto !important;
+  width: 100% !important; max-width: none !important; min-width: 0 !important;
+  height: 100vh !important; height: 100dvh !important;
+  max-height: none !important; min-height: 0 !important;
+  margin: 0 !important; border-radius: 0 !important;
+  box-sizing: border-box !important;
+  padding: calc(18px + env(safe-area-inset-top, 0px)) 16px calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+  overflow-y: auto !important; overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+#contactsOverlay .safe-page-close, #udharOverlay .safe-page-close {
+  position: sticky !important; top: 0 !important; z-index: 5 !important;
+  float: right !important; margin: 0 0 8px 8px !important;
+}
+#contactsOverlay .sheet-handle, #udharOverlay .sheet-handle { clear: both; margin-top: 4px !important; }
+@supports (height: 100dvh) {
+  #contactsOverlay, #contactsOverlay > .sheet, #udharOverlay, #udharOverlay > .sheet { height: 100dvh !important; }
+}
+</style>
+
 </head>
 <body>
 
