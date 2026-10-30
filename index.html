@@ -1404,6 +1404,7 @@ body.menu-open .app>header{z-index:1!important;}
       <div class="menu-scroll">
         <div class="menu-section-label">Business</div>
         <button class="menu-item" id="btnExpenses"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="14" rx="2" stroke-width="1.8"/><path d="M7 12h10M8 9h8" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Expenses</span></button>
+        <button class="menu-item" id="btnUdhar"><span class="menu-item-icon">💳</span><span class="menu-item-text">Udhar</span></button>
         <button class="menu-item" id="btnContacts"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke-width="1.8"/><path d="M3.5 19c.5-3.3 2.4-5 5.5-5s5 1.7 5.5 5M17 11a2.5 2.5 0 1 0 0-5M16 14c2.5.2 4 1.7 4.5 5" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Contacts</span></button>
         <button class="menu-item" id="btnCustomerBook"><span class="menu-item-icon">👥</span><span class="menu-item-text">Customer Book / Baqi Payments</span></button>
         <button class="menu-item" id="btnAnalytics"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19V9M12 19V5M19 19v-8" stroke-width="2" stroke-linecap="round"/><path d="M3.5 19.5h17" stroke-width="1.5" stroke-linecap="round"/></svg></span><span class="menu-item-text">Analytics</span></button>
@@ -1672,13 +1673,12 @@ body.menu-open .app>header{z-index:1!important;}
       <div class="field date-time-field"><label>Sale Date</label><input id="s-saledate" type="date"></div>
       <div class="field date-time-field"><label>Sale Time</label><input id="s-saletime" type="time"></div>
     </div>
-    <div class="field"><label>Payment method</label><input id="s-payment" placeholder="Cash / Easypaisa"></div>
-    <div class="two-col"><div class="field"><label>Abhi kitne paise mile?</label><input id="s-received" type="number" min="0" inputmode="decimal" placeholder="Full payment ho to khali chhor dein"></div><div class="field"><label>Baqi amount</label><input id="s-balance-due" readonly placeholder="Rs. 0"></div></div>
     <div class="sec-label" style="margin-top:14px;">🎁 Sale ke sath hua extra kharcha</div>
     <div class="settings-note" style="margin-top:0;">Customer ko jelly/protector/Cover ya kisi ko koi commission waghaira diya ya koi bhi aur kharcha jo aap ne entry ke waqt nahi dala, yahan add karein. Isay enter na karne par aap ka profit sahi calculate nahi hoga.</div>
     <div id="s-phone-expenses" class="phone-expense-list"></div>
     <button type="button" class="add-extra-buy" id="addSalePhoneExpenseBtn">+ Sale ka expense add karein</button>
     <div class="cost-summary" id="saleTotalCostSummary"><span>Total Cost on This Mobile</span><strong id="saleTotalCostValue">—</strong></div>
+    <div class="two-col sale-payment-fields"><div class="field"><label>Received amount</label><input id="s-received" type="number" min="0" inputmode="decimal" placeholder="Rs."></div><div class="field"><label>Remaining</label><input id="s-balance-due" type="number" min="0" inputmode="decimal" placeholder="Rs. 0"></div></div>
 
     <div class="profit-preview">
       <span>Net Profit (is sale par)</span>
@@ -1692,6 +1692,7 @@ body.menu-open .app>header{z-index:1!important;}
   </div>
 </div>
 
+<div class="overlay hidden" id="udharOverlay"><div class="sheet" style="max-height:90vh;overflow:auto"><button type="button" class="safe-page-close" id="udharClose" aria-label="Close" title="Close">×</button><div class="sheet-handle"></div><h2>Udhar</h2><div class="settings-note">Sirf un sales ki list jahan customer ke paise baqi hain.</div><div class="field"><label>Naam ya mobile number search karein</label><input id="udharSearch" placeholder="Customer search..."></div><div id="udharSummary" class="cost-summary"></div><div id="udharList"></div></div></div>
 <div class="overlay hidden" id="customerBookOverlay"><div class="sheet" style="max-height:90vh;overflow:auto"><button type="button" class="safe-page-close" id="customerBookClose">×</button><div class="sheet-handle"></div><h2>Customer Book</h2><div class="field"><label>Naam ya mobile number search karein</label><input id="customerBookSearch" placeholder="Customer search..."></div><div id="customerBookSummary" class="cost-summary"></div><div id="customerBookList"></div></div></div>
 
 <div class="overlay hidden" id="cropOverlay">
@@ -2523,7 +2524,7 @@ let rangeInputMode = 'auto'; // 'auto' until the user manually edits the sell-ra
 // closes the topmost open overlay instead of leaving the app. If nothing is
 // open, there's nothing pushed, so back behaves normally (exits/leaves as
 // before).
-const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','imeiScanOverlay','adminShopsOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','recycleBinOverlay','expensesOverlay','accountOverlay','rateBookOverlay','rateAddOverlay','shopSetupOverlay'];
+const OVERLAY_IDS = ['overlay','sellOverlay','udharOverlay','cropOverlay','imeiScanOverlay','adminShopsOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','recycleBinOverlay','expensesOverlay','accountOverlay','rateBookOverlay','rateAddOverlay','shopSetupOverlay'];
 let overlayHistoryStack = [];
 
 function pushOverlayHistory(id){
@@ -6734,9 +6735,10 @@ function openSell(id){
   document.getElementById('s-price-hint').textContent = '';
   document.getElementById('s-customer').value = '';
   document.getElementById('s-customer-number').value = '';
-  document.getElementById('s-payment').value = '';
   document.getElementById('s-received').value = '';
-  document.getElementById('s-balance-due').value = '';
+  document.getElementById('s-balance-due').value = '0';
+  document.getElementById('s-received').dataset.manual = '0';
+  document.getElementById('s-balance-due').dataset.manual = '0';
   document.getElementById('s-saledate').value = todayISO();
   document.getElementById('s-saletime').value = currentLocalTimeInput();
   renderPhoneExpenseRows('s-phone-expenses', []);
@@ -6749,16 +6751,29 @@ function closeSellSheet(){
   requestOverlayClose();
 }
 
-function updateSaleBalancePreview(){
-  const e=inventory.find(function(x){return x.id===sellingId;});
+function updateSaleBalancePreview(source){
   const qty=Math.max(1,Number(document.getElementById('s-qty').value||1));
   const price=parsePrice((document.getElementById('s-price').value||'').trim())||0;
   const total=price*qty;
-  const raw=document.getElementById('s-received').value.trim();
-  const received=raw===''?total:Math.max(0,Number(raw)||0);
-  const due=Math.max(0,total-received);
-  const el=document.getElementById('s-balance-due');
-  if(el) el.value='Rs. '+fmt(due);
+  const receivedEl=document.getElementById('s-received');
+  const dueEl=document.getElementById('s-balance-due');
+  if(!receivedEl||!dueEl)return;
+  if(source==='price' && receivedEl.dataset.manual!=='1'){
+    receivedEl.value=String(total);
+    dueEl.value='0';
+    dueEl.dataset.manual='0';
+    return;
+  }
+  if(source==='received'){
+    const received=Math.max(0,Number(receivedEl.value)||0);
+    if(dueEl.dataset.manual!=='1') dueEl.value=String(Math.max(0,total-received));
+  } else if(source==='due'){
+    const due=Math.max(0,Number(dueEl.value)||0);
+    if(receivedEl.dataset.manual!=='1') receivedEl.value=String(Math.max(0,total-due));
+  } else {
+    const received=receivedEl.value===''?total:Math.max(0,Number(receivedEl.value)||0);
+    if(dueEl.dataset.manual!=='1') dueEl.value=String(Math.max(0,total-received));
+  }
 }
 function updateSellProfitPreview(){
   const e = inventory.find(function(x){return x.id===sellingId;});
@@ -6813,9 +6828,12 @@ function confirmSell(){
   }
   const saleTotal=price*qty;
   const receivedRaw=document.getElementById('s-received').value.trim();
+  const dueRaw=document.getElementById('s-balance-due').value.trim();
   const received=receivedRaw===''?saleTotal:Number(receivedRaw);
+  const manuallyDue=dueRaw===''?Math.max(0,saleTotal-received):Number(dueRaw);
   if(!Number.isFinite(received)||received<0||received>saleTotal){alert('Received amount total sale price se zyada ya negative nahi ho sakti.');return;}
-  const initialPayment={amount:received, date:document.getElementById('s-saledate').value||todayISO(), time:document.getElementById('s-saletime').value||'', method:document.getElementById('s-payment').value.trim(), note:'Sale ke waqt payment'};
+  if(!Number.isFinite(manuallyDue)||manuallyDue<0||Math.abs((received+manuallyDue)-saleTotal)>0.01){alert('Received amount aur Remaining ka total sale price ke barabar hona chahiye.');return;}
+  const initialPayment={amount:received, date:document.getElementById('s-saledate').value||todayISO(), time:document.getElementById('s-saletime').value||'', method:'', note:'Sale ke waqt payment'};
   const soldRecord = Object.assign({}, e, {
     id: 'sold_'+Date.now(),
     quantity: qty,
@@ -6826,8 +6844,8 @@ function confirmSell(){
     saleExpenses: salePhoneExpenses,
     customer: document.getElementById('s-customer').value.trim(),
     customerNumber: document.getElementById('s-customer-number').value.trim(),
-    payment: document.getElementById('s-payment').value.trim(),
-    saleTotal: saleTotal, paymentReceived: received, balanceDue: Math.max(0,saleTotal-received), payments: received>0?[initialPayment]:[],
+    payment: '',
+    saleTotal: saleTotal, paymentReceived: received, balanceDue: Math.max(0,manuallyDue), payments: received>0?[initialPayment]:[],
     saleDate: document.getElementById('s-saledate').value || todayISO(),
     saleTime: document.getElementById('s-saletime').value || '',
     saleAt: new Date().toISOString(),
@@ -6863,7 +6881,10 @@ document.getElementById('btnSellCancel').onclick = closeSellSheet;
 document.getElementById('btnSellConfirm').onclick = confirmSell;
 document.getElementById('sellOverlay').onclick = function(e){ if(e.target.id==='sellOverlay') closeSellSheet(); };
 document.getElementById('s-qty').oninput = updateSellProfitPreview;
-document.getElementById('s-price').oninput = function(){updateSellProfitPreview();updateSaleBalancePreview();};
+document.getElementById('s-price').oninput = function(){updateSellProfitPreview();updateSaleBalancePreview('price');};
+document.getElementById('s-qty').addEventListener('input',function(){updateSaleBalancePreview('price');});
+document.getElementById('s-received').addEventListener('input',function(){this.dataset.manual='1';document.getElementById('s-balance-due').dataset.manual='0';updateSaleBalancePreview('received');});
+document.getElementById('s-balance-due').addEventListener('input',function(){this.dataset.manual='1';document.getElementById('s-received').dataset.manual='0';updateSaleBalancePreview('due');});
 document.getElementById('s-received').oninput = updateSaleBalancePreview;
 document.getElementById('s-qty').addEventListener('input',updateSaleBalancePreview);
 document.getElementById('search').oninput = function(){ renderList(); saveUIState(); };
@@ -10999,11 +11020,26 @@ if('serviceWorker' in navigator){
     const copy=inventory.map(x=>{if(String(x.id)!==String(id))return x;const payments=Array.isArray(x.payments)?x.payments.slice():[];payments.push({amount:amount,date:todayISO(),time:currentLocalTimeInput(),method:method.trim(),note:'Customer se baad ki payment'});const received=receivedOf(x)+amount;return Object.assign({},x,{payments:payments,paymentReceived:received,balanceDue:Math.max(0,dueOf(x)-amount),lastUpdated:todayStr()});});
     if(!tryCommitInventory(copy)){alert(SAVE_FAIL_MSG);return;}renderCustomerBook();render();showToast('Payment save ho gayi: Rs. '+money(amount));
   }
-  const open=document.getElementById('btnCustomerBook'), overlay=document.getElementById('customerBookOverlay');
+
+  function renderUdhar(){
+    const list=document.getElementById('udharList');if(!list)return;
+    const q=(document.getElementById('udharSearch')?.value||'').trim().toLowerCase();
+    const rows=inventory.filter(e=>e.sold&&!isReturnedSale(e)&&dueOf(e)>0&&((e.customer||'')+' '+(e.customerNumber||'')).toLowerCase().includes(q));
+    const total=rows.reduce((a,e)=>a+dueOf(e),0);
+    document.getElementById('udharSummary').innerHTML='<span>Pending sales: '+rows.length+' · Total udhar</span><strong>Rs. '+money(total)+'</strong>';
+    list.innerHTML=rows.length?rows.map(e=>'<div class="settings-card" style="margin-top:12px;padding:14px;border:1px solid var(--border);border-radius:14px"><b>'+escapeHtml(e.customer||'Naam save nahi')+'</b><div>'+escapeHtml(e.customerNumber||'Number save nahi')+'</div><div style="margin-top:6px">'+escapeHtml((e.brand||'')+' '+(e.model||''))+' · '+escapeHtml(e.saleDate||'Date nahi')+'</div><div>Sale: Rs. '+money(saleTotalOf(e))+' · Received: Rs. '+money(receivedOf(e))+'</div><div style="color:var(--danger);font-weight:700">Remaining: Rs. '+money(dueOf(e))+'</div><button type="button" class="btn-secondary udhar-receive" data-id="'+escapeHtml(e.id)+'" style="margin-top:8px">Receive Payment</button></div>').join(''):'<div class="settings-note">Koi baqi payment nahi mili.</div>';
+    list.querySelectorAll('.udhar-receive').forEach(btn=>btn.onclick=function(){receiveCustomerPayment(this.dataset.id);setTimeout(renderUdhar,100);});
+  }
+
+    const open=document.getElementById('btnCustomerBook'), overlay=document.getElementById('customerBookOverlay');
   if(open)open.addEventListener('click',function(){document.getElementById('menuDropdown')?.classList.add('hidden');overlay.classList.remove('hidden');renderCustomerBook();});
   document.getElementById('customerBookClose')?.addEventListener('click',()=>overlay.classList.add('hidden'));
   overlay?.addEventListener('click',e=>{if(e.target===overlay)overlay.classList.add('hidden')});
   document.getElementById('customerBookSearch')?.addEventListener('input',renderCustomerBook);
+  document.getElementById('btnUdhar')?.addEventListener('click',function(){document.getElementById('menuDropdown')?.classList.add('hidden');document.getElementById('udharOverlay').classList.remove('hidden');renderUdhar();});
+  document.getElementById('udharClose')?.addEventListener('click',()=>document.getElementById('udharOverlay').classList.add('hidden'));
+  document.getElementById('udharOverlay')?.addEventListener('click',e=>{if(e.target.id==='udharOverlay')document.getElementById('udharOverlay').classList.add('hidden')});
+  document.getElementById('udharSearch')?.addEventListener('input',renderUdhar);
   document.getElementById('s-price')?.addEventListener('input',updateSaleBalancePreview);
   document.getElementById('s-customer-number')?.addEventListener('change',function(){
     const num=String(this.value||'').replace(/\D/g,'');if(!num)return;
@@ -11056,4 +11092,13 @@ if('serviceWorker' in navigator){
   margin:0 0 -40px auto !important;
   z-index:1010 !important;
 }
+</style>
+
+<style id="v113-sale-payment-layout">
+#sellOverlay > .sheet { position:relative; padding-bottom:calc(18px + env(safe-area-inset-bottom,0px)); }
+#sellOverlay > .sheet > .safe-page-close { position:sticky !important; top:calc(8px + env(safe-area-inset-top,0px)) !important; float:right !important; margin:0 0 -40px auto !important; z-index:1010 !important; }
+#sellOverlay > .sheet .sheet-actions { position:static !important; inset:auto !important; margin-top:18px !important; padding-bottom:calc(12px + env(safe-area-inset-bottom,0px)) !important; background:transparent !important; box-shadow:none !important; }
+.sale-payment-fields { margin-top:12px; }
+.sale-payment-fields input { min-width:0; }
+#btnUdhar { border-left:3px solid var(--danger); }
 </style>
