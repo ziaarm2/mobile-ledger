@@ -173,6 +173,7 @@
   .two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .big-input input{font-size:18px;padding:12px 10px;font-weight:600;}
   .profit-preview{background:var(--surface-2);border-radius:10px;padding:10px 12px;margin:12px 0;display:flex;justify-content:space-between;font-size:13px;}
+  .cost-summary{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 12px;margin:10px 0 12px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface-2);font-size:13px;} .cost-summary span{font-weight:700;color:var(--text-dim);} .cost-summary strong{font-size:15px;color:var(--text);font-weight:900;text-align:right;}
   .extra-buy-list{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
   .extra-buy-row{display:flex;gap:8px;align-items:center;}
   .extra-buy-row input{flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:9px 10px;color:var(--text);font-size:14px;}
@@ -1550,6 +1551,7 @@ body.menu-open .app>header{z-index:1!important;}
     <div class="sec-label" style="margin-top:14px;">📱 Is mobile par hua extra kharcha</div>
     <div id="f-phone-expenses" class="phone-expense-list"></div>
     <div class="add-expense-inline" id="addPhoneExpenseInline" role="button" tabindex="0" aria-label="Add phone expense">+</div>
+    <div class="cost-summary" id="entryTotalCostSummary"><span>Total Cost on This Mobile</span><strong id="entryTotalCostValue">—</strong></div>
 
     <div class="field"><label>Sell price range</label><input id="f-range" placeholder="45k-47k"><div class="price-hint" id="f-range-hint"></div></div>
 
@@ -1644,12 +1646,13 @@ body.menu-open .app>header{z-index:1!important;}
     </div>
     <div class="field"><label>Payment method</label><input id="s-payment" placeholder="Cash / Easypaisa"></div>
     <div class="sec-label" style="margin-top:14px;">🎁 Sale ke sath hua extra kharcha</div>
-    <div class="settings-note" style="margin-top:0;">Customer ko jelly/protector ya koi aur cheez dene ka kharcha yahan add karein. Ye is sale ke profit se minus hoga.</div>
+    <div class="settings-note" style="margin-top:0;">Customer ko jelly/protector/Cover ya kisi ko koi commission waghaira diya ya koi bhi aur kharcha jo aap ne entry ke waqt nahi dala, yahan add karein. Isay enter na karne par aap ka profit sahi calculate nahi hoga.</div>
     <div id="s-phone-expenses" class="phone-expense-list"></div>
     <button type="button" class="add-extra-buy" id="addSalePhoneExpenseBtn">+ Sale ka expense add karein</button>
+    <div class="cost-summary" id="saleTotalCostSummary"><span>Total Cost on This Mobile</span><strong id="saleTotalCostValue">—</strong></div>
 
     <div class="profit-preview">
-      <span>Profit (is sale par)</span>
+      <span>Net Profit (is sale par)</span>
       <span class="v" id="sellProfitPreview">0</span>
     </div>
 
@@ -3717,19 +3720,45 @@ function autoSellRangeForBuy(buy){
   }
   return '';
 }
+function currentEntryExpenseTotal(){
+  try { return expenseArrayTotal(readPhoneExpenseRows('f-phone-expenses')); } catch(err) {
+    const el=document.getElementById('f-phone-expenses');
+    if(!el) return 0;
+    return Array.from(el.querySelectorAll('.pe-amount')).reduce(function(sum,input){return sum+(parseExpenseAmount(input.value)||0);},0);
+  }
+}
+function updateEntryTotalCost(){
+  const buyRaw=(document.getElementById('f-buy')?.value||'').trim();
+  const buy=buyRaw===''?null:parsePrice(buyRaw);
+  const expenses=currentEntryExpenseTotal();
+  const totalEl=document.getElementById('entryTotalCostValue');
+  if(totalEl) totalEl.textContent=(buy===null?'—':('Rs. '+fmt(Math.max(0,buy)+expenses)));
+  if(rangeInputMode==='auto' && buy!==null){
+    const rangeEl=document.getElementById('f-range');
+    const hint=document.getElementById('f-range-hint');
+    const auto=autoSellRangeForBuy(Math.max(0,buy)+expenses);
+    if(rangeEl) rangeEl.value=auto;
+    if(hint) hint.textContent=auto?'= '+auto:'';
+  }
+  updateSellProfitPreview();
+}
 function maybeAutoFillRange(){
   const buyRaw = document.getElementById('f-buy').value.trim();
   const rangeEl = document.getElementById('f-range');
-  if(!rangeEl || rangeInputMode !== 'auto') return;
+  if(!rangeEl) return;
   if(buyRaw===''){
-    rangeEl.value = '';
+    if(rangeInputMode==='auto') rangeEl.value = '';
     document.getElementById('f-range-hint').textContent = '';
+    updateEntryTotalCost();
     return;
   }
   const buy = parsePrice(buyRaw);
-  const auto = buy===null ? '' : autoSellRangeForBuy(buy);
-  rangeEl.value = auto;
-  document.getElementById('f-range-hint').textContent = auto ? '= '+auto : '';
+  if(rangeInputMode==='auto'){
+    const auto = buy===null ? '' : autoSellRangeForBuy(Math.max(0,buy)+currentEntryExpenseTotal());
+    rangeEl.value = auto;
+    document.getElementById('f-range-hint').textContent = auto ? '= '+auto : '';
+  }
+  updateEntryTotalCost();
 }
 function prominentSellRangeHtml(range){
   if(!range) return '';
@@ -3813,6 +3842,7 @@ function wirePriceHint(inputId, hintId){
 }
 wirePriceHint('f-buy','f-buy-hint');
 document.getElementById('f-buy').addEventListener('input', maybeAutoFillRange);
+document.getElementById('f-buy').addEventListener('input', updateEntryTotalCost);
 wirePriceHint('f-sellprice','f-sellprice-hint');
 wirePriceHint('f-buy-insale','f-buy-insale-hint');
 wirePriceHint('s-price','s-price-hint');
@@ -3959,9 +3989,19 @@ function formatDateTimeDisplay(value){
   const d=dateOnly(value);
   return d ? formatDateDisplay(d) : '';
 }
+function expenseArrayTotal(items){
+  if(!Array.isArray(items)) return 0;
+  return items.reduce(function(s,x){ return s + Math.abs(Number(x.amount)||0); }, 0);
+}
 function phoneExpensesTotal(e){
-  if(!e || !Array.isArray(e.phoneExpenses)) return 0;
-  return e.phoneExpenses.reduce(function(s,x){ return s + Math.abs(Number(x.amount)||0); }, 0);
+  if(!e) return 0;
+  // Older sold records stored sale-time expenses inside phoneExpenses. New records
+  // keep them separately in saleExpenses; both formats remain supported.
+  return expenseArrayTotal(e.phoneExpenses) + expenseArrayTotal(e.saleExpenses);
+}
+function entryTotalCost(e){
+  if(!e || e.buy==null) return 0;
+  return Math.max(0, Number(e.buy)||0) + expenseArrayTotal(e.phoneExpenses);
 }
 function saleBaseProfit(e){
   if(!e || e.buy==null || e.sell==null || isReturnedSale(e)) return 0;
@@ -4016,7 +4056,7 @@ function refreshPhoneExpenseRowUi(row){
 function bindPhoneExpenseEnter(row){
   const amt=row.querySelector('.pe-amount');
   const cat=row.querySelector('.pe-category');
-  [amt,cat].forEach(function(inp){ if(inp) inp.addEventListener('input',function(){ refreshPhoneExpenseRowUi(row); updateSellProfitPreview(); }); });
+  [amt,cat].forEach(function(inp){ if(inp) inp.addEventListener('input',function(){ refreshPhoneExpenseRowUi(row); updateEntryTotalCost(); updateSellProfitPreview(); }); });
   if(amt) amt.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); addPhoneExpenseRow('f-phone-expenses'); updateSellProfitPreview(); const rows=document.querySelectorAll('#f-phone-expenses .phone-expense-row'); const last=rows[rows.length-1]; if(last){ const inp=last.querySelector('.pe-category'); if(inp) inp.focus(); } } });
 }
 function renderPhoneExpenseRows(containerId, items){
@@ -4035,7 +4075,7 @@ function renderPhoneExpenseRows(containerId, items){
     '</div>';
   }).join('');
   el.querySelectorAll('.phone-expense-row').forEach(function(row){ bindPhoneExpenseEnter(row); refreshPhoneExpenseRowUi(row); });
-  el.querySelectorAll('.phone-expense-remove').forEach(function(btn){ btn.onclick=function(){ btn.closest('.phone-expense-row').remove(); updateSellProfitPreview(); }; });
+  el.querySelectorAll('.phone-expense-remove').forEach(function(btn){ btn.onclick=function(){ btn.closest('.phone-expense-row').remove(); updateEntryTotalCost(); updateSellProfitPreview(); }; });
 }
 function addPhoneExpenseRow(containerId){
   const el=document.getElementById(containerId);
@@ -4050,7 +4090,7 @@ function addPhoneExpenseRow(containerId){
       '<button type="button" class="phone-expense-remove" aria-label="Remove expense" style="display:none;">×</button>'+
     '</div>'+
     '<div class="phone-expense-date" style="display:none;">'+formatDateDisplay(todayISO())+'</div>';
-  wrapper.querySelector('.phone-expense-remove').onclick=function(){ wrapper.remove(); updateSellProfitPreview(); };
+  wrapper.querySelector('.phone-expense-remove').onclick=function(){ wrapper.remove(); updateEntryTotalCost(); updateSellProfitPreview(); };
   el.appendChild(wrapper); bindPhoneExpenseEnter(wrapper); refreshPhoneExpenseRowUi(wrapper);
 }
 function readPhoneExpenseRows(containerId){
@@ -4077,7 +4117,10 @@ function allPhoneExpenseEntries(){
   const out=[];
   inventory.forEach(function(e){
     (Array.isArray(e.phoneExpenses)?e.phoneExpenses:[]).forEach(function(x){
-      out.push(Object.assign({},x,{phoneId:e.id,brand:e.brand,model:e.model,customer:e.customer||'',sold:e.sold===true,returned:isReturnedSale(e)}));
+      out.push(Object.assign({},x,{phoneId:e.id,brand:e.brand,model:e.model,customer:e.customer||'',sold:e.sold===true,returned:isReturnedSale(e),expenseType:'entry'}));
+    });
+    (Array.isArray(e.saleExpenses)?e.saleExpenses:[]).forEach(function(x){
+      out.push(Object.assign({},x,{phoneId:e.id,brand:e.brand,model:e.model,customer:e.customer||'',sold:e.sold===true,returned:isReturnedSale(e),expenseType:'sale'}));
     });
   });
   return out;
@@ -4566,7 +4609,7 @@ function applyAutoSellRangesToExistingEntries(){
     if(e.rangeMode === 'manual') return;
     const buy = e.buy == null ? null : Number(e.buy);
     if(buy === null || !isFinite(buy)) return;
-    const nextRange = autoSellRangeForBuy(buy);
+    const nextRange = autoSellRangeForBuy(buy + expenseArrayTotal(e.phoneExpenses));
     if(e.range !== nextRange || e.rangeMode !== 'auto'){
       e.range = nextRange;
       e.rangeMode = 'auto';
@@ -6271,6 +6314,7 @@ function openAdd(){
   // until the next entry session.
   if(entryConfigRefreshPending){ loadCustomOptionData(); entryConfigRefreshPending=false; }
   refreshEntryFormUI();
+  updateEntryTotalCost();
   document.getElementById('overlay').classList.remove('hidden');
   requestAnimationFrame(function(){
     refreshEntryFormUI();
@@ -6337,6 +6381,7 @@ function openEdit(id){
   document.getElementById('f-seller-number').value = e.sellerNumber || '';
   document.getElementById('f-notes').value = e.notes || '';
   renderPhoneExpenseRows('f-phone-expenses', e.phoneExpenses || []);
+  updateEntryTotalCost();
 
   if(e.sold){
     document.getElementById('saleFieldsWrap').classList.add('show');
@@ -6497,6 +6542,9 @@ function saveEntry(){
     alert(err.message || 'Phone expense check karein.');
     return;
   }
+  if(rangeInputMode==='auto' && data.buy!=null){
+    data.range = autoSellRangeForBuy(Number(data.buy)+expenseArrayTotal(data.phoneExpenses));
+  }
 
   // Build the candidate array WITHOUT touching the real `inventory` yet —
   // if the save fails below, nothing changes and the form stays open with
@@ -6639,13 +6687,19 @@ function updateSellProfitPreview(){
   const priceVal = document.getElementById('s-price').value.trim();
   const price = priceVal==='' ? 0 : (parsePrice(priceVal) || 0);
   const el = document.getElementById('sellProfitPreview');
+  let saleExtra=0;
+  try{ saleExtra=expenseArrayTotal(readPhoneExpenseRows('s-phone-expenses')); }catch(err){}
   if(e && e.buy!=null){
-    let extra=0;
-    try{ extra=readPhoneExpenseRows('s-phone-expenses').reduce(function(s,x){return s+Number(x.amount||0);},0); }catch(err){}
-    const profit = (price - Number(e.buy)) * qty - extra;
+    const baseCost=entryTotalCost(e);
+    const totalCost=(baseCost*qty)+saleExtra;
+    const totalCostEl=document.getElementById('saleTotalCostValue');
+    if(totalCostEl) totalCostEl.textContent='Rs. '+fmt(totalCost);
+    const profit = (price - baseCost) * qty - saleExtra;
     el.textContent = fmt(profit);
     el.style.color = profit>=0 ? 'var(--pta)' : 'var(--danger)';
   } else {
+    const totalCostEl=document.getElementById('saleTotalCostValue');
+    if(totalCostEl) totalCostEl.textContent='—';
     el.textContent = '-';
     el.style.color = 'var(--text-faint)';
   }
@@ -6684,7 +6738,8 @@ function confirmSell(){
     sold: true, saleStatus: 'sold',
     stockId: String(e.id),
     sell: price,
-    phoneExpenses: (Array.isArray(e.phoneExpenses)?e.phoneExpenses:[]).concat(salePhoneExpenses),
+    phoneExpenses: (Array.isArray(e.phoneExpenses)?e.phoneExpenses:[]),
+    saleExpenses: salePhoneExpenses,
     customer: document.getElementById('s-customer').value.trim(),
     customerNumber: document.getElementById('s-customer-number').value.trim(),
     payment: document.getElementById('s-payment').value.trim(),
@@ -6741,7 +6796,7 @@ document.getElementById('clearActivityFilter').onclick = function(){
 };
 const addPhoneExpenseInlineBtn=document.getElementById('addPhoneExpenseInline');
 if(addPhoneExpenseInlineBtn){
-  addPhoneExpenseInlineBtn.onclick=function(){ addPhoneExpenseRow('f-phone-expenses'); const rows=document.querySelectorAll('#f-phone-expenses .phone-expense-row'); const last=rows[rows.length-1]; if(last){ const inp=last.querySelector('.pe-category'); if(inp) setTimeout(function(){inp.focus();},0); } updateSellProfitPreview(); };
+  addPhoneExpenseInlineBtn.onclick=function(){ addPhoneExpenseRow('f-phone-expenses'); updateEntryTotalCost(); const rows=document.querySelectorAll('#f-phone-expenses .phone-expense-row'); const last=rows[rows.length-1]; if(last){ const inp=last.querySelector('.pe-category'); if(inp) setTimeout(function(){inp.focus();},0); } updateSellProfitPreview(); };
   addPhoneExpenseInlineBtn.onkeydown=function(e){ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); addPhoneExpenseInlineBtn.click(); } };
 }
 
