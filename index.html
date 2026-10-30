@@ -839,16 +839,24 @@ body.menu-open .app>header{z-index:1!important;}
 }
 
 
-  /* More prominent form field headings: stronger contrast and weight */
+  /* Form field headings: high contrast, bold, and visually separate from inputs */
   .sheet .field label,
   .sheet label.field-label,
   .sheet .field > label {
-    color: #f3f4f6 !important;
-    font-size: 12.5px !important;
-    font-weight: 800 !important;
-    letter-spacing: 0.12px;
-    margin-bottom: 6px !important;
-    line-height: 1.35;
+    color: #172033 !important;
+    font-size: 13px !important;
+    font-weight: 850 !important;
+    letter-spacing: 0.18px;
+    margin-bottom: 8px !important;
+    line-height: 1.4;
+    opacity: 1 !important;
+  }
+  .sheet .field label .required-star,
+  .sheet label.field-label .required-star,
+  .sheet .field > label .required-star {
+    color: #d92d20 !important;
+    font-weight: 900 !important;
+    opacity: 1 !important;
   }
 </style>
 
