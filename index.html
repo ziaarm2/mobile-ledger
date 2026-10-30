@@ -144,9 +144,9 @@
   .sheet-handle{width:36px;height:4px;background:var(--border-strong);border-radius:2px;margin:0 auto 12px;}
   h1,h2,h3,h4,h5,h6{font-weight:700;}
   .sheet h2{font-size:16px;margin:0 0 12px;font-weight:750;}
-  .sheet-head h3,.sec-label,.field label,.sheet-item-name{font-weight:700;}
+  .sheet-head h3,.sec-label,.field label,.sheet-item-name{font-weight:800;}
   .sheet-item-name{font-size:14px;color:var(--text-dim);margin:-6px 0 14px;}
-  .sec-label{font-size:11px;color:var(--text-dim);margin:12px 0 6px;text-transform:uppercase;letter-spacing:0.3px;}
+  .sec-label{font-size:12.5px;color:#172033;margin:14px 0 8px;text-transform:uppercase;letter-spacing:0.45px;font-weight:800;}
   .chip-row{display:flex;gap:6px;flex-wrap:wrap;}
   #conditionChips{row-gap:8px;margin-bottom:8px;}
   .imei-field{margin-top:8px;}
@@ -154,7 +154,7 @@
   .chip-opt.on{background:var(--accent);border-color:var(--accent);color:var(--accent-text);font-weight:600;}
   .chip-opt.status-opt{flex:1 1 30%;text-align:center;font-size:12.5px;padding:10px 4px;}
   .field{margin-bottom:10px;}
-  .field label{display:block;font-size:11.5px;color:var(--text-dim);margin-bottom:4px;}
+  .field label{display:block;font-size:13px;color:#172033;font-weight:800;letter-spacing:0.25px;margin-bottom:7px;line-height:1.3;}
   .field input,.field select{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:9px 10px;color:var(--text);font-size:14px;}
   .qty-warning{display:none;font-size:11px;color:var(--nonpta);margin-top:6px;line-height:1.4;}
   .qty-warning.show{display:block;}
@@ -838,6 +838,40 @@ body.menu-open .app>header{z-index:1!important;}
   overflow-y:auto !important;
 }
 
+
+  /* Form field headings: high contrast, bold, and visually separate from inputs */
+  .sheet .field label,
+  .sheet label.field-label,
+  .sheet .field > label {
+    color: #172033 !important;
+    font-size: 13px !important;
+    font-weight: 850 !important;
+    letter-spacing: 0.18px;
+    margin-bottom: 8px !important;
+    line-height: 1.4;
+    opacity: 1 !important;
+  }
+  .sheet .field label .required-star,
+  .sheet label.field-label .required-star,
+  .sheet .field > label .required-star {
+    color: #d92d20 !important;
+    font-weight: 900 !important;
+    opacity: 1 !important;
+  }
+
+  .entry-field-heading{color:#172033!important;font-weight:900!important;font-size:15px!important;letter-spacing:.045em;margin-bottom:8px!important}
+  .entry-field-heading .required-star{color:#f12b3a!important;font-weight:900!important}
+  .entry-date-guidance{background:#eef4ff!important;border:1px solid #c9d8f4!important;color:#233653!important;border-radius:10px!important;padding:10px 12px!important;line-height:1.45!important;margin:14px 0 10px!important;font-size:12.5px!important}
+  #entryLayoutMainWrap [data-entry-group="buyDate"] .entry-date-guidance{display:block!important;width:100%;box-sizing:border-box;margin:14px 0 12px!important}
+  #entryLayoutMainWrap [data-entry-group="buyDate"] .entry-date-time{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;align-items:stretch;gap:12px!important;width:100%;box-sizing:border-box}
+  .entry-date-time{margin-bottom:10px;gap:12px}
+  .entry-date-time .field input{min-width:0;width:100%;box-sizing:border-box}
+  /* Date and time controls styled as one coordinated pair, like the supplied reference */
+  .entry-date-time .field.date-time-field{position:relative;min-width:0;height:58px;min-height:58px;border:1.5px solid #b9c2cf;border-radius:10px;background:#fff;padding:5px 10px 2px;box-sizing:border-box;margin-top:8px}
+  .entry-date-time .field.date-time-field>label{position:absolute;top:-10px;left:12px;z-index:1;padding:0 5px;background:#fff;color:#465166!important;font-size:12px!important;font-weight:800!important;line-height:1.2;letter-spacing:.01em;margin:0!important;white-space:nowrap}
+  .entry-date-time .field.date-time-field>input{border:0!important;box-shadow:none!important;background:transparent!important;border-radius:0!important;padding:7px 2px 2px!important;margin:0!important;height:48px;min-height:48px;font-size:15px;color:#172033;text-align:left!important;width:100%;max-width:100%;}
+  .entry-date-time .field.date-time-field>input:focus{outline:none!important;box-shadow:none!important}
+  @media(max-width:360px){.entry-date-time{gap:8px}.entry-date-time .field.date-time-field{padding-left:6px;padding-right:6px}.entry-date-time .field.date-time-field>label{left:7px;font-size:11px!important}}
 </style>
 
 <style id="mandatory-star-style">.required-star{color:#d92d20;font-weight:800;margin-left:2px;}</style>
@@ -1049,6 +1083,236 @@ body.menu-open .app>header{z-index:1!important;}
   display: flex !important;
 }
 </style>
+
+<style id="v91-compact-professional-spacing">
+/* v91: compact, consistent spacing for entry and sale sheets; behavior unchanged */
+.sheet{padding:14px 14px 24px!important;}
+.field{margin-bottom:8px!important;}
+.field label{margin-bottom:5px!important;line-height:1.25!important;}
+.chips,.chip-options,.option-chips{row-gap:7px!important;column-gap:7px!important;}
+.chip-opt{padding:7px 11px!important;min-height:40px;box-sizing:border-box;}
+.chip-opt.status-opt{padding:9px 4px!important;min-height:40px;}
+#conditionChips{row-gap:7px!important;margin-bottom:6px!important;}
+.field input,.field select{padding:8px 10px!important;min-height:44px;box-sizing:border-box;}
+.model-input-row input{padding:8px 10px!important;min-height:44px;box-sizing:border-box;}
+.model-suggestions{gap:6px!important;margin-top:6px!important;}
+.extra-buy-row{margin-bottom:7px!important;}
+.extra-buy-row input{padding:8px 9px!important;min-height:42px;box-sizing:border-box;}
+.add-extra-buy,.add-piece-btn{margin-top:7px!important;padding:8px!important;}
+.more-toggle{padding:8px!important;margin:8px 0!important;}
+.extra-piece-block{padding:8px 9px 3px!important;margin-bottom:8px!important;}
+.extra-piece-head{margin-bottom:6px!important;}
+.sheet-actions{gap:8px!important;margin-top:10px!important;padding-top:5px!important;}
+.sheet-actions button{padding:11px 10px!important;min-height:48px;}
+.profit-preview{padding:9px 11px!important;margin:9px 0!important;}
+.analytics-notice,.analytics-entry-notice,.entry-analytics-notice,.sale-analytics-notice{padding:10px 12px!important;margin:10px 0!important;line-height:1.45!important;font-size:12.5px!important;}
+/* Keep paired date/time controls balanced on narrow screens */
+.date-time-row,.datetime-row,.dateTimeRow{gap:10px!important;}
+.date-time-row .field,.datetime-row .field,.dateTimeRow .field{min-width:0;}
+@media(max-width:380px){.sheet{padding-left:12px!important;padding-right:12px!important}.chip-opt{padding:7px 9px!important;font-size:12.5px!important}.field{margin-bottom:7px!important}}
+</style>
+
+<style id="v92-uniform-headings-and-field-spacing">
+/* v92: consistent typography and clearer breathing room between field groups */
+#overlay .entry-field-heading,
+#overlay .field > label,
+#overlay label.field-label,
+#overlay .sec-label:not(.entry-field-heading),
+#overlay .field-label,
+#saleOverlay .field > label,
+#saleOverlay label.field-label,
+#saleOverlay .sec-label:not(.entry-field-heading) {
+  font-size:15px !important;
+  line-height:1.3 !important;
+  font-weight:800 !important;
+  letter-spacing:0.01em !important;
+  color:#172033 !important;
+  opacity:1 !important;
+}
+#overlay .entry-field-heading, #overlay .field > label, #overlay label.field-label,
+#overlay .sec-label:not(.entry-field-heading), #overlay .field-label,
+#saleOverlay .field > label, #saleOverlay label.field-label, #saleOverlay .sec-label:not(.entry-field-heading) {
+  margin-bottom:9px !important;
+}
+#overlay .field, #saleOverlay .field { margin-bottom:15px !important; }
+#overlay .chips, #overlay .chip-options, #overlay .option-chips,
+#saleOverlay .chips, #saleOverlay .chip-options, #saleOverlay .option-chips {
+  row-gap:9px !important; column-gap:8px !important; margin-bottom:4px !important;
+}
+#overlay .chip-opt, #saleOverlay .chip-opt { min-height:42px !important; padding:8px 11px !important; font-size:13.5px !important; }
+#overlay #conditionChips { row-gap:9px !important; margin-bottom:8px !important; }
+#overlay .model-suggestions { margin-bottom:8px !important; row-gap:8px !important; }
+#overlay .extra-buy-row, #overlay .add-extra-buy { margin-bottom:9px !important; }
+#overlay .entry-date-guidance { margin:12px 0 12px !important; }
+#overlay .entry-date-time { margin-bottom:14px !important; }
+@media(max-width:380px){
+  #overlay .entry-field-heading, #overlay .field > label, #overlay label.field-label,
+  #overlay .sec-label:not(.entry-field-heading), #overlay .field-label,
+  #saleOverlay .field > label, #saleOverlay label.field-label, #saleOverlay .sec-label:not(.entry-field-heading) { font-size:14px !important; }
+  #overlay .field, #saleOverlay .field { margin-bottom:13px !important; }
+  #overlay .chip-opt, #saleOverlay .chip-opt { padding:8px 9px !important; }
+}
+</style>
+
+
+<style id="v93-consistent-form-rhythm">
+/* v93: consistent spacing, typography, contrast, and safe scroll clearance */
+#overlay > .sheet {
+  padding: 16px 16px calc(100px + env(safe-area-inset-bottom, 0px)) !important;
+  scroll-padding-bottom: 110px;
+}
+#overlay > .sheet .sheet-head h3,
+#overlay > .sheet .sheet-title,
+#overlay > .sheet h3 {
+  font-size: 22px !important; font-weight: 750 !important; line-height: 1.25 !important;
+}
+#overlay > .sheet .field { margin: 0 0 24px !important; }
+#overlay > .sheet .field label,
+#overlay > .sheet label.field-label,
+#overlay > .sheet .field > label {
+  display:block !important; font-size:14px !important; font-weight:600 !important;
+  text-transform:none !important; letter-spacing:0 !important; line-height:1.35 !important;
+  margin:0 0 8px !important; color:#263449 !important; opacity:1 !important;
+}
+#overlay > .sheet .entry-field-heading,
+#overlay > .sheet .sec-label {
+  font-size:14px !important; font-weight:600 !important; text-transform:none !important;
+  letter-spacing:0 !important; line-height:1.35 !important; margin:0 0 8px !important;
+}
+#overlay > .sheet .field input,
+#overlay > .sheet .field select,
+#overlay > .sheet .model-input-row input,
+#overlay > .sheet textarea {
+  font-size:16px !important; text-align:left !important; color:#172033 !important;
+}
+#overlay > .sheet input::placeholder,
+#overlay > .sheet textarea::placeholder { color:#737d8c !important; opacity:1 !important; }
+#overlay > .sheet .chip-opt,
+#overlay > .sheet .model-suggestion-chip { color:#4b586b !important; }
+#overlay > .sheet .chips,
+#overlay > .sheet .chip-options,
+#overlay > .sheet .option-chips,
+#overlay > .sheet #conditionChips {
+  row-gap:12px !important; column-gap:8px !important; margin-bottom:0 !important;
+}
+#overlay > .sheet .chip-opt { font-size:14px !important; }
+#overlay > .sheet .model-suggestions { row-gap:10px !important; column-gap:8px !important; margin-top:8px !important; }
+#overlay > .sheet .entry-layout-main,
+#overlay > .sheet #entryLayoutMainWrap { row-gap:0 !important; }
+#overlay > .sheet .entry-date-time .field input { text-align:left !important; }
+#overlay > .sheet .entry-date-time .field.date-time-field { margin-bottom:24px !important; }
+#overlay > .sheet .entry-date-guidance,
+#overlay > .sheet .analytics-notice,
+#overlay > .sheet .analytics-entry-notice,
+#overlay > .sheet .entry-analytics-notice,
+#overlay > .sheet .sale-analytics-notice {
+  font-size:14px !important; line-height:1.5 !important; padding:12px 14px !important;
+  margin:0 0 24px !important;
+}
+#overlay > .sheet .extra-buy-list { margin-top:8px !important; gap:10px !important; }
+#overlay > .sheet .extra-buy-row { margin-bottom:0 !important; }
+#overlay > .sheet .extra-buy-row input { font-size:16px !important; }
+#overlay > .sheet .add-extra-buy,
+#overlay > .sheet .add-piece-btn { margin-top:10px !important; }
+#overlay > .sheet .extra-buy-heading,
+#overlay > .sheet .extra-buy-title,
+#overlay > .sheet .extra-buy-section-title {
+  font-size:14px !important; font-weight:600 !important; text-transform:none !important;
+  letter-spacing:0 !important; margin:0 0 8px !important; line-height:1.35 !important;
+}
+#overlay > .sheet .seller-number-label,
+#overlay > .sheet label[for*="sellerPhone"],
+#overlay > .sheet label[for*="sellerNumber"],
+#overlay > .sheet label[for*="sellerMobile"] { font-size:12.5px !important; line-height:1.25 !important; }
+#overlay > .sheet .sheet-actions {
+  margin-top:12px !important; padding:8px 0 calc(4px + env(safe-area-inset-bottom, 0px)) !important;
+  background:#fff !important;
+}
+@media(max-width:520px){
+  #overlay > .sheet { padding-bottom:calc(110px + env(safe-area-inset-bottom, 0px)) !important; }
+  #overlay > .sheet .field { margin-bottom:24px !important; }
+  #overlay > .sheet .seller-number-label,
+  #overlay > .sheet label[for*="sellerPhone"],
+  #overlay > .sheet label[for*="sellerNumber"],
+  #overlay > .sheet label[for*="sellerMobile"] { font-size:12px !important; }
+}
+</style>
+
+
+<style id="v94-fixed-actions-and-section-rhythm">
+/* v94: keep entry actions pinned to the bottom of the screen, not midway through the form */
+#overlay > .sheet {
+  padding-bottom: calc(118px + env(safe-area-inset-bottom, 0px)) !important;
+  scroll-padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px)) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+#overlay > .sheet .sheet-actions {
+  position: fixed !important;
+  left: 0 !important; right: 0 !important; bottom: 0 !important;
+  width: 100% !important; max-width: 480px !important;
+  margin: 0 auto !important; box-sizing: border-box !important;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+  display: flex !important; gap: 10px !important;
+  background: rgba(255,255,255,.98) !important;
+  border-top: 1px solid #d7deea !important;
+  box-shadow: 0 -5px 16px rgba(23,32,51,.07) !important;
+  z-index: 1005 !important;
+}
+#overlay > .sheet .sheet-actions button {
+  min-width: 0 !important; min-height: 52px !important;
+  padding: 12px 10px !important; font-size: 15px !important;
+}
+/* Consistent gap between every section, especially chip groups and the next heading */
+#overlay > .sheet .sec-label {
+  display: block; margin: 24px 0 10px !important;
+  font-size: 14px !important; line-height: 1.35 !important;
+  font-weight: 650 !important; text-transform: none !important; letter-spacing: 0 !important;
+}
+#overlay > .sheet #sheetTitle { margin: 0 52px 18px 0 !important; }
+#overlay > .sheet .entry-field-heading { margin-top: 8px !important; margin-bottom: 10px !important; }
+#overlay > .sheet .chip-row {
+  display: flex; flex-wrap: wrap; gap: 10px 8px !important;
+  margin: 0 0 2px !important; padding-bottom: 1px;
+}
+#overlay > .sheet .field { margin: 0 0 24px !important; }
+#overlay > .sheet .field > label,
+#overlay > .sheet label.field-label { margin-bottom: 8px !important; }
+#overlay > .sheet #f-phone-expenses { margin-top: 8px !important; }
+#overlay > .sheet .sec-label:has(+ #f-phone-expenses) { margin-top: 24px !important; margin-bottom: 8px !important; }
+#overlay > .sheet .entry-date-guidance { margin: 0 0 16px !important; }
+#overlay > .sheet .entry-date-time { gap: 10px !important; }
+#overlay > .sheet .two-col { gap: 10px !important; }
+#overlay > .sheet .seller-number-label,
+#overlay > .sheet label[for*="sellerPhone"],
+#overlay > .sheet label[for*="sellerNumber"],
+#overlay > .sheet label[for*="sellerMobile"] { font-size: 12px !important; line-height: 1.25 !important; }
+#overlay > .sheet .more-toggle { margin: 16px 0 20px !important; padding: 14px 8px !important; }
+#overlay > .sheet .add-extra-buy { margin: 18px 0 4px !important; }
+@media (max-width: 520px) {
+  #overlay > .sheet .sheet-actions { padding-left: 16px !important; padding-right: 16px !important; }
+}
+</style>
+
+
+<style id="compact-date-time-fields-v97">
+/* Compact date/time fields: align their height with ordinary form inputs. */
+#overlay > .sheet .entry-date-time .field.date-time-field,
+.entry-date-time .field.date-time-field {
+  height:46px !important; min-height:46px !important;
+  padding:2px 9px 0 !important; margin-top:6px !important;
+  margin-bottom:8px !important; box-sizing:border-box !important;
+}
+#overlay > .sheet .entry-date-time .field.date-time-field > input,
+.entry-date-time .field.date-time-field > input {
+  height:40px !important; min-height:40px !important;
+  padding:3px 2px 0 !important; font-size:15px !important;
+  text-align:left !important; box-sizing:border-box !important;
+}
+#overlay > .sheet .entry-date-time .field.date-time-field > label,
+.entry-date-time .field.date-time-field > label {top:-8px !important; font-size:11px !important;}
+#overlay > .sheet .entry-date-time {gap:10px !important; margin-bottom:8px !important;}
+</style>
 </head>
 <body>
 
@@ -1129,7 +1393,7 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v86.0<br><span>Updated 30 Oct 2026 • Apple Battery Health forced blank on Apple selection</span><span>Company Warranty preserved below Charger</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v83.3<br><span>Updated 27 Oct 2026 • 09:48:00 AM PKT • Settings overlay visibility fix</span><span>Settings overlay visibility restored</span></div>
         </div>
       </div>
     </div>
@@ -1215,13 +1479,13 @@ body.menu-open .app>header{z-index:1!important;}
     <h2 id="sheetTitle">Nayi stock entry</h2>
     <div class="save-error-banner" id="saveErrorBanner"></div>
 
-    <div class="sec-label">Brand</div>
+    <div class="sec-label entry-field-heading">BRAND <span class="required-star">*</span></div>
     <div class="chip-row" id="brandChips"></div>
     <div class="field" id="brandOtherWrap" style="display:none;margin-top:8px;">
       <input id="f-brand-other" placeholder="Brand ka naam likhein">
     </div>
 
-    <div class="sec-label">Model</div>
+    <div class="sec-label entry-field-heading">MODEL <span class="required-star">*</span></div>
     <div class="model-input-row">
       <input id="f-model-other" placeholder="Model likhein" autocomplete="off">
       <button type="button" class="model-dropdown-btn" id="modelDropdownBtn" title="List se chunein">▾</button>
@@ -1263,9 +1527,6 @@ body.menu-open .app>header{z-index:1!important;}
     <div class="sec-label">Charger <span style="color:var(--danger);">*</span></div>
     <div class="chip-row" id="chargerChips"></div>
 
-    <div class="sec-label">Company Warranty <span style="color:var(--danger);">*</span></div>
-    <div class="chip-row" id="companyWarrantyChips"></div>
-
     <div class="field imei-field"><label>IMEI 1</label>
       <div style="display:flex;gap:6px;">
         <input id="f-imei" type="text" inputmode="numeric" placeholder="15 digit number" style="flex:1;">
@@ -1288,7 +1549,8 @@ body.menu-open .app>header{z-index:1!important;}
 
     <div class="field"><label>Sell price range</label><input id="f-range" placeholder="45k-47k"><div class="price-hint" id="f-range-hint"></div></div>
 
-    <div class="field"><label>Buy date</label><input id="f-buydate" type="date"></div>
+    <div class="settings-note entry-date-guidance">📊 <b>Accurate Analytics ke liye:</b> Mobile khareedne aur bechne ki sahi date aur time enter karein. Is se daily purchases, sales aur busiest hours ki reports zyada accurate hongi.</div>
+    <div class="two-col entry-date-time"><div class="field date-time-field"><label>Buy Date</label><input id="f-buydate" type="date"></div><div class="field date-time-field"><label>Buy Time</label><input id="f-buytime" type="time"></div></div>
 
     <div class="two-col"><div class="field"><label>Seller ka naam (optional)</label><input id="f-seller-name" placeholder="Kis se khareeda"></div><div class="field"><label>Seller ka number (optional)</label><input id="f-seller-number" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx"></div></div>
 
@@ -1301,10 +1563,11 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="field"><label>Customer name</label><input id="f-customer" placeholder="Naam"></div>
         <div class="field"><label>Customer number</label><input id="f-customer-number" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx"></div>
       </div>
-      <div class="two-col">
-        <div class="field"><label>Sale date</label><input id="f-saledate" type="date"></div>
-        <div class="field"><label>Payment method</label><input id="f-payment" placeholder="Cash / Easypaisa"></div>
+      <div class="two-col entry-date-time">
+        <div class="field date-time-field"><label>Sale Date</label><input id="f-saledate" type="date"></div>
+        <div class="field date-time-field"><label>Sale Time</label><input id="f-saletime" type="time"></div>
       </div>
+      <div class="field"><label>Payment method</label><input id="f-payment" placeholder="Cash / Easypaisa"></div>
     </div>
 
     <div class="more-toggle" id="moreToggle">+ Add more Details</div>
@@ -1370,10 +1633,12 @@ body.menu-open .app>header{z-index:1!important;}
       <div class="field"><label>Customer name</label><input id="s-customer" placeholder="Naam"></div>
       <div class="field"><label>Customer number</label><input id="s-customer-number" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx"></div>
     </div>
-    <div class="two-col">
-      <div class="field"><label>Sale date</label><input id="s-saledate" type="date"></div>
-      <div class="field"><label>Payment method</label><input id="s-payment" placeholder="Cash / Easypaisa"></div>
+    <div class="settings-note entry-date-guidance sale-date-guidance">📊 <b>Accurate Analytics ke liye:</b> Mobile bechne ki sahi date aur time enter karein. Is se daily sales aur busiest hours ki reports zyada accurate hongi.</div>
+    <div class="two-col entry-date-time">
+      <div class="field date-time-field"><label>Sale Date</label><input id="s-saledate" type="date"></div>
+      <div class="field date-time-field"><label>Sale Time</label><input id="s-saletime" type="time"></div>
     </div>
+    <div class="field"><label>Payment method</label><input id="s-payment" placeholder="Cash / Easypaisa"></div>
     <div class="sec-label" style="margin-top:14px;">🎁 Sale ke sath hua extra kharcha</div>
     <div class="settings-note" style="margin-top:0;">Customer ko jelly/protector ya koi aur cheez dene ka kharcha yahan add karein. Ye is sale ke profit se minus hoga.</div>
     <div id="s-phone-expenses" class="phone-expense-list"></div>
@@ -2059,7 +2324,7 @@ body.menu-open .app>header{z-index:1!important;}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v85.0 • Updated 30 Oct 2026 • Apple Battery Health default cleared and mandatory stars added</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v83.3 • Updated 27 Oct 2026 • 09:47:00 AM PKT • Settings visibility and mobile layout repair</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -2105,7 +2370,7 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v84.0';
+const APP_INDEX_VERSION = 'v83.3';
 const APP_INDEX_UPDATED = '27 Oct 2026 • 09:48:00 AM PKT • Reverted broken Settings overlay CSS; restored original hidden/visible settings rules';
 
 let inventory = [];
@@ -2279,7 +2544,6 @@ const TOUCH_OPTS = ['Perfect','Minor lag','Dead zones','Not working'];
 const CAMERA_OPTS = ['Perfect','No dots','Dot','Dots','Blurry/spots','Not working'];
 const BATTERY_OPTS = ['Perfect','100%','95-99%','90-94%','85-89%','80-84%','79-75%','74-69%','Below 69%','On service','Boosted','Battery changed'];
 const CHARGER_OPTS = ['No charger','Original charger','5W','10W','15W','18W','20W','25W','30W','33W','35W','45W','65W','67W','80W','100W','120W'];
-const COMPANY_WARRANTY_OPTS = ['Not Available'].concat(Array.from({length:12}, function(_,i){ return (i+1)+(i===0?' month':' months'); }));
 const BODY_OPTS = ['Original','Back changed','Back crack','Body changed'];
 const OPEN_REPAIR_OPTS = ['No open, no repair','Repaired','Refurbished'];
 const PACKING_OPTS = ['No pack','Water pack','Air tight'];
@@ -2346,7 +2610,7 @@ function renderUiScaleToggles(){
 }
 
 const DEFAULT_ENTRY_LAYOUT = {
-  main: ['brand','model','status','ram','storage','condition','box','charger','companyWarranty','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'],
+  main: ['brand','model','status','ram','storage','condition','box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'],
   more: ['network','display','touch','camera','body','openrepair','battery','packing','faceid','truetone','notes'],
   hidden: []
 };
@@ -2497,9 +2761,9 @@ function setPlatformDefault(platform, fieldKey, value){
 }
 
 function applyPlatformDefaultsToForm(platform){
-  const defs={status:platform==='iphone'?'':'PTA',ram:'',storage:'',condition:'',network:'',display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',battery:platform==='iphone'?'':'Perfect',box:'',packing:'No pack',charger:'',companyWarranty:'Not Available',faceid:platform==='iphone'?'Yes':'No',truetone:platform==='iphone'?'Yes':'No'};
+  const defs={status:'',ram:'',storage:'',condition:'',network:'',display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',battery:platform==='iphone'?'':'Perfect',box:'',packing:'No pack',charger:'',faceid:platform==='iphone'?'Yes':'No',truetone:platform==='iphone'?'Yes':'No'};
   Object.keys(defs).forEach(function(k){
-    const d=(platform==='iphone' && (k==='status' || k==='battery')) ? '' : ((platform==='iphone' && k==='box') ? 'No' : ((platform==='iphone' && k==='charger') ? 'No charger' : getPlatformDefault(platform,k,defs[k])));
+    const d=(k==='status' || (platform==='iphone' && (k==='battery' || k==='box' || k==='charger'))) ? '' : getPlatformDefault(platform,k,defs[k]);
     const opts=getEntryFieldOptionsForPlatform(platform,k);
     formState[k]=(d && opts.indexOf(d)!==-1) ? d : '';
   });
@@ -2519,7 +2783,7 @@ function getCustomFieldOptionsForPlatform(platform, fieldKey){
 }
 
 function getEntryFieldOptionsForPlatform(platform, fieldKey){
-  const baseMap={status:STATUS_OPTS,ram:RAM_OPTS,storage:STORAGE_OPTS,condition:CONDITION_OPTS,network:NETWORK_OPTS,display:DISPLAY_OPTS,touch:TOUCH_OPTS,camera:CAMERA_OPTS,body:BODY_OPTS,openrepair:OPEN_REPAIR_OPTS,battery:BATTERY_OPTS,box:['No','Yes'],packing:PACKING_OPTS,charger:CHARGER_OPTS,companyWarranty:COMPANY_WARRANTY_OPTS,faceid:['No','Yes'],truetone:['No','Yes']};
+  const baseMap={status:STATUS_OPTS,ram:RAM_OPTS,storage:STORAGE_OPTS,condition:CONDITION_OPTS,network:NETWORK_OPTS,display:DISPLAY_OPTS,touch:TOUCH_OPTS,camera:CAMERA_OPTS,body:BODY_OPTS,openrepair:OPEN_REPAIR_OPTS,battery:BATTERY_OPTS,box:['No','Yes'],packing:PACKING_OPTS,charger:CHARGER_OPTS,faceid:['No','Yes'],truetone:['No','Yes']};
   if(Object.prototype.hasOwnProperty.call(baseMap,fieldKey)) return getPlatformFieldOptions(platform,fieldKey,baseMap[fieldKey]);
   const cf=getCustomFieldDef(platform,fieldKey);
   return getCustomFieldOptionsForPlatform(platform,fieldKey);
@@ -5233,8 +5497,6 @@ function prepareEntryLayoutDOM(){
   if(boxChips) addMainGroup('box',[previousSecLabel(boxChips),boxChips]);
   const chargerChips=sheet.querySelector('#chargerChips');
   if(chargerChips) addMainGroup('charger',[previousSecLabel(chargerChips),chargerChips]);
-  const companyWarrantyChips=sheet.querySelector('#companyWarrantyChips');
-  if(companyWarrantyChips) addMainGroup('companyWarranty',[previousSecLabel(companyWarrantyChips),companyWarrantyChips]);
 
   const imei1=sheet.querySelector('#f-imei');
   if(imei1) addMainGroup('imei1',[imei1.closest('.field')]);
@@ -5257,7 +5519,10 @@ function prepareEntryLayoutDOM(){
   if(oldBuyRow && oldBuyRow !== (range ? range.closest('.two-col') : null)) oldBuyRow.remove();
   else if(oldBuyRow && !oldBuyRow.children.length) oldBuyRow.remove();
   const buyDate=sheet.querySelector('#f-buydate');
-  if(buyDate) addMainGroup('buyDate',[buyDate.closest('.field')]);
+  const buyDateTimeRow=buyDate ? buyDate.closest('.entry-date-time') : null;
+  const buyDateGuidance=sheet.querySelector('.entry-date-guidance');
+  if(buyDateTimeRow) addMainGroup('buyDate',[buyDateGuidance,buyDateTimeRow]);
+  else if(buyDate) addMainGroup('buyDate',[buyDateGuidance,buyDate.closest('.field')]);
   const seller=sheet.querySelector('#f-seller-name');
   if(seller) addMainGroup('seller',[seller.closest('.two-col')]);
   const extraList=sheet.querySelector('#extraBuyList');
@@ -5356,7 +5621,7 @@ function ensureLayoutContainsAll(layout){
 
   // v57: fixed entry order — Box and Charger are mandatory and sit directly
   // below Condition; phone expense stays immediately below Buy price.
-  const fixedMainOrder=['brand','model','status','ram','storage','condition','box','charger','companyWarranty','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'];
+  const fixedMainOrder=['brand','model','status','ram','storage','condition','box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'];
   layout.main=fixedMainOrder.slice();
   layout.more=['network','display','touch','camera','body','openrepair','battery','packing','faceid','truetone','notes'];
   layout.hidden=[];
@@ -5512,18 +5777,18 @@ function applyEntryLayoutToDOM(platform){
   // Box and Charger are explicitly included so they cannot fall back into More Details.
   let fixedMainKeys = [
     'brand','model','status','ram','storage','condition',
-    'box','charger','companyWarranty','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
+    'box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
     'seller','saleFields','moreToggle','extras'
   ];
   let moreKeys = L.more.slice();
   if(platform==='iphone'){
     fixedMainKeys = [
       'brand','model','status','storage','condition','battery',
-      'box','charger','companyWarranty','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
+      'box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
       'seller','saleFields','moreToggle','extras'
     ];
     moreKeys = moreKeys.filter(function(key){ return key!=='battery' && key!=='status' && key!=='ram'; });
-    // iPhone-specific labels: Battery is mandatory; Box/Charger are optional.
+    // iPhone-specific labels: Battery Health, Box, and Charger are mandatory.
     const batteryGroup=groups.battery;
     if(batteryGroup){
       const batteryLabel=batteryGroup.querySelector('.sec-label');
@@ -5545,14 +5810,6 @@ function applyEntryLayoutToDOM(platform){
     if(boxGroup){ const label=boxGroup.querySelector('.sec-label'); if(label) label.innerHTML='Box <span style="color:var(--danger);">*</span>'; }
     if(chargerGroup){ const label=chargerGroup.querySelector('.sec-label'); if(label) label.innerHTML='Charger <span style="color:var(--danger);">*</span>'; }
   }
-  // Show required-field markers consistently on Brand and Model, like other mandatory fields.
-  ['brand','model'].forEach(function(key){
-    const g=groups[key];
-    if(!g) return;
-    const label=g.querySelector('.sec-label');
-    if(label) label.innerHTML=(key==='brand'?'Brand':'Model')+' <span style="color:var(--danger);">*</span>';
-  });
-
   fixedMainKeys.forEach(function(key,i){
     const g=groups[key];
     if(!g) return;
@@ -5625,10 +5882,6 @@ function renderChipGroup(containerId, options, groupKey, extraClass){
         renderModelSuggestions('');
         const platform=getEntryPlatform(value);
         if(formState.__platform!==platform) applyPlatformDefaultsToForm(platform);
-        // Apple/iPhone Battery Health must always start with no selected option.
-        // Clear any prior/default value before rebuilding the chips, even if the
-        // selected brand was already on the iPhone platform.
-        if(platform==='iphone') formState.battery='';
         // Brand changes platform, so only then rebuild the complete chip set.
         renderAllChips();
         applyEntryLayoutToDOM(platform);
@@ -5692,7 +5945,6 @@ function renderAllChips(){
   renderChipGroup('boxChips', getEntryFieldOptions('box', ['No','Yes']), 'box');
   renderChipGroup('packingChips', getEntryFieldOptions('packing', PACKING_OPTS), 'packing');
   renderChipGroup('chargerChips', getEntryFieldOptions('charger', CHARGER_OPTS), 'charger');
-  renderChipGroup('companyWarrantyChips', getEntryFieldOptions('companyWarranty', COMPANY_WARRANTY_OPTS), 'companyWarranty');
   renderChipGroup('faceidChips', getEntryFieldOptions('faceid', ['No','Yes']), 'faceid');
   renderChipGroup('truetoneChips', getEntryFieldOptions('truetone', ['No','Yes']), 'truetone');
   renderCustomEntryFields();
@@ -5910,6 +6162,8 @@ function settleEntryFormUI(){
   // Background cloud/config updates are deferred until the next open so user
   // taps cannot be interrupted by DOM replacement.
 }
+function currentLocalTimeInput(){ const d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+
 function openAdd(){
   // Mark the entry sheet as open BEFORE any UI/config refresh. Cloud snapshots
   // use this flag to defer chip/layout rebuilds while the user is tapping options.
@@ -5922,11 +6176,10 @@ function openAdd(){
   rangeInputMode = 'auto';
   document.getElementById('sheetTitle').textContent = 'Nayi stock entry';
   document.getElementById('qtyLabel').textContent = 'Quantity (kitne piece)';
-  formState = {brand:'', status:'', ram:'', storage:'', condition:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'', packing:'No pack', charger:'', companyWarranty:'Not Available', faceid:'No', truetone:'No', customFields:{}, isSold:false, __platform:'android'};
+  formState = {brand:'', status:'', ram:'', storage:'', condition:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'', packing:'No pack', charger:'', faceid:'No', truetone:'No', customFields:{}, isSold:false, __platform:'android'};
   applyPlatformDefaultsToForm('android');
-  // Android keeps the existing mandatory fields. iPhone has no Status/RAM,
-  // Box/Charger are optional and default to absent, while Battery is mandatory.
-  formState.status = 'PTA';
+  // Status must remain unselected by default on both Android and Apple.
+  // Android still requires the user to choose a Status before saving.
   formState.box = '';
   formState.charger = '';
   formState.battery = '';
@@ -5942,12 +6195,14 @@ function openAdd(){
   document.getElementById('f-range-hint').textContent = '';
   if(rangeInputMode==='auto') maybeAutoFillRange();
   document.getElementById('f-buydate').value = todayISO();
+  document.getElementById('f-buytime').value = currentLocalTimeInput();
   document.getElementById('f-imei').value = '';
   document.getElementById('f-imei2').value = '';
   document.getElementById('f-seller-name').value = '';
   document.getElementById('f-seller-number').value = '';
   document.getElementById('f-customer-number').value = '';
   document.getElementById('f-saledate').value = todayISO();
+  document.getElementById('f-saletime').value = currentLocalTimeInput();
   document.getElementById('f-notes').value = '';
   document.getElementById('brandOtherWrap').style.display = 'none';
   document.getElementById('saleFieldsWrap').classList.remove('show');
@@ -6007,7 +6262,7 @@ function openEdit(id){
     status: e.status || '',
     ram: e.ram || '', storage: e.storage || '', condition: e.condition || '', network: e.network || '',
     display: e.display || 'Original panel', touch: e.touch || 'Perfect', camera: e.camera || 'Perfect', body: e.body || 'Original', openrepair: e.openrepair || 'No open, no repair', battery: e.battery || 'Perfect',
-    box: e.box || 'No', packing: e.packing || 'No pack', charger: e.charger || 'Original charger', companyWarranty: e.companyWarranty || 'Not Available',
+    box: e.box || 'No', packing: e.packing || 'No pack', charger: e.charger || 'Original charger',
     faceid: e.faceid || 'No', truetone: e.truetone || 'No',
     customFields: Object.assign({}, e.customFields || {}),
     isSold: !!e.sold,
@@ -6026,6 +6281,7 @@ function openEdit(id){
   document.getElementById('f-range').value = e.range || '';
   document.getElementById('f-range-hint').textContent = '';
   document.getElementById('f-buydate').value = e.buyDate || todayISO();
+  document.getElementById('f-buytime').value = e.buyTime || '';
   document.getElementById('f-imei').value = e.imei || '';
   document.getElementById('f-imei2').value = e.imei2 || '';
   document.getElementById('f-seller-name').value = e.sellerName || '';
@@ -6045,10 +6301,12 @@ function openEdit(id){
     document.getElementById('f-customer-number').value = e.customerNumber || '';
     document.getElementById('f-payment').value = e.payment || '';
     document.getElementById('f-saledate').value = e.saleDate || todayISO();
+    document.getElementById('f-saletime').value = e.saleTime || '';
   } else {
     document.getElementById('saleFieldsWrap').classList.remove('show');
     document.getElementById('f-customer-number').value = '';
     document.getElementById('f-saledate').value = todayISO();
+    document.getElementById('f-saletime').value = currentLocalTimeInput();
   }
 
   document.getElementById('f-buy-hint').textContent = '';
@@ -6095,19 +6353,28 @@ function saveEntry(){
   hideSaveError('saveErrorBanner');
   const brand = formState.brand==='Other' ? document.getElementById('f-brand-other').value.trim() : formState.brand;
   const model = getFormModel();
-  if(!brand || !model){
-    alert('Brand aur model zaroori hai');
+  const entryPlatform = getEntryPlatform(brand);
+  const missingMandatory = [];
+  if(!brand) missingMandatory.push('Brand');
+  if(!model) missingMandatory.push('Model');
+  if(!formState.status) missingMandatory.push('Status');
+  if(entryPlatform!=='iphone' && !formState.ram) missingMandatory.push('RAM');
+  if(!formState.storage) missingMandatory.push('Storage');
+  if(!formState.condition) missingMandatory.push('Condition');
+  if(entryPlatform==='iphone' && !formState.battery) missingMandatory.push('Battery Health');
+  if(!formState.box) missingMandatory.push('Box');
+  if(!formState.charger) missingMandatory.push('Charger');
+  const buyRawForRequired = document.getElementById('f-buy').value.trim();
+  if(!buyRawForRequired && !formState.isSold) missingMandatory.push('Buy Price');
+  if(missingMandatory.length){
+    alert('Ye mandatory fields complete/select karein:\n\n• ' + missingMandatory.join('\n• '));
+    const firstMissing = missingMandatory[0];
+    const targetMap = {'Brand':'entryBrandSection','Model':'f-model','Status':'entryStatusSection','RAM':'entryRamSection','Storage':'entryStorageSection','Condition':'entryConditionSection','Battery Health':'f-battery','Box':'entryBoxSection','Charger':'entryChargerSection','Buy Price':'f-buy'};
+    const targetId = targetMap[firstMissing];
+    const target = targetId ? document.getElementById(targetId) : null;
+    if(target && target.scrollIntoView) target.scrollIntoView({behavior:'smooth',block:'center'});
     return;
   }
-  const entryPlatform = getEntryPlatform(brand);
-  if(!formState.status){ alert('Status select karna zaroori hai'); return; }
-  if(entryPlatform!=='iphone' && !formState.ram){ alert('RAM select karna zaroori hai'); return; }
-  if(!formState.storage){ alert('Storage select karna zaroori hai'); return; }
-  if(!formState.condition){ alert('Condition select karna zaroori hai'); return; }
-  if(entryPlatform==='iphone' && !formState.battery){ alert('Battery health select karna zaroori hai'); return; }
-  if(entryPlatform!=='iphone' && !formState.box){ alert('Box select karna zaroori hai'); return; }
-  if(entryPlatform!=='iphone' && !formState.charger){ alert('Charger select karna zaroori hai'); return; }
-  if(!formState.companyWarranty){ alert('Company Warranty select karna zaroori hai'); return; }
   const qty = Math.max(1, Number(document.getElementById('f-qty').value || 1));
   const buyFieldRaw = document.getElementById('f-buy').value.trim();
   const parsedBuyForRange = buyFieldRaw==='' ? null : parsePrice(buyFieldRaw);
@@ -6121,6 +6388,7 @@ function saveEntry(){
     imei: document.getElementById('f-imei').value.trim(),
     imei2: document.getElementById('f-imei2').value.trim(),
     buyDate: document.getElementById('f-buydate').value || todayISO(),
+    buyTime: document.getElementById('f-buytime').value || '',
     sellerName: document.getElementById('f-seller-name').value.trim(),
     sellerNumber: document.getElementById('f-seller-number').value.trim(),
     ram: entryPlatform==='iphone' ? '' : (formState.ram || ''),
@@ -6133,11 +6401,10 @@ function saveEntry(){
     camera: formState.camera || 'Perfect',
     body: formState.body || 'Original',
     openrepair: formState.openrepair || 'No open, no repair',
-    battery: entryPlatform==='iphone' ? (formState.battery || '') : (formState.battery || 'Perfect'),
+    battery: formState.battery || 'Perfect',
     box: formState.box || 'No',
     packing: formState.packing || 'No pack',
     charger: formState.charger || 'Original charger',
-    companyWarranty: formState.companyWarranty || 'Not Available',
     faceid: formState.faceid || 'No',
     truetone: formState.truetone || 'No',
     customFields: Object.assign({}, formState.customFields || {}),
@@ -6165,6 +6432,7 @@ function saveEntry(){
     data.customerNumber = document.getElementById('f-customer-number').value.trim();
     data.payment = document.getElementById('f-payment').value.trim();
     data.saleDate = document.getElementById('f-saledate').value || todayISO();
+    data.saleTime = document.getElementById('f-saletime').value || '';
   } else {
     const buyVal = document.getElementById('f-buy').value.trim();
     if(buyVal === ''){ alert('Buy price zaroori hai. Entry save karne se pehle buy price likhein.'); document.getElementById('f-buy').focus(); return; }
@@ -6304,6 +6572,7 @@ function openSell(id){
   document.getElementById('s-customer-number').value = '';
   document.getElementById('s-payment').value = '';
   document.getElementById('s-saledate').value = todayISO();
+  document.getElementById('s-saletime').value = currentLocalTimeInput();
   renderPhoneExpenseRows('s-phone-expenses', []);
   updateSellProfitPreview();
   document.getElementById('sellOverlay').classList.remove('hidden');
@@ -6370,6 +6639,7 @@ function confirmSell(){
     customerNumber: document.getElementById('s-customer-number').value.trim(),
     payment: document.getElementById('s-payment').value.trim(),
     saleDate: document.getElementById('s-saledate').value || todayISO(),
+    saleTime: document.getElementById('s-saletime').value || '',
     saleAt: new Date().toISOString(),
     lastUpdated: todayStr()
   });
@@ -10510,3 +10780,46 @@ if('serviceWorker' in navigator){
 </script>
 </body>
 </html>
+
+<style id="v95-selected-chip-contrast-and-end-actions">
+/* v95: selected options use readable white text; actions appear after the form content. */
+#overlay .chip-opt.on,
+#overlay .chip-opt.active,
+#overlay .model-suggestion-chip.on,
+#overlay .model-suggestion-chip.active,
+#overlay .chip.on,
+#overlay .chip.active,
+#overlay .option-chip.selected,
+#overlay .chip-opt[aria-pressed="true"],
+#overlay .chip-opt[aria-selected="true"] {
+  color:#fff !important;
+}
+#overlay > .sheet {
+  padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+  scroll-padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+}
+#overlay > .sheet .sheet-actions {
+  position:static !important;
+  inset:auto !important;
+  width:100% !important;
+  max-width:none !important;
+  margin:24px 0 0 !important;
+  padding:0 0 calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+  background:transparent !important;
+  border-top:0 !important;
+  box-shadow:none !important;
+  z-index:auto !important;
+}
+#overlay > .sheet .sheet-actions button {
+  min-height:52px !important;
+}
+/* Keep the close X visible at the top while the form scrolls. */
+#overlay > .sheet > .safe-page-close,
+#overlay > .sheet > .menu-safe-close {
+  position:sticky !important;
+  top:calc(8px + env(safe-area-inset-top, 0px)) !important;
+  float:right !important;
+  margin:0 0 -40px auto !important;
+  z-index:1010 !important;
+}
+</style>
