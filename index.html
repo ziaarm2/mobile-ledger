@@ -1588,6 +1588,13 @@ body.menu-open .app>header{z-index:1!important;}
 .entry-add-from-row .entry-add-from-actions button{min-height:34px!important;padding:6px 5px!important;border-radius:8px!important;font-size:11.5px!important;line-height:1.1!important;box-shadow:none!important;background:var(--surface)!important}
 @media(max-width:390px){.entry-add-from-row{gap:6px!important;padding:5px!important}.entry-add-from-row .entry-add-from-actions{gap:4px!important}.entry-add-from-row .entry-add-from-actions button{font-size:10.5px!important;padding:6px 3px!important}}
 </style>
+<style id="purchase-add-from-spacing-refinement">
+/* Purchase form has a larger default row gap than the sale sheet; tighten only this contact group. */
+#overlay > .sheet .entry-layout-group[data-entry-group="seller"] .entry-add-from-row {
+  margin-top: -25px !important;
+  margin-bottom: 5px !important;
+}
+</style>
 </head>
 <body>
 
