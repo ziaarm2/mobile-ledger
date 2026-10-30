@@ -1111,6 +1111,49 @@ body.menu-open .app>header{z-index:1!important;}
 .date-time-row .field,.datetime-row .field,.dateTimeRow .field{min-width:0;}
 @media(max-width:380px){.sheet{padding-left:12px!important;padding-right:12px!important}.chip-opt{padding:7px 9px!important;font-size:12.5px!important}.field{margin-bottom:7px!important}}
 </style>
+
+<style id="v92-uniform-headings-and-field-spacing">
+/* v92: consistent typography and clearer breathing room between field groups */
+#overlay .entry-field-heading,
+#overlay .field > label,
+#overlay label.field-label,
+#overlay .sec-label:not(.entry-field-heading),
+#overlay .field-label,
+#saleOverlay .field > label,
+#saleOverlay label.field-label,
+#saleOverlay .sec-label:not(.entry-field-heading) {
+  font-size:15px !important;
+  line-height:1.3 !important;
+  font-weight:800 !important;
+  letter-spacing:0.01em !important;
+  color:#172033 !important;
+  opacity:1 !important;
+}
+#overlay .entry-field-heading, #overlay .field > label, #overlay label.field-label,
+#overlay .sec-label:not(.entry-field-heading), #overlay .field-label,
+#saleOverlay .field > label, #saleOverlay label.field-label, #saleOverlay .sec-label:not(.entry-field-heading) {
+  margin-bottom:9px !important;
+}
+#overlay .field, #saleOverlay .field { margin-bottom:15px !important; }
+#overlay .chips, #overlay .chip-options, #overlay .option-chips,
+#saleOverlay .chips, #saleOverlay .chip-options, #saleOverlay .option-chips {
+  row-gap:9px !important; column-gap:8px !important; margin-bottom:4px !important;
+}
+#overlay .chip-opt, #saleOverlay .chip-opt { min-height:42px !important; padding:8px 11px !important; font-size:13.5px !important; }
+#overlay #conditionChips { row-gap:9px !important; margin-bottom:8px !important; }
+#overlay .model-suggestions { margin-bottom:8px !important; row-gap:8px !important; }
+#overlay .extra-buy-row, #overlay .add-extra-buy { margin-bottom:9px !important; }
+#overlay .entry-date-guidance { margin:12px 0 12px !important; }
+#overlay .entry-date-time { margin-bottom:14px !important; }
+@media(max-width:380px){
+  #overlay .entry-field-heading, #overlay .field > label, #overlay label.field-label,
+  #overlay .sec-label:not(.entry-field-heading), #overlay .field-label,
+  #saleOverlay .field > label, #saleOverlay label.field-label, #saleOverlay .sec-label:not(.entry-field-heading) { font-size:14px !important; }
+  #overlay .field, #saleOverlay .field { margin-bottom:13px !important; }
+  #overlay .chip-opt, #saleOverlay .chip-opt { padding:8px 9px !important; }
+}
+</style>
+
 </head>
 <body>
 
