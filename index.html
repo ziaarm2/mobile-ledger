@@ -5874,7 +5874,15 @@ function prepareEntryLayoutDOM(){
   if(buyDateTimeRow) addMainGroup('buyDate',[buyDateGuidance,buyDateTimeRow]);
   else if(buyDate) addMainGroup('buyDate',[buyDateGuidance,buyDate.closest('.field')]);
   const seller=sheet.querySelector('#f-seller-name');
-  if(seller) addMainGroup('seller',[seller.closest('.two-col')]);
+  if(seller){
+    const sellerRow=seller.closest('.two-col');
+    const addFromLabel=sheet.querySelector('.entry-add-from-label');
+    const addFromActions=sheet.querySelector('.entry-add-from-actions');
+    // Keep Add from attached to the seller row when the entry layout is rebuilt.
+    // Previously only the seller fields were wrapped, leaving these controls
+    // behind in the original DOM and causing them to fall near the form bottom.
+    addMainGroup('seller',[sellerRow,addFromLabel,addFromActions]);
+  }
   const extraList=sheet.querySelector('#extraBuyList');
   const extraButton=sheet.querySelector('#addExtraBuyBtn');
   if(extraList || extraButton){
