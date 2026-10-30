@@ -4815,8 +4815,8 @@ function renderBrandFilter(){
 
 function renderFilterChips(){
   const filters = [
-    {key:'all',label:'Sab'},
     {key:'available',label:'Available'},
+    {key:'all',label:'All'},
     {key:'sold',label:'Sold'},
     {key:'returned',label:'↩ Returned'},
     {key:'PTA',label:'PTA'},
@@ -4875,8 +4875,11 @@ function renderList(){
     return;
   }
 
-  const soldItems = items.filter(function(e){return e.sold;});
-  const stockItems = items.filter(function(e){return !e.sold;});
+  // Keep every category consistently ordered from newest entry to oldest.
+  // Use the entry ID timestamp (the creation/addition time) for a stable sort.
+  const newestFirst = function(a,b){ return idTimestamp(b.id)-idTimestamp(a.id); };
+  const soldItems = items.filter(function(e){return e.sold;}).sort(newestFirst);
+  const stockItems = items.filter(function(e){return !e.sold;}).sort(newestFirst);
 
   // group in-stock pieces of the same brand+model together so each piece keeps its own price/condition
   const groups = [];
@@ -4890,6 +4893,7 @@ function renderList(){
     groups[groupIndex[key]].pieces.push(e);
   });
 
+  groups.forEach(function(g){ g.pieces.sort(newestFirst); });
   let html = '';
   sortGroups(groups).forEach(function(g){ html += renderStockGroup(g); });
   soldItems.forEach(function(e){ html += renderSoldCard(e); });
