@@ -8531,6 +8531,14 @@ function buildContactsList(){
     .sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
 }
 
+function contactActionNumber(value){
+  const digits = String(value||'').replace(/\D/g,'');
+  if(!digits) return '';
+  if(digits.startsWith('0')) return '92'+digits.slice(1);
+  if(digits.startsWith('92')) return digits;
+  return digits;
+}
+
 function renderContacts(){
   const q = document.getElementById('contactsSearch').value.trim().toLowerCase();
   let contacts = buildContactsList();
@@ -8558,7 +8566,12 @@ function renderContacts(){
       }).join('');
     return '<div class="contact-card">'+
       '<div class="contact-head">'+
-        '<div><div class="contact-name">'+escapeHtml(c.name)+'</div>'+(c.number?'<div class="contact-number">'+escapeHtml(c.number)+'</div>':'')+'</div>'+
+        '<div><div class="contact-name">'+escapeHtml(c.name)+'</div>'+(c.number?'<div class="contact-number">'+escapeHtml(c.number)+'</div>':'')+
+          (c.number?'<div class="contact-actions" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">'+
+            '<a href="https://wa.me/'+escapeHtml(contactActionNumber(c.number))+'" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--surface-2);color:var(--text);text-decoration:none;font-size:12px;font-weight:600">WhatsApp</a>'+
+            '<a href="sms:'+escapeHtml(String(c.number).replace(/[^0-9+]/g,''))+'" style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--surface-2);color:var(--text);text-decoration:none;font-size:12px;font-weight:600">Message</a>'+
+            '<a href="tel:'+escapeHtml(String(c.number).replace(/[^0-9+]/g,''))+'" style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--surface-2);color:var(--text);text-decoration:none;font-size:12px;font-weight:600">Call</a></div>':'')+
+        '</div>'+
         '<div class="contact-badges">'+
           (buyCount?'<span class="badge qty">Seller</span>':'')+
           (saleCount?'<span class="badge sold-badge">Buyer</span>':'')+
