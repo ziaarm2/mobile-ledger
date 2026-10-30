@@ -1894,6 +1894,26 @@ body.menu-open .app>header{z-index:1!important;}
     <div class="sec-label">Charger <span style="color:var(--danger);">*</span></div>
     <div class="chip-row" id="chargerChips"></div>
 
+    <div class="field" id="companyWarrantyField">
+      <label for="f-company-warranty">Company Warranty <span class="required-star">*</span></label>
+      <select id="f-company-warranty" required>
+        <option value="">Select Company Warranty</option>
+        <option value="Not Available">Not Available</option>
+        <option value="1 month">1 month</option>
+        <option value="2 months">2 months</option>
+        <option value="3 months">3 months</option>
+        <option value="4 months">4 months</option>
+        <option value="5 months">5 months</option>
+        <option value="6 months">6 months</option>
+        <option value="7 months">7 months</option>
+        <option value="8 months">8 months</option>
+        <option value="9 months">9 months</option>
+        <option value="10 months">10 months</option>
+        <option value="11 months">11 months</option>
+        <option value="12 months">12 months</option>
+      </select>
+    </div>
+
     <div class="field imei-field"><label>IMEI 1</label>
       <div style="display:flex;gap:6px;">
         <input id="f-imei" type="text" inputmode="numeric" placeholder="15 digit number" style="flex:1;">
@@ -2988,12 +3008,12 @@ function renderUiScaleToggles(){
 }
 
 const DEFAULT_ENTRY_LAYOUT = {
-  main: ['brand','model','status','ram','storage','condition','box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'],
+  main: ['brand','model','status','ram','storage','condition','box','charger','companyWarranty','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'],
   more: ['network','display','touch','camera','body','openrepair','battery','packing','faceid','truetone','notes'],
   hidden: []
 };
 const ENTRY_LAYOUT_LABELS = {
-  brand:'Brand', model:'Model', photos:'Pics', status:'Status', ram:'RAM', storage:'Storage', condition:'Condition', imei1:'IMEI 1', imei2:'IMEI 2', buyPrice:'Buy price', phoneExpenses:'Phone expenses', sellRange:'Sell price range', buyDate:'Buy date', seller:'Seller details', extras:'+ Isi model ka aur piece', moreToggle:'+ Add more Details', saleFields:'Sale details',
+  brand:'Brand', model:'Model', photos:'Pics', status:'Status', ram:'RAM', storage:'Storage', condition:'Condition', imei1:'IMEI 1', imei2:'IMEI 2', buyPrice:'Buy price', companyWarranty:'Company Warranty', phoneExpenses:'Phone expenses', sellRange:'Sell price range', buyDate:'Buy date', seller:'Seller details', extras:'+ Isi model ka aur piece', moreToggle:'+ Add more Details', saleFields:'Sale details',
   ram:'RAM', storage:'Storage', network:'Network', display:'Display / Panel', touch:'Touch', camera:'Camera', body:'Body', openrepair:'Open aur Repair', battery:'Battery health', box:'Box', packing:'Packing', charger:'Charger', faceid:'Face ID', truetone:'True Tone', customFields:'Custom fields', notes:'Notes'
 };
 const DEFAULT_PLATFORM_CARD_FIELDS = ['display','battery','touch','camera','body','openrepair','ram','storage','network','packing','charger','box','faceid','truetone'];
@@ -5951,6 +5971,8 @@ function prepareEntryLayoutDOM(){
   if(boxChips) addMainGroup('box',[previousSecLabel(boxChips),boxChips]);
   const chargerChips=sheet.querySelector('#chargerChips');
   if(chargerChips) addMainGroup('charger',[previousSecLabel(chargerChips),chargerChips]);
+  const companyWarranty=sheet.querySelector('#f-company-warranty');
+  if(companyWarranty) addMainGroup('companyWarranty',[companyWarranty.closest('.field')]);
 
   const imei1=sheet.querySelector('#f-imei');
   if(imei1) addMainGroup('imei1',[imei1.closest('.field')]);
@@ -6087,7 +6109,7 @@ function ensureLayoutContainsAll(layout){
 
   // v57: fixed entry order — Box and Charger are mandatory and sit directly
   // below Condition; phone expense stays immediately below Buy price.
-  const fixedMainOrder=['brand','model','status','ram','storage','condition','box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'];
+  const fixedMainOrder=['brand','model','status','ram','storage','condition','box','charger','companyWarranty','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'];
   layout.main=fixedMainOrder.slice();
   layout.more=['network','display','touch','camera','body','openrepair','battery','packing','faceid','truetone','notes'];
   layout.hidden=[];
@@ -6243,7 +6265,7 @@ function applyEntryLayoutToDOM(platform){
   // Box and Charger are explicitly included so they cannot fall back into More Details.
   let fixedMainKeys = [
     'brand','model','status','ram','storage','condition',
-    'box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
+    'box','charger','companyWarranty','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
     'seller','saleFields','moreToggle','extras'
   ];
   let moreKeys = L.more.slice();
@@ -6691,6 +6713,7 @@ function openAdd(){
   // Android still requires the user to choose a Status before saving.
   formState.box = '';
   formState.charger = '';
+  document.getElementById('f-company-warranty').value = '';
   formState.battery = '';
   formPhotos = [];
   renderPhotoStrip();
@@ -6792,6 +6815,7 @@ function openEdit(id){
   document.getElementById('f-range').value = e.range || '';
   splitRangeIntoInputs(e.range || '');
   document.getElementById('f-range-hint').textContent = '';
+  document.getElementById('f-company-warranty').value = e.companyWarranty || '';
   document.getElementById('f-buydate').value = e.buyDate || todayISO();
   document.getElementById('f-buytime').value = e.buyTime || '';
   document.getElementById('f-imei').value = e.imei || '';
@@ -6877,12 +6901,14 @@ function saveEntry(){
   if(entryPlatform==='iphone' && !formState.battery) missingMandatory.push('Battery Health');
   if(!formState.box) missingMandatory.push('Box');
   if(!formState.charger) missingMandatory.push('Charger');
+  const companyWarrantyValue = document.getElementById('f-company-warranty').value;
+  if(!companyWarrantyValue) missingMandatory.push('Company Warranty');
   const buyRawForRequired = document.getElementById('f-buy').value.trim();
   if(!buyRawForRequired && !formState.isSold) missingMandatory.push('Buy Price');
   if(missingMandatory.length){
     alert('Ye mandatory fields complete/select karein:\n\n• ' + missingMandatory.join('\n• '));
     const firstMissing = missingMandatory[0];
-    const targetMap = {'Brand':'entryBrandSection','Model':'f-model','Status':'entryStatusSection','RAM':'entryRamSection','Storage':'entryStorageSection','Condition':'entryConditionSection','Battery Health':'f-battery','Box':'entryBoxSection','Charger':'entryChargerSection','Buy Price':'f-buy'};
+    const targetMap = {'Brand':'entryBrandSection','Model':'f-model','Status':'entryStatusSection','RAM':'entryRamSection','Storage':'entryStorageSection','Condition':'entryConditionSection','Battery Health':'f-battery','Box':'entryBoxSection','Charger':'entryChargerSection','Company Warranty':'f-company-warranty','Buy Price':'f-buy'};
     const targetId = targetMap[firstMissing];
     const target = targetId ? document.getElementById(targetId) : null;
     if(target && target.scrollIntoView) target.scrollIntoView({behavior:'smooth',block:'center'});
@@ -6919,6 +6945,7 @@ function saveEntry(){
     box: formState.box || 'No',
     packing: formState.packing || 'No pack',
     charger: formState.charger || 'Original charger',
+    companyWarranty: companyWarrantyValue,
     faceid: formState.faceid || 'No',
     truetone: formState.truetone || 'No',
     customFields: Object.assign({}, formState.customFields || {}),
