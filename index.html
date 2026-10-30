@@ -858,6 +858,12 @@ body.menu-open .app>header{z-index:1!important;}
     font-weight: 900 !important;
     opacity: 1 !important;
   }
+
+  .entry-field-heading{color:#172033!important;font-weight:900!important;font-size:15px!important;letter-spacing:.045em;margin-bottom:8px!important}
+  .entry-field-heading .required-star{color:#f12b3a!important;font-weight:900!important}
+  .entry-date-guidance{background:#eef4ff!important;border:1px solid #c9d8f4!important;color:#233653!important;border-radius:10px!important;padding:10px 12px!important;line-height:1.45!important;margin:14px 0 10px!important;font-size:12.5px!important}
+  .entry-date-time{margin-bottom:10px}
+  .entry-date-time .field input{min-width:0;width:100%;box-sizing:border-box}
 </style>
 
 <style id="mandatory-star-style">.required-star{color:#d92d20;font-weight:800;margin-left:2px;}</style>
@@ -1235,13 +1241,13 @@ body.menu-open .app>header{z-index:1!important;}
     <h2 id="sheetTitle">Nayi stock entry</h2>
     <div class="save-error-banner" id="saveErrorBanner"></div>
 
-    <div class="sec-label">Brand</div>
+    <div class="sec-label entry-field-heading">BRAND <span class="required-star">*</span></div>
     <div class="chip-row" id="brandChips"></div>
     <div class="field" id="brandOtherWrap" style="display:none;margin-top:8px;">
       <input id="f-brand-other" placeholder="Brand ka naam likhein">
     </div>
 
-    <div class="sec-label">Model</div>
+    <div class="sec-label entry-field-heading">MODEL <span class="required-star">*</span></div>
     <div class="model-input-row">
       <input id="f-model-other" placeholder="Model likhein" autocomplete="off">
       <button type="button" class="model-dropdown-btn" id="modelDropdownBtn" title="List se chunein">▾</button>
@@ -1305,7 +1311,8 @@ body.menu-open .app>header{z-index:1!important;}
 
     <div class="field"><label>Sell price range</label><input id="f-range" placeholder="45k-47k"><div class="price-hint" id="f-range-hint"></div></div>
 
-    <div class="field"><label>Buy date</label><input id="f-buydate" type="date"></div>
+    <div class="settings-note entry-date-guidance">📊 <b>Accurate Analytics ke liye:</b> Mobile khareedne aur bechne ki sahi date aur time enter karein. Is se daily purchases, sales aur busiest hours ki reports zyada accurate hongi.</div>
+    <div class="two-col entry-date-time"><div class="field"><label>Buy Date</label><input id="f-buydate" type="date"></div><div class="field"><label>Buy Time</label><input id="f-buytime" type="time"></div></div>
 
     <div class="two-col"><div class="field"><label>Seller ka naam (optional)</label><input id="f-seller-name" placeholder="Kis se khareeda"></div><div class="field"><label>Seller ka number (optional)</label><input id="f-seller-number" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx"></div></div>
 
@@ -1319,9 +1326,10 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="field"><label>Customer number</label><input id="f-customer-number" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx"></div>
       </div>
       <div class="two-col">
-        <div class="field"><label>Sale date</label><input id="f-saledate" type="date"></div>
-        <div class="field"><label>Payment method</label><input id="f-payment" placeholder="Cash / Easypaisa"></div>
+        <div class="field"><label>Sale Date</label><input id="f-saledate" type="date"></div>
+        <div class="field"><label>Sale Time</label><input id="f-saletime" type="time"></div>
       </div>
+      <div class="field"><label>Payment method</label><input id="f-payment" placeholder="Cash / Easypaisa"></div>
     </div>
 
     <div class="more-toggle" id="moreToggle">+ Add more Details</div>
@@ -1388,9 +1396,10 @@ body.menu-open .app>header{z-index:1!important;}
       <div class="field"><label>Customer number</label><input id="s-customer-number" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx"></div>
     </div>
     <div class="two-col">
-      <div class="field"><label>Sale date</label><input id="s-saledate" type="date"></div>
-      <div class="field"><label>Payment method</label><input id="s-payment" placeholder="Cash / Easypaisa"></div>
+      <div class="field"><label>Sale Date</label><input id="s-saledate" type="date"></div>
+      <div class="field"><label>Sale Time</label><input id="s-saletime" type="time"></div>
     </div>
+    <div class="field"><label>Payment method</label><input id="s-payment" placeholder="Cash / Easypaisa"></div>
     <div class="sec-label" style="margin-top:14px;">🎁 Sale ke sath hua extra kharcha</div>
     <div class="settings-note" style="margin-top:0;">Customer ko jelly/protector ya koi aur cheez dene ka kharcha yahan add karein. Ye is sale ke profit se minus hoga.</div>
     <div id="s-phone-expenses" class="phone-expense-list"></div>
@@ -5911,6 +5920,8 @@ function settleEntryFormUI(){
   // Background cloud/config updates are deferred until the next open so user
   // taps cannot be interrupted by DOM replacement.
 }
+function currentLocalTimeInput(){ const d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+
 function openAdd(){
   // Mark the entry sheet as open BEFORE any UI/config refresh. Cloud snapshots
   // use this flag to defer chip/layout rebuilds while the user is tapping options.
@@ -5942,12 +5953,14 @@ function openAdd(){
   document.getElementById('f-range-hint').textContent = '';
   if(rangeInputMode==='auto') maybeAutoFillRange();
   document.getElementById('f-buydate').value = todayISO();
+  document.getElementById('f-buytime').value = currentLocalTimeInput();
   document.getElementById('f-imei').value = '';
   document.getElementById('f-imei2').value = '';
   document.getElementById('f-seller-name').value = '';
   document.getElementById('f-seller-number').value = '';
   document.getElementById('f-customer-number').value = '';
   document.getElementById('f-saledate').value = todayISO();
+  document.getElementById('f-saletime').value = currentLocalTimeInput();
   document.getElementById('f-notes').value = '';
   document.getElementById('brandOtherWrap').style.display = 'none';
   document.getElementById('saleFieldsWrap').classList.remove('show');
@@ -6026,6 +6039,7 @@ function openEdit(id){
   document.getElementById('f-range').value = e.range || '';
   document.getElementById('f-range-hint').textContent = '';
   document.getElementById('f-buydate').value = e.buyDate || todayISO();
+  document.getElementById('f-buytime').value = e.buyTime || '';
   document.getElementById('f-imei').value = e.imei || '';
   document.getElementById('f-imei2').value = e.imei2 || '';
   document.getElementById('f-seller-name').value = e.sellerName || '';
@@ -6045,10 +6059,12 @@ function openEdit(id){
     document.getElementById('f-customer-number').value = e.customerNumber || '';
     document.getElementById('f-payment').value = e.payment || '';
     document.getElementById('f-saledate').value = e.saleDate || todayISO();
+    document.getElementById('f-saletime').value = e.saleTime || '';
   } else {
     document.getElementById('saleFieldsWrap').classList.remove('show');
     document.getElementById('f-customer-number').value = '';
     document.getElementById('f-saledate').value = todayISO();
+    document.getElementById('f-saletime').value = currentLocalTimeInput();
   }
 
   document.getElementById('f-buy-hint').textContent = '';
@@ -6120,6 +6136,7 @@ function saveEntry(){
     imei: document.getElementById('f-imei').value.trim(),
     imei2: document.getElementById('f-imei2').value.trim(),
     buyDate: document.getElementById('f-buydate').value || todayISO(),
+    buyTime: document.getElementById('f-buytime').value || '',
     sellerName: document.getElementById('f-seller-name').value.trim(),
     sellerNumber: document.getElementById('f-seller-number').value.trim(),
     ram: entryPlatform==='iphone' ? '' : (formState.ram || ''),
@@ -6163,6 +6180,7 @@ function saveEntry(){
     data.customerNumber = document.getElementById('f-customer-number').value.trim();
     data.payment = document.getElementById('f-payment').value.trim();
     data.saleDate = document.getElementById('f-saledate').value || todayISO();
+    data.saleTime = document.getElementById('f-saletime').value || '';
   } else {
     const buyVal = document.getElementById('f-buy').value.trim();
     if(buyVal === ''){ alert('Buy price zaroori hai. Entry save karne se pehle buy price likhein.'); document.getElementById('f-buy').focus(); return; }
@@ -6302,6 +6320,7 @@ function openSell(id){
   document.getElementById('s-customer-number').value = '';
   document.getElementById('s-payment').value = '';
   document.getElementById('s-saledate').value = todayISO();
+  document.getElementById('s-saletime').value = currentLocalTimeInput();
   renderPhoneExpenseRows('s-phone-expenses', []);
   updateSellProfitPreview();
   document.getElementById('sellOverlay').classList.remove('hidden');
@@ -6368,6 +6387,7 @@ function confirmSell(){
     customerNumber: document.getElementById('s-customer-number').value.trim(),
     payment: document.getElementById('s-payment').value.trim(),
     saleDate: document.getElementById('s-saledate').value || todayISO(),
+    saleTime: document.getElementById('s-saletime').value || '',
     saleAt: new Date().toISOString(),
     lastUpdated: todayStr()
   });
