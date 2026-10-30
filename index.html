@@ -1405,6 +1405,7 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="menu-section-label">Business</div>
         <button class="menu-item" id="btnExpenses"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="14" rx="2" stroke-width="1.8"/><path d="M7 12h10M8 9h8" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Expenses</span></button>
         <button class="menu-item" id="btnContacts"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke-width="1.8"/><path d="M3.5 19c.5-3.3 2.4-5 5.5-5s5 1.7 5.5 5M17 11a2.5 2.5 0 1 0 0-5M16 14c2.5.2 4 1.7 4.5 5" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Contacts</span></button>
+        <button class="menu-item" id="btnCustomerBook"><span class="menu-item-icon">👥</span><span class="menu-item-text">Customer Book / Baqi Payments</span></button>
         <button class="menu-item" id="btnAnalytics"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19V9M12 19V5M19 19v-8" stroke-width="2" stroke-linecap="round"/><path d="M3.5 19.5h17" stroke-width="1.5" stroke-linecap="round"/></svg></span><span class="menu-item-text">Analytics</span></button>
         <button class="menu-item" id="btnReports"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3.5h9l3 3V20.5H6z" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3.5v4h4M9 12h6M9 16h6" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Reports</span></button>
         <button class="menu-item" id="btnActivityHistory"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke-width="1.8"/><path d="M12 7v5l3 2M4 6l2-2M20 6l-2-2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="menu-item-text">Activity History</span></button>
@@ -1672,6 +1673,7 @@ body.menu-open .app>header{z-index:1!important;}
       <div class="field date-time-field"><label>Sale Time</label><input id="s-saletime" type="time"></div>
     </div>
     <div class="field"><label>Payment method</label><input id="s-payment" placeholder="Cash / Easypaisa"></div>
+    <div class="two-col"><div class="field"><label>Abhi kitne paise mile?</label><input id="s-received" type="number" min="0" inputmode="decimal" placeholder="Full payment ho to khali chhor dein"></div><div class="field"><label>Baqi amount</label><input id="s-balance-due" readonly placeholder="Rs. 0"></div></div>
     <div class="sec-label" style="margin-top:14px;">🎁 Sale ke sath hua extra kharcha</div>
     <div class="settings-note" style="margin-top:0;">Customer ko jelly/protector/Cover ya kisi ko koi commission waghaira diya ya koi bhi aur kharcha jo aap ne entry ke waqt nahi dala, yahan add karein. Isay enter na karne par aap ka profit sahi calculate nahi hoga.</div>
     <div id="s-phone-expenses" class="phone-expense-list"></div>
@@ -1689,6 +1691,8 @@ body.menu-open .app>header{z-index:1!important;}
     </div>
   </div>
 </div>
+
+<div class="overlay hidden" id="customerBookOverlay"><div class="sheet" style="max-height:90vh;overflow:auto"><button type="button" class="safe-page-close" id="customerBookClose">×</button><div class="sheet-handle"></div><h2>Customer Book</h2><div class="field"><label>Naam ya mobile number search karein</label><input id="customerBookSearch" placeholder="Customer search..."></div><div id="customerBookSummary" class="cost-summary"></div><div id="customerBookList"></div></div></div>
 
 <div class="overlay hidden" id="cropOverlay">
   <div class="sheet">
@@ -6731,6 +6735,8 @@ function openSell(id){
   document.getElementById('s-customer').value = '';
   document.getElementById('s-customer-number').value = '';
   document.getElementById('s-payment').value = '';
+  document.getElementById('s-received').value = '';
+  document.getElementById('s-balance-due').value = '';
   document.getElementById('s-saledate').value = todayISO();
   document.getElementById('s-saletime').value = currentLocalTimeInput();
   renderPhoneExpenseRows('s-phone-expenses', []);
@@ -6743,6 +6749,17 @@ function closeSellSheet(){
   requestOverlayClose();
 }
 
+function updateSaleBalancePreview(){
+  const e=inventory.find(function(x){return x.id===sellingId;});
+  const qty=Math.max(1,Number(document.getElementById('s-qty').value||1));
+  const price=parsePrice((document.getElementById('s-price').value||'').trim())||0;
+  const total=price*qty;
+  const raw=document.getElementById('s-received').value.trim();
+  const received=raw===''?total:Math.max(0,Number(raw)||0);
+  const due=Math.max(0,total-received);
+  const el=document.getElementById('s-balance-due');
+  if(el) el.value='Rs. '+fmt(due);
+}
 function updateSellProfitPreview(){
   const e = inventory.find(function(x){return x.id===sellingId;});
   const qty = Math.max(1, Number(document.getElementById('s-qty').value || 1));
@@ -6794,6 +6811,11 @@ function confirmSell(){
     alert('Itne piece stock mein nahi hain');
     return;
   }
+  const saleTotal=price*qty;
+  const receivedRaw=document.getElementById('s-received').value.trim();
+  const received=receivedRaw===''?saleTotal:Number(receivedRaw);
+  if(!Number.isFinite(received)||received<0||received>saleTotal){alert('Received amount total sale price se zyada ya negative nahi ho sakti.');return;}
+  const initialPayment={amount:received, date:document.getElementById('s-saledate').value||todayISO(), time:document.getElementById('s-saletime').value||'', method:document.getElementById('s-payment').value.trim(), note:'Sale ke waqt payment'};
   const soldRecord = Object.assign({}, e, {
     id: 'sold_'+Date.now(),
     quantity: qty,
@@ -6805,6 +6827,7 @@ function confirmSell(){
     customer: document.getElementById('s-customer').value.trim(),
     customerNumber: document.getElementById('s-customer-number').value.trim(),
     payment: document.getElementById('s-payment').value.trim(),
+    saleTotal: saleTotal, paymentReceived: received, balanceDue: Math.max(0,saleTotal-received), payments: received>0?[initialPayment]:[],
     saleDate: document.getElementById('s-saledate').value || todayISO(),
     saleTime: document.getElementById('s-saletime').value || '',
     saleAt: new Date().toISOString(),
@@ -6826,7 +6849,8 @@ function confirmSell(){
   currentFilter = 'all';
   render();
   logActivity('sell','Mobile sold: '+e.brand+' '+e.model,'Qty: '+qty+' · Rs '+fmt(price));
-  showToast('✓ Sold ho gaya — '+fmt(price)+' mein.');
+  showToast('✓ Sold — '+fmt(saleTotal)+' · Baqi Rs. '+fmt(Math.max(0,saleTotal-received)));
+  renderCustomerBook();
 }
 
 document.getElementById('fabAdd').onclick = openAdd;
@@ -6839,7 +6863,9 @@ document.getElementById('btnSellCancel').onclick = closeSellSheet;
 document.getElementById('btnSellConfirm').onclick = confirmSell;
 document.getElementById('sellOverlay').onclick = function(e){ if(e.target.id==='sellOverlay') closeSellSheet(); };
 document.getElementById('s-qty').oninput = updateSellProfitPreview;
-document.getElementById('s-price').oninput = updateSellProfitPreview;
+document.getElementById('s-price').oninput = function(){updateSellProfitPreview();updateSaleBalancePreview();};
+document.getElementById('s-received').oninput = updateSaleBalancePreview;
+document.getElementById('s-qty').addEventListener('input',updateSaleBalancePreview);
 document.getElementById('search').oninput = function(){ renderList(); saveUIState(); };
 document.getElementById('sortSelect').onchange = function(){ currentSort = this.value; renderList(); saveUIState(); };
 document.getElementById('activityTypeFilter').onchange = function(){ renderList(); saveUIState(); };
@@ -10944,6 +10970,47 @@ if('serviceWorker' in navigator){
     window.location.reload();
   });
 }
+</script>
+
+<script>
+(function(){
+  function money(n){try{return fmt(Number(n)||0)}catch(e){return String(Number(n)||0)}}
+  function saleTotalOf(e){return Number(e.saleTotal!=null?e.saleTotal:(Number(e.sell)||0)*(Number(e.quantity)||1));}
+  function receivedOf(e){return Number(e.paymentReceived!=null?e.paymentReceived:saleTotalOf(e));}
+  function dueOf(e){return Math.max(0,Number(e.balanceDue!=null?e.balanceDue:saleTotalOf(e)-receivedOf(e)));}
+  function customerKey(e){const n=String(e.customerNumber||'').replace(/\D/g,'');return n?'n:'+n:'c:'+String(e.customer||'').trim().toLowerCase();}
+  window.renderCustomerBook=function(){
+    const list=document.getElementById('customerBookList'); if(!list)return;
+    const q=(document.getElementById('customerBookSearch')?.value||'').trim().toLowerCase();
+    const sales=inventory.filter(e=>e.sold&&!isReturnedSale(e)&&((e.customer||'').trim()||(e.customerNumber||'').trim()));
+    const map={}; sales.forEach(e=>{const k=customerKey(e);if(!map[k])map[k]={key:k,name:e.customer||'Naam save nahi',number:e.customerNumber||'',sales:[],total:0,received:0,due:0};const c=map[k];c.sales.push(e);c.total+=saleTotalOf(e);c.received+=receivedOf(e);c.due+=dueOf(e);if(e.customer)c.name=e.customer;if(e.customerNumber)c.number=e.customerNumber;});
+    let cs=Object.values(map).filter(c=>(c.name+' '+c.number).toLowerCase().includes(q));
+    cs.sort((a,b)=>b.due-a.due);
+    const outstanding=cs.reduce((a,c)=>a+c.due,0);
+    document.getElementById('customerBookSummary').innerHTML='<span>Customers: '+cs.length+' · Total baqi</span><strong>Rs. '+money(outstanding)+'</strong>';
+    list.innerHTML=cs.length?cs.map(c=>'<div class="settings-card" style="margin-top:12px;padding:14px;border:1px solid var(--border);border-radius:14px"><b style="font-size:17px">'+escapeHtml(c.name)+'</b><div style="color:var(--text-muted);margin:4px 0 10px">'+escapeHtml(c.number||'Number save nahi')+'</div><div>Total purchases: <b>Rs. '+money(c.total)+'</b></div><div>Received: <b>Rs. '+money(c.received)+'</b></div><div>Baqi: <b style="color:'+(c.due>0?'var(--danger)':'var(--pta)')+'">Rs. '+money(c.due)+'</b></div><details style="margin-top:10px"><summary>Purchase aur payment history ('+c.sales.length+')</summary>'+c.sales.sort((a,b)=>String(b.saleDate||'').localeCompare(String(a.saleDate||''))).map(e=>'<div style="padding:10px 0;border-bottom:1px solid var(--border)"><b>'+escapeHtml((e.brand||'')+' '+(e.model||''))+'</b><div>'+escapeHtml(e.saleDate||'Date nahi')+' '+escapeHtml(e.saleTime||'')+'</div><div>Sale: Rs. '+money(saleTotalOf(e))+' · Received: Rs. '+money(receivedOf(e))+' · Baqi: Rs. '+money(dueOf(e))+'</div><div style="font-size:12px;color:var(--text-muted)">IMEI: '+escapeHtml(e.imei1||'—')+'</div>'+(Array.isArray(e.payments)?e.payments.map(p=>'<div style="font-size:12px">Payment: Rs. '+money(p.amount)+' · '+escapeHtml(p.date||'')+' '+escapeHtml(p.time||'')+' · '+escapeHtml(p.method||'')+'</div>').join(''):'')+(dueOf(e)>0?'<button type="button" class="btn-secondary customer-receive" data-id="'+escapeHtml(e.id)+'" style="margin-top:8px">Receive Payment</button>':'<div style="color:var(--pta)">Payment complete</div>')+'</div>').join('')+'</details></div>').join(''):'<div class="settings-note">Abhi koi matching customer record nahi mila. Customer ka naam/number sale ke waqt enter karein.</div>';
+    list.querySelectorAll('.customer-receive').forEach(btn=>btn.onclick=function(){receiveCustomerPayment(this.dataset.id)});
+  };
+  function receiveCustomerPayment(id){
+    const e=inventory.find(x=>String(x.id)===String(id));if(!e)return;
+    const due=dueOf(e);const raw=prompt('Baqi amount: Rs. '+money(due)+'\nAbhi kitne paise receive huay?');if(raw===null||raw.trim()==='')return;
+    const amount=Number(raw.replace(/,/g,''));if(!Number.isFinite(amount)||amount<=0||amount>due){alert('Amount 0 se zyada aur baqi amount se kam ya barabar honi chahiye.');return;}
+    const method=prompt('Payment method (Cash / Easypaisa / JazzCash / Bank):','Cash');if(method===null)return;
+    const copy=inventory.map(x=>{if(String(x.id)!==String(id))return x;const payments=Array.isArray(x.payments)?x.payments.slice():[];payments.push({amount:amount,date:todayISO(),time:currentLocalTimeInput(),method:method.trim(),note:'Customer se baad ki payment'});const received=receivedOf(x)+amount;return Object.assign({},x,{payments:payments,paymentReceived:received,balanceDue:Math.max(0,dueOf(x)-amount),lastUpdated:todayStr()});});
+    if(!tryCommitInventory(copy)){alert(SAVE_FAIL_MSG);return;}renderCustomerBook();render();showToast('Payment save ho gayi: Rs. '+money(amount));
+  }
+  const open=document.getElementById('btnCustomerBook'), overlay=document.getElementById('customerBookOverlay');
+  if(open)open.addEventListener('click',function(){document.getElementById('menuDropdown')?.classList.add('hidden');overlay.classList.remove('hidden');renderCustomerBook();});
+  document.getElementById('customerBookClose')?.addEventListener('click',()=>overlay.classList.add('hidden'));
+  overlay?.addEventListener('click',e=>{if(e.target===overlay)overlay.classList.add('hidden')});
+  document.getElementById('customerBookSearch')?.addEventListener('input',renderCustomerBook);
+  document.getElementById('s-price')?.addEventListener('input',updateSaleBalancePreview);
+  document.getElementById('s-customer-number')?.addEventListener('change',function(){
+    const num=String(this.value||'').replace(/\D/g,'');if(!num)return;
+    const old=inventory.find(x=>x.sold&&!isReturnedSale(x)&&String(x.customerNumber||'').replace(/\D/g,'')===num&&x.customer);
+    if(old&&!document.getElementById('s-customer').value.trim())document.getElementById('s-customer').value=old.customer;
+  });
+})();
 </script>
 </body>
 </html>
