@@ -862,6 +862,8 @@ body.menu-open .app>header{z-index:1!important;}
   .entry-field-heading{color:#172033!important;font-weight:900!important;font-size:15px!important;letter-spacing:.045em;margin-bottom:8px!important}
   .entry-field-heading .required-star{color:#f12b3a!important;font-weight:900!important}
   .entry-date-guidance{background:#eef4ff!important;border:1px solid #c9d8f4!important;color:#233653!important;border-radius:10px!important;padding:10px 12px!important;line-height:1.45!important;margin:14px 0 10px!important;font-size:12.5px!important}
+  #entryLayoutMainWrap [data-entry-group="buyDate"] .entry-date-guidance{display:block!important;width:100%;box-sizing:border-box;margin:14px 0 12px!important}
+  #entryLayoutMainWrap [data-entry-group="buyDate"] .entry-date-time{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;align-items:stretch;gap:12px!important;width:100%;box-sizing:border-box}
   .entry-date-time{margin-bottom:10px;gap:12px}
   .entry-date-time .field input{min-width:0;width:100%;box-sizing:border-box}
   /* Date and time controls styled as one coordinated pair, like the supplied reference */
@@ -5286,7 +5288,10 @@ function prepareEntryLayoutDOM(){
   if(oldBuyRow && oldBuyRow !== (range ? range.closest('.two-col') : null)) oldBuyRow.remove();
   else if(oldBuyRow && !oldBuyRow.children.length) oldBuyRow.remove();
   const buyDate=sheet.querySelector('#f-buydate');
-  if(buyDate) addMainGroup('buyDate',[buyDate.closest('.field')]);
+  const buyDateTimeRow=buyDate ? buyDate.closest('.entry-date-time') : null;
+  const buyDateGuidance=sheet.querySelector('.entry-date-guidance');
+  if(buyDateTimeRow) addMainGroup('buyDate',[buyDateGuidance,buyDateTimeRow]);
+  else if(buyDate) addMainGroup('buyDate',[buyDateGuidance,buyDate.closest('.field')]);
   const seller=sheet.querySelector('#f-seller-name');
   if(seller) addMainGroup('seller',[seller.closest('.two-col')]);
   const extraList=sheet.querySelector('#extraBuyList');
