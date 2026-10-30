@@ -11112,58 +11112,67 @@ document.getElementById('btnAccountChangePassword').onclick=function(){
   fbAuth.sendPasswordResetEmail(fbUser.email).then(function(){ showToast('✓ Password reset link email par bhej diya.'); }).catch(function(err){ showAccountError(friendlyAuthError(err)); });
 };
 
-// ---------- Keyboard-aware scrolling (v120) ----------
-// Keep Sale Entry scrollable while the iOS keyboard remains open. Scroll the
-// sheet itself instead of relying on page-level scrollIntoView, which can be
-// blocked by iOS visual-viewport behavior.
-(function(){
-  function updateSaleVisibleHeight(){
-    if(!window.visualViewport) return;
-    document.documentElement.style.setProperty('--sale-visible-height', Math.round(window.visualViewport.height) + 'px');
-  }
+// ---------- iOS keyboard-aware sale form scrolling (v121) ----------
+// The sale sheet itself is the scroll container. On iOS, scrollIntoView can
+// target the page behind a modal instead of scrolling the sheet, so calculate
+// the field position against the visible viewport and scroll the sheet directly.
+(function installSaleKeyboardScrollFix(){
+  const overlay = document.getElementById('sellOverlay');
+  if (!overlay) return;
+  const getSheet = () => overlay.querySelector('.sale-sheet');
+  const isEditable = el => el && el.matches && el.matches('input:not([type="button"]):not([type="submit"]), textarea, select');
+  let scrollTimer = null;
   function keepFocusedFieldVisible(el){
-    if(!el || !el.matches || !el.matches('input, select, textarea')) return;
-    const saleSheet = el.closest('#sellOverlay > .sale-sheet');
-    if(saleSheet){
-      updateSaleVisibleHeight();
-      const sheetRect = saleSheet.getBoundingClientRect();
-      const fieldRect = el.getBoundingClientRect();
-      const visibleBottom = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-      const topLimit = Math.max(sheetRect.top + 8, 8);
-      const bottomLimit = Math.min(visibleBottom - 18, window.innerHeight - 18);
-      if(fieldRect.bottom > bottomLimit){
-        saleSheet.scrollTop += fieldRect.bottom - bottomLimit + 18;
-      } else if(fieldRect.top < topLimit){
-        saleSheet.scrollTop -= topLimit - fieldRect.top + 12;
-      }
-      return;
-    }
-    if(el.closest('.sheet, .settings-shell, .account-shell, .shop-setup-card')){
-      el.scrollIntoView({block:'nearest', behavior:'smooth'});
-    }
+    const sheet = getSheet();
+    if (!sheet || !isEditable(el) || !overlay.contains(el)) return;
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(function(){
+      const vv = window.visualViewport;
+      const visibleBottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
+      const visibleTop = vv ? vv.offsetTop : 0;
+      const r = el.getBoundingClientRect();
+      const margin = 18;
+      let delta = 0;
+      if (r.bottom > visibleBottom - margin) delta = r.bottom - visibleBottom + margin;
+      else if (r.top < visibleTop + margin) delta = r.top - visibleTop - margin;
+      if (delta) sheet.scrollTop += delta;
+      // A second pass handles iOS's delayed keyboard/viewport animation.
+      setTimeout(function(){
+        if (!overlay.contains(el) || document.activeElement !== el) return;
+        const r2 = el.getBoundingClientRect();
+        const bottom2 = window.visualViewport ? window.visualViewport.offsetTop + window.visualViewport.height : window.innerHeight;
+        if (r2.bottom > bottom2 - margin) sheet.scrollTop += r2.bottom - bottom2 + margin;
+        else if (r2.top < margin) sheet.scrollTop -= margin - r2.top;
+      }, 180);
+    }, 80);
   }
-  document.addEventListener('focusin', function(e){
-    const el=e.target;
-    if(!el || !el.matches || !el.matches('input, select, textarea')) return;
-    setTimeout(function(){ keepFocusedFieldVisible(el); }, 250);
-    setTimeout(function(){ keepFocusedFieldVisible(el); }, 500);
-  });
-  if(window.visualViewport){
-    updateSaleVisibleHeight();
-    window.visualViewport.addEventListener('resize', function(){
-      updateSaleVisibleHeight();
-      const el=document.activeElement;
-      setTimeout(function(){ keepFocusedFieldVisible(el); }, 100);
-    });
-    window.visualViewport.addEventListener('scroll', function(){ updateSaleVisibleHeight(); });
-  }
-  // Ensure a swipe that starts on the sheet can scroll without blurring inputs.
-  document.addEventListener('touchstart', function(e){
-    if(e.target && e.target.closest && e.target.closest('#sellOverlay > .sale-sheet')){
-      const sheet=e.target.closest('#sellOverlay > .sale-sheet');
-      if(sheet) sheet.style.webkitOverflowScrolling='touch';
+  function syncSheetToViewport(){
+    const sheet = getSheet();
+    if (!sheet || overlay.classList.contains('hidden') || getComputedStyle(overlay).display === 'none') return;
+    const vv = window.visualViewport;
+    if (vv && vv.height > 0) {
+      sheet.style.maxHeight = Math.max(180, vv.height - Math.max(0, vv.offsetTop)) + 'px';
+      sheet.style.height = 'auto';
     }
+    const active = document.activeElement;
+    if (isEditable(active) && overlay.contains(active)) keepFocusedFieldVisible(active);
+  }
+  overlay.addEventListener('focusin', function(e){
+    if (isEditable(e.target)) keepFocusedFieldVisible(e.target);
+  }, true);
+  overlay.addEventListener('touchstart', function(e){
+    if (e.target.closest('input, textarea, select, button, label')) return;
+    // Preserve native vertical panning on the sheet while the keyboard is open.
   }, {passive:true});
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', syncSheetToViewport, {passive:true});
+    window.visualViewport.addEventListener('scroll', syncSheetToViewport, {passive:true});
+  }
+  window.addEventListener('orientationchange', function(){setTimeout(syncSheetToViewport, 250);});
+  const observer = new MutationObserver(function(){
+    if (!overlay.classList.contains('hidden')) setTimeout(syncSheetToViewport, 60);
+  });
+  observer.observe(overlay, {attributes:true, attributeFilter:['class']});
 })();
 
 function updateOfflineBanner(){ const el=document.getElementById('offlineBanner'); if(el) el.style.display=navigator.onLine?'none':'block'; }
@@ -11328,4 +11337,10 @@ if('serviceWorker' in navigator){
 .sale-payment-fields { margin-top:12px; }
 .sale-payment-fields input { min-width:0; }
 #btnUdhar { border-left:3px solid var(--danger); }
+</style>
+
+<style id="v121-ios-keyboard-scroll-fix">
+#sellOverlay { position:fixed !important; inset:0 !important; height:100% !important; overflow:hidden !important; touch-action:pan-y !important; }
+#sellOverlay > .sale-sheet { overscroll-behavior-y:contain !important; -webkit-overflow-scrolling:touch !important; touch-action:pan-y !important; overflow-y:auto !important; min-height:0 !important; }
+#sellOverlay > .sale-sheet input, #sellOverlay > .sale-sheet textarea, #sellOverlay > .sale-sheet select { scroll-margin-block:24px !important; }
 </style>
