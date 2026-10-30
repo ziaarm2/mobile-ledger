@@ -2075,7 +2075,7 @@ body.menu-open .app>header{z-index:1!important;}
     <div class="search-row" style="padding:10px 0 0;">
       <input type="text" id="rateBookSearch" placeholder="Model / brand se search karein">
       <select id="rateBookStatusFilter" style="max-width:125px;">
-        <option value="all">All status</option><option value="PTA">PTA</option><option value="Non-PTA">Non-PTA</option><option value="JV">JV</option><option value="CPID">CPID</option><option value="Patch">Patch</option><option value="MDM">MDM</option><option value="Bypass/MDM">Bypass/MDM</option>
+        <option value="all">All status</option><option value="PTA">PTA</option><option value="Non-PTA">Non-PTA</option><option value="CPID/Patch">CPID/Patch</option><option value="Factory Unlock">Factory Unlock</option><option value="JV/Sim locked">JV/Sim locked</option><option value="Bypass/MDM">Bypass/MDM</option>
       </select>
     </div>
     <div class="rate-book-actions"><button type="button" class="btn-save" id="btnRateBookAdd">+ Add Rate</button></div>
@@ -2538,7 +2538,7 @@ window.addEventListener('popstate', function(){
 
 
 const BRANDS = ['Samsung','Google','Apple','OnePlus','Vivo','Oppo','Realme','Infinix','Tecno','Xiaomi','Motorola','ZTE','Itel','Honor','Sparx','SEGO','Other'];
-const STATUS_OPTS = ['PTA','Non-PTA','CPID','JV','Bypass/MDM'];
+const STATUS_OPTS = ['PTA','Non-PTA','CPID/Patch','Factory Unlock','JV/Sim locked','Bypass/MDM'];
 const RAM_OPTS = ['2GB','3GB','4GB','6GB','8GB','12GB','16GB'];
 const STORAGE_OPTS = ['32GB','64GB','128GB','256GB','512GB'];
 const NETWORK_OPTS = ['4G','5G'];
@@ -3356,7 +3356,7 @@ function escapeHtml(v){
   return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-function rateBookStatusOptions(){ return ['PTA','Non-PTA','JV','CPID','Patch','MDM','Bypass/MDM']; }
+function rateBookStatusOptions(){ return STATUS_OPTS.slice(); }
 function loadRateBook(){
   try{ const raw=localStorage.getItem(shopStorageKey(LS_RATE_BOOK_KEY)); rateBook=raw?JSON.parse(raw):[]; if(!Array.isArray(rateBook)) rateBook=[]; }
   catch(e){ rateBook=[]; }
@@ -3383,9 +3383,9 @@ function migrateInventoryToRateBook(){
     matching.forEach(function(r){
       const d=rateBookDetailsFromInventory(e);
       ['ram','storage','condition','battery','box','charger'].forEach(function(k){ if(d[k]!==undefined && String(r[k]||'')!==String(d[k]||'')){r[k]=d[k];changed=true;} });
-      if(e.status && String(r.status||'')!==String(e.status)){r.status=e.status;changed=true;}
+      if(e.status && normalizeStatusValue(r.status)!==normalizeStatusValue(e.statusDetail || e.status)){r.status=normalizeStatusValue(e.statusDetail || e.status);changed=true;}
     });
-    if(e.buy==null||Number(e.buy)<=0)return; const sig=String(e.id)+'|'+String(Number(e.buy))+'|'+String(e.buyDate||todayISO()); if(existing[sig])return; rateBook.push({id:'rb_m_'+String(e.id),sourceInventoryId:e.id,brand:e.brand,model:e.model,variant:e.storage||'',status:e.status||'',rate:Number(e.buy),quantity:Math.max(1,Number(e.quantity)||1),date:e.buyDate||todayISO(),seller:e.sellerName||'',notes:e.notes||'',ram:e.ram||'',storage:e.storage||'',condition:e.condition||'',battery:e.battery||'',box:e.box||'',charger:e.charger||'',source:'stock-migration'}); changed=true; });
+    if(e.buy==null||Number(e.buy)<=0)return; const sig=String(e.id)+'|'+String(Number(e.buy))+'|'+String(e.buyDate||todayISO()); if(existing[sig])return; rateBook.push({id:'rb_m_'+String(e.id),sourceInventoryId:e.id,brand:e.brand,model:e.model,variant:e.storage||'',status:normalizeStatusValue(e.statusDetail || e.status || ''),rate:Number(e.buy),quantity:Math.max(1,Number(e.quantity)||1),date:e.buyDate||todayISO(),seller:e.sellerName||'',notes:e.notes||'',ram:e.ram||'',storage:e.storage||'',condition:e.condition||'',battery:e.battery||'',box:e.box||'',charger:e.charger||'',source:'stock-migration'}); changed=true; });
   if(changed){try{localStorage.setItem(shopStorageKey(LS_RATE_BOOK_KEY),JSON.stringify(rateBook));}catch(e){}}
 }
 function rateBookDisplayEntry(r){
@@ -3409,7 +3409,7 @@ function rateBookMandatoryGrid(e){
 function renderRateBook(){
   const list=document.getElementById('rateBookList'); if(!list)return;
   const q=(document.getElementById('rateBookSearch').value||'').trim().toLowerCase(); const status=document.getElementById('rateBookStatusFilter').value; const groups={};
-  rateBook.forEach(function(r){ if(status!=='all'&&r.status!==status)return; const hay=(r.brand+' '+r.model+' '+(r.variant||'')+' '+(r.status||'')+' '+(r.seller||'')+' '+(r.notes||'')).toLowerCase(); if(q&&hay.indexOf(q)===-1)return; const key=rateBookKey(r); if(!groups[key])groups[key]={brand:r.brand,model:r.model,variant:r.variant,status:r.status,history:[]}; groups[key].history.push(r); });
+  rateBook.forEach(function(r){ const normalizedStatus=normalizeStatusValue(r.status); if(status!=='all'&&normalizedStatus!==status)return; const hay=(r.brand+' '+r.model+' '+(r.variant||'')+' '+normalizedStatus+' '+(r.seller||'')+' '+(r.notes||'')).toLowerCase(); if(q&&hay.indexOf(q)===-1)return; const key=rateBookKey(r); if(!groups[key])groups[key]={brand:r.brand,model:r.model,variant:r.variant,status:normalizedStatus,history:[]}; groups[key].history.push(r); });
   const cards=Object.keys(groups).map(function(k){return groups[k];}); cards.forEach(function(g){g.history.sort(function(a,b){return String(b.date).localeCompare(String(a.date));});});
   cards.sort(function(a,b){return String(a.brand+' '+a.model+' '+a.variant).localeCompare(String(b.brand+' '+b.model+' '+b.variant),undefined,{numeric:true,sensitivity:'base'});});
   if(!cards.length){list.innerHTML='<div class="empty" style="padding:35px 10px;">Koi rate nahi mila. + Add Rate se manually rate save karein.</div>';return;}
@@ -4349,8 +4349,9 @@ function renderFilterChips(){
     {key:'returned',label:'↩ Returned'},
     {key:'PTA',label:'PTA'},
     {key:'Non-PTA',label:'Non-PTA'},
-    {key:'CPID',label:'CPID'},
-    {key:'JV',label:'JV'},
+    {key:'CPID/Patch',label:'CPID/Patch'},
+    {key:'Factory Unlock',label:'Factory Unlock'},
+    {key:'JV/Sim locked',label:'JV/Sim locked'},
     {key:'Bypass/MDM',label:'Bypass/MDM'}
   ];
   document.getElementById('filterChips').innerHTML = filters.map(function(f){
@@ -4368,10 +4369,11 @@ function renderFilterChips(){
 }
 
 function statusBadgeClass(s){
-  if(s==='PTA') return 'pta';
-  if(s==='Non-PTA') return 'nonpta';
-  if(s==='JV') return 'jv';
-  if(s==='Bypass/MDM') return 'bypass';
+  const v=normalizeStatusValue(s);
+  if(v==='PTA') return 'pta';
+  if(v==='Non-PTA') return 'nonpta';
+  if(v==='JV/Sim locked') return 'jv';
+  if(v==='Bypass/MDM') return 'bypass';
   return 'cpid';
 }
 
@@ -4384,7 +4386,7 @@ function renderList(){
     if(currentFilter==='available' && (e.sold || e.quantity<=0)) return false;
     if(currentFilter==='sold' && (!e.sold || isReturnedSale(e))) return false;
     if(currentFilter==='returned' && !isReturnedSale(e)) return false;
-    if(['PTA','Non-PTA','CPID','JV','Bypass/MDM'].indexOf(currentFilter)!==-1 && e.status!==currentFilter) return false;
+    if(STATUS_OPTS.indexOf(currentFilter)!==-1 && normalizeStatusValue(e.statusDetail || e.status)!==currentFilter) return false;
     const activeBrandFilter = (userRole==='admin' && adminViewActive && adminViewShopId==='__combined__') ? adminCombinedBrandFilter : currentBrandFilter;
     if(activeBrandFilter!=='all' && e.brand!==activeBrandFilter) return false;
     if(searchVal){
@@ -5227,7 +5229,7 @@ function buildShareFieldValue(e,key){
   if(!e) return '';
   if(key==='network') return e.network==='5G' ? '📶 5G' : '';
   if(key==='model') return (e.brand||e.model) ? '*'+(e.brand||'')+' '+(e.model||'')+'*' : '';
-  if(key==='status') return e.status ? 'Status: '+e.status : '';
+  if(key==='status') return formatEntryStatus(e) ? 'Status: '+formatEntryStatus(e) : '';
   if(key==='price') return e.range ? 'Price: '+upperPriceFromRange(e.range) : '';
   if(key==='salePrice') return e.sold && !isReturnedSale(e) && e.sell!=null ? 'Sale price: '+fmt(e.sell) : '';
   if(key==='ram') return e.ram ? 'RAM: '+e.ram : '';
@@ -5860,33 +5862,28 @@ function applyEntryLayoutToDOM(platform){
   });
 }
 
+function normalizeStatusValue(value){
+  const st=String(value||'').trim();
+  if(!st) return '';
+  if(st==='Official' || st==='Official PTA') return 'PTA';
+  if(st==='CPID' || st==='Patch' || st==='CPID/Patch') return 'CPID/Patch';
+  if(st==='JV' || st==='JV/Sim locked') return 'JV/Sim locked';
+  if(st==='Factory Unlock') return 'Factory Unlock';
+  if(st==='MDM' || st==='Bypass' || st==='Bypass/MDM') return 'Bypass/MDM';
+  if(st==='PTA' || st==='Non-PTA') return st;
+  return st;
+}
 function formatEntryStatus(e){
   if(!e) return '';
-  const platform=getEntryPlatform(e.brand||'');
-  const detail=String(e.statusDetail||'');
-  if(detail) return detail;
-  const st=String(e.status||'');
-  if(st==='JV') return 'JV/Sim locked';
-  if(st==='CPID' || st==='Patch') return 'CPID/Patch';
-  if(platform==='iphone' && st==='PTA') return 'Official PTA';
-  return st;
+  // New status field is authoritative; old statusDetail values are normalized for legacy records.
+  return normalizeStatusValue((e.statusDetail && normalizeStatusValue(e.statusDetail)) || e.status || '');
 }
 
 function statusPrimaryOptions(){
   return ['PTA','Non-PTA','CPID/Patch','Factory Unlock','JV/Sim locked','Bypass/MDM'];
 }
 function statusPrimarySelected(){
-  const valid=statusPrimaryOptions();
-  const detail=String(formState.statusDetail||'');
-  const st=String(formState.status||'');
-  if(valid.indexOf(detail)!==-1) return detail;
-  if(valid.indexOf(st)!==-1) return st;
-  // Keep older saved entries editable while presenting the new shared options.
-  if(st==='CPID' || st==='Patch') return 'CPID/Patch';
-  if(st==='JV') return 'JV/Sim locked';
-  if(st==='Official' || st==='Official PTA') return 'PTA';
-  if(st==='PTA' || st==='Non-PTA' || st==='Bypass/MDM' || st==='Factory Unlock') return st;
-  return '';
+  return normalizeStatusValue(formState.statusDetail || formState.status || '');
 }
 function statusDetailSelected(){ return ''; }
 function renderStatusDetail(){
@@ -6311,7 +6308,7 @@ function openEdit(id){
   const brandKnown = BRANDS.indexOf(e.brand)!==-1;
   formState = {
     brand: brandKnown ? e.brand : 'Other',
-    status: e.status || '', statusDetail: e.statusDetail || '',
+    status: normalizeStatusValue(e.statusDetail || e.status || ''), statusDetail: '',
     ram: e.ram || '', storage: e.storage || '', condition: e.condition || '', network: e.network || '',
     display: e.display || 'Original panel', touch: e.touch || 'Perfect', camera: e.camera || 'Perfect', body: e.body || 'Original', openrepair: e.openrepair || 'No open, no repair', battery: e.battery || 'Perfect',
     box: e.box || 'No', packing: e.packing || 'No pack', charger: e.charger || 'Original charger',
@@ -6447,8 +6444,8 @@ function saveEntry(){
     storage: formState.storage || '',
     condition: formState.condition || '',
     network: formState.network || '',
-    status: formState.status || 'PTA',
-    statusDetail: formState.statusDetail || statusDetailSelected() || '',
+    status: normalizeStatusValue(formState.statusDetail || formState.status || 'PTA'),
+    statusDetail: '',
     display: formState.display || 'Original panel',
     touch: formState.touch || 'Perfect',
     camera: formState.camera || 'Perfect',
@@ -6532,7 +6529,7 @@ function saveEntry(){
         range: rangeRaw === '' ? (epBuy===null ? '' : autoSellRangeForBuy(epBuy)) : normalizeRange(rangeRaw),
         rangeMode: epRangeMode,
         imei: block.querySelector('.ep-imei').value.trim(),
-        status: epState.status || '',
+        status: normalizeStatusValue(epState.status || ''),
         display: epState.display || '',
         touch: epState.touch || '',
         camera: epState.camera || '',
@@ -6560,7 +6557,7 @@ function saveEntry(){
         range: ep.range !== '' ? ep.range : data.range,
         rangeMode: ep.rangeMode || data.rangeMode,
         imei: ep.imei || '',
-        status: ep.status || data.status,
+        status: normalizeStatusValue(ep.status || data.status),
         display: ep.display !== '' ? ep.display : data.display,
         touch: ep.touch !== '' ? ep.touch : data.touch,
         camera: ep.camera !== '' ? ep.camera : data.camera,
@@ -6615,7 +6612,7 @@ function openSell(id){
   const e = inventory.find(function(x){return x.id===id;});
   if(!e) return;
   sellingId = id;
-  document.getElementById('sellItemName').textContent = e.brand+' '+e.model+' - '+e.status+' ('+e.quantity+' available)';
+  document.getElementById('sellItemName').textContent = e.brand+' '+e.model+' - '+formatEntryStatus(e)+' ('+e.quantity+' available)';
   document.getElementById('sellQtyLabel').textContent = 'Kitne piece beche (max '+e.quantity+')';
   document.getElementById('s-qty').value = 1;
   document.getElementById('s-qty').max = e.quantity;
@@ -7442,7 +7439,7 @@ document.getElementById('btnReportsPdf').onclick = function(){
     if(!isReturnedSale(e) && e.buy!=null && e.sell!=null) grossProfit += profit;
     return '<tr>'+
       '<td>'+formatDateDisplay(dateOnly(e.saleDate))+(isReturnedSale(e)?'<br>Returned: '+formatDateTimeDisplay(e.returnedAt):'')+'</td>'+
-      '<td>'+e.brand+' '+e.model+(e.quantity>1?(' x'+e.quantity):'')+(isReturnedSale(e)?' (RETURNED)':'')+'<br><small>'+[e.status?'Status: '+e.status:'',getEntryPlatform(e.brand||'')!=='iphone'&&e.ram?'RAM: '+e.ram:'',e.storage?'Storage: '+e.storage:'',e.condition?'Condition: '+e.condition:'',getEntryPlatform(e.brand||'')==='iphone'&&e.battery?'Battery health: '+e.battery:'',getEntryPlatform(e.brand||'')!=='iphone'&&e.box?'Box: '+e.box:'',getEntryPlatform(e.brand||'')!=='iphone'&&e.charger?'Charger: '+e.charger:''].filter(Boolean).join(' · ')+'</small></td>'+
+      '<td>'+e.brand+' '+e.model+(e.quantity>1?(' x'+e.quantity):'')+(isReturnedSale(e)?' (RETURNED)':'')+'<br><small>'+[e.status?'Status: '+formatEntryStatus(e):'',getEntryPlatform(e.brand||'')!=='iphone'&&e.ram?'RAM: '+e.ram:'',e.storage?'Storage: '+e.storage:'',e.condition?'Condition: '+e.condition:'',getEntryPlatform(e.brand||'')==='iphone'&&e.battery?'Battery health: '+e.battery:'',getEntryPlatform(e.brand||'')!=='iphone'&&e.box?'Box: '+e.box:'',getEntryPlatform(e.brand||'')!=='iphone'&&e.charger?'Charger: '+e.charger:''].filter(Boolean).join(' · ')+'</small></td>'+
       '<td>'+(e.customer||'')+(e.customerNumber?'<br>'+e.customerNumber:'')+'</td>'+
       '<td style="text-align:right;">'+fmt(displayBuyPrice(e.buy))+'</td>'+
       '<td style="text-align:right;">'+fmt(e.sell)+'</td>'+
@@ -9670,7 +9667,7 @@ function renderAdminShopDetail(id){
   const invRows=inv.map(function(e){
     const state=isReturnedSale(e)?'Returned':(e.sold?'Sold':'Available');
     const amount=e.sold?e.sell:e.buy;
-    return '<tr><td>'+adminEscape(e.brand)+' '+adminEscape(e.model)+'</td><td>'+adminEscape(e.storage||'')+'</td><td>'+adminEscape(e.status||'')+'</td><td>'+state+'</td><td>'+adminEscape(e.saleDate||e.buyDate||e.lastUpdated||'')+'</td><td>'+adminMoney(amount)+'</td></tr>';
+    return '<tr><td>'+adminEscape(e.brand)+' '+adminEscape(e.model)+'</td><td>'+adminEscape(e.storage||'')+'</td><td>'+adminEscape(formatEntryStatus(e))+'</td><td>'+state+'</td><td>'+adminEscape(e.saleDate||e.buyDate||e.lastUpdated||'')+'</td><td>'+adminMoney(amount)+'</td></tr>';
   }).join('');
   const expRows=ex.map(function(e){return '<tr><td>'+adminEscape(e.date||'')+'</td><td>'+adminEscape(e.category||'Other')+'</td><td>'+adminMoney(e.amount)+'</td><td>'+adminEscape(e.notes||'')+'</td></tr>';}).join('');
   detail.style.display='block';
