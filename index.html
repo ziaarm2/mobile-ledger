@@ -142,9 +142,11 @@
   .overlay.hidden{display:none;}
   .sheet{background:var(--surface);width:min(100%,480px);max-width:480px;min-width:0;border-radius:20px 20px 0 0;max-height:90vh;overflow-y:auto;padding:16px 16px 28px;}
   .sheet-handle{width:36px;height:4px;background:var(--border-strong);border-radius:2px;margin:0 auto 12px;}
-  .sheet h2{font-size:16px;margin:0 0 12px;}
+  h1,h2,h3,h4,h5,h6{font-weight:700;}
+  .sheet h2{font-size:16px;margin:0 0 12px;font-weight:750;}
+  .sheet-head h3,.sec-label,.field label,.sheet-item-name{font-weight:800;}
   .sheet-item-name{font-size:14px;color:var(--text-dim);margin:-6px 0 14px;}
-  .sec-label{font-size:11px;color:var(--text-dim);margin:12px 0 6px;text-transform:uppercase;letter-spacing:0.3px;}
+  .sec-label{font-size:12.5px;color:#172033;margin:14px 0 8px;text-transform:uppercase;letter-spacing:0.45px;font-weight:800;}
   .chip-row{display:flex;gap:6px;flex-wrap:wrap;}
   #conditionChips{row-gap:8px;margin-bottom:8px;}
   .imei-field{margin-top:8px;}
@@ -152,7 +154,7 @@
   .chip-opt.on{background:var(--accent);border-color:var(--accent);color:var(--accent-text);font-weight:600;}
   .chip-opt.status-opt{flex:1 1 30%;text-align:center;font-size:12.5px;padding:10px 4px;}
   .field{margin-bottom:10px;}
-  .field label{display:block;font-size:11.5px;color:var(--text-dim);margin-bottom:4px;}
+  .field label{display:block;font-size:13px;color:#172033;font-weight:800;letter-spacing:0.25px;margin-bottom:7px;line-height:1.3;}
   .field input,.field select{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:9px 10px;color:var(--text);font-size:14px;}
   .qty-warning{display:none;font-size:11px;color:var(--nonpta);margin-top:6px;line-height:1.4;}
   .qty-warning.show{display:block;}
@@ -171,6 +173,7 @@
   .two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .big-input input{font-size:18px;padding:12px 10px;font-weight:600;}
   .profit-preview{background:var(--surface-2);border-radius:10px;padding:10px 12px;margin:12px 0;display:flex;justify-content:space-between;font-size:13px;}
+  .cost-summary{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 12px;margin:10px 0 12px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface-2);font-size:13px;} .cost-summary span{font-weight:700;color:var(--text-dim);} .cost-summary strong{font-size:15px;color:var(--text);font-weight:900;text-align:right;}
   .extra-buy-list{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
   .extra-buy-row{display:flex;gap:8px;align-items:center;}
   .extra-buy-row input{flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:9px 10px;color:var(--text);font-size:14px;}
@@ -331,7 +334,7 @@
   .phone-expense-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(90px,1fr) 34px;gap:7px;align-items:center;}
   .phone-expense-remove{width:34px;height:34px;border:1px solid var(--border);background:var(--surface-2);color:var(--danger);border-radius:8px;font-size:18px;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;}
   .phone-expense-remove:hover{background:var(--cpid-bg);border-color:var(--danger);}
-  .add-expense-inline{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--surface-2);color:var(--accent);font-size:22px;font-weight:700;cursor:pointer;margin-top:7px;margin-bottom:12px;}
+  .add-expense-inline{display:inline-flex;align-items:center;justify-content:center;width:auto;min-height:42px;padding:9px 16px;border-radius:10px;border:1px solid var(--accent);background:var(--surface-2);color:var(--accent);font-size:14px;font-weight:700;cursor:pointer;margin-top:10px;margin-bottom:18px;box-sizing:border-box;} .add-expense-inline:active{filter:brightness(.97);} #entryTotalCostSummary{margin-top:8px;margin-bottom:24px;} #entryTotalCostSummary + .field{margin-top:0;}
   .settings-toggle-chip.on{background:var(--pta-bg);color:var(--pta);}
   .settings-toggle-chip .dot{width:8px;height:8px;border-radius:50%;background:var(--text-faint);}
   .settings-toggle-chip.on .dot{background:var(--pta);}
@@ -352,6 +355,13 @@
   .wa-template-preview{white-space:pre-wrap;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 12px;margin-top:10px;font-size:12.5px;line-height:1.55;color:var(--text);max-height:230px;overflow:auto;}
   .wa-template-custom-row{display:flex;gap:7px;margin-top:8px;}
   .wa-template-custom-row input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 11px;color:var(--text);font-size:13px;}
+  .contact-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px;align-items:center;width:100%}
+  .contact-action-btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:0;width:100%;min-height:40px;padding:8px 6px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface-2);color:var(--text);text-decoration:none;font:600 12px/1.1 inherit;cursor:pointer;transition:transform .12s ease,filter .12s ease;white-space:nowrap}
+  .contact-action-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+  .contact-action-btn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+  .contact-whatsapp{border-color:rgba(37,211,102,.45);color:var(--text)} .contact-sms{border-color:var(--border-strong)} .contact-call{border-color:rgba(45,212,191,.45)} .contact-edit{border-color:var(--accent);background:var(--surface);}
+  @media(max-width:420px){.contact-actions{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.contact-action-btn{padding:8px 4px;gap:4px;font-size:11px}}
+  .contact-name-line{display:flex;align-items:center;gap:6px;min-width:0}.contact-name-line .contact-name{min-width:0;overflow-wrap:anywhere}.contact-edit-icon{width:25px!important;min-width:25px!important;min-height:25px!important;height:25px!important;padding:3px!important;border-radius:7px!important;background:transparent!important;border:1px solid var(--border)!important;color:var(--text-dim)!important}.contact-edit-icon svg{width:15px!important;height:15px!important}
   .wa-message-editor{width:100%;min-height:280px;resize:vertical;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:12px;padding:12px;color:var(--text);font-size:13px;line-height:1.6;font-family:inherit;outline:none;}
   .wa-message-editor:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(45,212,191,.12);}
   .wa-field-toolbar{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
@@ -573,19 +583,7 @@
   .settings-topbar h2,.account-topbar h2{margin:0;font-size:18px;flex:1;}
   .settings-back,.settings-close-x,.account-close-x{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:19px;display:flex;align-items:center;justify-content:center;}
   .settings-page-wrap{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px 14px calc(24px + env(safe-area-inset-bottom,0px));}
-  .settings-view{display:none;min-width:0;}
-  #settingsOverlay{align-items:stretch!important;justify-content:center!important;padding:0!important;}
-  #settingsOverlay .settings-shell{width:100vw!important;max-width:100vw!important;min-width:100vw!important;height:100dvh!important;max-height:100dvh!important;margin:0!important;border-radius:0!important;flex:0 0 100vw!important;box-sizing:border-box!important;}
-  #settingsOverlay .settings-page-wrap{width:100%;min-width:0;flex:1 1 auto;box-sizing:border-box;overflow-x:hidden;}
-  #settingsOverlay .settings-draft-bar{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;width:100%!important;box-sizing:border-box!important;margin:0!important;}
-  #settingsOverlay .settings-section-card,#settingsOverlay .settings-category{min-width:0;max-width:100%;box-sizing:border-box;}
-  #settingsOverlay .settings-draft-bar{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));}
-  #settingsOverlay .settings-draft-status{flex:1 0 100%;line-height:1.35;}
-  #settingsOverlay .settings-draft-actions{display:flex;flex:1 1 100%;width:100%;gap:8px;}
-  #settingsOverlay .settings-draft-actions button{flex:1 1 0;min-width:0;white-space:normal;line-height:1.2;padding:10px 8px;}
-  #settingsOverlay input,#settingsOverlay select,#settingsOverlay button{max-width:100%;box-sizing:border-box;}
-  #settingsOverlay .settings-note,#settingsOverlay .settings-category-sub{overflow-wrap:anywhere;white-space:normal;}
-  @media(min-width:700px){#settingsOverlay{align-items:center!important;padding:20px 12px!important;}#settingsOverlay .settings-shell{width:min(100%,480px)!important;height:calc(100vh - 40px)!important;max-height:900px!important;margin:20px auto!important;border-radius:18px!important;}}
+  .settings-view{display:none;}
   .settings-view.active{display:block;}
   .admin-only-setting{display:none !important;}
   body.admin-user .admin-only-setting{display:block !important;}
@@ -848,19 +846,116 @@ body.menu-open .app>header{z-index:1!important;}
   overflow-y:auto !important;
 }
 
-  /* v83.2 settings viewport repair: prevent zoomed shell from being wider than iPhone viewport. */
-  #settingsOverlay{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;overflow:hidden!important;box-sizing:border-box!important;align-items:stretch!important;justify-content:flex-start!important;padding:0!important;}
-  #settingsOverlay .settings-shell{position:relative!important;left:0!important;right:0!important;top:0!important;transform:none!important;zoom:1!important;width:100%!important;min-width:0!important;max-width:100%!important;height:100%!important;min-height:0!important;max-height:100%!important;flex:1 1 auto!important;margin:0!important;padding-top:env(safe-area-inset-top,0px)!important;border-radius:0!important;box-sizing:border-box!important;overflow:hidden!important;}
-  #settingsOverlay .settings-topbar{width:100%!important;min-width:0!important;box-sizing:border-box!important;}
-  #settingsOverlay .settings-page-wrap{width:100%!important;min-width:0!important;max-width:100%!important;flex:1 1 0!important;overflow-x:hidden!important;overflow-y:auto!important;box-sizing:border-box!important;padding-left:12px!important;padding-right:12px!important;}
-  #settingsOverlay .settings-view,#settingsOverlay .settings-section-card,#settingsOverlay .settings-category,#settingsOverlay .settings-category-list{width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;}
-  #settingsOverlay .settings-section-card *{max-width:100%;box-sizing:border-box;}
-  #settingsOverlay .settings-draft-bar{position:relative!important;inset:auto!important;flex:0 0 auto!important;width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;display:flex!important;flex-wrap:wrap!important;gap:8px!important;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px))!important;margin:0!important;}
-  #settingsOverlay .settings-draft-status{flex:1 0 100%!important;min-width:0!important;overflow-wrap:anywhere!important;}
-  #settingsOverlay .settings-draft-actions{display:flex!important;flex:1 1 100%!important;width:100%!important;min-width:0!important;gap:8px!important;}
-  #settingsOverlay .settings-draft-actions button{flex:1 1 0!important;width:50%!important;min-width:0!important;max-width:50%!important;white-space:normal!important;overflow-wrap:anywhere!important;line-height:1.25!important;padding:10px 6px!important;}
-  #settingsOverlay input,#settingsOverlay select,#settingsOverlay textarea,#settingsOverlay button{min-width:0;max-width:100%;box-sizing:border-box;}
-  @media(min-width:700px){#settingsOverlay{align-items:center!important;justify-content:center!important;padding:20px!important;}#settingsOverlay .settings-shell{width:min(100%,480px)!important;max-width:480px!important;height:calc(100dvh - 40px)!important;max-height:900px!important;margin:0 auto!important;border-radius:18px!important;}}
+
+  /* Form field headings: high contrast, bold, and visually separate from inputs */
+  .sheet .field label,
+  .sheet label.field-label,
+  .sheet .field > label {
+    color: #172033 !important;
+    font-size: 13px !important;
+    font-weight: 850 !important;
+    letter-spacing: 0.18px;
+    margin-bottom: 8px !important;
+    line-height: 1.4;
+    opacity: 1 !important;
+  }
+  .sheet .field label .required-star,
+  .sheet label.field-label .required-star,
+  .sheet .field > label .required-star {
+    color: #d92d20 !important;
+    font-weight: 900 !important;
+    opacity: 1 !important;
+  }
+
+  .entry-field-heading{color:#172033!important;font-weight:900!important;font-size:15px!important;letter-spacing:.045em;margin-bottom:8px!important}
+  .entry-field-heading .required-star{color:#f12b3a!important;font-weight:900!important}
+  .entry-date-guidance{background:#eef4ff!important;border:1px solid #c9d8f4!important;color:#233653!important;border-radius:10px!important;padding:10px 12px!important;line-height:1.45!important;margin:14px 0 10px!important;font-size:12.5px!important}
+  #entryLayoutMainWrap [data-entry-group="buyDate"] .entry-date-guidance{display:block!important;width:100%;box-sizing:border-box;margin:14px 0 12px!important}
+  #entryLayoutMainWrap [data-entry-group="buyDate"] .entry-date-time{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;align-items:stretch;gap:12px!important;width:100%;box-sizing:border-box}
+  .entry-date-time{margin-bottom:10px;gap:12px}
+  .entry-date-time .field input{min-width:0;width:100%;box-sizing:border-box}
+  /* Date and time controls styled as one coordinated pair, like the supplied reference */
+  .entry-date-time .field.date-time-field{position:relative;min-width:0;height:58px;min-height:58px;border:1.5px solid #b9c2cf;border-radius:10px;background:#fff;padding:5px 10px 2px;box-sizing:border-box;margin-top:8px}
+  .entry-date-time .field.date-time-field>label{position:absolute;top:-10px;left:12px;z-index:1;padding:0 5px;background:#fff;color:#465166!important;font-size:12px!important;font-weight:800!important;line-height:1.2;letter-spacing:.01em;margin:0!important;white-space:nowrap}
+  .entry-date-time .field.date-time-field>input{border:0!important;box-shadow:none!important;background:transparent!important;border-radius:0!important;padding:7px 2px 2px!important;margin:0!important;height:48px;min-height:48px;font-size:15px;color:#172033;text-align:left!important;width:100%;max-width:100%;}
+  .entry-date-time .field.date-time-field>input:focus{outline:none!important;box-shadow:none!important}
+  @media(max-width:360px){.entry-date-time{gap:8px}.entry-date-time .field.date-time-field{padding-left:6px;padding-right:6px}.entry-date-time .field.date-time-field>label{left:7px;font-size:11px!important}}
+
+/* v111: compact themed plus-only expense button */
+#overlay > .sheet #addPhoneExpenseInline {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 36px !important;
+  min-width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  margin: 8px 0 18px !important;
+  border: 1px solid var(--accent) !important;
+  border-radius: 50% !important;
+  background: var(--surface-2) !important;
+  color: var(--accent) !important;
+  font-size: 23px !important;
+  line-height: 1 !important;
+  font-weight: 600 !important;
+  text-align: center !important;
+  cursor: pointer !important;
+  position: static !important;
+  transform: none !important;
+}
+#overlay > .sheet #addPhoneExpenseInline:active { transform: scale(.96) !important; }
+
+
+/* Compact sale sheet: keep the main sale workflow visible with less scrolling. */
+.sale-sheet{max-height:calc(100dvh - env(safe-area-inset-top,0px))!important;padding:8px 12px calc(10px + env(safe-area-inset-bottom,0px))!important;overflow-y:auto!important;border-radius:18px 18px 0 0!important;}
+.sale-sheet .sheet-handle{margin:0 auto 6px!important;}
+.sale-sheet h2{font-size:15px!important;margin:0 0 5px!important;padding-right:48px;}
+.sale-sheet .sheet-item-name{font-size:12px!important;margin:0 0 6px!important;padding-right:40px;}
+.sale-sheet .field{margin-bottom:5px!important;min-width:0;}
+.sale-sheet .field label{font-size:11.5px!important;margin-bottom:3px!important;line-height:1.15!important;}
+.sale-sheet .field input{font-size:13px!important;padding:7px 9px!important;min-height:36px!important;}
+.sale-sheet .sale-qty-price{grid-template-columns:minmax(86px,.62fr) minmax(0,1.38fr)!important;gap:8px!important;align-items:start;}
+.sale-sheet .sale-price-field input{font-size:15px!important;font-weight:650;}
+.sale-sheet .price-hint{font-size:10px!important;min-height:0!important;margin-top:1px!important;}
+.sale-sheet .two-col{gap:8px!important;}
+.sale-sheet .sale-date-guidance{font-size:10.5px!important;line-height:1.25!important;padding:6px 8px!important;margin:5px 0!important;}
+.sale-sheet .sec-label{font-size:11px!important;margin:6px 0 4px!important;}
+.sale-sheet .settings-note{font-size:10px!important;line-height:1.25!important;padding:0!important;margin:0 0 5px!important;}
+.sale-sheet .phone-expense-list{gap:4px!important;margin-top:4px!important;}
+.sale-sheet .extra-buy-row{gap:5px!important;}
+.sale-sheet .extra-buy-row input{font-size:12px!important;padding:6px 7px!important;min-height:32px!important;}
+.sale-sheet .extra-buy-remove{width:30px!important;height:30px!important;}
+.sale-sheet .add-extra-buy{padding:5px 8px!important;margin-top:4px!important;font-size:11px!important;}
+.sale-sheet .cost-summary{padding:7px 9px!important;margin:5px 0!important;font-size:11px!important;}
+.sale-sheet .cost-summary strong{font-size:13px!important;}
+.sale-sheet .sale-payment-fields .field input{min-height:34px!important;}
+.sale-sheet .profit-preview{padding:7px 9px!important;margin:5px 0!important;font-size:11px!important;}
+.sale-sheet .sheet-actions{margin-top:6px!important;padding-top:4px!important;gap:8px!important;}
+.sale-sheet .sheet-actions button{padding:9px 8px!important;min-height:42px!important;font-size:12px!important;}
+@media(max-height:800px){.sale-sheet{max-height:calc(100dvh - env(safe-area-inset-top,0px))!important}.sale-sheet .sale-date-guidance{display:none!important}}
+
+.entry-add-from-label{margin-top:12px!important}.entry-add-from-actions{margin-bottom:12px!important}
+
+  /* v137 contact card mobile layout fixes */
+  .contact-head{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:8px 10px}
+  .contact-head>div:first-child{min-width:0;grid-column:1;grid-row:1 / span 2}
+  .contact-head>.contact-phone-save{grid-column:2;grid-row:1;align-self:start;width:clamp(132px,42vw,190px);min-width:0;white-space:nowrap;margin-top:6px;font-size:12px}
+  .contact-head>.contact-badges{grid-column:2;grid-row:2;justify-self:end}
+  .contact-actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;width:100%;max-width:100%;box-sizing:border-box;margin-top:10px}
+  .contact-action-btn{box-sizing:border-box;min-width:0!important;max-width:100%;font-family:inherit!important;font-size:clamp(10px,2.8vw,12px)!important;padding:8px 3px!important;gap:4px!important;white-space:nowrap;overflow:hidden}
+  .contact-action-btn svg{width:16px!important;height:16px!important;flex:0 0 16px!important}
+  .contact-action-btn span{display:inline-block;min-width:0;overflow:hidden;text-overflow:clip}
+  @media(max-width:380px){.contact-head{grid-template-columns:minmax(0,1fr) 126px}.contact-head>.contact-phone-save{width:126px;font-size:11px!important}.contact-actions{gap:4px!important}.contact-action-btn{font-size:10px!important}}
+  /* Contact action row must use the full card width so all three actions remain visible on phones. */
+  .contact-head{grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
+  .contact-head>div:first-child{grid-column:1!important;grid-row:1!important;width:100%;min-width:0}
+  .contact-head>.contact-phone-save{grid-column:1!important;grid-row:2!important;justify-self:start;width:auto;max-width:100%;min-width:0}
+  .contact-head>.contact-badges{grid-column:1!important;grid-row:3!important;justify-self:end}
+  .contact-actions{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .contact-action-btn{font-family:inherit!important;font-weight:600!important;line-height:1.15!important}
+
 </style>
 
 <style id="mandatory-star-style">.required-star{color:#d92d20;font-weight:800;margin-left:2px;}</style>
@@ -950,6 +1045,549 @@ body.menu-open .app>header{z-index:1!important;}
 .menu-dropdown .menu-profile{padding-top:calc(25px + constant(safe-area-inset-top))!important;}
 }
 </style>
+
+<style id="settings-mobile-layout-repair">
+/* Targeted repair: keep the Settings overlay and its draft bar on the same viewport. */
+#settingsOverlay { box-sizing:border-box; }
+#settingsOverlay > .settings-shell {
+  box-sizing:border-box;
+  width:min(100%,480px);
+  max-width:480px;
+  min-width:0;
+  margin:0 auto;
+  position:relative;
+}
+#settingsOverlay .settings-page-wrap { min-width:0; width:100%; box-sizing:border-box; }
+#settingsOverlay .settings-section-card,
+#settingsOverlay .settings-view,
+#settingsOverlay .settings-page-wrap > * { min-width:0; max-width:100%; box-sizing:border-box; }
+#settingsOverlay .settings-draft-bar { box-sizing:border-box; min-width:0; }
+#settingsOverlay .settings-draft-status { min-width:0; overflow-wrap:anywhere; }
+#settingsOverlay .settings-draft-actions { min-width:0; flex-wrap:wrap; }
+#settingsOverlay .settings-draft-actions button { min-width:0; max-width:100%; white-space:normal; }
+@media (max-width:600px) {
+  body[data-ui-scale="large"] #settingsOverlay > .settings-shell,
+  body[data-ui-scale="xlarge"] #settingsOverlay > .settings-shell,
+  #settingsOverlay > .settings-shell {
+    position:fixed !important;
+    inset:0 !important;
+    display:flex !important;
+    flex:1 1 auto !important;
+    width:100% !important;
+    min-width:0 !important;
+    max-width:none !important;
+    height:100vh !important;
+    height:100dvh !important;
+    min-height:0 !important;
+    max-height:none !important;
+    margin:0 !important;
+    padding-top:env(safe-area-inset-top,0px) !important;
+    border:0 !important;
+    border-radius:0 !important;
+    transform:none !important;
+    zoom:1 !important;
+    align-self:stretch !important;
+    overflow:hidden !important;
+  }
+  #settingsOverlay {
+    position:fixed !important;
+    inset:0 !important;
+    display:flex !important;
+    align-items:stretch !important;
+    justify-content:stretch !important;
+    width:100vw !important;
+    max-width:100vw !important;
+    padding:0 !important;
+    overflow:hidden !important;
+  }
+  #settingsOverlay .settings-topbar { flex:0 0 auto; }
+  #settingsOverlay .settings-page-wrap {
+    flex:1 1 auto !important;
+    width:100% !important;
+    min-height:0 !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    padding-bottom:calc(96px + env(safe-area-inset-bottom,0px)) !important;
+  }
+  #settingsOverlay .settings-draft-bar {
+    position:fixed !important;
+    left:0 !important;
+    right:0 !important;
+    bottom:0 !important;
+    width:100% !important;
+    max-width:none !important;
+    margin:0 !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    gap:8px !important;
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px)) !important;
+    z-index:1002 !important;
+    background:var(--surface-2,#f7f8fb) !important;
+    box-sizing:border-box !important;
+  }
+  #settingsOverlay .settings-draft-status { width:100%; font-size:12px; line-height:1.3; }
+  #settingsOverlay .settings-draft-actions {
+    display:flex !important;
+    flex-direction:row !important;
+    width:100% !important;
+    gap:8px !important;
+  }
+  #settingsOverlay .settings-draft-actions button {
+    flex:1 1 0 !important;
+    width:50% !important;
+    min-width:0 !important;
+    padding:10px 6px !important;
+    font-size:13px !important;
+    white-space:normal !important;
+  }
+  body[data-ui-scale="large"] #settingsOverlay > .settings-shell,
+  body[data-ui-scale="xlarge"] #settingsOverlay > .settings-shell { zoom:1 !important; }
+}
+</style>
+
+
+<style id="settings-visibility-state-fix">
+/* Hidden overlays must remain hidden; layout rules must never open Settings by themselves. */
+#settingsOverlay.hidden,
+#settingsOverlay[hidden] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+/* Keep the draft bar hidden whenever its original inline state says display:none. */
+#settingsOverlay .settings-draft-bar[style*="display:none"],
+#settingsOverlay .settings-draft-bar[style*="display: none"] {
+  display: none !important;
+}
+#settingsOverlay:not(.hidden) .settings-draft-bar[style*="display:block"],
+#settingsOverlay:not(.hidden) .settings-draft-bar[style*="display: block"],
+#settingsOverlay:not(.hidden) .settings-draft-bar[style*="display:flex"],
+#settingsOverlay:not(.hidden) .settings-draft-bar[style*="display: flex"] {
+  display: flex !important;
+}
+</style>
+
+<style id="v91-compact-professional-spacing">
+/* v91: compact, consistent spacing for entry and sale sheets; behavior unchanged */
+.sheet{padding:14px 14px 24px!important;}
+.field{margin-bottom:8px!important;}
+.field label{margin-bottom:5px!important;line-height:1.25!important;}
+.chips,.chip-options,.option-chips{row-gap:7px!important;column-gap:7px!important;}
+.chip-opt{padding:7px 11px!important;min-height:40px;box-sizing:border-box;}
+.chip-opt.status-opt{padding:9px 4px!important;min-height:40px;}
+#conditionChips{row-gap:7px!important;margin-bottom:6px!important;}
+.field input,.field select{padding:8px 10px!important;min-height:44px;box-sizing:border-box;}
+.model-input-row input{padding:8px 10px!important;min-height:44px;box-sizing:border-box;}
+.model-suggestions{gap:6px!important;margin-top:6px!important;}
+.extra-buy-row{margin-bottom:7px!important;}
+.extra-buy-row input{padding:8px 9px!important;min-height:42px;box-sizing:border-box;}
+.add-extra-buy,.add-piece-btn{margin-top:7px!important;padding:8px!important;}
+.more-toggle{padding:8px!important;margin:8px 0!important;}
+.extra-piece-block{padding:8px 9px 3px!important;margin-bottom:8px!important;}
+.extra-piece-head{margin-bottom:6px!important;}
+.sheet-actions{gap:8px!important;margin-top:10px!important;padding-top:5px!important;}
+.sheet-actions button{padding:11px 10px!important;min-height:48px;}
+.profit-preview{padding:9px 11px!important;margin:9px 0!important;}
+.analytics-notice,.analytics-entry-notice,.entry-analytics-notice,.sale-analytics-notice{padding:10px 12px!important;margin:10px 0!important;line-height:1.45!important;font-size:12.5px!important;}
+/* Keep paired date/time controls balanced on narrow screens */
+.date-time-row,.datetime-row,.dateTimeRow{gap:10px!important;}
+.date-time-row .field,.datetime-row .field,.dateTimeRow .field{min-width:0;}
+@media(max-width:380px){.sheet{padding-left:12px!important;padding-right:12px!important}.chip-opt{padding:7px 9px!important;font-size:12.5px!important}.field{margin-bottom:7px!important}}
+</style>
+
+<style id="v92-uniform-headings-and-field-spacing">
+/* v92: consistent typography and clearer breathing room between field groups */
+#overlay .entry-field-heading,
+#overlay .field > label,
+#overlay label.field-label,
+#overlay .sec-label:not(.entry-field-heading),
+#overlay .field-label,
+#saleOverlay .field > label,
+#saleOverlay label.field-label,
+#saleOverlay .sec-label:not(.entry-field-heading) {
+  font-size:15px !important;
+  line-height:1.3 !important;
+  font-weight:800 !important;
+  letter-spacing:0.01em !important;
+  color:#172033 !important;
+  opacity:1 !important;
+}
+#overlay .entry-field-heading, #overlay .field > label, #overlay label.field-label,
+#overlay .sec-label:not(.entry-field-heading), #overlay .field-label,
+#saleOverlay .field > label, #saleOverlay label.field-label, #saleOverlay .sec-label:not(.entry-field-heading) {
+  margin-bottom:9px !important;
+}
+#overlay .field, #saleOverlay .field { margin-bottom:15px !important; }
+#overlay .chips, #overlay .chip-options, #overlay .option-chips,
+#saleOverlay .chips, #saleOverlay .chip-options, #saleOverlay .option-chips {
+  row-gap:9px !important; column-gap:8px !important; margin-bottom:4px !important;
+}
+#overlay .chip-opt, #saleOverlay .chip-opt { min-height:42px !important; padding:8px 11px !important; font-size:13.5px !important; }
+#overlay #conditionChips { row-gap:9px !important; margin-bottom:8px !important; }
+#overlay .model-suggestions { margin-bottom:8px !important; row-gap:8px !important; }
+#overlay .extra-buy-row, #overlay .add-extra-buy { margin-bottom:9px !important; }
+#overlay .entry-date-guidance { margin:12px 0 12px !important; }
+#overlay .entry-date-time { margin-bottom:14px !important; }
+@media(max-width:380px){
+  #overlay .entry-field-heading, #overlay .field > label, #overlay label.field-label,
+  #overlay .sec-label:not(.entry-field-heading), #overlay .field-label,
+  #saleOverlay .field > label, #saleOverlay label.field-label, #saleOverlay .sec-label:not(.entry-field-heading) { font-size:14px !important; }
+  #overlay .field, #saleOverlay .field { margin-bottom:13px !important; }
+  #overlay .chip-opt, #saleOverlay .chip-opt { padding:8px 9px !important; }
+}
+</style>
+
+
+<style id="v93-consistent-form-rhythm">
+/* v93: consistent spacing, typography, contrast, and safe scroll clearance */
+#overlay > .sheet {
+  padding: 16px 16px calc(100px + env(safe-area-inset-bottom, 0px)) !important;
+  scroll-padding-bottom: 110px;
+}
+#overlay > .sheet .sheet-head h3,
+#overlay > .sheet .sheet-title,
+#overlay > .sheet h3 {
+  font-size: 22px !important; font-weight: 750 !important; line-height: 1.25 !important;
+}
+#overlay > .sheet .field { margin: 0 0 24px !important; }
+#overlay > .sheet .field label,
+#overlay > .sheet label.field-label,
+#overlay > .sheet .field > label {
+  display:block !important; font-size:14px !important; font-weight:600 !important;
+  text-transform:none !important; letter-spacing:0 !important; line-height:1.35 !important;
+  margin:0 0 8px !important; color:#263449 !important; opacity:1 !important;
+}
+#overlay > .sheet .entry-field-heading,
+#overlay > .sheet .sec-label {
+  font-size:14px !important; font-weight:600 !important; text-transform:none !important;
+  letter-spacing:0 !important; line-height:1.35 !important; margin:0 0 8px !important;
+}
+#overlay > .sheet .field input,
+#overlay > .sheet .field select,
+#overlay > .sheet .model-input-row input,
+#overlay > .sheet textarea {
+  font-size:16px !important; text-align:left !important; color:#172033 !important;
+}
+#overlay > .sheet input::placeholder,
+#overlay > .sheet textarea::placeholder { color:#737d8c !important; opacity:1 !important; }
+#overlay > .sheet .chip-opt,
+#overlay > .sheet .model-suggestion-chip { color:#4b586b !important; }
+#overlay > .sheet .chips,
+#overlay > .sheet .chip-options,
+#overlay > .sheet .option-chips,
+#overlay > .sheet #conditionChips {
+  row-gap:12px !important; column-gap:8px !important; margin-bottom:0 !important;
+}
+#overlay > .sheet .chip-opt { font-size:14px !important; }
+#overlay > .sheet .model-suggestions { row-gap:10px !important; column-gap:8px !important; margin-top:8px !important; }
+#overlay > .sheet .entry-layout-main,
+#overlay > .sheet #entryLayoutMainWrap { row-gap:0 !important; }
+#overlay > .sheet .entry-date-time .field input { text-align:left !important; }
+#overlay > .sheet .entry-date-time .field.date-time-field { margin-bottom:24px !important; }
+#overlay > .sheet .entry-date-guidance,
+#overlay > .sheet .analytics-notice,
+#overlay > .sheet .analytics-entry-notice,
+#overlay > .sheet .entry-analytics-notice,
+#overlay > .sheet .sale-analytics-notice {
+  font-size:14px !important; line-height:1.5 !important; padding:12px 14px !important;
+  margin:0 0 24px !important;
+}
+#overlay > .sheet .extra-buy-list { margin-top:8px !important; gap:10px !important; }
+#overlay > .sheet .extra-buy-row { margin-bottom:0 !important; }
+#overlay > .sheet .extra-buy-row input { font-size:16px !important; }
+#overlay > .sheet .add-extra-buy,
+#overlay > .sheet .add-piece-btn { margin-top:10px !important; }
+#overlay > .sheet .extra-buy-heading,
+#overlay > .sheet .extra-buy-title,
+#overlay > .sheet .extra-buy-section-title {
+  font-size:14px !important; font-weight:600 !important; text-transform:none !important;
+  letter-spacing:0 !important; margin:0 0 8px !important; line-height:1.35 !important;
+}
+#overlay > .sheet .seller-number-label,
+#overlay > .sheet label[for*="sellerPhone"],
+#overlay > .sheet label[for*="sellerNumber"],
+#overlay > .sheet label[for*="sellerMobile"] { font-size:12.5px !important; line-height:1.25 !important; }
+#overlay > .sheet .sheet-actions {
+  margin-top:12px !important; padding:8px 0 calc(4px + env(safe-area-inset-bottom, 0px)) !important;
+  background:#fff !important;
+}
+@media(max-width:520px){
+  #overlay > .sheet { padding-bottom:calc(110px + env(safe-area-inset-bottom, 0px)) !important; }
+  #overlay > .sheet .field { margin-bottom:24px !important; }
+  #overlay > .sheet .seller-number-label,
+  #overlay > .sheet label[for*="sellerPhone"],
+  #overlay > .sheet label[for*="sellerNumber"],
+  #overlay > .sheet label[for*="sellerMobile"] { font-size:12px !important; }
+}
+</style>
+
+
+<style id="v94-fixed-actions-and-section-rhythm">
+/* v94: keep entry actions pinned to the bottom of the screen, not midway through the form */
+#overlay > .sheet {
+  padding-bottom: calc(118px + env(safe-area-inset-bottom, 0px)) !important;
+  scroll-padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px)) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+#overlay > .sheet .sheet-actions {
+  position: fixed !important;
+  left: 0 !important; right: 0 !important; bottom: 0 !important;
+  width: 100% !important; max-width: 480px !important;
+  margin: 0 auto !important; box-sizing: border-box !important;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+  display: flex !important; gap: 10px !important;
+  background: rgba(255,255,255,.98) !important;
+  border-top: 1px solid #d7deea !important;
+  box-shadow: 0 -5px 16px rgba(23,32,51,.07) !important;
+  z-index: 1005 !important;
+}
+#overlay > .sheet .sheet-actions button {
+  min-width: 0 !important; min-height: 52px !important;
+  padding: 12px 10px !important; font-size: 15px !important;
+}
+/* Consistent gap between every section, especially chip groups and the next heading */
+#overlay > .sheet .sec-label {
+  display: block; margin: 24px 0 10px !important;
+  font-size: 14px !important; line-height: 1.35 !important;
+  font-weight: 650 !important; text-transform: none !important; letter-spacing: 0 !important;
+}
+#overlay > .sheet #sheetTitle { margin: 0 52px 18px 0 !important; }
+#overlay > .sheet .entry-field-heading { margin-top: 8px !important; margin-bottom: 10px !important; }
+#overlay > .sheet .chip-row {
+  display: flex; flex-wrap: wrap; gap: 10px 8px !important;
+  margin: 0 0 2px !important; padding-bottom: 1px;
+}
+#overlay > .sheet .field { margin: 0 0 24px !important; }
+#overlay > .sheet .field > label,
+#overlay > .sheet label.field-label { margin-bottom: 8px !important; }
+#overlay > .sheet #f-phone-expenses { margin-top: 8px !important; }
+#overlay > .sheet .sec-label:has(+ #f-phone-expenses) { margin-top: 24px !important; margin-bottom: 8px !important; }
+#overlay > .sheet .entry-date-guidance { margin: 0 0 16px !important; }
+#overlay > .sheet .entry-date-time { gap: 10px !important; }
+#overlay > .sheet .two-col { gap: 10px !important; }
+#overlay > .sheet .seller-number-label,
+#overlay > .sheet label[for*="sellerPhone"],
+#overlay > .sheet label[for*="sellerNumber"],
+#overlay > .sheet label[for*="sellerMobile"] { font-size: 12px !important; line-height: 1.25 !important; }
+#overlay > .sheet .more-toggle { margin: 16px 0 20px !important; padding: 14px 8px !important; }
+#overlay > .sheet .add-extra-buy { margin: 18px 0 4px !important; }
+@media (max-width: 520px) {
+  #overlay > .sheet .sheet-actions { padding-left: 16px !important; padding-right: 16px !important; }
+}
+</style>
+
+
+<style id="compact-date-time-fields-v97">
+/* Compact date/time fields: align their height with ordinary form inputs. */
+#overlay > .sheet .entry-date-time .field.date-time-field,
+.entry-date-time .field.date-time-field {
+  height:46px !important; min-height:46px !important;
+  padding:2px 9px 0 !important; margin-top:6px !important;
+  margin-bottom:8px !important; box-sizing:border-box !important;
+}
+#overlay > .sheet .entry-date-time .field.date-time-field > input,
+.entry-date-time .field.date-time-field > input {
+  height:40px !important; min-height:40px !important;
+  padding:3px 2px 0 !important; font-size:15px !important;
+  text-align:left !important; box-sizing:border-box !important;
+}
+#overlay > .sheet .entry-date-time .field.date-time-field > label,
+.entry-date-time .field.date-time-field > label {top:-8px !important; font-size:11px !important;}
+#overlay > .sheet .entry-date-time {gap:10px !important; margin-bottom:8px !important;}
+</style>
+
+<style id="sale-sheet-layout-fix-v117">
+/* v117: sale form controls follow the regular mobile-entry form sizing. */
+#sellOverlay { align-items:flex-end !important; justify-content:center !important; }
+#sellOverlay > .sale-sheet {
+  position:relative !important; display:block !important; box-sizing:border-box !important;
+  width:100% !important; max-width:520px !important; height:auto !important; min-height:0 !important;
+  max-height:calc(100dvh - env(safe-area-inset-top, 0px)) !important;
+  margin:0 !important; padding:16px 16px calc(100px + env(safe-area-inset-bottom, 0px)) !important;
+  overflow-y:auto !important; border-radius:22px 22px 0 0 !important;
+  scroll-padding-bottom:110px !important;
+}
+#sellOverlay > .sale-sheet > .sheet-handle { display:none !important; }
+#sellOverlay > .sale-sheet > h2 { font-size:22px !important; font-weight:750 !important; margin:0 52px 12px 0 !important; padding:0 !important; line-height:1.25 !important; }
+#sellOverlay .sheet-item-name { font-size:18px !important; line-height:1.35 !important; margin:0 0 16px !important; }
+#sellOverlay .safe-page-close { top:10px !important; right:14px !important; width:44px !important; height:44px !important; }
+#sellOverlay .sale-qty-price { display:grid !important; grid-template-columns:minmax(92px,.58fr) minmax(0,1.42fr) !important; gap:12px !important; align-items:start !important; }
+#sellOverlay .sale-qty-price .field { min-width:0 !important; margin-bottom:16px !important; }
+#sellOverlay .sale-qty-price .field label { font-size:14px !important; line-height:1.35 !important; min-height:0 !important; margin-bottom:8px !important; }
+#sellOverlay .sale-qty-price input { box-sizing:border-box !important; width:100% !important; min-width:0 !important; min-height:50px !important; padding:12px !important; font-size:16px !important; }
+#sellOverlay .sale-price-field input { padding-right:50px !important; }
+#sellOverlay .sale-sheet .field { margin-bottom:16px !important; }
+#sellOverlay .sale-sheet .field label { font-size:14px !important; line-height:1.35 !important; margin-bottom:8px !important; }
+#sellOverlay .sale-sheet .field input,
+#sellOverlay .sale-sheet .field select,
+#sellOverlay .sale-sheet .field textarea { box-sizing:border-box !important; width:100% !important; font-size:16px !important; min-height:50px !important; padding:12px !important; }
+#sellOverlay .sale-date-guidance { font-size:14px !important; line-height:1.4 !important; padding:12px !important; margin:12px 0 !important; }
+#sellOverlay .sec-label { font-size:14px !important; line-height:1.35 !important; margin:14px 0 8px !important; }
+#sellOverlay .settings-note { font-size:14px !important; line-height:1.4 !important; margin-bottom:12px !important; }
+#sellOverlay .extra-buy-row input { font-size:16px !important; min-height:46px !important; padding:10px 12px !important; }
+#sellOverlay .add-extra-buy { font-size:15px !important; padding:10px 12px !important; margin-top:8px !important; }
+#sellOverlay .cost-summary { font-size:15px !important; padding:14px 14px !important; margin:12px 0 !important; }
+#sellOverlay .cost-summary strong { font-size:18px !important; }
+#sellOverlay .profit-preview { font-size:15px !important; padding:13px !important; margin:12px 0 !important; }
+#sellOverlay .sheet-actions { position:sticky !important; bottom:0 !important; margin:16px 0 0 !important; padding:12px 0 0 !important; gap:10px !important; background:#fff !important; }
+#sellOverlay .sheet-actions button { min-height:52px !important; font-size:16px !important; padding:12px 10px !important; }
+</style>
+
+<style id="sale-keyboard-scroll-v120">
+/* v120: allow natural touch scrolling in Sale Entry while the iPhone keyboard is open. */
+#sellOverlay { align-items:flex-start !important; overflow-y:auto !important; -webkit-overflow-scrolling:touch !important; }
+#sellOverlay > .sale-sheet {
+  align-self:flex-start !important; margin-top:env(safe-area-inset-top, 0px) !important;
+  max-height:calc(var(--sale-visible-height, 100dvh) - env(safe-area-inset-top, 0px)) !important;
+  overflow-y:auto !important; overflow-x:hidden !important;
+  -webkit-overflow-scrolling:touch !important; touch-action:pan-y !important;
+  overscroll-behavior-y:contain !important;
+  padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+}
+#sellOverlay input, #sellOverlay select, #sellOverlay textarea { touch-action:manipulation; scroll-margin-bottom:24px; }
+</style>
+
+<style id="sale-entry-layout-polish-v118">
+/* v118: compact, balanced Sale Entry layout; behavior and calculations unchanged. */
+#sellOverlay > .sale-sheet{
+  padding:12px 14px calc(18px + env(safe-area-inset-bottom,0px)) !important;
+  max-height:calc(100dvh - env(safe-area-inset-top,0px)) !important;
+  overflow-y:auto !important;
+  overscroll-behavior:contain;
+}
+#sellOverlay > .sale-sheet > h2{
+  font-size:20px !important; line-height:1.2 !important;
+  margin:0 48px 8px 0 !important;
+}
+#sellOverlay .sheet-item-name{
+  font-size:16px !important; line-height:1.3 !important;
+  margin:0 0 10px !important; padding-right:42px !important;
+}
+#sellOverlay .safe-page-close{
+  top:8px !important; right:12px !important;
+  width:40px !important; height:40px !important;
+  min-width:40px !important; min-height:40px !important;
+}
+#sellOverlay .sale-qty-price{
+  grid-template-columns:minmax(88px,.62fr) minmax(0,1.38fr) !important;
+  gap:10px !important; align-items:start !important;
+}
+#sellOverlay .sale-qty-price .field,
+#sellOverlay .sale-sheet .field{
+  min-width:0 !important; margin-bottom:9px !important;
+}
+#sellOverlay .sale-sheet .field label,
+#sellOverlay .sale-qty-price .field label{
+  font-size:13px !important; line-height:1.25 !important;
+  margin-bottom:5px !important;
+}
+#sellOverlay .sale-sheet .field input,
+#sellOverlay .sale-sheet .field select,
+#sellOverlay .sale-sheet .field textarea,
+#sellOverlay .sale-qty-price input{
+  min-height:43px !important; height:43px !important;
+  padding:8px 10px !important; font-size:15px !important;
+  border-radius:9px !important; box-sizing:border-box !important;
+  width:100% !important; min-width:0 !important;
+}
+#sellOverlay .sale-price-field input{padding-right:42px !important;}
+#sellOverlay .two-col:not(.sale-qty-price):not(.entry-date-time){
+  display:grid !important; grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  gap:9px !important;
+}
+#sellOverlay .sale-date-guidance{
+  font-size:12px !important; line-height:1.4 !important;
+  padding:9px 10px !important; margin:5px 0 9px !important;
+  border-radius:10px !important;
+}
+#sellOverlay .entry-date-time{gap:9px !important; margin:2px 0 9px !important;}
+#sellOverlay .entry-date-time .field.date-time-field{
+  height:43px !important; min-height:43px !important;
+  margin:5px 0 7px !important; padding:2px 8px 0 !important;
+}
+#sellOverlay .entry-date-time .field.date-time-field>input{
+  height:37px !important; min-height:37px !important;
+  padding:2px 1px 0 !important; font-size:14px !important;
+}
+#sellOverlay .entry-date-time .field.date-time-field>label{
+  top:-7px !important; left:8px !important; font-size:11px !important;
+}
+#sellOverlay .sec-label{
+  font-size:14px !important; line-height:1.3 !important;
+  margin:8px 0 5px !important;
+}
+#sellOverlay .settings-note:not(.sale-date-guidance){
+  font-size:12px !important; line-height:1.4 !important;
+  padding:0 !important; margin:0 0 8px !important;
+}
+#sellOverlay .phone-expense-list{gap:6px !important; margin-top:4px !important;}
+#sellOverlay .extra-buy-row{gap:6px !important;}
+#sellOverlay .extra-buy-row input{
+  min-height:38px !important; height:38px !important;
+  font-size:14px !important; padding:7px 8px !important;
+}
+#sellOverlay .extra-buy-remove{width:32px !important;height:32px !important;}
+#sellOverlay .add-extra-buy{
+  font-size:13px !important; padding:8px 10px !important;
+  min-height:38px !important; margin:3px 0 8px !important;
+  border-radius:9px !important;
+}
+#sellOverlay .cost-summary{
+  display:flex !important; align-items:center !important; justify-content:space-between !important;
+  gap:10px !important; padding:10px 11px !important; margin:7px 0 9px !important;
+  font-size:13px !important; line-height:1.25 !important; border-radius:10px !important;
+}
+#sellOverlay .cost-summary span{min-width:0 !important;}
+#sellOverlay .cost-summary strong{font-size:16px !important;white-space:nowrap !important;}
+#sellOverlay .sale-payment-fields .field input{min-height:43px !important;height:43px !important;}
+#sellOverlay .profit-preview{
+  display:flex !important; align-items:center !important; justify-content:space-between !important;
+  gap:10px !important; padding:10px 11px !important; margin:8px 0 !important;
+  font-size:14px !important; line-height:1.3 !important; border-radius:10px !important;
+}
+#sellOverlay .sheet-actions{
+  position:sticky !important; bottom:calc(-1px - env(safe-area-inset-bottom,0px)) !important;
+  display:grid !important; grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  gap:9px !important; margin:9px 0 0 !important;
+  padding:8px 0 calc(2px + env(safe-area-inset-bottom,0px)) !important;
+  background:#fff !important; z-index:3 !important;
+}
+#sellOverlay .sheet-actions button{
+  min-width:0 !important; min-height:44px !important; height:auto !important;
+  padding:9px 7px !important; font-size:14px !important; line-height:1.2 !important;
+  border-radius:10px !important; white-space:normal !important;
+}
+@media(max-width:380px){
+  #sellOverlay > .sale-sheet{padding-left:11px !important;padding-right:11px !important;}
+  #sellOverlay .sale-qty-price{grid-template-columns:minmax(78px,.58fr) minmax(0,1.42fr) !important;gap:7px !important;}
+  #sellOverlay .two-col:not(.sale-qty-price):not(.entry-date-time){gap:7px !important;}
+  #sellOverlay .sale-sheet .field label{font-size:12px !important;}
+  #sellOverlay .cost-summary strong{font-size:14px !important;}
+}
+</style>
+
+<style id="contact-picker-enhancements">
+.contact-pick-actions{display:flex;gap:8px;flex-wrap:wrap;margin:-4px 0 10px}.contact-pick-actions button{flex:1;min-width:130px;padding:8px 10px;border-radius:10px;font-size:12px}.contact-phone-save{margin-top:8px;border-color:var(--accent);background:var(--surface);color:var(--text)}
+</style>
+
+<style id="entry-add-from-inline-fix">
+.entry-add-from-row{display:flex;align-items:center;gap:10px;margin:5px 0 8px;width:100%;min-width:0}
+.entry-add-from-row .entry-add-from-label{flex:0 0 auto;margin:0!important;padding:0!important;background:transparent!important;border:0!important;font-size:12px;color:var(--text-dim);white-space:nowrap}
+.entry-add-from-row .entry-add-from-actions{display:flex;flex:1 1 auto;flex-wrap:nowrap;gap:7px;min-width:0;margin:0!important}
+.entry-add-from-row .entry-add-from-actions button{flex:1 1 0;min-width:0;width:0;padding:8px 5px;font-size:12px;white-space:nowrap}
+@media(max-width:390px){.entry-add-from-row{gap:6px}.entry-add-from-row .entry-add-from-actions{gap:5px}.entry-add-from-row .entry-add-from-actions button{font-size:11px;padding:8px 3px}}
+</style>
+
+<style id="contact-fields-integrated-add-from-refinement">
+/* Visually connect the contact-source controls to the name/number fields above. */
+.entry-add-from-row{margin:-7px 0 7px!important;padding:5px 7px!important;gap:8px!important;border:1px solid var(--border)!important;border-radius:10px!important;background:var(--surface-2)!important;box-sizing:border-box!important}
+.entry-add-from-row .entry-add-from-label{margin:0!important;font-size:11px!important;line-height:1.15!important;font-weight:600!important;color:var(--text-dim)!important}
+.entry-add-from-row .entry-add-from-actions{gap:6px!important}
+.entry-add-from-row .entry-add-from-actions button{min-height:34px!important;padding:6px 5px!important;border-radius:8px!important;font-size:11.5px!important;line-height:1.1!important;box-shadow:none!important;background:var(--surface)!important}
+@media(max-width:390px){.entry-add-from-row{gap:6px!important;padding:5px!important}.entry-add-from-row .entry-add-from-actions{gap:4px!important}.entry-add-from-row .entry-add-from-actions button{font-size:10.5px!important;padding:6px 3px!important}}
+</style>
 </head>
 <body>
 
@@ -1013,6 +1651,7 @@ body.menu-open .app>header{z-index:1!important;}
       <div class="menu-scroll">
         <div class="menu-section-label">Business</div>
         <button class="menu-item" id="btnExpenses"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="14" rx="2" stroke-width="1.8"/><path d="M7 12h10M8 9h8" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Expenses</span></button>
+        <button class="menu-item" id="btnUdhar"><span class="menu-item-icon">💳</span><span class="menu-item-text">Pending payments</span></button>
         <button class="menu-item" id="btnContacts"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke-width="1.8"/><path d="M3.5 19c.5-3.3 2.4-5 5.5-5s5 1.7 5.5 5M17 11a2.5 2.5 0 1 0 0-5M16 14c2.5.2 4 1.7 4.5 5" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Contacts</span></button>
         <button class="menu-item" id="btnAnalytics"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19V9M12 19V5M19 19v-8" stroke-width="2" stroke-linecap="round"/><path d="M3.5 19.5h17" stroke-width="1.5" stroke-linecap="round"/></svg></span><span class="menu-item-text">Analytics</span></button>
         <button class="menu-item" id="btnReports"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3.5h9l3 3V20.5H6z" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3.5v4h4M9 12h6M9 16h6" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Reports</span></button>
@@ -1030,7 +1669,7 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v82<br><span>Updated 08 Oct 2026 • 10:11:26 AM PKT • All Shops Combined brand filter immediate repaint fixed</span><span>All Shops Combined brand filters fixed</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v83.3<br><span>Updated 27 Oct 2026 • 09:48:00 AM PKT • Settings overlay visibility fix</span><span>Settings overlay visibility restored</span></div>
         </div>
       </div>
     </div>
@@ -1116,13 +1755,13 @@ body.menu-open .app>header{z-index:1!important;}
     <h2 id="sheetTitle">Nayi stock entry</h2>
     <div class="save-error-banner" id="saveErrorBanner"></div>
 
-    <div class="sec-label">Brand</div>
+    <div class="sec-label entry-field-heading">BRAND <span class="required-star">*</span></div>
     <div class="chip-row" id="brandChips"></div>
     <div class="field" id="brandOtherWrap" style="display:none;margin-top:8px;">
       <input id="f-brand-other" placeholder="Brand ka naam likhein">
     </div>
 
-    <div class="sec-label">Model</div>
+    <div class="sec-label entry-field-heading">MODEL <span class="required-star">*</span></div>
     <div class="model-input-row">
       <input id="f-model-other" placeholder="Model likhein" autocomplete="off">
       <button type="button" class="model-dropdown-btn" id="modelDropdownBtn" title="List se chunein">▾</button>
@@ -1132,8 +1771,8 @@ body.menu-open .app>header{z-index:1!important;}
       <select id="f-model-select"></select>
     </div>
 
-    <div class="sec-label">Pics (optional)</div>
-    <div class="photo-add-row">
+    <div class="sec-label" style="display:none">Pics (optional)</div>
+    <div class="photo-add-row" style="display:none">
       <div class="photo-strip" id="photoStrip"></div>
       <label class="photo-add-btn" id="photoAddBtn">+ Pic
         <input type="file" id="photoInput" accept="image/*" multiple style="display:none;">
@@ -1148,6 +1787,10 @@ body.menu-open .app>header{z-index:1!important;}
 
     <div class="sec-label">Status <span style="color:var(--danger);">*</span></div>
     <div class="chip-row" id="statusChips"></div>
+    <div id="statusDetailWrap" style="display:none;margin-top:8px;">
+      <div class="sec-label" id="statusDetailLabel" style="margin-top:8px;">Status detail</div>
+      <div class="chip-row" id="statusDetailChips"></div>
+    </div>
 
     <div class="sec-label">RAM <span style="color:var(--danger);">*</span></div>
     <div class="chip-row" id="ramChips"></div>
@@ -1182,13 +1825,16 @@ body.menu-open .app>header{z-index:1!important;}
 
     <div class="sec-label" style="margin-top:14px;">📱 Is mobile par hua extra kharcha</div>
     <div id="f-phone-expenses" class="phone-expense-list"></div>
-    <div class="add-expense-inline" id="addPhoneExpenseInline" role="button" tabindex="0" aria-label="Add phone expense">+</div>
+    <div class="add-expense-inline" id="addPhoneExpenseInline" role="button" tabindex="0" aria-label="Add phone expense" title="Extra kharcha add karein">+</div>
+    <div class="cost-summary" id="entryTotalCostSummary"><span>Total Cost on This Mobile</span><strong id="entryTotalCostValue">—</strong></div>
 
-    <div class="field"><label>Sell price range</label><input id="f-range" placeholder="45k-47k"><div class="price-hint" id="f-range-hint"></div></div>
+    <div class="field"><label>Sell Price Range</label><div class="two-col" style="display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr);gap:8px;align-items:end;"><div><label for="f-range-from" style="font-size:12px;color:var(--text-muted);">From (Rs.)</label><input id="f-range-from" type="text" inputmode="decimal" placeholder="e.g. 45k" style="width:100%;min-width:0;box-sizing:border-box;"></div><span aria-hidden="true" style="display:flex;align-items:center;justify-content:center;height:44px;font-size:24px;font-weight:600;color:var(--text-muted);">-</span><div><label for="f-range-to" style="font-size:12px;color:var(--text-muted);">To (Rs.)</label><input id="f-range-to" type="text" inputmode="decimal" placeholder="e.g. 47k" style="width:100%;min-width:0;box-sizing:border-box;"></div></div><input id="f-range" type="hidden"><div class="price-hint" id="f-range-hint"></div><button type="button" id="resetRangeAutoBtn" class="btn-cancel" style="display:none;margin-top:6px;padding:6px 10px;">Reset to Auto</button></div>
 
-    <div class="field"><label>Buy date</label><input id="f-buydate" type="date"></div>
+    <div class="settings-note entry-date-guidance">📊 <b>Accurate Analytics ke liye:</b> Mobile khareedne aur bechne ki sahi date aur time enter karein. Is se daily purchases, sales aur busiest hours ki reports zyada accurate hongi.</div>
+    <div class="two-col entry-date-time"><div class="field date-time-field"><label>Buy Date</label><input id="f-buydate" type="date"></div><div class="field date-time-field"><label>Buy Time</label><input id="f-buytime" type="time"></div></div>
 
-    <div class="two-col"><div class="field"><label>Seller ka naam (optional)</label><input id="f-seller-name" placeholder="Kis se khareeda"></div><div class="field"><label>Seller ka number (optional)</label><input id="f-seller-number" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx"></div></div>
+    <div class="two-col"><div class="field"><label>Seller ka naam (optional)</label><input id="f-seller-name" list="appContactNames" placeholder="Kis se khareeda" autocomplete="off"></div><div class="field"><label>Seller ka number (optional)</label><input id="f-seller-number" list="appContactNumbers" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx" autocomplete="off"></div></div>
+    <div class="entry-add-from-row"><div class="entry-add-from-label">Add from</div><div class="contact-pick-actions entry-add-from-actions"><button type="button" class="btn-cancel" onclick="openAppContactPicker('f-seller-name','f-seller-number')">👥 App contacts</button><button type="button" class="btn-cancel" onclick="pickPhoneContact('f-seller-name','f-seller-number')">📱 Phone contacts</button></div></div>
 
     <div class="more-section" id="saleFieldsWrap">
       <div class="two-col big-input">
@@ -1196,13 +1842,14 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="field"><label>Buy price <span style="color:var(--danger);">*</span></label><input id="f-buy-insale" type="text" inputmode="decimal" placeholder="e.g. 40k" required><div class="price-hint" id="f-buy-insale-hint"></div></div>
       </div>
       <div class="two-col">
-        <div class="field"><label>Customer name</label><input id="f-customer" placeholder="Naam"></div>
-        <div class="field"><label>Customer number</label><input id="f-customer-number" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx"></div>
+        <div class="field"><label>Customer name</label><input id="f-customer" list="appContactNames" placeholder="Naam" autocomplete="off"></div>
+        <div class="field"><label>Customer number</label><input id="f-customer-number" list="appContactNumbers" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx" autocomplete="off"></div>
       </div>
-      <div class="two-col">
-        <div class="field"><label>Sale date</label><input id="f-saledate" type="date"></div>
-        <div class="field"><label>Payment method</label><input id="f-payment" placeholder="Cash / Easypaisa"></div>
+      <div class="two-col entry-date-time">
+        <div class="field date-time-field"><label>Sale Date</label><input id="f-saledate" type="date"></div>
+        <div class="field date-time-field"><label>Sale Time</label><input id="f-saletime" type="time"></div>
       </div>
+      <div class="field"><label>Payment method</label><input id="f-payment" placeholder="Cash / Easypaisa"></div>
     </div>
 
     <div class="more-toggle" id="moreToggle">+ Add more Details</div>
@@ -1245,6 +1892,8 @@ body.menu-open .app>header{z-index:1!important;}
     <div class="add-extra-buy" id="addExtraBuyBtn">+ Isi model ka aur piece add karein</div>
 
 
+    
+    
     <div class="sheet-actions">
       <button class="btn-cancel" id="btnCancel">Cancel</button>
       <button class="btn-save" id="btnSave">Save entry</button>
@@ -1253,41 +1902,49 @@ body.menu-open .app>header{z-index:1!important;}
 </div>
 
 <div class="overlay hidden" id="sellOverlay">
-  <div class="sheet">
+  <div class="sheet sale-sheet">
     <button type="button" class="safe-page-close" data-safe-close-overlay="sellOverlay" aria-label="Close" title="Close">×</button>
     <div class="sheet-handle"></div>
     <h2>Sale entry</h2>
     <div class="save-error-banner" id="sellErrorBanner"></div>
     <div class="sheet-item-name" id="sellItemName"></div>
 
-    <div class="field"><label id="sellQtyLabel">Kitne piece beche</label><input id="s-qty" type="number" inputmode="numeric" min="1" value="1"></div>
-    <div class="two-col big-input">
-      <div class="field"><label>Sale price (per piece)</label><input id="s-price" type="text" inputmode="decimal" placeholder="e.g. 45k"><div class="price-hint" id="s-price-hint"></div></div>
+    <div class="two-col sale-qty-price">
+      <div class="field sale-qty-field"><label id="sellQtyLabel">Pieces (max 1)</label><input id="s-qty" type="number" inputmode="numeric" min="1" value="1"></div>
+      <div class="field sale-price-field"><label>Sale price (per piece)</label><input id="s-price" type="text" inputmode="decimal" placeholder="e.g. 45k"><div class="price-hint" id="s-price-hint"></div></div>
     </div>
     <div class="two-col">
-      <div class="field"><label>Customer name</label><input id="s-customer" placeholder="Naam"></div>
-      <div class="field"><label>Customer number</label><input id="s-customer-number" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx"></div>
+      <div class="field"><label>Customer name</label><input id="s-customer" list="appContactNames" placeholder="Naam" autocomplete="off"></div>
+      <div class="field"><label>Customer number</label><input id="s-customer-number" list="appContactNumbers" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx" autocomplete="off"></div>
     </div>
-    <div class="two-col">
-      <div class="field"><label>Sale date</label><input id="s-saledate" type="date"></div>
-      <div class="field"><label>Payment method</label><input id="s-payment" placeholder="Cash / Easypaisa"></div>
+    <div class="entry-add-from-row"><div class="entry-add-from-label">Add from</div><div class="contact-pick-actions entry-add-from-actions"><button type="button" class="btn-cancel" onclick="openAppContactPicker('s-customer','s-customer-number')">👥 App contacts</button><button type="button" class="btn-cancel" onclick="pickPhoneContact('s-customer','s-customer-number')">📱 Phone contacts</button></div></div>
+    <div class="settings-note entry-date-guidance sale-date-guidance">📊 <b>Accurate Analytics ke liye:</b> Mobile bechne ki sahi date aur time enter karein. Is se daily sales aur busiest hours ki reports zyada accurate hongi.</div>
+    <div class="two-col entry-date-time">
+      <div class="field date-time-field"><label>Sale Date</label><input id="s-saledate" type="date"></div>
+      <div class="field date-time-field"><label>Sale Time</label><input id="s-saletime" type="time"></div>
     </div>
     <div class="sec-label" style="margin-top:14px;">🎁 Sale ke sath hua extra kharcha</div>
-    <div class="settings-note" style="margin-top:0;">Customer ko jelly/protector ya koi aur cheez dene ka kharcha yahan add karein. Ye is sale ke profit se minus hoga.</div>
+    <div class="settings-note" style="margin-top:0;">Customer ko jelly/protector/Cover ya kisi ko koi commission waghaira diya ya koi bhi aur kharcha jo aap ne entry ke waqt nahi dala, yahan add karein. Isay enter na karne par aap ka profit sahi calculate nahi hoga.</div>
     <div id="s-phone-expenses" class="phone-expense-list"></div>
     <button type="button" class="add-extra-buy" id="addSalePhoneExpenseBtn">+ Sale ka expense add karein</button>
+    <div class="cost-summary" id="saleTotalCostSummary"><span>Total Cost on This Mobile</span><strong id="saleTotalCostValue">—</strong></div>
+    <div class="two-col sale-payment-fields"><div class="field"><label>Received amount</label><input id="s-received" type="number" min="0" inputmode="decimal" placeholder="Rs."></div><div class="field"><label>Remaining</label><input id="s-balance-due" type="number" min="0" inputmode="decimal" placeholder="Rs. 0"></div></div>
 
     <div class="profit-preview">
-      <span>Profit (is sale par)</span>
+      <span>Net Profit (is sale par)</span>
       <span class="v" id="sellProfitPreview">0</span>
     </div>
 
+    
     <div class="sheet-actions">
       <button class="btn-cancel" id="btnSellCancel">Cancel</button>
       <button class="btn-sale" id="btnSellConfirm">Sale confirm karein</button>
     </div>
   </div>
 </div>
+
+<div class="overlay hidden" id="udharOverlay"><div class="sheet" style="max-height:90vh;overflow:auto"><button type="button" class="safe-page-close" id="udharClose" aria-label="Close" title="Close">×</button><div class="sheet-handle"></div><h2>Pending payments</h2><div class="settings-note">Jin sales ki payment abhi complete nahi hui, unki list aur payment history.</div><div class="field"><label>Naam ya mobile number search karein</label><input id="udharSearch" placeholder="Customer name ya mobile search..."></div><div id="udharSummary" class="cost-summary"></div><div id="udharList"></div></div></div>
+<div class="overlay hidden" id="customerBookOverlay"><div class="sheet" style="max-height:90vh;overflow:auto"><button type="button" class="safe-page-close" id="customerBookClose">×</button><div class="sheet-handle"></div><h2>Customer Book</h2><div class="field"><label>Naam ya mobile number search karein</label><input id="customerBookSearch" placeholder="Customer search..."></div><div id="customerBookSummary" class="cost-summary"></div><div id="customerBookList"></div></div></div>
 
 <div class="overlay hidden" id="cropOverlay">
   <div class="sheet">
@@ -1682,6 +2339,7 @@ body.menu-open .app>header{z-index:1!important;}
   </div>
 </div>
 
+<datalist id="appContactNames"></datalist><datalist id="appContactNumbers"></datalist>
 <div class="overlay hidden" id="contactsOverlay">
   <div class="sheet">
     <button type="button" class="safe-page-close" data-safe-close-overlay="contactsOverlay" aria-label="Close" title="Close">×</button>
@@ -1704,7 +2362,7 @@ body.menu-open .app>header{z-index:1!important;}
     <div class="search-row" style="padding:10px 0 0;">
       <input type="text" id="rateBookSearch" placeholder="Model / brand se search karein">
       <select id="rateBookStatusFilter" style="max-width:125px;">
-        <option value="all">All status</option><option value="PTA">PTA</option><option value="Non-PTA">Non-PTA</option><option value="JV">JV</option><option value="CPID">CPID</option><option value="Patch">Patch</option><option value="MDM">MDM</option><option value="Bypass/MDM">Bypass/MDM</option>
+        <option value="all">All status</option><option value="PTA">PTA</option><option value="Non-PTA">Non-PTA</option><option value="CPID/Patch">CPID/Patch</option><option value="Factory Unlock">Factory Unlock</option><option value="JV/Sim locked">JV/Sim locked</option><option value="Bypass/MDM">Bypass/MDM</option>
       </select>
     </div>
     <div class="rate-book-actions"><button type="button" class="btn-save" id="btnRateBookAdd">+ Add Rate</button></div>
@@ -1957,7 +2615,7 @@ body.menu-open .app>header{z-index:1!important;}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v83.2 • Updated 27 Oct 2026 • 09:55:00 AM PKT • Offline session fallback, settings viewport and delete tombstone fixes</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v83.3 • Updated 27 Oct 2026 • 09:47:00 AM PKT • Settings visibility and mobile layout repair</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -2003,8 +2661,8 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v82';
-const APP_INDEX_UPDATED = '27 Oct 2026 • 09:55:00 AM PKT • Offline session fallback, settings viewport and delete tombstone fixes';
+const APP_INDEX_VERSION = 'v83.3';
+const APP_INDEX_UPDATED = '27 Oct 2026 • 09:48:00 AM PKT • Reverted broken Settings overlay CSS; restored original hidden/visible settings rules';
 
 let inventory = [];
 
@@ -2118,7 +2776,7 @@ let rangeInputMode = 'auto'; // 'auto' until the user manually edits the sell-ra
 // closes the topmost open overlay instead of leaving the app. If nothing is
 // open, there's nothing pushed, so back behaves normally (exits/leaves as
 // before).
-const OVERLAY_IDS = ['overlay','sellOverlay','cropOverlay','imeiScanOverlay','adminShopsOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','recycleBinOverlay','expensesOverlay','accountOverlay','rateBookOverlay','rateAddOverlay','shopSetupOverlay'];
+const OVERLAY_IDS = ['overlay','sellOverlay','udharOverlay','cropOverlay','imeiScanOverlay','adminShopsOverlay','dashboardOverlay','reportsOverlay','contactsOverlay','settingsOverlay','recycleBinOverlay','expensesOverlay','accountOverlay','rateBookOverlay','rateAddOverlay','shopSetupOverlay'];
 let overlayHistoryStack = [];
 
 function pushOverlayHistory(id){
@@ -2166,8 +2824,8 @@ window.addEventListener('popstate', function(){
 });
 
 
-const BRANDS = ['Samsung','Google','iPhone','OnePlus','Vivo','Oppo','Realme','Infinix','Tecno','Xiaomi','Motorola','Other'];
-const STATUS_OPTS = ['PTA','Non-PTA','CPID','JV','Bypass/MDM'];
+const BRANDS = ['Samsung','Google','Apple','OnePlus','Vivo','Oppo','Realme','Infinix','Tecno','Xiaomi','Motorola','ZTE','Itel','Honor','Sparx','SEGO','Other'];
+const STATUS_OPTS = ['PTA','Non-PTA','CPID/Patch','Factory Unlock','JV/Sim locked','Bypass/MDM'];
 const RAM_OPTS = ['2GB','3GB','4GB','6GB','8GB','12GB','16GB'];
 const STORAGE_OPTS = ['32GB','64GB','128GB','256GB','512GB'];
 const NETWORK_OPTS = ['4G','5G'];
@@ -2243,7 +2901,7 @@ function renderUiScaleToggles(){
 }
 
 const DEFAULT_ENTRY_LAYOUT = {
-  main: ['brand','model','photos','status','ram','storage','condition','box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'],
+  main: ['brand','model','status','ram','storage','condition','box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'],
   more: ['network','display','touch','camera','body','openrepair','battery','packing','faceid','truetone','notes'],
   hidden: []
 };
@@ -2333,8 +2991,8 @@ function saveCustomOptionData(){
   if(oldRaw!==newRaw) logActivity('settings','Entry options update','');
 }
 
-function getEntryPlatform(brand){ return String(brand||'').trim()==='iPhone' ? 'iphone' : 'android'; }
-function platformLabel(platform){ if(platform==='iphone') return '🍎 iPhone'; if(platform==='both') return '📱 Both'; return '🤖 Android'; }
+function getEntryPlatform(brand){ const b=String(brand||'').trim(); return (b==='Apple' || b==='iPhone') ? 'iphone' : 'android'; }
+function platformLabel(platform){ if(platform==='iphone') return '🍎 Apple'; if(platform==='both') return '📱 Both'; return '🤖 Android'; }
 function settingTargetPlatforms(platform){ return platform==='both' ? ['android','iphone'] : [platform]; }
 function fieldTargetsPlatform(field, platform){ const targets=Array.isArray(field.platforms)&&field.platforms.length?field.platforms:['android','iphone']; return settingTargetPlatforms(platform).some(function(pl){return targets.indexOf(pl)!==-1;}); }
 function fieldIsHiddenOnPlatform(platform, fieldKey){ const p=ensurePlatformOptionData(platform); return !!(p.hiddenFields && p.hiddenFields[fieldKey]); }
@@ -2394,9 +3052,9 @@ function setPlatformDefault(platform, fieldKey, value){
 }
 
 function applyPlatformDefaultsToForm(platform){
-  const defs={status:platform==='iphone'?'':'',ram:'',storage:'',condition:'',network:'',display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',battery:platform==='iphone'?'':'Perfect',box:platform==='iphone'?'No':'No',packing:'No pack',charger:platform==='iphone'?'No charger':'Original charger',faceid:platform==='iphone'?'Yes':'No',truetone:platform==='iphone'?'Yes':'No'};
+  const defs={status:'',ram:'',storage:'',condition:'',network:'',display:'Original panel',touch:'Perfect',camera:'Perfect',body:'Original',openrepair:'No open, no repair',battery:platform==='iphone'?'':'Perfect',box:'',packing:'No pack',charger:'',faceid:platform==='iphone'?'Yes':'No',truetone:platform==='iphone'?'Yes':'No'};
   Object.keys(defs).forEach(function(k){
-    const d=(platform==='iphone' && k==='status') ? '' : ((platform==='iphone' && k==='box') ? 'No' : ((platform==='iphone' && k==='charger') ? 'No charger' : getPlatformDefault(platform,k,defs[k])));
+    const d=(k==='status' || (platform==='iphone' && (k==='battery' || k==='box' || k==='charger'))) ? '' : getPlatformDefault(platform,k,defs[k]);
     const opts=getEntryFieldOptionsForPlatform(platform,k);
     formState[k]=(d && opts.indexOf(d)!==-1) ? d : '';
   });
@@ -2425,7 +3083,7 @@ function getEntryFieldOptionsForPlatform(platform, fieldKey){
 const MODEL_CATALOG = {
   Samsung: ['Galaxy S8','Galaxy S9','Galaxy S9+','Galaxy S10','Galaxy S10+','Galaxy S10+ 5G','Galaxy S10 Lite','Galaxy S20','Galaxy S20+','Galaxy S20 Ultra','Galaxy S21','Galaxy S21+','Galaxy S21 Ultra','Galaxy S22','Galaxy S22 Ultra','Galaxy S23','Galaxy S23 Ultra','Galaxy Note 8','Galaxy Note 9','Galaxy Note 10','Galaxy Note 10+','Galaxy Note 20','Galaxy Note 20 Ultra','Galaxy A10','Galaxy A20','Galaxy A30','Galaxy A50','Galaxy A51','Galaxy A52','Galaxy A54','Galaxy A70','Galaxy A71','Galaxy A73'],
   Google: ['Pixel 3','Pixel 3a','Pixel 4','Pixel 4 XL','Pixel 4a','Pixel 5','Pixel 5a','Pixel 6','Pixel 6a','Pixel 6 Pro','Pixel 7','Pixel 7a','Pixel 7 Pro','Pixel 8','Pixel 8a','Pixel 8 Pro'],
-  iPhone: ['iPhone 6','iPhone 6s','iPhone 7','iPhone 7 Plus','iPhone 8','iPhone 8 Plus','iPhone X','iPhone XR','iPhone XS','iPhone XS Max','iPhone 11','iPhone 11 Pro','iPhone 11 Pro Max','iPhone SE (2020)','iPhone 12','iPhone 12 Mini','iPhone 12 Pro','iPhone 12 Pro Max','iPhone 13','iPhone 13 Mini','iPhone 13 Pro','iPhone 13 Pro Max','iPhone SE (2022)','iPhone 14','iPhone 14 Plus','iPhone 14 Pro','iPhone 14 Pro Max','iPhone 15','iPhone 15 Plus','iPhone 15 Pro','iPhone 15 Pro Max'],
+  Apple: ['iPhone 6','iPhone 6s','iPhone 7','iPhone 7 Plus','iPhone 8','iPhone 8 Plus','iPhone X','iPhone XR','iPhone XS','iPhone XS Max','iPhone 11','iPhone 11 Pro','iPhone 11 Pro Max','iPhone SE (2020)','iPhone 12','iPhone 12 Mini','iPhone 12 Pro','iPhone 12 Pro Max','iPhone 13','iPhone 13 Mini','iPhone 13 Pro','iPhone 13 Pro Max','iPhone SE (2022)','iPhone 14','iPhone 14 Plus','iPhone 14 Pro','iPhone 14 Pro Max','iPhone 15','iPhone 15 Plus','iPhone 15 Pro','iPhone 15 Pro Max'],
   OnePlus: ['OnePlus 6','OnePlus 6T','OnePlus 7','OnePlus 7 Pro','OnePlus 7T','OnePlus 7T Pro','OnePlus 8','OnePlus 8 Pro','OnePlus 8T','OnePlus 9','OnePlus 9 Pro','OnePlus 9R','OnePlus 9RT','OnePlus Nord','OnePlus Nord 2','OnePlus Nord CE','OnePlus 10 Pro','OnePlus 10T','OnePlus 11'],
   Vivo: ['Y12','Y15','Y17','Y19','Y19s','Y20','Y21','Y30','Y50','Y71','V15','V17','V20','V21','V23','X50','X60','X70','X80','S1'],
   Oppo: ['A5','A5s','A7','A9','A12','A15','A31','A37','A52','A54','A57','A74','A76','A77','F9','F11','F17','F19','Reno 4','Reno 5','Reno 6','Reno 7','Reno 8'],
@@ -2985,7 +3643,7 @@ function escapeHtml(v){
   return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-function rateBookStatusOptions(){ return ['PTA','Non-PTA','JV','CPID','Patch','MDM','Bypass/MDM']; }
+function rateBookStatusOptions(){ return STATUS_OPTS.slice(); }
 function loadRateBook(){
   try{ const raw=localStorage.getItem(shopStorageKey(LS_RATE_BOOK_KEY)); rateBook=raw?JSON.parse(raw):[]; if(!Array.isArray(rateBook)) rateBook=[]; }
   catch(e){ rateBook=[]; }
@@ -2997,7 +3655,7 @@ function saveRateBook(){
   schedulePush(); return true;
 }
 function rateBookKey(x){ return String(x.brand||'').trim().toLowerCase()+'|||'+String(x.model||'').trim().toLowerCase()+'|||'+String(x.variant||'').trim().toLowerCase()+'|||'+String(x.status||'').trim().toLowerCase(); }
-function mandatoryDetailsHtml(e){ if(!e) return ''; const platform=getEntryPlatform(e.brand||''); const parts=[]; if(e.status) parts.push('Status: '+escapeHtml(e.status)); if(platform!=='iphone' && e.ram) parts.push('RAM: '+escapeHtml(e.ram)); if(e.storage) parts.push('Storage: '+escapeHtml(e.storage)); if(e.condition) parts.push('Condition: '+escapeHtml(e.condition)); if(platform==='iphone' && e.battery) parts.push('Battery health: '+escapeHtml(e.battery)); if(platform!=='iphone' && e.box) parts.push('Box: '+escapeHtml(e.box)); if(platform!=='iphone' && e.charger) parts.push('Charger: '+escapeHtml(e.charger)); return parts.length ? '<div class="rr-sub" style="margin-top:5px;line-height:1.55;"><b>Mandatory details:</b> '+parts.join(' · ')+'</div>' : ''; }
+function mandatoryDetailsHtml(e){ if(!e) return ''; const platform=getEntryPlatform(e.brand||''); const parts=[]; if(e.status) parts.push('Status: '+escapeHtml(formatEntryStatus(e))); if(platform!=='iphone' && e.ram) parts.push('RAM: '+escapeHtml(e.ram)); if(e.storage) parts.push('Storage: '+escapeHtml(e.storage)); if(e.condition) parts.push('Condition: '+escapeHtml(e.condition)); if(platform==='iphone' && e.battery) parts.push('Battery health: '+escapeHtml(e.battery)); if(platform!=='iphone' && e.box) parts.push('Box: '+escapeHtml(e.box)); if(platform!=='iphone' && e.charger) parts.push('Charger: '+escapeHtml(e.charger)); return parts.length ? '<div class="rr-sub" style="margin-top:5px;line-height:1.55;"><b>Mandatory details:</b> '+parts.join(' · ')+'</div>' : ''; }
 function rateBookDetailsFromInventory(e){ return {ram:e&&e.ram||'',storage:e&&e.storage||'',condition:e&&e.condition||'',battery:e&&e.battery||'',box:e&&e.box||'',charger:e&&e.charger||''}; }
 function addRateBookEntry(entry, silent){
   const rate=Number(entry.rate); if(!isFinite(rate)||rate<=0) return false;
@@ -3012,9 +3670,9 @@ function migrateInventoryToRateBook(){
     matching.forEach(function(r){
       const d=rateBookDetailsFromInventory(e);
       ['ram','storage','condition','battery','box','charger'].forEach(function(k){ if(d[k]!==undefined && String(r[k]||'')!==String(d[k]||'')){r[k]=d[k];changed=true;} });
-      if(e.status && String(r.status||'')!==String(e.status)){r.status=e.status;changed=true;}
+      if(e.status && normalizeStatusValue(r.status)!==normalizeStatusValue(e.statusDetail || e.status)){r.status=normalizeStatusValue(e.statusDetail || e.status);changed=true;}
     });
-    if(e.buy==null||Number(e.buy)<=0)return; const sig=String(e.id)+'|'+String(Number(e.buy))+'|'+String(e.buyDate||todayISO()); if(existing[sig])return; rateBook.push({id:'rb_m_'+String(e.id),sourceInventoryId:e.id,brand:e.brand,model:e.model,variant:e.storage||'',status:e.status||'',rate:Number(e.buy),quantity:Math.max(1,Number(e.quantity)||1),date:e.buyDate||todayISO(),seller:e.sellerName||'',notes:e.notes||'',ram:e.ram||'',storage:e.storage||'',condition:e.condition||'',battery:e.battery||'',box:e.box||'',charger:e.charger||'',source:'stock-migration'}); changed=true; });
+    if(e.buy==null||Number(e.buy)<=0)return; const sig=String(e.id)+'|'+String(Number(e.buy))+'|'+String(e.buyDate||todayISO()); if(existing[sig])return; rateBook.push({id:'rb_m_'+String(e.id),sourceInventoryId:e.id,brand:e.brand,model:e.model,variant:e.storage||'',status:normalizeStatusValue(e.statusDetail || e.status || ''),rate:Number(e.buy),quantity:Math.max(1,Number(e.quantity)||1),date:e.buyDate||todayISO(),seller:e.sellerName||'',notes:e.notes||'',ram:e.ram||'',storage:e.storage||'',condition:e.condition||'',battery:e.battery||'',box:e.box||'',charger:e.charger||'',source:'stock-migration'}); changed=true; });
   if(changed){try{localStorage.setItem(shopStorageKey(LS_RATE_BOOK_KEY),JSON.stringify(rateBook));}catch(e){}}
 }
 function rateBookDisplayEntry(r){
@@ -3028,7 +3686,7 @@ function rateBookDisplayEntry(r){
 function rateBookMandatoryGrid(e){
   e=rateBookDisplayEntry(e);
   var platform=getEntryPlatform(e.brand||'');
-  var items=[['Status',e.status||'—']];
+  var items=[['Status',formatEntryStatus(e)||'—']];
   if(platform!=='iphone') items.push(['RAM',e.ram||'—']);
   items.push(['Storage',e.storage||'—'],['Condition',e.condition||'—']);
   if(platform==='iphone') items.push(['Battery Health',e.battery||'—']);
@@ -3038,7 +3696,7 @@ function rateBookMandatoryGrid(e){
 function renderRateBook(){
   const list=document.getElementById('rateBookList'); if(!list)return;
   const q=(document.getElementById('rateBookSearch').value||'').trim().toLowerCase(); const status=document.getElementById('rateBookStatusFilter').value; const groups={};
-  rateBook.forEach(function(r){ if(status!=='all'&&r.status!==status)return; const hay=(r.brand+' '+r.model+' '+(r.variant||'')+' '+(r.status||'')+' '+(r.seller||'')+' '+(r.notes||'')).toLowerCase(); if(q&&hay.indexOf(q)===-1)return; const key=rateBookKey(r); if(!groups[key])groups[key]={brand:r.brand,model:r.model,variant:r.variant,status:r.status,history:[]}; groups[key].history.push(r); });
+  rateBook.forEach(function(r){ const normalizedStatus=normalizeStatusValue(r.status); if(status!=='all'&&normalizedStatus!==status)return; const hay=(r.brand+' '+r.model+' '+(r.variant||'')+' '+normalizedStatus+' '+(r.seller||'')+' '+(r.notes||'')).toLowerCase(); if(q&&hay.indexOf(q)===-1)return; const key=rateBookKey(r); if(!groups[key])groups[key]={brand:r.brand,model:r.model,variant:r.variant,status:normalizedStatus,history:[]}; groups[key].history.push(r); });
   const cards=Object.keys(groups).map(function(k){return groups[k];}); cards.forEach(function(g){g.history.sort(function(a,b){return String(b.date).localeCompare(String(a.date));});});
   cards.sort(function(a,b){return String(a.brand+' '+a.model+' '+a.variant).localeCompare(String(b.brand+' '+b.model+' '+b.variant),undefined,{numeric:true,sensitivity:'base'});});
   if(!cards.length){list.innerHTML='<div class="empty" style="padding:35px 10px;">Koi rate nahi mila. + Add Rate se manually rate save karein.</div>';return;}
@@ -3346,19 +4004,66 @@ function autoSellRangeForBuy(buy){
   }
   return '';
 }
+function currentEntryExpenseTotal(){
+  try { return expenseArrayTotal(readPhoneExpenseRows('f-phone-expenses')); } catch(err) {
+    const el=document.getElementById('f-phone-expenses');
+    if(!el) return 0;
+    return Array.from(el.querySelectorAll('.pe-amount')).reduce(function(sum,input){return sum+(parseExpenseAmount(input.value)||0);},0);
+  }
+}
+function splitRangeIntoInputs(range){
+  const raw=String(range||'').replace(/[–—−]/g,'-').trim();
+  const parts=raw.split('-');
+  const from=document.getElementById('f-range-from'), to=document.getElementById('f-range-to');
+  if(from) from.value=parts[0]||'';
+  if(to) to.value=parts.length>1?parts.slice(1).join('-'):'';
+  const hidden=document.getElementById('f-range'); if(hidden) hidden.value=raw;
+  const reset=document.getElementById('resetRangeAutoBtn'); if(reset) reset.style.display=rangeInputMode==='manual'?'inline-block':'none';
+}
+function syncRangeFromInputs(){
+  const from=(document.getElementById('f-range-from')?.value||'').trim();
+  const to=(document.getElementById('f-range-to')?.value||'').trim();
+  const hidden=document.getElementById('f-range');
+  if(hidden) hidden.value=from&&to?(from+'-'+to):(from||to);
+  const hint=document.getElementById('f-range-hint');
+  if(hint) hint.textContent=(from||to)?'Manual range: '+(from||'—')+' to '+(to||'—'):'';
+  rangeInputMode=(from||to)?'manual':'auto';
+  const reset=document.getElementById('resetRangeAutoBtn'); if(reset) reset.style.display=rangeInputMode==='manual'?'inline-block':'none';
+}
+function updateEntryTotalCost(){
+  const buyRaw=(document.getElementById('f-buy')?.value||'').trim();
+  const buy=buyRaw===''?null:parsePrice(buyRaw);
+  const expenses=currentEntryExpenseTotal();
+  const totalEl=document.getElementById('entryTotalCostValue');
+  if(totalEl) totalEl.textContent=(buy===null?'—':('Rs. '+fmt(Math.max(0,buy)+expenses)));
+  if(rangeInputMode==='auto' && buy!==null){
+    const rangeEl=document.getElementById('f-range');
+    const hint=document.getElementById('f-range-hint');
+    const auto=autoSellRangeForBuy(Math.max(0,buy)+expenses);
+    if(rangeEl) rangeEl.value=auto;
+    splitRangeIntoInputs(auto);
+    if(hint) hint.textContent=auto?'Auto range: '+auto:'';
+  }
+  updateSellProfitPreview();
+}
 function maybeAutoFillRange(){
   const buyRaw = document.getElementById('f-buy').value.trim();
   const rangeEl = document.getElementById('f-range');
-  if(!rangeEl || rangeInputMode !== 'auto') return;
+  if(!rangeEl) return;
   if(buyRaw===''){
-    rangeEl.value = '';
+    if(rangeInputMode==='auto'){ rangeEl.value = ''; splitRangeIntoInputs(''); }
     document.getElementById('f-range-hint').textContent = '';
+    updateEntryTotalCost();
     return;
   }
   const buy = parsePrice(buyRaw);
-  const auto = buy===null ? '' : autoSellRangeForBuy(buy);
-  rangeEl.value = auto;
-  document.getElementById('f-range-hint').textContent = auto ? '= '+auto : '';
+  if(rangeInputMode==='auto'){
+    const auto = buy===null ? '' : autoSellRangeForBuy(Math.max(0,buy)+currentEntryExpenseTotal());
+    rangeEl.value = auto;
+    splitRangeIntoInputs(auto);
+    document.getElementById('f-range-hint').textContent = auto ? 'Auto range: '+auto : '';
+  }
+  updateEntryTotalCost();
 }
 function prominentSellRangeHtml(range){
   if(!range) return '';
@@ -3442,10 +4147,16 @@ function wirePriceHint(inputId, hintId){
 }
 wirePriceHint('f-buy','f-buy-hint');
 document.getElementById('f-buy').addEventListener('input', maybeAutoFillRange);
+document.getElementById('f-buy').addEventListener('input', updateEntryTotalCost);
 wirePriceHint('f-sellprice','f-sellprice-hint');
 wirePriceHint('f-buy-insale','f-buy-insale-hint');
 wirePriceHint('s-price','s-price-hint');
 wireRangeHint('f-range','f-range-hint');
+['f-range-from','f-range-to'].forEach(function(id){
+  const el=document.getElementById(id); if(el) el.addEventListener('input',function(){syncRangeFromInputs();});
+});
+const resetRangeAutoBtn=document.getElementById('resetRangeAutoBtn');
+if(resetRangeAutoBtn) resetRangeAutoBtn.addEventListener('click',function(){rangeInputMode='auto';maybeAutoFillRange();});
 
 document.getElementById('f-qty').addEventListener('input', function(){
   const warn = document.getElementById('qtyWarning');
@@ -3588,13 +4299,31 @@ function formatDateTimeDisplay(value){
   const d=dateOnly(value);
   return d ? formatDateDisplay(d) : '';
 }
+function expenseArrayTotal(items){
+  if(!Array.isArray(items)) return 0;
+  return items.reduce(function(s,x){ return s + Math.abs(Number(x.amount)||0); }, 0);
+}
 function phoneExpensesTotal(e){
-  if(!e || !Array.isArray(e.phoneExpenses)) return 0;
-  return e.phoneExpenses.reduce(function(s,x){ return s + Math.abs(Number(x.amount)||0); }, 0);
+  if(!e) return 0;
+  // Older sold records stored sale-time expenses inside phoneExpenses. New records
+  // keep them separately in saleExpenses; both formats remain supported.
+  return expenseArrayTotal(e.phoneExpenses) + expenseArrayTotal(e.saleExpenses);
+}
+function entryTotalCost(e){
+  if(!e || e.buy==null) return 0;
+  return Math.max(0, Number(e.buy)||0) + expenseArrayTotal(e.phoneExpenses);
 }
 function saleBaseProfit(e){
   if(!e || e.buy==null || e.sell==null || isReturnedSale(e)) return 0;
-  return (Number(e.sell)-Number(e.buy))*(Math.max(1,Number(e.quantity)||1));
+  const qty=Math.max(1,Number(e.quantity)||1);
+  const fullProfit=(Number(e.sell)-Number(e.buy))*qty;
+  // Profit is recognized only as received money exceeds the phone's purchase cost.
+  // Example: cost 20,000, sale 23,000, received 21,000 => recognized profit 1,000.
+  const saleTotal=Number(e.saleTotal!=null?e.saleTotal:(Number(e.sell)||0)*qty);
+  const received=Math.max(0,Math.min(saleTotal,Number(e.paymentReceived!=null?e.paymentReceived:saleTotal)));
+  const cost=Math.max(0,(Number(e.buy)||0)*qty);
+  const realized=Math.max(0,received-cost);
+  return Math.min(Math.max(0,fullProfit),realized);
 }
 function saleNetProfit(e){
   if(!e || e.buy==null || e.sell==null) return null;
@@ -3645,7 +4374,7 @@ function refreshPhoneExpenseRowUi(row){
 function bindPhoneExpenseEnter(row){
   const amt=row.querySelector('.pe-amount');
   const cat=row.querySelector('.pe-category');
-  [amt,cat].forEach(function(inp){ if(inp) inp.addEventListener('input',function(){ refreshPhoneExpenseRowUi(row); updateSellProfitPreview(); }); });
+  [amt,cat].forEach(function(inp){ if(inp) inp.addEventListener('input',function(){ refreshPhoneExpenseRowUi(row); updateEntryTotalCost(); updateSellProfitPreview(); }); });
   if(amt) amt.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); addPhoneExpenseRow('f-phone-expenses'); updateSellProfitPreview(); const rows=document.querySelectorAll('#f-phone-expenses .phone-expense-row'); const last=rows[rows.length-1]; if(last){ const inp=last.querySelector('.pe-category'); if(inp) inp.focus(); } } });
 }
 function renderPhoneExpenseRows(containerId, items){
@@ -3656,7 +4385,7 @@ function renderPhoneExpenseRows(containerId, items){
     const d=dateOnly(x.date)||todayISO();
     return '<div class="phone-expense-row" data-expense-date="'+d+'">'+
       '<div class="phone-expense-grid">'+
-        '<input class="pe-category" placeholder="Jelly / Repair" value="'+String(x.category||'').replace(/"/g,'&quot;')+'">'+
+        '<input class="pe-category" placeholder="Casing / back / repair etc." value="'+String(x.category||'').replace(/"/g,'&quot;')+'">'+
         '<input class="pe-amount" type="text" inputmode="decimal" placeholder="Amount" value="'+(x.amount!=null?Math.abs(Number(x.amount)||0):'')+'">'+
         '<button type="button" class="phone-expense-remove" aria-label="Remove expense">×</button>'+
       '</div>'+
@@ -3664,7 +4393,7 @@ function renderPhoneExpenseRows(containerId, items){
     '</div>';
   }).join('');
   el.querySelectorAll('.phone-expense-row').forEach(function(row){ bindPhoneExpenseEnter(row); refreshPhoneExpenseRowUi(row); });
-  el.querySelectorAll('.phone-expense-remove').forEach(function(btn){ btn.onclick=function(){ btn.closest('.phone-expense-row').remove(); updateSellProfitPreview(); }; });
+  el.querySelectorAll('.phone-expense-remove').forEach(function(btn){ btn.onclick=function(){ btn.closest('.phone-expense-row').remove(); updateEntryTotalCost(); updateSellProfitPreview(); }; });
 }
 function addPhoneExpenseRow(containerId){
   const el=document.getElementById(containerId);
@@ -3674,12 +4403,12 @@ function addPhoneExpenseRow(containerId){
   wrapper.dataset.expenseDate=todayISO();
   wrapper.innerHTML=
     '<div class="phone-expense-grid">'+
-      '<input class="pe-category" placeholder="Jelly / Repair">'+
+      '<input class="pe-category" placeholder="Casing / back / repair etc.">'+
       '<input class="pe-amount" type="text" inputmode="decimal" placeholder="Amount">'+
       '<button type="button" class="phone-expense-remove" aria-label="Remove expense" style="display:none;">×</button>'+
     '</div>'+
     '<div class="phone-expense-date" style="display:none;">'+formatDateDisplay(todayISO())+'</div>';
-  wrapper.querySelector('.phone-expense-remove').onclick=function(){ wrapper.remove(); updateSellProfitPreview(); };
+  wrapper.querySelector('.phone-expense-remove').onclick=function(){ wrapper.remove(); updateEntryTotalCost(); updateSellProfitPreview(); };
   el.appendChild(wrapper); bindPhoneExpenseEnter(wrapper); refreshPhoneExpenseRowUi(wrapper);
 }
 function readPhoneExpenseRows(containerId){
@@ -3706,7 +4435,10 @@ function allPhoneExpenseEntries(){
   const out=[];
   inventory.forEach(function(e){
     (Array.isArray(e.phoneExpenses)?e.phoneExpenses:[]).forEach(function(x){
-      out.push(Object.assign({},x,{phoneId:e.id,brand:e.brand,model:e.model,customer:e.customer||'',sold:e.sold===true,returned:isReturnedSale(e)}));
+      out.push(Object.assign({},x,{phoneId:e.id,brand:e.brand,model:e.model,customer:e.customer||'',sold:e.sold===true,returned:isReturnedSale(e),expenseType:'entry'}));
+    });
+    (Array.isArray(e.saleExpenses)?e.saleExpenses:[]).forEach(function(x){
+      out.push(Object.assign({},x,{phoneId:e.id,brand:e.brand,model:e.model,customer:e.customer||'',sold:e.sold===true,returned:isReturnedSale(e),expenseType:'sale'}));
     });
   });
   return out;
@@ -3839,7 +4571,7 @@ function renderStats(){
     return dashboardDateInRange(d,range);
   });
   const soldUnits=soldItems.reduce(function(s,e){return s+(Number(e.quantity)||0);},0);
-  const grossProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(Number(e.quantity)||1));},0);
+  const grossProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+saleBaseProfit(e);},0);
   const netProfit=grossProfit-expensesForDashboardRange(range);
   const netProfitColor=netProfit>=0?'var(--pta)':'var(--danger)';
   let periodLabel=range.label;
@@ -3978,8 +4710,9 @@ function renderFilterChips(){
     {key:'returned',label:'↩ Returned'},
     {key:'PTA',label:'PTA'},
     {key:'Non-PTA',label:'Non-PTA'},
-    {key:'CPID',label:'CPID'},
-    {key:'JV',label:'JV'},
+    {key:'CPID/Patch',label:'CPID/Patch'},
+    {key:'Factory Unlock',label:'Factory Unlock'},
+    {key:'JV/Sim locked',label:'JV/Sim locked'},
     {key:'Bypass/MDM',label:'Bypass/MDM'}
   ];
   document.getElementById('filterChips').innerHTML = filters.map(function(f){
@@ -3997,10 +4730,11 @@ function renderFilterChips(){
 }
 
 function statusBadgeClass(s){
-  if(s==='PTA') return 'pta';
-  if(s==='Non-PTA') return 'nonpta';
-  if(s==='JV') return 'jv';
-  if(s==='Bypass/MDM') return 'bypass';
+  const v=normalizeStatusValue(s);
+  if(v==='PTA') return 'pta';
+  if(v==='Non-PTA') return 'nonpta';
+  if(v==='JV/Sim locked') return 'jv';
+  if(v==='Bypass/MDM') return 'bypass';
   return 'cpid';
 }
 
@@ -4013,7 +4747,7 @@ function renderList(){
     if(currentFilter==='available' && (e.sold || e.quantity<=0)) return false;
     if(currentFilter==='sold' && (!e.sold || isReturnedSale(e))) return false;
     if(currentFilter==='returned' && !isReturnedSale(e)) return false;
-    if(['PTA','Non-PTA','CPID','JV','Bypass/MDM'].indexOf(currentFilter)!==-1 && e.status!==currentFilter) return false;
+    if(STATUS_OPTS.indexOf(currentFilter)!==-1 && normalizeStatusValue(e.statusDetail || e.status)!==currentFilter) return false;
     const activeBrandFilter = (userRole==='admin' && adminViewActive && adminViewShopId==='__combined__') ? adminCombinedBrandFilter : currentBrandFilter;
     if(activeBrandFilter!=='all' && e.brand!==activeBrandFilter) return false;
     if(searchVal){
@@ -4065,7 +4799,7 @@ function renderList(){
 
 function pieceStatusBadges(e, outOfStock){
   return (
-    '<span class="badge '+statusBadgeClass(e.status)+'">'+e.status+'</span>'+
+    '<span class="badge '+statusBadgeClass(e.status)+'">'+escapeHtml(formatEntryStatus(e))+'</span>'+
     '<span class="badge qty">'+(outOfStock?'Out of stock':(e.quantity+' piece'+(e.quantity>1?'s':'')))+'</span>'
   );
 }
@@ -4193,7 +4927,7 @@ function applyAutoSellRangesToExistingEntries(){
     if(e.rangeMode === 'manual') return;
     const buy = e.buy == null ? null : Number(e.buy);
     if(buy === null || !isFinite(buy)) return;
-    const nextRange = autoSellRangeForBuy(buy);
+    const nextRange = autoSellRangeForBuy(buy + expenseArrayTotal(e.phoneExpenses));
     if(e.range !== nextRange || e.rangeMode !== 'auto'){
       e.range = nextRange;
       e.rangeMode = 'auto';
@@ -4365,7 +5099,7 @@ function pieceSpecBadges(e){
     return pa - pb;
   });
   let html=prominentFirst.map(function(field){
-    if((field==='faceid' || field==='truetone') && e.brand!=='iPhone') return '';
+    if((field==='faceid' || field==='truetone') && getEntryPlatform(e.brand)!=='iphone') return '';
     return fieldBadge(field, e[field], getEntryPlatform(e.brand));
   }).join('');
   const customFields=getPlatformCustomFields(getEntryPlatform(e.brand));
@@ -4553,7 +5287,7 @@ function renderSoldCard(e){
     '<div class="card-title">'+e.brand+' '+e.model+'</div>'+
     adminCombinedShopBadge(e)+
     '<div class="badges">'+
-      '<span class="badge '+statusBadgeClass(e.status)+'">'+e.status+'</span>'+
+      '<span class="badge '+statusBadgeClass(e.status)+'">'+escapeHtml(formatEntryStatus(e))+'</span>'+
       '<span class="badge sold-badge">Sold'+(e.quantity>1?(' x'+e.quantity):'')+'</span>'+
       (returned?'<span class="badge returned-badge">↩ Returned</span>':'')+
     '</div>'+
@@ -4856,7 +5590,7 @@ function buildShareFieldValue(e,key){
   if(!e) return '';
   if(key==='network') return e.network==='5G' ? '📶 5G' : '';
   if(key==='model') return (e.brand||e.model) ? '*'+(e.brand||'')+' '+(e.model||'')+'*' : '';
-  if(key==='status') return e.status ? 'Status: '+e.status : '';
+  if(key==='status') return formatEntryStatus(e) ? 'Status: '+formatEntryStatus(e) : '';
   if(key==='price') return e.range ? 'Price: '+upperPriceFromRange(e.range) : '';
   if(key==='salePrice') return e.sold && !isReturnedSale(e) && e.sell!=null ? 'Sale price: '+fmt(e.sell) : '';
   if(key==='ram') return e.ram ? 'RAM: '+e.ram : '';
@@ -4874,8 +5608,8 @@ function buildShareFieldValue(e,key){
   if(key==='charger') return chargerShareLine(e);
   if(key==='box') return e.box==='Yes' ? 'Box: Available' : '';
   if(key==='packing') return e.packing && e.packing!=='No pack' ? 'Packing: '+e.packing : '';
-  if(key==='faceid') return e.brand==='iPhone' && e.faceid==='Yes' ? 'Face ID: Working' : '';
-  if(key==='truetone') return e.brand==='iPhone' && e.truetone==='Yes' ? 'True Tone: Working' : '';
+  if(key==='faceid') return getEntryPlatform(e.brand)==='iphone' && e.faceid==='Yes' ? 'Face ID: Working' : '';
+  if(key==='truetone') return getEntryPlatform(e.brand)==='iphone' && e.truetone==='Yes' ? 'True Tone: Working' : '';
   if(key==='notes') return e.notes ? 'Notes: '+e.notes : '';
   if(key==='warranty') return '✅ 3 days check warranty';
   if(String(key).indexOf('custom:')===0){
@@ -5152,9 +5886,17 @@ function prepareEntryLayoutDOM(){
   if(oldBuyRow && oldBuyRow !== (range ? range.closest('.two-col') : null)) oldBuyRow.remove();
   else if(oldBuyRow && !oldBuyRow.children.length) oldBuyRow.remove();
   const buyDate=sheet.querySelector('#f-buydate');
-  if(buyDate) addMainGroup('buyDate',[buyDate.closest('.field')]);
+  const buyDateTimeRow=buyDate ? buyDate.closest('.entry-date-time') : null;
+  const buyDateGuidance=sheet.querySelector('.entry-date-guidance');
+  if(buyDateTimeRow) addMainGroup('buyDate',[buyDateGuidance,buyDateTimeRow]);
+  else if(buyDate) addMainGroup('buyDate',[buyDateGuidance,buyDate.closest('.field')]);
   const seller=sheet.querySelector('#f-seller-name');
-  if(seller) addMainGroup('seller',[seller.closest('.two-col')]);
+  if(seller){
+    const sellerRow=seller.closest('.two-col');
+    const addFromRow=sheet.querySelector('.entry-add-from-row');
+    // Keep the compact inline Add from row attached to seller fields when layout rebuilds.
+    addMainGroup('seller',[sellerRow,addFromRow]);
+  }
   const extraList=sheet.querySelector('#extraBuyList');
   const extraButton=sheet.querySelector('#addExtraBuyBtn');
   if(extraList || extraButton){
@@ -5175,7 +5917,14 @@ function prepareEntryLayoutDOM(){
   }
   const phoneList=sheet.querySelector('#f-phone-expenses');
   if(phoneList){
-    addMainGroup('phoneExpenses',[previousSecLabel(phoneList),phoneList,sheet.querySelector('#addPhoneExpenseInline')]);
+    // Keep the total-cost summary attached to the phone-expense section.
+    // Otherwise the layout builder can leave it behind and it appears near the bottom.
+    addMainGroup('phoneExpenses',[
+      previousSecLabel(phoneList),
+      phoneList,
+      sheet.querySelector('#addPhoneExpenseInline'),
+      sheet.querySelector('#entryTotalCostSummary')
+    ]);
   }
   const sale=sheet.querySelector('#saleFieldsWrap');
   if(sale) addMainGroup('saleFields',[sale]);
@@ -5251,7 +6000,7 @@ function ensureLayoutContainsAll(layout){
 
   // v57: fixed entry order — Box and Charger are mandatory and sit directly
   // below Condition; phone expense stays immediately below Buy price.
-  const fixedMainOrder=['brand','model','photos','status','ram','storage','condition','box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'];
+  const fixedMainOrder=['brand','model','status','ram','storage','condition','box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate','seller','saleFields','moreToggle','extras'];
   layout.main=fixedMainOrder.slice();
   layout.more=['network','display','touch','camera','body','openrepair','battery','packing','faceid','truetone','notes'];
   layout.hidden=[];
@@ -5406,19 +6155,19 @@ function applyEntryLayoutToDOM(platform){
   // Saved/legacy layout ordering must not move these fields around.
   // Box and Charger are explicitly included so they cannot fall back into More Details.
   let fixedMainKeys = [
-    'brand','model','photos','status','ram','storage','condition',
+    'brand','model','status','ram','storage','condition',
     'box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
     'seller','saleFields','moreToggle','extras'
   ];
   let moreKeys = L.more.slice();
   if(platform==='iphone'){
     fixedMainKeys = [
-      'brand','model','photos','status','storage','condition','battery',
+      'brand','model','status','storage','condition','battery',
       'box','charger','imei1','imei2','buyPrice','phoneExpenses','sellRange','buyDate',
       'seller','saleFields','moreToggle','extras'
     ];
     moreKeys = moreKeys.filter(function(key){ return key!=='battery' && key!=='status' && key!=='ram'; });
-    // iPhone-specific labels: Battery is mandatory; Box/Charger are optional.
+    // iPhone-specific labels: Battery Health, Box, and Charger are mandatory.
     const batteryGroup=groups.battery;
     if(batteryGroup){
       const batteryLabel=batteryGroup.querySelector('.sec-label');
@@ -5428,7 +6177,7 @@ function applyEntryLayoutToDOM(platform){
       const g=groups[key];
       if(!g) return;
       const label=g.querySelector('.sec-label');
-      if(label) label.textContent=key==='box'?'Box':'Charger';
+      if(label) label.innerHTML=(key==='box'?'Box':'Charger')+' <span style="color:var(--danger);">*</span>';
     });
   }else{
     const batteryGroup=groups.battery;
@@ -5486,6 +6235,43 @@ function applyEntryLayoutToDOM(platform){
   });
 }
 
+function normalizeStatusValue(value){
+  const st=String(value||'').trim();
+  if(!st) return '';
+  if(st==='Official' || st==='Official PTA') return 'PTA';
+  if(st==='CPID' || st==='Patch' || st==='CPID/Patch') return 'CPID/Patch';
+  if(st==='JV' || st==='JV/Sim locked') return 'JV/Sim locked';
+  if(st==='Factory Unlock') return 'Factory Unlock';
+  if(st==='MDM' || st==='Bypass' || st==='Bypass/MDM') return 'Bypass/MDM';
+  if(st==='PTA' || st==='Non-PTA') return st;
+  return st;
+}
+function formatEntryStatus(e){
+  if(!e) return '';
+  // New status field is authoritative; old statusDetail values are normalized for legacy records.
+  return normalizeStatusValue((e.statusDetail && normalizeStatusValue(e.statusDetail)) || e.status || '');
+}
+
+function statusPrimaryOptions(){
+  return ['PTA','Non-PTA','CPID/Patch','Factory Unlock','JV/Sim locked','Bypass/MDM'];
+}
+function statusPrimarySelected(){
+  return normalizeStatusValue(formState.statusDetail || formState.status || '');
+}
+function statusDetailSelected(){ return ''; }
+function renderStatusDetail(){
+  const wrap=document.getElementById('statusDetailWrap');
+  const row=document.getElementById('statusDetailChips');
+  if(wrap) wrap.style.display='none';
+  if(row) row.innerHTML='';
+}
+function selectStatusPrimary(value){
+  formState.status=value;
+  formState.statusDetail='';
+  renderChipGroup('statusChips', statusPrimaryOptions(), 'status', 'status-opt');
+  renderStatusDetail();
+}
+
 function renderChipGroup(containerId, options, groupKey, extraClass){
   const container = document.getElementById(containerId);
   if(!container) return;
@@ -5493,12 +6279,16 @@ function renderChipGroup(containerId, options, groupKey, extraClass){
   // replaced div[onclick] can lose the tap; buttons give the browser a stable,
   // native interactive target.
   container.innerHTML = options.map(function(o){
-    return '<button type="button" class="chip-opt '+(extraClass||'')+' '+(formState[groupKey]===o?'on':'')+'" data-val="'+escapeHtml(String(o))+'">'+escapeHtml(String(o))+'</button>';
+    return '<button type="button" class="chip-opt '+(extraClass||'')+' '+((groupKey==='status'?statusPrimarySelected()===o:formState[groupKey]===o)?'on':'')+'" data-val="'+escapeHtml(String(o))+'">'+escapeHtml(String(o))+'</button>';
   }).join('');
   container.querySelectorAll('.chip-opt').forEach(function(c){
     c.onclick = function(e){
       if(e) e.preventDefault();
       const value=c.dataset.val;
+      if(groupKey==='status'){
+        selectStatusPrimary(value);
+        return;
+      }
       formState[groupKey] = value;
       // Update only this row. Do NOT rebuild the whole entry form after a
       // storage/condition/battery tap; rebuilding the DOM is what can make a
@@ -5512,6 +6302,7 @@ function renderChipGroup(containerId, options, groupKey, extraClass){
         renderModelSuggestions('');
         const platform=getEntryPlatform(value);
         if(formState.__platform!==platform) applyPlatformDefaultsToForm(platform);
+        formState.status=''; formState.statusDetail='';
         // Brand changes platform, so only then rebuild the complete chip set.
         renderAllChips();
         applyEntryLayoutToDOM(platform);
@@ -5561,7 +6352,8 @@ function renderAllChips(){
   });
   orderedEntryBrands.push('Other');
   renderChipGroup('brandChips', orderedEntryBrands, 'brand');
-  renderChipGroup('statusChips', getEntryFieldOptions('status', STATUS_OPTS), 'status', 'status-opt');
+  renderChipGroup('statusChips', statusPrimaryOptions(), 'status', 'status-opt');
+  renderStatusDetail();
   renderChipGroup('ramChips', getEntryFieldOptions('ram', RAM_OPTS), 'ram');
   renderChipGroup('storageChips', getEntryFieldOptions('storage', STORAGE_OPTS), 'storage');
   renderChipGroup('conditionChips', getEntryFieldOptions('condition', CONDITION_OPTS), 'condition');
@@ -5792,6 +6584,8 @@ function settleEntryFormUI(){
   // Background cloud/config updates are deferred until the next open so user
   // taps cannot be interrupted by DOM replacement.
 }
+function currentLocalTimeInput(){ const d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+
 function openAdd(){
   // Mark the entry sheet as open BEFORE any UI/config refresh. Cloud snapshots
   // use this flag to defer chip/layout rebuilds while the user is tapping options.
@@ -5804,13 +6598,12 @@ function openAdd(){
   rangeInputMode = 'auto';
   document.getElementById('sheetTitle').textContent = 'Nayi stock entry';
   document.getElementById('qtyLabel').textContent = 'Quantity (kitne piece)';
-  formState = {brand:'', status:'', ram:'', storage:'', condition:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'', packing:'No pack', charger:'', faceid:'No', truetone:'No', customFields:{}, isSold:false, __platform:'android'};
+  formState = {brand:'', status:'', statusDetail:'', ram:'', storage:'', condition:'', network:'', display:'Original panel', touch:'Perfect', camera:'Perfect', body:'Original', openrepair:'No open, no repair', battery:'Perfect', box:'', packing:'No pack', charger:'', faceid:'No', truetone:'No', customFields:{}, isSold:false, __platform:'android'};
   applyPlatformDefaultsToForm('android');
-  // Android keeps the existing mandatory fields. iPhone has no Status/RAM,
-  // Box/Charger are optional and default to absent, while Battery is mandatory.
-  formState.status = '';
-  formState.box = 'No';
-  formState.charger = 'No charger';
+  // Status must remain unselected by default on both Android and Apple.
+  // Android still requires the user to choose a Status before saving.
+  formState.box = '';
+  formState.charger = '';
   formState.battery = '';
   formPhotos = [];
   renderPhotoStrip();
@@ -5821,15 +6614,18 @@ function openAdd(){
   document.getElementById('f-buy').value = '';
   document.getElementById('f-buy-hint').textContent = '';
   document.getElementById('f-range').value = '';
+  splitRangeIntoInputs('');
   document.getElementById('f-range-hint').textContent = '';
   if(rangeInputMode==='auto') maybeAutoFillRange();
   document.getElementById('f-buydate').value = todayISO();
+  document.getElementById('f-buytime').value = currentLocalTimeInput();
   document.getElementById('f-imei').value = '';
   document.getElementById('f-imei2').value = '';
   document.getElementById('f-seller-name').value = '';
   document.getElementById('f-seller-number').value = '';
   document.getElementById('f-customer-number').value = '';
   document.getElementById('f-saledate').value = todayISO();
+  document.getElementById('f-saletime').value = currentLocalTimeInput();
   document.getElementById('f-notes').value = '';
   document.getElementById('brandOtherWrap').style.display = 'none';
   document.getElementById('saleFieldsWrap').classList.remove('show');
@@ -5849,6 +6645,7 @@ function openAdd(){
   // until the next entry session.
   if(entryConfigRefreshPending){ loadCustomOptionData(); entryConfigRefreshPending=false; }
   refreshEntryFormUI();
+  updateEntryTotalCost();
   document.getElementById('overlay').classList.remove('hidden');
   requestAnimationFrame(function(){
     refreshEntryFormUI();
@@ -5886,7 +6683,7 @@ function openEdit(id){
   const brandKnown = BRANDS.indexOf(e.brand)!==-1;
   formState = {
     brand: brandKnown ? e.brand : 'Other',
-    status: e.status || '',
+    status: normalizeStatusValue(e.statusDetail || e.status || ''), statusDetail: '',
     ram: e.ram || '', storage: e.storage || '', condition: e.condition || '', network: e.network || '',
     display: e.display || 'Original panel', touch: e.touch || 'Perfect', camera: e.camera || 'Perfect', body: e.body || 'Original', openrepair: e.openrepair || 'No open, no repair', battery: e.battery || 'Perfect',
     box: e.box || 'No', packing: e.packing || 'No pack', charger: e.charger || 'Original charger',
@@ -5906,14 +6703,17 @@ function openEdit(id){
   document.getElementById('qtyWarning').classList.toggle('show', (e.quantity||1) > 1);
   document.getElementById('f-buy').value = e.buy != null ? e.buy : '';
   document.getElementById('f-range').value = e.range || '';
+  splitRangeIntoInputs(e.range || '');
   document.getElementById('f-range-hint').textContent = '';
   document.getElementById('f-buydate').value = e.buyDate || todayISO();
+  document.getElementById('f-buytime').value = e.buyTime || '';
   document.getElementById('f-imei').value = e.imei || '';
   document.getElementById('f-imei2').value = e.imei2 || '';
   document.getElementById('f-seller-name').value = e.sellerName || '';
   document.getElementById('f-seller-number').value = e.sellerNumber || '';
   document.getElementById('f-notes').value = e.notes || '';
   renderPhoneExpenseRows('f-phone-expenses', e.phoneExpenses || []);
+  updateEntryTotalCost();
 
   if(e.sold){
     document.getElementById('saleFieldsWrap').classList.add('show');
@@ -5927,10 +6727,12 @@ function openEdit(id){
     document.getElementById('f-customer-number').value = e.customerNumber || '';
     document.getElementById('f-payment').value = e.payment || '';
     document.getElementById('f-saledate').value = e.saleDate || todayISO();
+    document.getElementById('f-saletime').value = e.saleTime || '';
   } else {
     document.getElementById('saleFieldsWrap').classList.remove('show');
     document.getElementById('f-customer-number').value = '';
     document.getElementById('f-saledate').value = todayISO();
+    document.getElementById('f-saletime').value = currentLocalTimeInput();
   }
 
   document.getElementById('f-buy-hint').textContent = '';
@@ -5977,23 +6779,33 @@ function saveEntry(){
   hideSaveError('saveErrorBanner');
   const brand = formState.brand==='Other' ? document.getElementById('f-brand-other').value.trim() : formState.brand;
   const model = getFormModel();
-  if(!brand || !model){
-    alert('Brand aur model zaroori hai');
+  const entryPlatform = getEntryPlatform(brand);
+  const missingMandatory = [];
+  if(!brand) missingMandatory.push('Brand');
+  if(!model) missingMandatory.push('Model');
+  if(!formState.status) missingMandatory.push('Status');
+  if(entryPlatform!=='iphone' && !formState.ram) missingMandatory.push('RAM');
+  if(!formState.storage) missingMandatory.push('Storage');
+  if(!formState.condition) missingMandatory.push('Condition');
+  if(entryPlatform==='iphone' && !formState.battery) missingMandatory.push('Battery Health');
+  if(!formState.box) missingMandatory.push('Box');
+  if(!formState.charger) missingMandatory.push('Charger');
+  const buyRawForRequired = document.getElementById('f-buy').value.trim();
+  if(!buyRawForRequired && !formState.isSold) missingMandatory.push('Buy Price');
+  if(missingMandatory.length){
+    alert('Ye mandatory fields complete/select karein:\n\n• ' + missingMandatory.join('\n• '));
+    const firstMissing = missingMandatory[0];
+    const targetMap = {'Brand':'entryBrandSection','Model':'f-model','Status':'entryStatusSection','RAM':'entryRamSection','Storage':'entryStorageSection','Condition':'entryConditionSection','Battery Health':'f-battery','Box':'entryBoxSection','Charger':'entryChargerSection','Buy Price':'f-buy'};
+    const targetId = targetMap[firstMissing];
+    const target = targetId ? document.getElementById(targetId) : null;
+    if(target && target.scrollIntoView) target.scrollIntoView({behavior:'smooth',block:'center'});
     return;
   }
-  const entryPlatform = getEntryPlatform(brand);
-  if(!formState.status){ alert('Status select karna zaroori hai'); return; }
-  if(entryPlatform!=='iphone' && !formState.ram){ alert('RAM select karna zaroori hai'); return; }
-  if(!formState.storage){ alert('Storage select karna zaroori hai'); return; }
-  if(!formState.condition){ alert('Condition select karna zaroori hai'); return; }
-  if(entryPlatform==='iphone' && !formState.battery){ alert('Battery health select karna zaroori hai'); return; }
-  if(entryPlatform!=='iphone' && !formState.box){ alert('Box select karna zaroori hai'); return; }
-  if(entryPlatform!=='iphone' && !formState.charger){ alert('Charger select karna zaroori hai'); return; }
   const qty = Math.max(1, Number(document.getElementById('f-qty').value || 1));
   const buyFieldRaw = document.getElementById('f-buy').value.trim();
   const parsedBuyForRange = buyFieldRaw==='' ? null : parsePrice(buyFieldRaw);
   let rangeValue = normalizeRange(document.getElementById('f-range').value.trim());
-  if(rangeInputMode==='auto') rangeValue = parsedBuyForRange===null ? '' : autoSellRangeForBuy(parsedBuyForRange);
+  if(rangeInputMode==='auto') rangeValue = parsedBuyForRange===null ? '' : autoSellRangeForBuy(Math.max(0,parsedBuyForRange)+currentEntryExpenseTotal());
   const data = {
     brand: brand, model: model,
     range: rangeValue,
@@ -6002,13 +6814,15 @@ function saveEntry(){
     imei: document.getElementById('f-imei').value.trim(),
     imei2: document.getElementById('f-imei2').value.trim(),
     buyDate: document.getElementById('f-buydate').value || todayISO(),
+    buyTime: document.getElementById('f-buytime').value || '',
     sellerName: document.getElementById('f-seller-name').value.trim(),
     sellerNumber: document.getElementById('f-seller-number').value.trim(),
     ram: entryPlatform==='iphone' ? '' : (formState.ram || ''),
     storage: formState.storage || '',
     condition: formState.condition || '',
     network: formState.network || '',
-    status: formState.status || 'PTA',
+    status: normalizeStatusValue(formState.statusDetail || formState.status || 'PTA'),
+    statusDetail: '',
     display: formState.display || 'Original panel',
     touch: formState.touch || 'Perfect',
     camera: formState.camera || 'Perfect',
@@ -6038,13 +6852,14 @@ function saveEntry(){
     if(parsedSoldBuy===null || parsedSoldBuy<=0){ alert('Buy price sahi likhein. "40000" ya "40k" jese likhein.'); document.getElementById('f-buy-insale').focus(); return; }
     data.sell = sellVal === '' ? null : parsePrice(sellVal);
     data.buy = parsedSoldBuy;
-    if(rangeInputMode==='auto') data.range = autoSellRangeForBuy(parsedSoldBuy);
+    if(rangeInputMode==='auto') data.range = autoSellRangeForBuy(Math.max(0,parsedSoldBuy)+currentEntryExpenseTotal());
     document.getElementById('f-buy').value = String(parsedSoldBuy);
     document.getElementById('f-buy-insale').value = String(parsedSoldBuy);
     data.customer = document.getElementById('f-customer').value.trim();
     data.customerNumber = document.getElementById('f-customer-number').value.trim();
     data.payment = document.getElementById('f-payment').value.trim();
     data.saleDate = document.getElementById('f-saledate').value || todayISO();
+    data.saleTime = document.getElementById('f-saletime').value || '';
   } else {
     const buyVal = document.getElementById('f-buy').value.trim();
     if(buyVal === ''){ alert('Buy price zaroori hai. Entry save karne se pehle buy price likhein.'); document.getElementById('f-buy').focus(); return; }
@@ -6058,6 +6873,9 @@ function saveEntry(){
   }catch(err){
     alert(err.message || 'Phone expense check karein.');
     return;
+  }
+  if(rangeInputMode==='auto' && data.buy!=null){
+    data.range = autoSellRangeForBuy(Number(data.buy)+expenseArrayTotal(data.phoneExpenses));
   }
 
   // Build the candidate array WITHOUT touching the real `inventory` yet —
@@ -6091,7 +6909,7 @@ function saveEntry(){
         range: rangeRaw === '' ? (epBuy===null ? '' : autoSellRangeForBuy(epBuy)) : normalizeRange(rangeRaw),
         rangeMode: epRangeMode,
         imei: block.querySelector('.ep-imei').value.trim(),
-        status: epState.status || '',
+        status: normalizeStatusValue(epState.status || ''),
         display: epState.display || '',
         touch: epState.touch || '',
         camera: epState.camera || '',
@@ -6119,7 +6937,7 @@ function saveEntry(){
         range: ep.range !== '' ? ep.range : data.range,
         rangeMode: ep.rangeMode || data.rangeMode,
         imei: ep.imei || '',
-        status: ep.status || data.status,
+        status: normalizeStatusValue(ep.status || data.status),
         display: ep.display !== '' ? ep.display : data.display,
         touch: ep.touch !== '' ? ep.touch : data.touch,
         camera: ep.camera !== '' ? ep.camera : data.camera,
@@ -6174,16 +6992,20 @@ function openSell(id){
   const e = inventory.find(function(x){return x.id===id;});
   if(!e) return;
   sellingId = id;
-  document.getElementById('sellItemName').textContent = e.brand+' '+e.model+' - '+e.status+' ('+e.quantity+' available)';
-  document.getElementById('sellQtyLabel').textContent = 'Kitne piece beche (max '+e.quantity+')';
+  document.getElementById('sellItemName').textContent = e.brand+' '+e.model+' - '+formatEntryStatus(e)+' ('+e.quantity+' available)';
+  document.getElementById('sellQtyLabel').textContent = 'Piece';
   document.getElementById('s-qty').value = 1;
   document.getElementById('s-qty').max = e.quantity;
   document.getElementById('s-price').value = '';
   document.getElementById('s-price-hint').textContent = '';
   document.getElementById('s-customer').value = '';
   document.getElementById('s-customer-number').value = '';
-  document.getElementById('s-payment').value = '';
+  document.getElementById('s-received').value = '';
+  document.getElementById('s-balance-due').value = '0';
+  document.getElementById('s-received').dataset.manual = '0';
+  document.getElementById('s-balance-due').dataset.manual = '0';
   document.getElementById('s-saledate').value = todayISO();
+  document.getElementById('s-saletime').value = currentLocalTimeInput();
   renderPhoneExpenseRows('s-phone-expenses', []);
   updateSellProfitPreview();
   document.getElementById('sellOverlay').classList.remove('hidden');
@@ -6194,19 +7016,49 @@ function closeSellSheet(){
   requestOverlayClose();
 }
 
+function updateSaleBalancePreview(source){
+  const qty=Math.max(1,Number(document.getElementById('s-qty').value||1));
+  const price=parsePrice((document.getElementById('s-price').value||'').trim())||0;
+  const total=price*qty;
+  const receivedEl=document.getElementById('s-received');
+  const dueEl=document.getElementById('s-balance-due');
+  if(!receivedEl||!dueEl)return;
+  if(source==='price' && receivedEl.dataset.manual!=='1'){
+    receivedEl.value=String(total);
+    dueEl.value='0';
+    dueEl.dataset.manual='0';
+    return;
+  }
+  if(source==='received'){
+    const received=Math.max(0,Number(receivedEl.value)||0);
+    if(dueEl.dataset.manual!=='1') dueEl.value=String(Math.max(0,total-received));
+  } else if(source==='due'){
+    const due=Math.max(0,Number(dueEl.value)||0);
+    if(receivedEl.dataset.manual!=='1') receivedEl.value=String(Math.max(0,total-due));
+  } else {
+    const received=receivedEl.value===''?total:Math.max(0,Number(receivedEl.value)||0);
+    if(dueEl.dataset.manual!=='1') dueEl.value=String(Math.max(0,total-received));
+  }
+}
 function updateSellProfitPreview(){
   const e = inventory.find(function(x){return x.id===sellingId;});
   const qty = Math.max(1, Number(document.getElementById('s-qty').value || 1));
   const priceVal = document.getElementById('s-price').value.trim();
   const price = priceVal==='' ? 0 : (parsePrice(priceVal) || 0);
   const el = document.getElementById('sellProfitPreview');
+  let saleExtra=0;
+  try{ saleExtra=expenseArrayTotal(readPhoneExpenseRows('s-phone-expenses')); }catch(err){}
   if(e && e.buy!=null){
-    let extra=0;
-    try{ extra=readPhoneExpenseRows('s-phone-expenses').reduce(function(s,x){return s+Number(x.amount||0);},0); }catch(err){}
-    const profit = (price - Number(e.buy)) * qty - extra;
+    const baseCost=entryTotalCost(e);
+    const totalCost=(baseCost*qty)+saleExtra;
+    const totalCostEl=document.getElementById('saleTotalCostValue');
+    if(totalCostEl) totalCostEl.textContent='Rs. '+fmt(totalCost);
+    const profit = (price - baseCost) * qty - saleExtra;
     el.textContent = fmt(profit);
     el.style.color = profit>=0 ? 'var(--pta)' : 'var(--danger)';
   } else {
+    const totalCostEl=document.getElementById('saleTotalCostValue');
+    if(totalCostEl) totalCostEl.textContent='—';
     el.textContent = '-';
     el.style.color = 'var(--text-faint)';
   }
@@ -6239,17 +7091,28 @@ function confirmSell(){
     alert('Itne piece stock mein nahi hain');
     return;
   }
+  const saleTotal=price*qty;
+  const receivedRaw=document.getElementById('s-received').value.trim();
+  const dueRaw=document.getElementById('s-balance-due').value.trim();
+  const received=receivedRaw===''?saleTotal:Number(receivedRaw);
+  const manuallyDue=dueRaw===''?Math.max(0,saleTotal-received):Number(dueRaw);
+  if(!Number.isFinite(received)||received<0||received>saleTotal){alert('Received amount total sale price se zyada ya negative nahi ho sakti.');return;}
+  if(!Number.isFinite(manuallyDue)||manuallyDue<0||Math.abs((received+manuallyDue)-saleTotal)>0.01){alert('Received amount aur Remaining ka total sale price ke barabar hona chahiye.');return;}
+  const initialPayment={amount:received, date:document.getElementById('s-saledate').value||todayISO(), time:document.getElementById('s-saletime').value||'', method:'', note:'Sale ke waqt payment'};
   const soldRecord = Object.assign({}, e, {
     id: 'sold_'+Date.now(),
     quantity: qty,
     sold: true, saleStatus: 'sold',
     stockId: String(e.id),
     sell: price,
-    phoneExpenses: (Array.isArray(e.phoneExpenses)?e.phoneExpenses:[]).concat(salePhoneExpenses),
+    phoneExpenses: (Array.isArray(e.phoneExpenses)?e.phoneExpenses:[]),
+    saleExpenses: salePhoneExpenses,
     customer: document.getElementById('s-customer').value.trim(),
     customerNumber: document.getElementById('s-customer-number').value.trim(),
-    payment: document.getElementById('s-payment').value.trim(),
+    payment: '',
+    saleTotal: saleTotal, paymentReceived: received, balanceDue: Math.max(0,manuallyDue), payments: received>0?[initialPayment]:[],
     saleDate: document.getElementById('s-saledate').value || todayISO(),
+    saleTime: document.getElementById('s-saletime').value || '',
     saleAt: new Date().toISOString(),
     lastUpdated: todayStr()
   });
@@ -6269,7 +7132,8 @@ function confirmSell(){
   currentFilter = 'all';
   render();
   logActivity('sell','Mobile sold: '+e.brand+' '+e.model,'Qty: '+qty+' · Rs '+fmt(price));
-  showToast('✓ Sold ho gaya — '+fmt(price)+' mein.');
+  showToast('✓ Sold — '+fmt(saleTotal)+' · Baqi Rs. '+fmt(Math.max(0,saleTotal-received)));
+  renderCustomerBook();
 }
 
 document.getElementById('fabAdd').onclick = openAdd;
@@ -6282,7 +7146,12 @@ document.getElementById('btnSellCancel').onclick = closeSellSheet;
 document.getElementById('btnSellConfirm').onclick = confirmSell;
 document.getElementById('sellOverlay').onclick = function(e){ if(e.target.id==='sellOverlay') closeSellSheet(); };
 document.getElementById('s-qty').oninput = updateSellProfitPreview;
-document.getElementById('s-price').oninput = updateSellProfitPreview;
+document.getElementById('s-price').oninput = function(){updateSellProfitPreview();updateSaleBalancePreview('price');};
+document.getElementById('s-qty').addEventListener('input',function(){updateSaleBalancePreview('price');});
+document.getElementById('s-received').addEventListener('input',function(){this.dataset.manual='1';document.getElementById('s-balance-due').dataset.manual='0';updateSaleBalancePreview('received');});
+document.getElementById('s-balance-due').addEventListener('input',function(){this.dataset.manual='1';document.getElementById('s-received').dataset.manual='0';updateSaleBalancePreview('due');});
+document.getElementById('s-received').oninput = updateSaleBalancePreview;
+document.getElementById('s-qty').addEventListener('input',updateSaleBalancePreview);
 document.getElementById('search').oninput = function(){ renderList(); saveUIState(); };
 document.getElementById('sortSelect').onchange = function(){ currentSort = this.value; renderList(); saveUIState(); };
 document.getElementById('activityTypeFilter').onchange = function(){ renderList(); saveUIState(); };
@@ -6301,7 +7170,7 @@ document.getElementById('clearActivityFilter').onclick = function(){
 };
 const addPhoneExpenseInlineBtn=document.getElementById('addPhoneExpenseInline');
 if(addPhoneExpenseInlineBtn){
-  addPhoneExpenseInlineBtn.onclick=function(){ addPhoneExpenseRow('f-phone-expenses'); const rows=document.querySelectorAll('#f-phone-expenses .phone-expense-row'); const last=rows[rows.length-1]; if(last){ const inp=last.querySelector('.pe-category'); if(inp) setTimeout(function(){inp.focus();},0); } updateSellProfitPreview(); };
+  addPhoneExpenseInlineBtn.onclick=function(){ addPhoneExpenseRow('f-phone-expenses'); updateEntryTotalCost(); const rows=document.querySelectorAll('#f-phone-expenses .phone-expense-row'); const last=rows[rows.length-1]; if(last){ const inp=last.querySelector('.pe-category'); if(inp) setTimeout(function(){inp.focus();},0); } updateSellProfitPreview(); };
   addPhoneExpenseInlineBtn.onkeydown=function(e){ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); addPhoneExpenseInlineBtn.click(); } };
 }
 
@@ -6767,11 +7636,11 @@ function renderDashboard(){
   const pendingUnits=stockItems.reduce(function(s,e){return s+(e.quantity||0);},0);
   const soldPeriod=soldItems.filter(function(e){return dashboardDateInRange(e.saleDate||e.saleAt||e.lastUpdated,range);});
   const unitsSold=soldPeriod.reduce(function(s,e){return s+(e.quantity||0);},0);
-  const grossProfit=soldPeriod.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0);
+  const grossProfit=soldPeriod.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+saleBaseProfit(e);},0);
   const periodExpenses=expensesForDashboardRange(range);
   const netProfit=grossProfit-periodExpenses;
   const totalExpensesAll=totalExpensesAllTime()+totalPhoneExpensesAllTime();
-  const allTimeProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+((Number(e.sell)-Number(e.buy))*(e.quantity||1));},0);
+  const allTimeProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+saleBaseProfit(e);},0);
   const netProfitAllTime=allTimeProfit-totalExpensesAll;
   const cards=[
     {v:displayProfitHtml(totalStockValue),l:'Total stock value'},
@@ -6931,7 +7800,7 @@ function renderReports(){
   const entries = getFilteredSoldEntries();
   let grossProfit = 0;
   const rowsHtml = entries.map(function(e){
-    const baseProfit = (e.buy!=null && e.sell!=null && !isReturnedSale(e)) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : 0;
+    const baseProfit = saleBaseProfit(e);
     if(baseProfit) grossProfit += baseProfit;
     const netSale = isReturnedSale(e) ? 0 : saleNetProfit(e);
     const profitColor = netSale>=0 ? 'var(--pta)' : 'var(--danger)';
@@ -6995,11 +7864,11 @@ document.getElementById('btnReportsPdf').onclick = function(){
   const brand = document.getElementById('rp-brand').value;
   let grossProfit = 0;
   const rows = entries.map(function(e){
-    const profit = isReturnedSale(e) ? 0 : ((e.buy!=null && e.sell!=null) ? (Number(e.sell)-Number(e.buy))*(e.quantity||1) : 0);
+    const profit = saleBaseProfit(e);
     if(!isReturnedSale(e) && e.buy!=null && e.sell!=null) grossProfit += profit;
     return '<tr>'+
       '<td>'+formatDateDisplay(dateOnly(e.saleDate))+(isReturnedSale(e)?'<br>Returned: '+formatDateTimeDisplay(e.returnedAt):'')+'</td>'+
-      '<td>'+e.brand+' '+e.model+(e.quantity>1?(' x'+e.quantity):'')+(isReturnedSale(e)?' (RETURNED)':'')+'<br><small>'+[e.status?'Status: '+e.status:'',getEntryPlatform(e.brand||'')!=='iphone'&&e.ram?'RAM: '+e.ram:'',e.storage?'Storage: '+e.storage:'',e.condition?'Condition: '+e.condition:'',getEntryPlatform(e.brand||'')==='iphone'&&e.battery?'Battery health: '+e.battery:'',getEntryPlatform(e.brand||'')!=='iphone'&&e.box?'Box: '+e.box:'',getEntryPlatform(e.brand||'')!=='iphone'&&e.charger?'Charger: '+e.charger:''].filter(Boolean).join(' · ')+'</small></td>'+
+      '<td>'+e.brand+' '+e.model+(e.quantity>1?(' x'+e.quantity):'')+(isReturnedSale(e)?' (RETURNED)':'')+'<br><small>'+[e.status?'Status: '+formatEntryStatus(e):'',getEntryPlatform(e.brand||'')!=='iphone'&&e.ram?'RAM: '+e.ram:'',e.storage?'Storage: '+e.storage:'',e.condition?'Condition: '+e.condition:'',getEntryPlatform(e.brand||'')==='iphone'&&e.battery?'Battery health: '+e.battery:'',getEntryPlatform(e.brand||'')!=='iphone'&&e.box?'Box: '+e.box:'',getEntryPlatform(e.brand||'')!=='iphone'&&e.charger?'Charger: '+e.charger:''].filter(Boolean).join(' · ')+'</small></td>'+
       '<td>'+(e.customer||'')+(e.customerNumber?'<br>'+e.customerNumber:'')+'</td>'+
       '<td style="text-align:right;">'+fmt(displayBuyPrice(e.buy))+'</td>'+
       '<td style="text-align:right;">'+fmt(e.sell)+'</td>'+
@@ -7032,7 +7901,22 @@ document.getElementById('btnReportsPdf').onclick = function(){
     '.summary-table td{border:none;padding:4px 8px;}'+
     '.summary-table .net td{border-top:2px solid #333;font-weight:bold;font-size:14px;}'+
     '@media print{ body{padding:0;} }'+
-    '</style></head><body>'+
+    '</style>
+<style id="referenceLoadingScreenStyle">
+/* Loading appearance only: match the older Mobile Hisab splash reference. */
+#sessionSplash{position:fixed!important;inset:0!important;z-index:99999!important;display:none;align-items:center!important;justify-content:center!important;background:#24364b!important;color:#fff!important;padding:24px!important;box-sizing:border-box!important;}
+#sessionSplash.show{display:flex!important;}
+#sessionSplash .session-splash-card{width:min(360px,90vw)!important;text-align:center!important;display:flex!important;flex-direction:column!important;align-items:center!important;animation:sessionSplashIn .28s ease-out!important;color:#fff!important;}
+#sessionSplash .session-splash-logo{width:88px!important;height:88px!important;border-radius:20px!important;overflow:hidden!important;border:1px solid rgba(255,255,255,.18)!important;box-shadow:0 8px 25px rgba(0,0,0,.18)!important;background:#fff!important;padding:10px!important;margin-bottom:22px!important;box-sizing:border-box!important;}
+#sessionSplash .session-splash-logo img{width:100%!important;height:100%!important;object-fit:contain!important;display:block!important;}
+#sessionSplash .session-splash-title{font-weight:800!important;font-size:34px!important;letter-spacing:-.6px!important;color:#fff!important;}
+#sessionSplash .session-splash-by{margin-top:3px!important;font-size:17px!important;color:#e9edf3!important;font-weight:700!important;}
+#sessionSplash .session-splash-status{margin-top:28px!important;font-size:13px!important;color:#d6dee8!important;}
+#sessionSplash .session-splash-loader{width:180px!important;height:4px!important;border-radius:99px!important;background:#627286!important;overflow:hidden!important;margin-top:12px!important;}
+#sessionSplash .session-splash-loader i{display:block!important;width:42%!important;height:100%!important;border-radius:99px!important;background:#ef1f2f!important;animation:sessionSplashLoad 1.15s ease-in-out infinite!important;}
+@media(max-width:420px){#sessionSplash .session-splash-title{font-size:30px!important;}#sessionSplash .session-splash-logo{width:80px!important;height:80px!important;}}
+</style>
+</head><body>'+
     '<h1>Mobile Hisab — Sales Report</h1>'+
     '<div class="sub">'+rangeLabel+(brand!=='all'?(' • Brand: '+brand):'')+' • Banaya gaya: '+formatDateDisplay(todayISO())+'</div>'+
     '<h2>Sales</h2>'+
@@ -7327,7 +8211,7 @@ function analyticsRenderSnapshot(range,curr){
   const stockItems=inventory.filter(function(e){return !e.sold&&Number(e.quantity||0)>0;});
   const lifetimeSold=inventory.filter(function(e){return e.sold&&!isReturnedSale(e);}).reduce(function(s,e){return s+(Number(e.quantity)||0);},0);
   const totalStockValue=stockItems.reduce(function(s,e){return s+(Number(e.buy)||0)*(Number(e.quantity)||0);},0);
-  const allTimeProfit=inventory.filter(function(e){return e.sold&&!isReturnedSale(e)&&e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+(Number(e.sell)-Number(e.buy))*(Number(e.quantity)||1);},0);
+  const allTimeProfit=inventory.filter(function(e){return e.sold&&!isReturnedSale(e)&&e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+saleBaseProfit(e);},0);
   const lifetimeExpenses=totalExpensesAllTime()+totalPhoneExpensesAllTime();
   const lifetimeNetProfit=allTimeProfit-lifetimeExpenses;
   const cards=[
@@ -7412,7 +8296,26 @@ function syncMenuOpenState(){
   const menu=document.getElementById('menuDropdown');
   const open=menu && !menu.classList.contains('hidden');
   document.body.classList.toggle('menu-open', !!open);
+  // Safety recovery: if any menu action changes the drawer state without
+  // going through closeMainMenu(), remove stale inline hiding from the
+  // main-screen search/filter rows when the drawer is closed.
+  if(!open){
+    ['.search-row','#brandFilterChips','#filterChips','.activity-filter-row'].forEach(function(selector){
+      document.querySelectorAll(selector).forEach(function(el){
+        el.style.removeProperty('visibility');
+        el.style.removeProperty('pointer-events');
+      });
+    });
+  }
 }
+// Keep the body/menu state in sync even when another menu action toggles the
+// drawer directly. This prevents the filter rows staying hidden until refresh.
+(function(){
+  const menu=document.getElementById('menuDropdown');
+  if(!menu || menu.__menuStateObserverInstalled) return;
+  menu.__menuStateObserverInstalled=true;
+  new MutationObserver(function(){ syncMenuOpenState(); }).observe(menu,{attributes:true,attributeFilter:['class']});
+})();
 function closeMainMenu(){
   const menu=document.getElementById('menuDropdown');
   if(menu) menu.classList.add('hidden');
@@ -7689,17 +8592,62 @@ function buildContactsList(){
   inventory.forEach(function(e){
     if(e.sold && (e.customer || e.customerNumber)){
       addContactTx(map, e.customer, e.customerNumber, {
-        type:'sale', brand:e.brand, model:e.model, date:e.saleDate||e.lastUpdated, amount:e.sell, qty:e.quantity||1
+        type:'sale', contactName:e.customer||'', contactNumber:e.customerNumber||'', brand:e.brand, model:e.model, date:e.saleDate||e.lastUpdated, amount:e.sell, qty:e.quantity||1
       });
     }
     if(!e.sold && (e.sellerName || e.sellerNumber)){
       addContactTx(map, e.sellerName, e.sellerNumber, {
-        type:'purchase', brand:e.brand, model:e.model, date:e.buyDate||e.lastUpdated, amount:e.buy, qty:e.quantity||1
+        type:'purchase', contactName:e.sellerName||'', contactNumber:e.sellerNumber||'', brand:e.brand, model:e.model, date:e.buyDate||e.lastUpdated, amount:e.buy, qty:e.quantity||1
       });
     }
   });
   return Object.keys(map).map(function(k){ return map[k]; })
     .sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
+}
+
+function contactActionNumber(value){
+  let digits = String(value||'').replace(/\D/g,'');
+  if(!digits) return '';
+  if(digits.startsWith('0')) digits = '92'+digits.slice(1);
+  else if(!digits.startsWith('92')) digits = '92'+digits;
+  return digits;
+}
+
+function editContactDetails(encodedName, encodedNumber){
+  if(isAdminShopView()){ alert('Admin Shop view read-only hai.'); return; }
+  const oldName = decodeURIComponent(encodedName || '');
+  const oldNumber = decodeURIComponent(encodedNumber || '');
+  const existing = document.getElementById('contactEditDialog');
+  if(existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'contactEditDialog';
+  overlay.className = 'overlay';
+  overlay.style.cssText = 'display:flex;z-index:10050;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.62)';
+  overlay.innerHTML = '<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactEditTitle" style="width:min(100%,420px);max-height:90vh;overflow:auto;position:relative">'+
+    '<div class="sheet-handle"></div><h2 id="contactEditTitle">Edit Contact</h2><p style="color:var(--text-dim);font-size:12px;margin:-5px 0 16px">Naam aur phone number update karein.</p>'+
+    '<div class="field"><label>Contact ka naam</label><input id="contactEditName" type="text" maxlength="100" placeholder="Naam likhein"></div>'+
+    '<div class="field"><label>Phone number</label><input id="contactEditNumber" type="tel" maxlength="25" placeholder="03xx xxxxxxx"></div>'+
+    '<div class="sheet-actions" style="display:flex;gap:10px;margin-top:18px"><button type="button" class="btn-cancel" id="contactEditCancel" style="flex:1">Cancel</button><button type="button" class="btn-save" id="contactEditSave" style="flex:1">Save Changes</button></div></div>';
+  document.body.appendChild(overlay);
+  document.getElementById('contactEditName').value = oldName==='(Naam nahi diya)' ? '' : oldName;
+  document.getElementById('contactEditNumber').value = oldNumber;
+  function closeDialog(){ overlay.remove(); }
+  document.getElementById('contactEditCancel').onclick = closeDialog;
+  overlay.addEventListener('click',function(e){if(e.target===overlay) closeDialog();});
+  document.getElementById('contactEditSave').onclick = function(){
+    const newName = document.getElementById('contactEditName').value.trim();
+    const newNumber = document.getElementById('contactEditNumber').value.trim();
+    if(!newName && !newNumber){ alert('Naam ya phone number mein se kam az kam ek zaroor dein.'); return; }
+    let changed = 0;
+    inventory.forEach(function(e){
+      const matchesSale = String(e.customer||'').trim()===oldName && String(e.customerNumber||'').trim()===oldNumber;
+      const matchesPurchase = String(e.sellerName||'').trim()===oldName && String(e.sellerNumber||'').trim()===oldNumber;
+      if(matchesSale){ e.customer = newName; e.customerNumber = newNumber; e._syncUpdatedAt = Date.now(); e.lastUpdatedAt = e._syncUpdatedAt; changed++; }
+      if(matchesPurchase){ e.sellerName = newName; e.sellerNumber = newNumber; e._syncUpdatedAt = Date.now(); e.lastUpdatedAt = e._syncUpdatedAt; changed++; }
+    });
+    if(!changed){ alert('Is contact ki matching transaction nahi mili.'); return; }
+    saveInventory(); closeDialog(); renderContacts(); showToast('✓ Contact update save ho gaya — cloud sync shuru ho gayi hai');
+  };
 }
 
 function renderContacts(){
@@ -7711,24 +8659,42 @@ function renderContacts(){
     });
   }
   const html = contacts.map(function(c){
-    const saleCount = c.transactions.filter(function(t){return t.type==='sale';}).length;
-    const buyCount = c.transactions.filter(function(t){return t.type==='purchase';}).length;
+    const sales = c.transactions.filter(function(t){return t.type==='sale';});
+    const purchases = c.transactions.filter(function(t){return t.type==='purchase';});
+    const saleCount = sales.length, buyCount = purchases.length;
+    const saleTotal = sales.reduce(function(sum,t){return sum+(Number(t.amount)||0)*(Number(t.qty)||1);},0);
+    const buyTotal = purchases.reduce(function(sum,t){return sum+(Number(t.amount)||0)*(Number(t.qty)||1);},0);
     const txHtml = c.transactions.slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); })
       .map(function(t){
+        const isSale=t.type==='sale';
+        const personName=(t.contactName||'').trim();
+        const personNumber=(t.contactNumber||'').trim();
+        const personLabel=personName ? personName : (personNumber ? ('contact ('+personNumber+')') : 'contact');
         return '<div class="contact-tx">'+
-          '<span class="tx-main">'+(t.type==='sale'?'Becha':'Khareeda')+': '+t.brand+' '+t.model+(t.qty>1?(' x'+t.qty):'')+' — '+fmt(t.amount)+'</span>'+
+          '<span class="tx-main">'+(isSale?'Sold to ':'Bought from ')+escapeHtml(personLabel)+': '+escapeHtml((t.brand||'')+' '+(t.model||''))+(t.qty>1?(' x'+t.qty):'')+' — Rs '+fmt((Number(t.amount)||0)*(Number(t.qty)||1))+'</span>'+
           '<span class="tx-date">'+formatDateDisplay(t.date)+'</span>'+
         '</div>';
       }).join('');
     return '<div class="contact-card">'+
       '<div class="contact-head">'+
-        '<div><div class="contact-name">'+c.name+'</div>'+(c.number?'<div class="contact-number">'+c.number+'</div>':'')+'</div>'+
+        '<div><div class="contact-name-line"><div class="contact-name">'+escapeHtml(c.name)+'</div><button type="button" class="contact-action-btn contact-edit-icon" title="Edit contact" aria-label="Edit contact" onclick="editContactDetails(\''+encodeURIComponent(c.name==='(Naam nahi diya)'?'':c.name)+'\',\''+encodeURIComponent(c.number)+'\')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16.5-.8 4.3 4.3-.8L19.8 7.7a2.1 2.1 0 0 0-3-3L4 16.5Z"/><path d="m14.8 6.7 3 3"/></svg></button></div>'+(c.number?'<div class="contact-number">'+escapeHtml(c.number)+'</div>':'')+
+          (c.number?'<div class="contact-actions">'+
+            '<a class="contact-action-btn contact-whatsapp" aria-label="WhatsApp" title="WhatsApp" href="https://wa.me/'+escapeHtml(contactActionNumber(c.number))+'" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.6a8 8 0 0 1-11.8 7L4 20l1.4-4A8 8 0 1 1 20 11.6Z"/><path d="M9 8.5c.5 2.4 2.1 4 4.5 4.6l1-1 2 1c-.2 1.4-1 2-2.3 2-3.6-.3-6.5-3.2-6.8-6.8 0-1.2.7-2.1 2-2.3l1 2Z"/></svg><span>WhatsApp</span></a>'+
+            '<a class="contact-action-btn contact-sms" aria-label="SMS" title="SMS" href="sms:'+escapeHtml(String(c.number).replace(/[^0-9+]/g,''))+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v12H9l-5 3v-15Z"/><path d="m5 7 7 5 7-5"/></svg><span>SMS</span></a>'+
+            '<a class="contact-action-btn contact-call" aria-label="Call" title="Call" href="tel:'+escapeHtml(String(c.number).replace(/[^0-9+]/g,''))+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5 10 7 8.5 9.5c1.3 2.5 3.2 4.4 5.7 5.7L16.7 14l3.8 3c-.4 2-1.8 3-3.6 3C10.5 19.2 4.8 13.5 4 7.1 4 5.2 5 3.9 7 3.5Z"/></svg><span>Call</span></a>'+
+            '</div>':'<div class="contact-actions"></div>')+
+        '</div>'+
+        (c.number?'<button type="button" class="contact-action-btn contact-phone-save" onclick="exportPhoneContact('+JSON.stringify(encodeURIComponent(c.name==='(Naam nahi diya)'?'':c.name))+','+JSON.stringify(encodeURIComponent(c.number))+')">＋ Save to Phone</button>':'')+
         '<div class="contact-badges">'+
-          (saleCount?'<span class="badge sold-badge">'+saleCount+' sale</span>':'')+
-          (buyCount?'<span class="badge qty">'+buyCount+' khareed</span>':'')+
+          (buyCount?'<span class="badge qty">Seller</span>':'')+
+          (saleCount?'<span class="badge sold-badge">Buyer</span>':'')+
         '</div>'+
       '</div>'+
-      '<div class="contact-tx-list">'+txHtml+'</div>'+
+      '<div class="contact-overview" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">'+
+        '<div style="background:var(--surface-2);border-radius:9px;padding:9px"><div style="font-size:11px;color:var(--text-dim)">Total purchases from contact · '+buyCount+'</div><strong>Rs '+fmt(buyTotal)+'</strong></div>'+
+        '<div style="background:var(--surface-2);border-radius:9px;padding:9px"><div style="font-size:11px;color:var(--text-dim)">Total sales to contact · '+saleCount+'</div><strong>Rs '+fmt(saleTotal)+'</strong></div>'+
+      '</div>'+
+      '<div class="contact-tx-list">'+(txHtml||'<div style="color:var(--text-dim)">No transactions yet.</div>')+'</div>'+
     '</div>';
   }).join('');
   document.getElementById('contactsList').innerHTML = html || '<div style="text-align:center;color:var(--text-dim);font-size:12.5px;padding:20px 0;">Abhi koi customer/seller record nahi hai. Jaise hi koi sale ya purchase customer/seller ke naam se save hogi, yahan nazar aayegi.</div>';
@@ -7747,6 +8713,111 @@ document.getElementById('contactsOverlay').onclick = function(e){
   if(e.target.id==='contactsOverlay') requestOverlayClose();
 };
 document.getElementById('contactsSearch').oninput = renderContacts;
+
+// ---------- Contact picker integrations ----------
+function refreshAppContactDatalists(){
+  const contacts=buildContactsList();
+  const names=document.getElementById('appContactNames'), numbers=document.getElementById('appContactNumbers');
+  if(names) names.innerHTML=contacts.filter(c=>c.name && c.name!=='(Naam nahi diya)').map(c=>'<option value="'+escapeHtml(c.name)+'" label="'+escapeHtml(c.number||'')+'"></option>').join('');
+  if(numbers) numbers.innerHTML=contacts.filter(c=>c.number).map(c=>'<option value="'+escapeHtml(c.number)+'" label="'+escapeHtml(c.name||'')+'"></option>').join('');
+}
+function findAppContact(query){
+  const q=String(query||'').trim().toLowerCase(); if(!q)return [];
+  return buildContactsList().filter(c=>(c.name||'').toLowerCase()===q || String(c.number||'').replace(/\D/g,'')===q.replace(/\D/g,''));
+}
+function openAppContactPicker(nameId,numberId){
+  refreshAppContactDatalists();
+  const contacts=buildContactsList();
+  if(!contacts.length){showToast('Abhi app mein koi saved seller/customer nahi hai.');return;}
+  const old=document.getElementById('appContactPickerDialog'); if(old)old.remove();
+  const overlay=document.createElement('div');overlay.id='appContactPickerDialog';overlay.className='overlay';overlay.style.cssText='display:flex;z-index:10060;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.62)';
+  overlay.innerHTML='<div class="sheet" role="dialog" aria-modal="true" style="width:min(100%,440px);max-height:85vh;overflow:auto"><div class="sheet-handle"></div><h2>App Contacts</h2><input id="appContactPickerSearch" class="contact-search" placeholder="Naam ya number search karein"><div id="appContactPickerResults" class="contact-list"></div><button type="button" class="btn-cancel" id="appContactPickerClose" style="width:100%;margin-top:12px">Band karein</button></div>';
+  document.body.appendChild(overlay);
+  function draw(){const q=document.getElementById('appContactPickerSearch').value.toLowerCase().trim();const list=contacts.filter(c=>(c.name||'').toLowerCase().includes(q)||(c.number||'').includes(q));document.getElementById('appContactPickerResults').innerHTML=list.map((c,i)=>'<button type="button" class="contact-card" data-ci="'+i+'" style="text-align:left;border:1px solid var(--border);color:var(--text);width:100%"><strong>'+escapeHtml(c.name)+'</strong><div class="contact-number">'+escapeHtml(c.number||'Number not saved')+'</div></button>').join('')||'<div style="padding:14px;color:var(--text-dim)">Koi contact nahi mila.</div>';document.getElementById('appContactPickerResults').querySelectorAll('[data-ci]').forEach(b=>b.onclick=()=>{const c=list[Number(b.dataset.ci)];document.getElementById(nameId).value=c.name==='(Naam nahi diya)'?'':c.name;document.getElementById(numberId).value=c.number||'';overlay.remove();});}
+  draw();document.getElementById('appContactPickerSearch').oninput=draw;document.getElementById('appContactPickerClose').onclick=()=>overlay.remove();overlay.onclick=e=>{if(e.target===overlay)overlay.remove();};
+}
+function normalizePickedPhone(value){
+  // Remove spaces, hyphens, brackets and other formatting; retain a leading + if supplied.
+  const raw=String(value||'').trim();
+  const digits=raw.replace(/\D/g,'');
+  return raw.startsWith('+')?('+'+digits):digits;
+}
+async function pickPhoneContact(nameId,numberId){
+  const nameField=document.getElementById(nameId),numberField=document.getElementById(numberId);
+  if(!nameField||!numberField){showToast('Contact fields nahi milay. Form dobara khol kar try karein.');return;}
+  // Use the native Contact Picker where the browser supports it (typically Android Chromium).
+  // If unsupported, cancelled, or it throws, provide the same manual fallback so the button remains useful.
+  if(navigator.contacts && typeof navigator.contacts.select==='function'){
+    try{
+      const picked=await navigator.contacts.select(['name','tel'],{multiple:false});
+      if(picked&&picked[0]){
+        nameField.value=(picked[0].name||[])[0]||'';
+        numberField.value=normalizePickedPhone((picked[0].tel||[])[0]||'');
+        nameField.dispatchEvent(new Event('change',{bubbles:true}));
+        numberField.dispatchEvent(new Event('change',{bubbles:true}));
+        return;
+      }
+      // An empty result generally means the picker was dismissed; do not force a fallback on cancellation.
+      return;
+    }catch(e){
+      if(e&&e.name==='AbortError')return;
+      console.warn('Native contact picker unavailable; opening manual fallback.',e);
+    }
+  }
+  // Safari/iOS does not expose the Contact Picker API. User can paste copied details from Contacts.
+  try{
+    const old=document.getElementById('phoneContactFallback');if(old)old.remove();
+    const overlay=document.createElement('div');overlay.id='phoneContactFallback';overlay.className='overlay';overlay.style.cssText='display:flex;z-index:10080;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.62)';
+    overlay.innerHTML='<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="phoneFallbackTitle" style="width:min(100%,420px);padding:20px"><div class="sheet-handle"></div><h2 id="phoneFallbackTitle">Phone Contacts</h2><p style="color:var(--text-dim);font-size:13px;line-height:1.5">Is browser mein direct phone contact picker available nahi. Phone ki Contacts app se naam/number copy karke yahan paste ya enter karein.</p><div class="field"><label>Naam</label><input id="phoneFallbackName" autocomplete="off" placeholder="Contact ka naam"></div><div class="field"><label>Phone number</label><input id="phoneFallbackNumber" type="tel" inputmode="tel" autocomplete="tel" placeholder="03xxxxxxxxx"></div><div style="display:flex;gap:8px;margin-top:12px"><button type="button" class="btn-cancel" id="phoneFallbackCancel" style="flex:1">Cancel</button><button type="button" class="btn-primary" id="phoneFallbackUse" style="flex:1">Use contact</button></div></div>';
+    document.body.appendChild(overlay);
+    overlay.querySelector('#phoneFallbackCancel').onclick=()=>overlay.remove();
+    overlay.querySelector('#phoneFallbackUse').onclick=()=>{
+      const n=overlay.querySelector('#phoneFallbackName').value.trim();
+      const ph=normalizePickedPhone(overlay.querySelector('#phoneFallbackNumber').value);
+      if(!n&&!ph){showToast('Naam ya phone number enter karein.');return;}
+      nameField.value=n;numberField.value=ph;
+      nameField.dispatchEvent(new Event('change',{bubbles:true}));numberField.dispatchEvent(new Event('change',{bubbles:true}));
+      overlay.remove();showToast('Contact details form mein add ho gayi hain.');
+    };
+    overlay.onclick=e=>{if(e.target===overlay)overlay.remove();};
+    setTimeout(()=>{const input=overlay.querySelector('#phoneFallbackName');if(input)input.focus();},40);
+  }catch(e){console.error('Phone contact fallback failed',e);showToast('Phone contact form nahi khul saka. Naam aur number manually fields mein enter karein.');}
+}
+async function exportPhoneContact(encodedName,encodedNumber){
+  const name=decodeURIComponent(encodedName||'').trim()||'Contact';
+  const number=normalizePickedPhone(decodeURIComponent(encodedNumber||''));
+  if(!number){alert('Is contact ka phone number nahi hai.');return;}
+  const esc=v=>String(v).replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
+  const vcard='BEGIN:VCARD\r\nVERSION:3.0\r\nFN:'+esc(name)+'\r\nTEL;TYPE=CELL:'+esc(number)+'\r\nEND:VCARD\r\n';
+  const blob=new Blob([vcard],{type:'text/vcard;charset=utf-8'});
+  const safe=(name.replace(/[^a-z0-9_-]/gi,'_')||'contact')+'.vcf';
+  let shared=false;
+  try{
+    const file=new File([blob],safe,{type:'text/vcard'});
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:name}); shared=true;
+      showToast('Contact share ho gaya — Contacts mein Add to Contacts/Save chunein.');
+    }
+  }catch(e){ if(e && e.name==='AbortError') return; }
+  if(shared)return;
+  try{
+    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=safe;a.target='_blank';a.rel='noopener';a.style.position='fixed';a.style.left='-9999px';document.body.appendChild(a);a.click();
+    setTimeout(()=>{a.remove();URL.revokeObjectURL(url);},15000);
+    showToast('VCF file ban gayi. Downloads/Files mein khol kar Share ya Add to Contacts karein.');
+  }catch(e){
+    // Last-resort: show the vCard as text so the user can still save/share it.
+    const w=window.open('','_blank');if(w){w.document.write('<pre>'+vcard.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</pre>');w.document.close();}
+    else alert('Browser ne file download block kar di. Safari/Chrome menu se Downloads check karein.');
+  }
+}
+
+function wireContactAutofill(nameId,numberId){
+  const name=document.getElementById(nameId), number=document.getElementById(numberId);if(!name||!number)return;
+  name.addEventListener('change',()=>{const matches=findAppContact(name.value);if(matches.length===1){if(!number.value)number.value=matches[0].number||'';}});
+  number.addEventListener('change',()=>{const matches=findAppContact(number.value);if(matches.length===1&&!name.value)name.value=matches[0].name==='(Naam nahi diya)'?'':matches[0].name;});
+}
+[['f-seller-name','f-seller-number'],['f-customer','f-customer-number'],['s-customer','s-customer-number']].forEach(p=>wireContactAutofill(p[0],p[1]));
+refreshAppContactDatalists();
 
 // ---------- Activity History ----------
 initActivityBaseline();
@@ -9227,7 +10298,7 @@ function renderAdminShopDetail(id){
   const invRows=inv.map(function(e){
     const state=isReturnedSale(e)?'Returned':(e.sold?'Sold':'Available');
     const amount=e.sold?e.sell:e.buy;
-    return '<tr><td>'+adminEscape(e.brand)+' '+adminEscape(e.model)+'</td><td>'+adminEscape(e.storage||'')+'</td><td>'+adminEscape(e.status||'')+'</td><td>'+state+'</td><td>'+adminEscape(e.saleDate||e.buyDate||e.lastUpdated||'')+'</td><td>'+adminMoney(amount)+'</td></tr>';
+    return '<tr><td>'+adminEscape(e.brand)+' '+adminEscape(e.model)+'</td><td>'+adminEscape(e.storage||'')+'</td><td>'+adminEscape(formatEntryStatus(e))+'</td><td>'+state+'</td><td>'+adminEscape(e.saleDate||e.buyDate||e.lastUpdated||'')+'</td><td>'+adminMoney(amount)+'</td></tr>';
   }).join('');
   const expRows=ex.map(function(e){return '<tr><td>'+adminEscape(e.date||'')+'</td><td>'+adminEscape(e.category||'Other')+'</td><td>'+adminMoney(e.amount)+'</td><td>'+adminEscape(e.notes||'')+'</td></tr>';}).join('');
   detail.style.display='block';
@@ -10309,31 +11380,154 @@ document.getElementById('btnAccountChangePassword').onclick=function(){
   fbAuth.sendPasswordResetEmail(fbUser.email).then(function(){ showToast('✓ Password reset link email par bhej diya.'); }).catch(function(err){ showAccountError(friendlyAuthError(err)); });
 };
 
-// ---------- Keyboard-aware scrolling ----------
-// On phones the on-screen keyboard often covers the field the user just
-// tapped (or the next one below it), forcing them to close the keyboard and
-// scroll manually before they can continue typing entries. To fix this, any
-// time a field inside a bottom sheet (stock entry, expense entry, etc.)
-// gets focus, we nudge it into the middle of the visible area — giving the
-// keyboard a moment to finish opening first so the scroll lands correctly.
-document.addEventListener('focusin', function(e){
-  const el = e.target;
-  if(!el || !el.matches || !el.matches('input, select, textarea')) return;
-  if(!el.closest('.sheet, .settings-shell, .account-shell, .shop-setup-card')) return;
-  setTimeout(function(){
-    el.scrollIntoView({block:'center', behavior:'smooth'});
-  }, 300);
-});
-// Also re-nudge if the keyboard resizes the visible viewport after opening
-// (common on Android), so the currently-focused field stays visible.
-if(window.visualViewport){
-  window.visualViewport.addEventListener('resize', function(){
-    const el = document.activeElement;
-    if(el && el.matches && el.matches('input, select, textarea') && el.closest('.sheet, .settings-shell, .account-shell, .shop-setup-card')){
-      setTimeout(function(){ el.scrollIntoView({block:'center', behavior:'smooth'}); }, 60);
-    }
-  });
-}
+// ---------- iOS visible-viewport Sale Entry workaround (v122) ----------
+// iPhone Safari may keep the layout viewport behind the keyboard. Constrain the
+// overlay itself to the *visual* viewport so its sheet has a real scrollable area.
+(function installSaleKeyboardScrollFix(){
+  const overlay = document.getElementById('sellOverlay');
+  if (!overlay) return;
+  const getSheet = () => overlay.querySelector('.sale-sheet');
+  const isEditable = el => el && el.matches && el.matches('input, textarea, select');
+  let focusTimer = 0;
+
+  function syncSheetToViewport(){
+    const sheet = getSheet();
+    if (!sheet || overlay.classList.contains('hidden')) return;
+    const vv = window.visualViewport;
+    const top = vv ? Math.max(0, vv.offsetTop) : 0;
+    const height = vv ? vv.height : window.innerHeight;
+    // Inline values deliberately override earlier 100vh/100dvh modal rules.
+    overlay.style.setProperty('top', top + 'px', 'important');
+    overlay.style.setProperty('height', height + 'px', 'important');
+    overlay.style.setProperty('bottom', 'auto', 'important');
+    overlay.style.setProperty('inset-bottom', 'auto', 'important');
+    overlay.style.setProperty('align-items', 'flex-start', 'important');
+    overlay.style.setProperty('overflow', 'hidden', 'important');
+    sheet.style.setProperty('height', '100%', 'important');
+    sheet.style.setProperty('max-height', height + 'px', 'important');
+    sheet.style.setProperty('min-height', '0', 'important');
+    sheet.style.setProperty('margin', '0', 'important');
+    sheet.style.setProperty('overflow-y', 'auto', 'important');
+    sheet.style.setProperty('-webkit-overflow-scrolling', 'touch', 'important');
+    sheet.style.setProperty('overscroll-behavior-y', 'contain', 'important');
+    sheet.style.setProperty('touch-action', 'pan-y', 'important');
+    const active = document.activeElement;
+    if (isEditable(active) && overlay.contains(active)) keepFocusedFieldVisible(active);
+  }
+
+  function keepFocusedFieldVisible(el){
+    const sheet = getSheet();
+    if (!sheet || !isEditable(el) || !overlay.contains(el)) return;
+    clearTimeout(focusTimer);
+    focusTimer = setTimeout(() => {
+      if (!overlay.contains(el) || document.activeElement !== el) return;
+      const vv = window.visualViewport;
+      const top = vv ? vv.offsetTop : 0;
+      const bottom = top + (vv ? vv.height : window.innerHeight);
+      const r = el.getBoundingClientRect();
+      const margin = 16;
+      if (r.bottom > bottom - margin) sheet.scrollTop += r.bottom - bottom + margin;
+      else if (r.top < top + margin) sheet.scrollTop -= top + margin - r.top;
+      // Re-check after iOS finishes its keyboard animation.
+      setTimeout(() => {
+        if (!overlay.contains(el) || document.activeElement !== el) return;
+        const r2 = el.getBoundingClientRect();
+        const vv2 = window.visualViewport;
+        const top2 = vv2 ? vv2.offsetTop : 0;
+        const bottom2 = top2 + (vv2 ? vv2.height : window.innerHeight);
+        if (r2.bottom > bottom2 - margin) sheet.scrollTop += r2.bottom - bottom2 + margin;
+      }, 220);
+    }, 100);
+  }
+
+  overlay.addEventListener('focusin', e => {
+    if (isEditable(e.target)) { syncSheetToViewport(); keepFocusedFieldVisible(e.target); }
+  }, true);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', syncSheetToViewport, {passive:true});
+    window.visualViewport.addEventListener('scroll', syncSheetToViewport, {passive:true});
+  }
+  window.addEventListener('resize', syncSheetToViewport, {passive:true});
+  window.addEventListener('orientationchange', () => setTimeout(syncSheetToViewport, 250));
+  new MutationObserver(() => {
+    if (!overlay.classList.contains('hidden')) setTimeout(syncSheetToViewport, 80);
+    else { overlay.style.removeProperty('top'); overlay.style.removeProperty('height'); overlay.style.removeProperty('bottom'); }
+  }).observe(overlay, {attributes:true, attributeFilter:['class']});
+})();
+
+// ---------- v123: iOS keyboard scrolling for stock-entry and other form sheets ----------
+// Keep the existing, verified Sale Entry (sellOverlay) fix untouched. Apply the same
+// visible-viewport approach to the stock Add/Edit Entry sheet and other form overlays.
+(function installFormSheetKeyboardScrollFix(){
+  const isEditable = el => !!(el && el.matches && el.matches('input, textarea, select'));
+  const timers = new WeakMap();
+  function getSheet(overlay){
+    return overlay.querySelector(':scope > .sheet') || overlay.querySelector('.sheet');
+  }
+  function sync(overlay){
+    if (!overlay || overlay.classList.contains('hidden') || overlay.id === 'sellOverlay') return;
+    const sheet = getSheet(overlay);
+    if (!sheet) return;
+    const vv = window.visualViewport;
+    const top = vv ? Math.max(0, vv.offsetTop) : 0;
+    const height = vv ? vv.height : window.innerHeight;
+    overlay.style.setProperty('top', top + 'px', 'important');
+    overlay.style.setProperty('height', height + 'px', 'important');
+    overlay.style.setProperty('bottom', 'auto', 'important');
+    overlay.style.setProperty('align-items', 'flex-start', 'important');
+    overlay.style.setProperty('overflow', 'hidden', 'important');
+    sheet.style.setProperty('max-height', height + 'px', 'important');
+    sheet.style.setProperty('min-height', '0', 'important');
+    sheet.style.setProperty('overflow-y', 'auto', 'important');
+    sheet.style.setProperty('overflow-x', 'hidden', 'important');
+    sheet.style.setProperty('-webkit-overflow-scrolling', 'touch', 'important');
+    sheet.style.setProperty('overscroll-behavior-y', 'contain', 'important');
+    sheet.style.setProperty('touch-action', 'pan-y', 'important');
+    const active = document.activeElement;
+    if (isEditable(active) && overlay.contains(active)) reveal(overlay, active);
+  }
+  function reveal(overlay, el){
+    const sheet = getSheet(overlay);
+    if (!sheet || !isEditable(el)) return;
+    clearTimeout(timers.get(overlay));
+    timers.set(overlay, setTimeout(() => {
+      if (overlay.classList.contains('hidden') || document.activeElement !== el) return;
+      const vv = window.visualViewport;
+      const top = vv ? vv.offsetTop : 0;
+      const bottom = top + (vv ? vv.height : window.innerHeight);
+      const r = el.getBoundingClientRect();
+      const margin = 18;
+      if (r.bottom > bottom - margin) sheet.scrollTop += r.bottom - bottom + margin;
+      else if (r.top < top + margin) sheet.scrollTop -= top + margin - r.top;
+      setTimeout(() => {
+        if (overlay.classList.contains('hidden') || document.activeElement !== el) return;
+        const r2 = el.getBoundingClientRect();
+        const vv2 = window.visualViewport;
+        const top2 = vv2 ? vv2.offsetTop : 0;
+        const bottom2 = top2 + (vv2 ? vv2.height : window.innerHeight);
+        if (r2.bottom > bottom2 - margin) sheet.scrollTop += r2.bottom - bottom2 + margin;
+      }, 250);
+    }, 100));
+  }
+  function install(overlay){
+    if (!overlay || overlay.id === 'sellOverlay' || overlay.dataset.formKeyboardFix === '1') return;
+    overlay.dataset.formKeyboardFix = '1';
+    overlay.addEventListener('focusin', e => {
+      if (isEditable(e.target)) { sync(overlay); reveal(overlay, e.target); }
+    }, true);
+    new MutationObserver(() => {
+      if (!overlay.classList.contains('hidden')) setTimeout(() => sync(overlay), 80);
+      else ['top','height','bottom','align-items','overflow'].forEach(k => overlay.style.removeProperty(k));
+    }).observe(overlay, {attributes:true, attributeFilter:['class']});
+  }
+  document.querySelectorAll('.overlay').forEach(install);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => document.querySelectorAll('.overlay').forEach(o => sync(o)), {passive:true});
+    window.visualViewport.addEventListener('scroll', () => document.querySelectorAll('.overlay').forEach(o => sync(o)), {passive:true});
+  }
+  window.addEventListener('resize', () => document.querySelectorAll('.overlay').forEach(o => sync(o)), {passive:true});
+  window.addEventListener('orientationchange', () => setTimeout(() => document.querySelectorAll('.overlay').forEach(o => sync(o)), 250));
+})();
 
 function updateOfflineBanner(){ const el=document.getElementById('offlineBanner'); if(el) el.style.display=navigator.onLine?'none':'block'; }
 window.addEventListener('online',function(){updateOfflineBanner();showToast('🟢 Internet wapas aa gaya — sync dobara try hoga.');schedulePush();});
@@ -10388,5 +11582,148 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
+
+<script>
+(function(){
+  function money(n){try{return fmt(Number(n)||0)}catch(e){return String(Number(n)||0)}}
+  function saleTotalOf(e){return Number(e.saleTotal!=null?e.saleTotal:(Number(e.sell)||0)*(Number(e.quantity)||1));}
+  function receivedOf(e){return Number(e.paymentReceived!=null?e.paymentReceived:saleTotalOf(e));}
+  function dueOf(e){return Math.max(0,Number(e.balanceDue!=null?e.balanceDue:saleTotalOf(e)-receivedOf(e)));}
+  function customerKey(e){const n=String(e.customerNumber||'').replace(/\D/g,'');return n?'n:'+n:'c:'+String(e.customer||'').trim().toLowerCase();}
+  window.renderCustomerBook=function(){
+    const list=document.getElementById('customerBookList'); if(!list)return;
+    const q=(document.getElementById('customerBookSearch')?.value||'').trim().toLowerCase();
+    const sales=inventory.filter(e=>e.sold&&!isReturnedSale(e)&&((e.customer||'').trim()||(e.customerNumber||'').trim()));
+    const map={}; sales.forEach(e=>{const k=customerKey(e);if(!map[k])map[k]={key:k,name:e.customer||'Naam save nahi',number:e.customerNumber||'',sales:[],total:0,received:0,due:0};const c=map[k];c.sales.push(e);c.total+=saleTotalOf(e);c.received+=receivedOf(e);c.due+=dueOf(e);if(e.customer)c.name=e.customer;if(e.customerNumber)c.number=e.customerNumber;});
+    let cs=Object.values(map).filter(c=>(c.name+' '+c.number).toLowerCase().includes(q));
+    cs.sort((a,b)=>b.due-a.due);
+    const outstanding=cs.reduce((a,c)=>a+c.due,0);
+    document.getElementById('customerBookSummary').innerHTML='<span>Customers: '+cs.length+' · Total baqi</span><strong>Rs. '+money(outstanding)+'</strong>';
+    list.innerHTML=cs.length?cs.map(c=>'<div class="settings-card" style="margin-top:12px;padding:14px;border:1px solid var(--border);border-radius:14px"><b style="font-size:17px">'+escapeHtml(c.name)+'</b><div style="color:var(--text-muted);margin:4px 0 10px">'+escapeHtml(c.number||'Number save nahi')+'</div><div>Total purchases: <b>Rs. '+money(c.total)+'</b></div><div>Received: <b>Rs. '+money(c.received)+'</b></div><div>Baqi: <b style="color:'+(c.due>0?'var(--danger)':'var(--pta)')+'">Rs. '+money(c.due)+'</b></div><details style="margin-top:10px"><summary>Purchase aur payment history ('+c.sales.length+')</summary>'+c.sales.sort((a,b)=>String(b.saleDate||'').localeCompare(String(a.saleDate||''))).map(e=>'<div style="padding:10px 0;border-bottom:1px solid var(--border)"><b>'+escapeHtml((e.brand||'')+' '+(e.model||''))+'</b><div>'+escapeHtml(e.saleDate||'Date nahi')+' '+escapeHtml(e.saleTime||'')+'</div><div>Sale: Rs. '+money(saleTotalOf(e))+' · Received: Rs. '+money(receivedOf(e))+' · Baqi: Rs. '+money(dueOf(e))+'</div><div style="font-size:12px;color:var(--text-muted)">IMEI: '+escapeHtml(e.imei1||'—')+'</div>'+(Array.isArray(e.payments)?e.payments.map(p=>'<div style="font-size:12px">Payment: Rs. '+money(p.amount)+' · '+escapeHtml(p.date||'')+' '+escapeHtml(p.time||'')+' · '+escapeHtml(p.method||'')+(p.note?' · '+escapeHtml(p.note):'')+'</div>').join(''):'')+(dueOf(e)>0?'<button type="button" class="btn-secondary customer-receive" data-id="'+escapeHtml(e.id)+'" style="margin-top:8px">Receive Payment</button>':'<div style="color:var(--pta)">Payment complete</div>')+'</div>').join('')+'</details></div>').join(''):'<div class="settings-note">Abhi koi matching customer record nahi mila. Customer ka naam/number sale ke waqt enter karein.</div>';
+    list.querySelectorAll('.customer-receive').forEach(btn=>btn.onclick=function(){receiveCustomerPayment(this.dataset.id)});
+  };
+  function receiveCustomerPayment(id){
+    const e=inventory.find(x=>String(x.id)===String(id));if(!e)return;
+    const due=dueOf(e); if(due<=0)return;
+    let modal=document.getElementById('pendingPaymentEntryModal');
+    if(!modal){
+      modal=document.createElement('div');modal.id='pendingPaymentEntryModal';
+      modal.style.cssText='position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(15,23,42,.58);backdrop-filter:blur(3px)';
+      modal.innerHTML='<div class="settings-card" style="width:min(100%,440px);max-height:90dvh;overflow:auto;background:var(--card,var(--surface,#fff));color:var(--text);border:1px solid var(--border);border-radius:20px;padding:20px;box-shadow:0 20px 60px #0003"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px"><h3 style="margin:0;font-size:20px">Add Pending Payment</h3><button type="button" id="ppmClose" class="btn-secondary" style="min-width:42px;padding:8px">✕</button></div><div id="ppmInfo" class="settings-note" style="margin:8px 0 16px"></div><form id="ppmForm"><label style="display:block;margin:10px 0 5px;font-weight:600">Amount received (Rs.)</label><input id="ppmAmount" type="number" min="1" step="1" required style="width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--input-bg,var(--surface));color:var(--text);font:inherit"><label style="display:block;margin:12px 0 5px;font-weight:600">Payment method</label><select id="ppmMethod" style="width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--input-bg,var(--surface));color:var(--text);font:inherit"><option>Cash</option><option>Easypaisa</option><option>JazzCash</option><option>Bank Transfer</option><option>Other</option></select><label style="display:block;margin:12px 0 5px;font-weight:600">Note (optional)</label><textarea id="ppmNote" rows="3" placeholder="Payment ka note..." style="width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--input-bg,var(--surface));color:var(--text);font:inherit;resize:vertical"></textarea><div style="display:flex;gap:10px;margin-top:18px"><button type="button" id="ppmCancel" class="btn-secondary" style="flex:1">Cancel</button><button type="submit" class="btn-primary" style="flex:1">Save Payment</button></div></form></div>';
+      document.body.appendChild(modal);
+    }
+    modal.style.display='flex';
+    modal.querySelector('#ppmInfo').textContent=(e.customer||'Customer')+' · '+(e.brand||'')+' '+(e.model||'')+' · Remaining Rs. '+money(due);
+    modal.querySelector('#ppmAmount').value='';modal.querySelector('#ppmAmount').max=String(due);modal.querySelector('#ppmMethod').value='Cash';modal.querySelector('#ppmNote').value='';
+    const close=()=>{modal.style.display='none';};
+    modal.querySelector('#ppmClose').onclick=close;modal.querySelector('#ppmCancel').onclick=close;
+    modal.onclick=function(ev){if(ev.target===modal)close();};
+    modal.querySelector('#ppmForm').onsubmit=function(ev){
+      ev.preventDefault();const amount=Number(modal.querySelector('#ppmAmount').value),method=modal.querySelector('#ppmMethod').value,note=modal.querySelector('#ppmNote').value.trim();
+      const current=inventory.find(x=>String(x.id)===String(id));if(!current){close();return;}
+      const currentDue=dueOf(current);if(!Number.isFinite(amount)||amount<=0||amount>currentDue){alert('Amount 0 se zyada aur baqi amount se kam ya barabar honi chahiye.');return;}
+      const payments=Array.isArray(current.payments)?current.payments.slice():[];payments.push({amount:amount,date:todayISO(),time:currentLocalTimeInput(),method:method,note:note});
+      const received=receivedOf(current)+amount;
+      const copy=inventory.map(x=>String(x.id)!==String(id)?x:Object.assign({},x,{payments:payments,paymentReceived:received,balanceDue:Math.max(0,saleTotalOf(x)-received),lastUpdated:todayStr()}));
+      if(!tryCommitInventory(copy)){alert(SAVE_FAIL_MSG);return;}
+      close();renderCustomerBook();render();renderUdhar();showToast('Payment history mein save ho gayi: Rs. '+money(amount));
+    };
+    setTimeout(()=>modal.querySelector('#ppmAmount').focus(),80);
+  }
+
+  function renderUdhar(){
+    const list=document.getElementById('udharList');if(!list)return;
+    const q=(document.getElementById('udharSearch')?.value||'').trim().toLowerCase();
+    const rows=inventory.filter(e=>e.sold&&!isReturnedSale(e)&&dueOf(e)>0&&((e.customer||'')+' '+(e.customerNumber||'')).toLowerCase().includes(q));
+    const total=rows.reduce((a,e)=>a+dueOf(e),0);
+    document.getElementById('udharSummary').innerHTML='<span>Pending sales: '+rows.length+' · Total pending</span><strong>Rs. '+money(total)+'</strong>';
+    list.innerHTML=rows.length?rows.map(e=>'<div class="settings-card" style="margin-top:12px;padding:14px;border:1px solid var(--border);border-radius:14px"><b>'+escapeHtml(e.customer||'Naam save nahi')+'</b><div>'+escapeHtml(e.customerNumber||'Number save nahi')+'</div><div style="margin-top:6px">'+escapeHtml((e.brand||'')+' '+(e.model||''))+' · '+escapeHtml(e.saleDate||'Date nahi')+'</div><div>Sale: Rs. '+money(saleTotalOf(e))+' · Received: Rs. '+money(receivedOf(e))+'</div><div style="color:var(--danger);font-weight:700">Pending: Rs. '+money(dueOf(e))+'</div>'+(Array.isArray(e.payments)&&e.payments.length?'<details style="margin-top:8px"><summary>Payment history ('+e.payments.length+')</summary>'+e.payments.map(p=>'<div style="padding:7px 0;border-bottom:1px solid var(--border);font-size:12px"><b>Rs. '+money(p.amount)+'</b> · '+escapeHtml(p.date||'')+' '+escapeHtml(p.time||'')+' · '+escapeHtml(p.method||'')+(p.note?'<div>'+escapeHtml(p.note)+'</div>':'')+'</div>').join('')+'</details>':'<div class="settings-note" style="margin-top:8px">Abhi payment history nahi.</div>')+'<button type="button" class="btn-secondary udhar-receive" data-id="'+escapeHtml(e.id)+'" style="margin-top:8px">Add payment</button></div>').join(''):'<div class="settings-note">Koi pending payment nahi.</div>';
+    list.querySelectorAll('.udhar-receive').forEach(btn=>btn.onclick=function(){receiveCustomerPayment(this.dataset.id);setTimeout(renderUdhar,100);});
+  }
+
+    const open=document.getElementById('btnCustomerBook'), overlay=document.getElementById('customerBookOverlay');
+  if(open)open.addEventListener('click',function(){document.getElementById('menuDropdown')?.classList.add('hidden');overlay.classList.remove('hidden');renderCustomerBook();});
+  document.getElementById('customerBookClose')?.addEventListener('click',()=>overlay.classList.add('hidden'));
+  overlay?.addEventListener('click',e=>{if(e.target===overlay)overlay.classList.add('hidden')});
+  document.getElementById('customerBookSearch')?.addEventListener('input',renderCustomerBook);
+  document.getElementById('btnUdhar')?.addEventListener('click',function(){document.getElementById('menuDropdown')?.classList.add('hidden');document.getElementById('udharOverlay').classList.remove('hidden');renderUdhar();});
+  document.getElementById('udharClose')?.addEventListener('click',()=>document.getElementById('udharOverlay').classList.add('hidden'));
+  document.getElementById('udharOverlay')?.addEventListener('click',e=>{if(e.target.id==='udharOverlay')document.getElementById('udharOverlay').classList.add('hidden')});
+  document.getElementById('udharSearch')?.addEventListener('input',renderUdhar);
+  document.getElementById('s-price')?.addEventListener('input',updateSaleBalancePreview);
+  document.getElementById('s-customer-number')?.addEventListener('change',function(){
+    const num=String(this.value||'').replace(/\D/g,'');if(!num)return;
+    const old=inventory.find(x=>x.sold&&!isReturnedSale(x)&&String(x.customerNumber||'').replace(/\D/g,'')===num&&x.customer);
+    if(old&&!document.getElementById('s-customer').value.trim())document.getElementById('s-customer').value=old.customer;
+  });
+})();
+</script>
 </body>
 </html>
+
+<style id="v95-selected-chip-contrast-and-end-actions">
+/* v95: selected options use readable white text; actions appear after the form content. */
+#overlay .chip-opt.on,
+#overlay .chip-opt.active,
+#overlay .model-suggestion-chip.on,
+#overlay .model-suggestion-chip.active,
+#overlay .chip.on,
+#overlay .chip.active,
+#overlay .option-chip.selected,
+#overlay .chip-opt[aria-pressed="true"],
+#overlay .chip-opt[aria-selected="true"] {
+  color:#fff !important;
+}
+#overlay > .sheet {
+  padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+  scroll-padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+}
+#overlay > .sheet .sheet-actions {
+  position:static !important;
+  inset:auto !important;
+  width:100% !important;
+  max-width:none !important;
+  margin:24px 0 0 !important;
+  padding:0 0 calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+  background:transparent !important;
+  border-top:0 !important;
+  box-shadow:none !important;
+  z-index:auto !important;
+}
+#overlay > .sheet .sheet-actions button {
+  min-height:52px !important;
+}
+/* Keep the close X visible at the top while the form scrolls. */
+#overlay > .sheet > .safe-page-close,
+#overlay > .sheet > .menu-safe-close {
+  position:sticky !important;
+  top:calc(8px + env(safe-area-inset-top, 0px)) !important;
+  float:right !important;
+  margin:0 0 -40px auto !important;
+  z-index:1010 !important;
+}
+</style>
+
+<style id="v113-sale-payment-layout">
+#sellOverlay > .sheet { position:relative; padding-bottom:calc(18px + env(safe-area-inset-bottom,0px)); }
+#sellOverlay > .sheet > .safe-page-close { position:sticky !important; top:calc(8px + env(safe-area-inset-top,0px)) !important; float:right !important; margin:0 0 -40px auto !important; z-index:1010 !important; }
+#sellOverlay > .sheet .sheet-actions { position:static !important; inset:auto !important; margin-top:18px !important; padding-bottom:calc(12px + env(safe-area-inset-bottom,0px)) !important; background:transparent !important; box-shadow:none !important; }
+.sale-payment-fields { margin-top:12px; }
+.sale-payment-fields input { min-width:0; }
+#btnUdhar { border-left:3px solid var(--danger); }
+</style>
+
+<style id="v122-ios-visible-viewport-fix">
+/* Keep Sale Entry inside the viewport that remains visible above the iOS keyboard. */
+#sellOverlay { position:fixed !important; left:0 !important; right:0 !important; bottom:auto !important; overflow:hidden !important; align-items:flex-start !important; }
+#sellOverlay > .sale-sheet { box-sizing:border-box !important; flex:0 0 100% !important; width:100% !important; min-height:0 !important; margin:0 !important; overflow-x:hidden !important; overflow-y:auto !important; -webkit-overflow-scrolling:touch !important; overscroll-behavior-y:contain !important; touch-action:pan-y !important; }
+#sellOverlay > .sale-sheet input, #sellOverlay > .sale-sheet textarea, #sellOverlay > .sale-sheet select { scroll-margin-block:18px !important; }
+</style>
+
+
+<style id="v123-form-sheet-keyboard-scroll">
+/* v123: keyboard-aware scrolling for Add/Edit Entry and other form sheets; Sale Entry stays on its verified v122 fix. */
+.overlay:not(#sellOverlay) { overscroll-behavior-y: contain; }
+.overlay:not(#sellOverlay) > .sheet { box-sizing:border-box !important; min-height:0 !important; overflow-x:hidden !important; overflow-y:auto !important; -webkit-overflow-scrolling:touch !important; overscroll-behavior-y:contain !important; touch-action:pan-y !important; }
+.overlay:not(#sellOverlay) > .sheet input, .overlay:not(#sellOverlay) > .sheet textarea, .overlay:not(#sellOverlay) > .sheet select { scroll-margin-block:18px !important; }
+</style>
