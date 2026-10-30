@@ -874,15 +874,15 @@ body.menu-open .app>header{z-index:1!important;}
   .entry-date-time .field.date-time-field>input:focus{outline:none!important;box-shadow:none!important}
   @media(max-width:360px){.entry-date-time{gap:8px}.entry-date-time .field.date-time-field{padding-left:6px;padding-right:6px}.entry-date-time .field.date-time-field>label{left:7px;font-size:11px!important}}
 
-/* v106: keep phone expense add text from inheriting circular plus-button styles */
+/* v111: compact themed plus-only expense button */
 #overlay > .sheet #addPhoneExpenseInline {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 44px !important;
-  min-width: 44px !important;
-  height: 44px !important;
-  min-height: 44px !important;
+  width: 36px !important;
+  min-width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
   box-sizing: border-box !important;
   padding: 0 !important;
   margin: 8px 0 18px !important;
@@ -890,7 +890,7 @@ body.menu-open .app>header{z-index:1!important;}
   border-radius: 50% !important;
   background: var(--surface-2) !important;
   color: var(--accent) !important;
-  font-size: 30px !important;
+  font-size: 23px !important;
   line-height: 1 !important;
   font-weight: 600 !important;
   text-align: center !important;
@@ -4120,7 +4120,7 @@ function renderPhoneExpenseRows(containerId, items){
     const d=dateOnly(x.date)||todayISO();
     return '<div class="phone-expense-row" data-expense-date="'+d+'">'+
       '<div class="phone-expense-grid">'+
-        '<input class="pe-category" placeholder="Jelly / Repair" value="'+String(x.category||'').replace(/"/g,'&quot;')+'">'+
+        '<input class="pe-category" placeholder="Casing / back / repair etc." value="'+String(x.category||'').replace(/"/g,'&quot;')+'">'+
         '<input class="pe-amount" type="text" inputmode="decimal" placeholder="Amount" value="'+(x.amount!=null?Math.abs(Number(x.amount)||0):'')+'">'+
         '<button type="button" class="phone-expense-remove" aria-label="Remove expense">×</button>'+
       '</div>'+
@@ -4138,7 +4138,7 @@ function addPhoneExpenseRow(containerId){
   wrapper.dataset.expenseDate=todayISO();
   wrapper.innerHTML=
     '<div class="phone-expense-grid">'+
-      '<input class="pe-category" placeholder="Jelly / Repair">'+
+      '<input class="pe-category" placeholder="Casing / back / repair etc.">'+
       '<input class="pe-amount" type="text" inputmode="decimal" placeholder="Amount">'+
       '<button type="button" class="phone-expense-remove" aria-label="Remove expense" style="display:none;">×</button>'+
     '</div>'+
