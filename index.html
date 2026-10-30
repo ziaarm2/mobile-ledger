@@ -11112,67 +11112,79 @@ document.getElementById('btnAccountChangePassword').onclick=function(){
   fbAuth.sendPasswordResetEmail(fbUser.email).then(function(){ showToast('✓ Password reset link email par bhej diya.'); }).catch(function(err){ showAccountError(friendlyAuthError(err)); });
 };
 
-// ---------- iOS keyboard-aware sale form scrolling (v121) ----------
-// The sale sheet itself is the scroll container. On iOS, scrollIntoView can
-// target the page behind a modal instead of scrolling the sheet, so calculate
-// the field position against the visible viewport and scroll the sheet directly.
+// ---------- iOS visible-viewport Sale Entry workaround (v122) ----------
+// iPhone Safari may keep the layout viewport behind the keyboard. Constrain the
+// overlay itself to the *visual* viewport so its sheet has a real scrollable area.
 (function installSaleKeyboardScrollFix(){
   const overlay = document.getElementById('sellOverlay');
   if (!overlay) return;
   const getSheet = () => overlay.querySelector('.sale-sheet');
-  const isEditable = el => el && el.matches && el.matches('input:not([type="button"]):not([type="submit"]), textarea, select');
-  let scrollTimer = null;
-  function keepFocusedFieldVisible(el){
-    const sheet = getSheet();
-    if (!sheet || !isEditable(el) || !overlay.contains(el)) return;
-    clearTimeout(scrollTimer);
-    scrollTimer = setTimeout(function(){
-      const vv = window.visualViewport;
-      const visibleBottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
-      const visibleTop = vv ? vv.offsetTop : 0;
-      const r = el.getBoundingClientRect();
-      const margin = 18;
-      let delta = 0;
-      if (r.bottom > visibleBottom - margin) delta = r.bottom - visibleBottom + margin;
-      else if (r.top < visibleTop + margin) delta = r.top - visibleTop - margin;
-      if (delta) sheet.scrollTop += delta;
-      // A second pass handles iOS's delayed keyboard/viewport animation.
-      setTimeout(function(){
-        if (!overlay.contains(el) || document.activeElement !== el) return;
-        const r2 = el.getBoundingClientRect();
-        const bottom2 = window.visualViewport ? window.visualViewport.offsetTop + window.visualViewport.height : window.innerHeight;
-        if (r2.bottom > bottom2 - margin) sheet.scrollTop += r2.bottom - bottom2 + margin;
-        else if (r2.top < margin) sheet.scrollTop -= margin - r2.top;
-      }, 180);
-    }, 80);
-  }
+  const isEditable = el => el && el.matches && el.matches('input, textarea, select');
+  let focusTimer = 0;
+
   function syncSheetToViewport(){
     const sheet = getSheet();
-    if (!sheet || overlay.classList.contains('hidden') || getComputedStyle(overlay).display === 'none') return;
+    if (!sheet || overlay.classList.contains('hidden')) return;
     const vv = window.visualViewport;
-    if (vv && vv.height > 0) {
-      sheet.style.maxHeight = Math.max(180, vv.height - Math.max(0, vv.offsetTop)) + 'px';
-      sheet.style.height = 'auto';
-    }
+    const top = vv ? Math.max(0, vv.offsetTop) : 0;
+    const height = vv ? vv.height : window.innerHeight;
+    // Inline values deliberately override earlier 100vh/100dvh modal rules.
+    overlay.style.setProperty('top', top + 'px', 'important');
+    overlay.style.setProperty('height', height + 'px', 'important');
+    overlay.style.setProperty('bottom', 'auto', 'important');
+    overlay.style.setProperty('inset-bottom', 'auto', 'important');
+    overlay.style.setProperty('align-items', 'flex-start', 'important');
+    overlay.style.setProperty('overflow', 'hidden', 'important');
+    sheet.style.setProperty('height', '100%', 'important');
+    sheet.style.setProperty('max-height', height + 'px', 'important');
+    sheet.style.setProperty('min-height', '0', 'important');
+    sheet.style.setProperty('margin', '0', 'important');
+    sheet.style.setProperty('overflow-y', 'auto', 'important');
+    sheet.style.setProperty('-webkit-overflow-scrolling', 'touch', 'important');
+    sheet.style.setProperty('overscroll-behavior-y', 'contain', 'important');
+    sheet.style.setProperty('touch-action', 'pan-y', 'important');
     const active = document.activeElement;
     if (isEditable(active) && overlay.contains(active)) keepFocusedFieldVisible(active);
   }
-  overlay.addEventListener('focusin', function(e){
-    if (isEditable(e.target)) keepFocusedFieldVisible(e.target);
+
+  function keepFocusedFieldVisible(el){
+    const sheet = getSheet();
+    if (!sheet || !isEditable(el) || !overlay.contains(el)) return;
+    clearTimeout(focusTimer);
+    focusTimer = setTimeout(() => {
+      if (!overlay.contains(el) || document.activeElement !== el) return;
+      const vv = window.visualViewport;
+      const top = vv ? vv.offsetTop : 0;
+      const bottom = top + (vv ? vv.height : window.innerHeight);
+      const r = el.getBoundingClientRect();
+      const margin = 16;
+      if (r.bottom > bottom - margin) sheet.scrollTop += r.bottom - bottom + margin;
+      else if (r.top < top + margin) sheet.scrollTop -= top + margin - r.top;
+      // Re-check after iOS finishes its keyboard animation.
+      setTimeout(() => {
+        if (!overlay.contains(el) || document.activeElement !== el) return;
+        const r2 = el.getBoundingClientRect();
+        const vv2 = window.visualViewport;
+        const top2 = vv2 ? vv2.offsetTop : 0;
+        const bottom2 = top2 + (vv2 ? vv2.height : window.innerHeight);
+        if (r2.bottom > bottom2 - margin) sheet.scrollTop += r2.bottom - bottom2 + margin;
+      }, 220);
+    }, 100);
+  }
+
+  overlay.addEventListener('focusin', e => {
+    if (isEditable(e.target)) { syncSheetToViewport(); keepFocusedFieldVisible(e.target); }
   }, true);
-  overlay.addEventListener('touchstart', function(e){
-    if (e.target.closest('input, textarea, select, button, label')) return;
-    // Preserve native vertical panning on the sheet while the keyboard is open.
-  }, {passive:true});
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', syncSheetToViewport, {passive:true});
     window.visualViewport.addEventListener('scroll', syncSheetToViewport, {passive:true});
   }
-  window.addEventListener('orientationchange', function(){setTimeout(syncSheetToViewport, 250);});
-  const observer = new MutationObserver(function(){
-    if (!overlay.classList.contains('hidden')) setTimeout(syncSheetToViewport, 60);
-  });
-  observer.observe(overlay, {attributes:true, attributeFilter:['class']});
+  window.addEventListener('resize', syncSheetToViewport, {passive:true});
+  window.addEventListener('orientationchange', () => setTimeout(syncSheetToViewport, 250));
+  new MutationObserver(() => {
+    if (!overlay.classList.contains('hidden')) setTimeout(syncSheetToViewport, 80);
+    else { overlay.style.removeProperty('top'); overlay.style.removeProperty('height'); overlay.style.removeProperty('bottom'); }
+  }).observe(overlay, {attributes:true, attributeFilter:['class']});
 })();
 
 function updateOfflineBanner(){ const el=document.getElementById('offlineBanner'); if(el) el.style.display=navigator.onLine?'none':'block'; }
@@ -11339,8 +11351,9 @@ if('serviceWorker' in navigator){
 #btnUdhar { border-left:3px solid var(--danger); }
 </style>
 
-<style id="v121-ios-keyboard-scroll-fix">
-#sellOverlay { position:fixed !important; inset:0 !important; height:100% !important; overflow:hidden !important; touch-action:pan-y !important; }
-#sellOverlay > .sale-sheet { overscroll-behavior-y:contain !important; -webkit-overflow-scrolling:touch !important; touch-action:pan-y !important; overflow-y:auto !important; min-height:0 !important; }
-#sellOverlay > .sale-sheet input, #sellOverlay > .sale-sheet textarea, #sellOverlay > .sale-sheet select { scroll-margin-block:24px !important; }
+<style id="v122-ios-visible-viewport-fix">
+/* Keep Sale Entry inside the viewport that remains visible above the iOS keyboard. */
+#sellOverlay { position:fixed !important; left:0 !important; right:0 !important; bottom:auto !important; overflow:hidden !important; align-items:flex-start !important; }
+#sellOverlay > .sale-sheet { box-sizing:border-box !important; flex:0 0 100% !important; width:100% !important; min-height:0 !important; margin:0 !important; overflow-x:hidden !important; overflow-y:auto !important; -webkit-overflow-scrolling:touch !important; overscroll-behavior-y:contain !important; touch-action:pan-y !important; }
+#sellOverlay > .sale-sheet input, #sellOverlay > .sale-sheet textarea, #sellOverlay > .sale-sheet select { scroll-margin-block:18px !important; }
 </style>
