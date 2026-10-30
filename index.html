@@ -355,12 +355,12 @@
   .wa-template-preview{white-space:pre-wrap;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 12px;margin-top:10px;font-size:12.5px;line-height:1.55;color:var(--text);max-height:230px;overflow:auto;}
   .wa-template-custom-row{display:flex;gap:7px;margin-top:8px;}
   .wa-template-custom-row input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 11px;color:var(--text);font-size:13px;}
-  .contact-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
-  .contact-action-btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:8px 13px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface-2);color:var(--text);text-decoration:none;font:600 12px/1.1 inherit;cursor:pointer;transition:transform .12s ease,filter .12s ease}
+  .contact-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px;align-items:center;width:100%}
+  .contact-action-btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:0;width:100%;min-height:40px;padding:8px 6px;border:1px solid var(--border-strong);border-radius:10px;background:var(--surface-2);color:var(--text);text-decoration:none;font:600 12px/1.1 inherit;cursor:pointer;transition:transform .12s ease,filter .12s ease;white-space:nowrap}
   .contact-action-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
   .contact-action-btn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
   .contact-whatsapp{border-color:rgba(37,211,102,.45);color:var(--text)} .contact-sms{border-color:var(--border-strong)} .contact-call{border-color:rgba(45,212,191,.45)} .contact-edit{border-color:var(--accent);background:var(--surface);}
-  @media(max-width:420px){.contact-action-btn{padding:8px 10px;gap:5px;font-size:11px}}
+  @media(max-width:420px){.contact-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.contact-action-btn{padding:8px 7px;gap:6px;font-size:12px}}
   .wa-message-editor{width:100%;min-height:280px;resize:vertical;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:12px;padding:12px;color:var(--text);font-size:13px;line-height:1.6;font-family:inherit;outline:none;}
   .wa-message-editor:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(45,212,191,.12);}
   .wa-field-toolbar{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
@@ -8574,11 +8574,11 @@ function editContactDetails(encodedName, encodedNumber){
     inventory.forEach(function(e){
       const matchesSale = String(e.customer||'').trim()===oldName && String(e.customerNumber||'').trim()===oldNumber;
       const matchesPurchase = String(e.sellerName||'').trim()===oldName && String(e.sellerNumber||'').trim()===oldNumber;
-      if(matchesSale){ e.customer = newName; e.customerNumber = newNumber; changed++; }
-      if(matchesPurchase){ e.sellerName = newName; e.sellerNumber = newNumber; changed++; }
+      if(matchesSale){ e.customer = newName; e.customerNumber = newNumber; e._syncUpdatedAt = Date.now(); e.lastUpdatedAt = e._syncUpdatedAt; changed++; }
+      if(matchesPurchase){ e.sellerName = newName; e.sellerNumber = newNumber; e._syncUpdatedAt = Date.now(); e.lastUpdatedAt = e._syncUpdatedAt; changed++; }
     });
     if(!changed){ alert('Is contact ki matching transaction nahi mili.'); return; }
-    saveInventory(); closeDialog(); renderContacts(); showToast('✓ Contact name/number update ho gaya');
+    saveInventory(); closeDialog(); renderContacts(); showToast('✓ Contact update save ho gaya — cloud sync shuru ho gayi hai');
   };
 }
 
