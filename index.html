@@ -3970,11 +3970,23 @@ function naturalCompare(a, b){
   return ax.length - bx.length;
 }
 
-// Entries are created with id "e_<timestamp>..." — pull the timestamp back out
-// so we can sort by when a piece was actually added.
+// Extract the creation timestamp from IDs as a fallback/tie-breaker.
 function idTimestamp(id){
   const m = String(id||'').match(/^e_(\d+)/);
   return m ? Number(m[1]) : 0;
+}
+
+// Inventory should be ordered by the entry's actual purchase/availability date.
+// IDs are only a tie-breaker because imported or older entries may have IDs that
+// do not match the date shown on the card.
+function inventoryEntryTimestamp(e){
+  if(!e) return 0;
+  const raw = dateOnly(e.buyDate || e.availableDate || e.purchaseAt || e.lastUpdated || '');
+  if(raw){
+    const parsed = Date.parse(raw);
+    if(Number.isFinite(parsed)) return parsed;
+  }
+  return idTimestamp(e.id);
 }
 
 function sortGroups(groups){
@@ -3998,11 +4010,12 @@ function sortGroups(groups){
     });
   } else if(currentSort==='newest' || currentSort==='oldest'){
     function groupTime(g){
-      return g.pieces.reduce(function(mx,p){ return Math.max(mx, idTimestamp(p.id)); }, 0);
+      return g.pieces.reduce(function(mx,p){ return Math.max(mx, inventoryEntryTimestamp(p)); }, 0);
     }
     arr.sort(function(a,b){
       const ta = groupTime(a), tb = groupTime(b);
-      return currentSort==='newest' ? (tb-ta) : (ta-tb);
+      if(ta!==tb) return currentSort==='newest' ? (tb-ta) : (ta-tb);
+      return currentSort==='newest' ? (idTimestamp(b.pieces[0]&&b.pieces[0].id)-idTimestamp(a.pieces[0]&&a.pieces[0].id)) : (idTimestamp(a.pieces[0]&&a.pieces[0].id)-idTimestamp(b.pieces[0]&&b.pieces[0].id));
     });
   } else {
     arr.sort(function(a,b){
@@ -4875,9 +4888,13 @@ function renderList(){
     return;
   }
 
-  // Keep every category consistently ordered from newest entry to oldest.
-  // Use the entry ID timestamp (the creation/addition time) for a stable sort.
-  const newestFirst = function(a,b){ return idTimestamp(b.id)-idTimestamp(a.id); };
+  // Keep every category consistently ordered from newest entry to oldest,
+  // using the actual purchase/availability date (not just the record ID).
+  const newestFirst = function(a,b){
+    const ta=inventoryEntryTimestamp(a), tb=inventoryEntryTimestamp(b);
+    if(ta!==tb) return tb-ta;
+    return idTimestamp(b.id)-idTimestamp(a.id);
+  };
   const soldItems = items.filter(function(e){return e.sold;}).sort(newestFirst);
   const stockItems = items.filter(function(e){return !e.sold;}).sort(newestFirst);
 
