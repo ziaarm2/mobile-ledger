@@ -1595,6 +1595,21 @@ body.menu-open .app>header{z-index:1!important;}
   margin-bottom: 5px !important;
 }
 </style>
+
+<style id="contacts-overlay-viewport-repair">
+/* Keep Contacts screen inside the full available mobile viewport, like other repaired panels. */
+#contactsOverlay { align-items: stretch; padding: 0; box-sizing: border-box; }
+#contactsOverlay > .sheet {
+  width: 100%; max-width: none; min-width: 0; height: 100vh; height: 100dvh;
+  max-height: none; min-height: 0; box-sizing: border-box;
+  border-radius: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+}
+#contactsOverlay .safe-page-close { top: calc(8px + env(safe-area-inset-top, 0px)); }
+#contactsOverlay .sheet-handle { margin-top: 4px; }
+@supports (height: 100dvh) { #contactsOverlay > .sheet { height: 100dvh; } }
+</style>
 </head>
 <body>
 
@@ -1840,7 +1855,7 @@ body.menu-open .app>header{z-index:1!important;}
     <div class="settings-note entry-date-guidance">📊 <b>Accurate Analytics ke liye:</b> Mobile khareedne aur bechne ki sahi date aur time enter karein. Is se daily purchases, sales aur busiest hours ki reports zyada accurate hongi.</div>
     <div class="two-col entry-date-time"><div class="field date-time-field"><label>Buy Date</label><input id="f-buydate" type="date"></div><div class="field date-time-field"><label>Buy Time</label><input id="f-buytime" type="time"></div></div>
 
-    <div class="two-col"><div class="field"><label>Seller ka naam (optional)</label><input id="f-seller-name" list="appContactNames" placeholder="Kis se khareeda" autocomplete="off"></div><div class="field"><label>Seller ka number (optional)</label><input id="f-seller-number" list="appContactNumbers" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx" autocomplete="off"></div></div>
+    <div class="two-col"><div class="field"><label>Seller ka naam</label><input id="f-seller-name" list="appContactNames" placeholder="Kis se khareeda" autocomplete="off"></div><div class="field"><label>Seller ka number</label><input id="f-seller-number" list="appContactNumbers" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx" autocomplete="off"></div></div>
     <div class="entry-add-from-row"><div class="entry-add-from-label">Add from</div><div class="contact-pick-actions entry-add-from-actions"><button type="button" class="btn-cancel" onclick="openAppContactPicker('f-seller-name','f-seller-number')">👥 App contacts</button><button type="button" class="btn-cancel" onclick="pickPhoneContact('f-seller-name','f-seller-number')">📱 Phone contacts</button></div></div>
 
     <div class="more-section" id="saleFieldsWrap">
