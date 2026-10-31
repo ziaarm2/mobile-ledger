@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v86
-Version name: Combined Pending Totals & Manual Payment Fixes
+Current file version: Index v87
+Version name: Pending Payments Theme Consistency
 Baseline: Index v81 (locked baseline; preserve all unrelated functionality)
-Last changed: 31 Oct 2026 • 09:34:15 AM PKT (Asia/Karachi)
-Change summary: Added combined overall pending totals for manual and mobile-sales balances; hardened Manual Payment click handling and Add to bill form save/error feedback.
+Last changed: 31 Oct 2026 • 09:49:10 AM PKT (Asia/Karachi)
+Change summary: Matched Pending Payments buttons, forms, spacing, typography, borders and colors to the app's established theme; no payment logic or sync behavior changed.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 1. Read this block and the APP_INDEX_VERSION / APP_INDEX_UPDATED constants before editing.
@@ -18,6 +18,7 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
+- Index v87 — Pending Payments Theme Consistency — 31 Oct 2026 • 09:49:10 AM PKT. Unified button sizes, form controls, spacing, typography, cards and colors with the existing app theme; styling-only update.
 - Index v85 — Combined Pending Totals & Manual Payment Fixes — 31 Oct 2026 • 09:34:15 AM PKT. Added all-up give/get totals including mobile sale receivables, and hardened manual-add/add-to-bill interactions and save feedback.
 - Index v86 — Pending Payments Layout & Add-to-Bill Reliability — 31 Oct 2026 • 09:48:00 AM PKT. Reordered sections to mobile sales first, manual payments second, combined totals last; improved theme-consistent summary cards and add-to-bill save feedback/submit handling.
 - Index v84 — Manual Payment Controls & No Default Direction — 31 Oct 2026 • 09:27:47 AM PKT. Added soft-delete option, increase-bill amount action with adjustment history, and visible side-by-side direction choices with no default selection for new bills.
@@ -30,10 +31,10 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v85">
-<meta name="app-index-version-name" content="Combined Pending Totals &amp; Manual Payment Fixes">
-<meta name="app-index-updated" content="2026-10-31T09:34:15+05:00">
-<meta name="app-index-change-summary" content="Added combined pending totals for manual and mobile-sales balances; improved manual payment button and add-to-bill saving feedback.">
+<meta name="app-index-version" content="v87">
+<meta name="app-index-version-name" content="Pending Payments Theme Consistency">
+<meta name="app-index-updated" content="2026-10-31T09:49:10+05:00">
+<meta name="app-index-change-summary" content="Matched Pending Payments buttons, forms, spacing, typography, borders and colors to the existing app theme; styling-only update.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -1023,6 +1024,97 @@ body.menu-open .app>header{z-index:1!important;}
 #mobileCloudStartupGate .gate-by{color:#e5e7eb!important;opacity:1!important;visibility:visible!important;text-shadow:none!important;-webkit-text-fill-color:#e5e7eb!important;filter:none!important;mix-blend-mode:normal!important;font-size:15px!important;}
 #mobileCloudStartupGate .gate-status{color:#cbd5e1!important;opacity:1!important;visibility:visible!important;text-shadow:none!important;-webkit-text-fill-color:#cbd5e1!important;filter:none!important;mix-blend-mode:normal!important;font-size:14px!important;}
 #mobileCloudStartupGate .gate-card{opacity:1!important;filter:none!important;color:#fff!important;}
+
+/* Index v87: align Pending Payments surfaces, controls, forms and typography with the app's established light theme. */
+#udharOverlay .sheet{
+  background:#fff!important;color:#172033!important;border:1px solid #d9dee7!important;
+  box-shadow:0 -10px 30px rgba(16,24,40,.12)!important;
+  padding:16px 16px 24px!important;
+}
+#udharOverlay .sheet h2{font-size:20px!important;line-height:1.25!important;font-weight:800!important;margin:4px 0 8px!important;color:#172033!important}
+#udharOverlay .sheet h3{font-size:15px!important;line-height:1.3!important;font-weight:750!important;color:#263449!important}
+#udharOverlay .settings-note{font-size:12px!important;line-height:1.45!important;color:#778397!important;margin-top:6px!important}
+#udharOverlay .field{margin-top:10px!important}
+#udharOverlay .field label{display:block;font-size:12.5px!important;font-weight:650!important;color:#536174!important;margin:0 0 5px!important}
+#udharOverlay .field input,#udharOverlay .field select,#udharOverlay .field textarea,
+#udharOverlay input:not([type=checkbox]),#udharOverlay select,#udharOverlay textarea{
+  font-family:inherit!important;font-size:14px!important;line-height:1.35!important;
+  min-height:40px!important;padding:9px 11px!important;border:1px solid #cbd3de!important;
+  border-radius:9px!important;background:#fff!important;color:#172033!important;
+  box-shadow:none!important;max-width:100%;
+}
+#udharOverlay .settings-card{
+  background:#fff!important;color:#172033!important;border-color:#d9dee7!important;
+  border-radius:12px!important;box-shadow:0 1px 2px rgba(16,24,40,.04)!important;
+}
+#udharOverlay .cost-summary{
+  padding:10px 12px!important;margin:10px 0 12px!important;border:1px solid #d9dee7!important;
+  border-radius:10px!important;background:#f6f8fb!important;font-size:13px!important;gap:10px!important;
+}
+#udharOverlay #manualDueAdd{
+  width:100%!important;min-height:42px!important;padding:10px 14px!important;margin-top:8px!important;
+  border-radius:9px!important;font-family:inherit!important;font-size:14px!important;
+  font-weight:700!important;line-height:1.25!important;box-shadow:none!important;
+}
+#udharOverlay .btn-primary,#udharOverlay .btn-save{
+  min-height:40px!important;padding:10px 13px!important;border-radius:9px!important;
+  font-family:inherit!important;font-size:13.5px!important;font-weight:700!important;
+}
+#udharOverlay .btn-secondary,#udharOverlay .btn-cancel{
+  min-height:38px!important;padding:8px 11px!important;border-radius:9px!important;
+  font-family:inherit!important;font-size:12.5px!important;font-weight:650!important;
+}
+#udharOverlay #udharList>*,#udharOverlay #manualDueList>*{font-size:13px;line-height:1.4}
+#udharOverlay #manualDueList .settings-note{font-size:11.5px!important}
+#udharOverlay #udharOverallSummary{
+  margin:14px 0 4px!important;padding:12px!important;border:1px solid #d9dee7!important;
+  border-radius:12px!important;background:#f6f8fb!important;color:#172033!important;
+}
+#udharOverlay #udharOverallSummary .settings-card{
+  padding:12px!important;border-radius:10px!important;background:#fff!important;box-shadow:none!important;
+}
+#udharOverlay #udharOverallSummary .settings-note{font-size:11.5px!important}
+#manualDueModal,#manualDuePaymentModal,#manualDueIncreaseModal{
+  padding:16px!important;background:rgba(15,23,42,.48)!important;
+}
+#manualDueModal>.settings-card,#manualDuePaymentModal>.settings-card,#manualDueIncreaseModal>.settings-card{
+  width:min(100%,480px)!important;max-height:90dvh!important;overflow:auto!important;
+  padding:16px!important;background:#fff!important;color:#172033!important;
+  border:1px solid #d9dee7!important;border-radius:16px!important;
+  box-shadow:0 12px 32px rgba(16,24,40,.16)!important;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif!important;
+}
+#manualDueModal h3,#manualDuePaymentModal h3,#manualDueIncreaseModal h3{
+  font-size:17px!important;line-height:1.3!important;font-weight:800!important;color:#172033!important;
+}
+#manualDueModal label,#manualDuePaymentModal label,#manualDueIncreaseModal label{
+  display:block!important;font-size:12.5px!important;font-weight:650!important;
+  line-height:1.35!important;color:#536174!important;margin:11px 0 5px!important;
+}
+#manualDueModal input,#manualDueModal select,#manualDueModal textarea,
+#manualDuePaymentModal input,#manualDuePaymentModal select,#manualDuePaymentModal textarea,
+#manualDueIncreaseModal input,#manualDueIncreaseModal select,#manualDueIncreaseModal textarea{
+  width:100%!important;min-height:40px!important;box-sizing:border-box!important;
+  padding:9px 11px!important;border:1px solid #cbd3de!important;border-radius:9px!important;
+  background:#fff!important;color:#172033!important;font-family:inherit!important;
+  font-size:14px!important;line-height:1.35!important;box-shadow:none!important;
+}
+#manualDueModal button,#manualDuePaymentModal button,#manualDueIncreaseModal button{
+  min-height:38px!important;padding:9px 12px!important;border-radius:9px!important;
+  font-family:inherit!important;font-size:13px!important;font-weight:700!important;
+}
+#manualDueModal .btn-primary,#manualDuePaymentModal .btn-primary,#manualDueIncreaseModal .btn-primary{
+  background:#ef1f2f!important;border:1px solid #ef1f2f!important;color:#fff!important;
+}
+#manualDueModal .btn-secondary,#manualDuePaymentModal .btn-secondary,#manualDueIncreaseModal .btn-secondary{
+  background:#fff!important;border:1px solid #cbd3de!important;color:#536174!important;
+}
+@media(max-width:380px){
+  #udharOverlay .sheet{padding:14px 12px 22px!important}
+  #udharOverlay .btn-secondary{font-size:12px!important;padding:8px 9px!important}
+  #manualDueModal>.settings-card,#manualDuePaymentModal>.settings-card,#manualDueIncreaseModal>.settings-card{padding:14px!important}
+}
+
 </style>
 
 <style id="mandatory-star-style">.required-star{color:#d92d20;font-weight:800;margin-left:2px;}</style>
@@ -1843,7 +1935,7 @@ body.menu-open .app>header{z-index:1!important;}
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v86<span>Updated: 31 Oct 2026</span><span>09:48:00 AM PKT</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v87<span>Updated: 31 Oct 2026</span><span>09:49:10 AM PKT</span></div>
       </div>
     </div>
 
@@ -2825,14 +2917,14 @@ body.menu-open .app>header{z-index:1!important;}
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v86</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v87</div>
           <div class="settings-note" style="margin-top:4px;">Combined Pending Totals &amp; Manual Payment Fixes</div>
           <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 31 Oct 2026 • 09:34:15 AM PKT</div>
           <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Reordered pending payments sections; improved theme consistency and Add to bill submit feedback.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
-          <div style="font-weight:700;margin-top:9px;">Index v86 — 31 Oct 2026 • 09:48:00 AM PKT</div>
+          <div style="font-weight:700;margin-top:9px;">Index v87 — 31 Oct 2026 • 09:49:10 AM PKT</div>
           <div class="settings-note">Combined Pending Totals &amp; Manual Payment Fixes — overall give/get totals include manual bills and mobile sale pending balances; strengthened add-payment interactions.</div>
           <div style="font-weight:700;margin-top:12px;">Index v83 — 31 Oct 2026 • 09:20:54 AM PKT</div>
           <div class="settings-note">Single Manual Payment Button &amp; Direction Colors — one button; You will give green and You will get red.</div>
@@ -2894,9 +2986,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v86';
-const APP_INDEX_VERSION_NAME = 'Pending Payments Layout & Add-to-Bill Reliability';
-const APP_INDEX_UPDATED = '31 Oct 2026 • 09:48:00 AM PKT • Mobile sales first, manual payments second, combined totals last; improved Add to bill form feedback and submit handling.';
+const APP_INDEX_VERSION = 'v87';
+const APP_INDEX_VERSION_NAME = 'Pending Payments Theme Consistency';
+const APP_INDEX_UPDATED = '31 Oct 2026 • 09:49:10 AM PKT • Matched Pending Payments controls and layout to the existing app theme; styling-only update.';
 
 let inventory = [];
 
