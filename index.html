@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v90
-Version name: Busiest Hour Analytics Graph Fix
+Current file version: Index v93
+Version name: Selectable Analytics Graph Styles Across Charts
 Baseline: Index v88 (preserved; existing functionality and analytics retained)
-Last changed: 31 Oct 2026 • 01:26:48 PM PKT (Asia/Karachi)
-Change summary: Corrected Busiest Business Hours analytics: embedded interactive blue/orange hourly line graph and Day (9 AM–9 PM)/Night (9 PM–9 AM) selector directly in that section; Day default. Existing analytics retained.
+Last changed: 31 Oct 2026 • 01:45:54 PM PKT (Asia/Karachi)
+Change summary: Added selectable metrics and line/smooth-area/bar graph styles in Busiest Hour and Scoring Comparison; existing graphs remain defaults and all prior analytics retained.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 1. Read this block and the APP_INDEX_VERSION / APP_INDEX_UPDATED constants before editing.
@@ -37,7 +37,7 @@ VERSION HISTORY (newest first):
 <meta name="app-index-version" content="v90">
 <meta name="app-index-version-name" content="Busiest Hour Analytics Graph Fix">
 <meta name="app-index-updated" content="2026-10-31T13:26:48+05:00">
-<meta name="app-index-change-summary" content="Corrected Busiest Business Hours analytics: embedded interactive blue/orange hourly line graph and Day (9 AM–9 PM)/Night (9 PM–9 AM) selector directly in that section; Day default. Existing analytics retained.">
+<meta name="app-index-change-summary" content="Added selectable Busiest Hour metrics and line/area/bar graph styles; existing analytics retained.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -2375,7 +2375,7 @@ body.menu-open .app>header{z-index:1!important;}
     </div>
     <div class="analytics-scoreboard" id="analyticsScoreboard"></div>
     <div class="analytics-card">
-      <div class="analytics-card-head"><div><div class="analytics-card-title">SCORING COMPARISON</div><div class="analytics-card-sub" id="analyticsTrendSub">Current vs previous comparable period</div></div><select id="analyticsMetric"><option value="profit" selected>Profit</option><option value="soldUnits">Mobiles sold</option><option value="purchasedUnits">Mobiles purchased</option><option value="sales">Sales</option><option value="purchases">Purchase</option><option value="expenses">Expenses</option></select></div>
+      <div class="analytics-card-head"><div><div class="analytics-card-title">SCORING COMPARISON</div><div class="analytics-card-sub" id="analyticsTrendSub">Current vs previous comparable period</div></div><select id="analyticsMetric"><option value="profit" selected>Profit</option><option value="soldUnits">Mobiles sold</option><option value="purchasedUnits">Mobiles purchased</option><option value="sales">Sales</option><option value="purchases">Purchase</option><option value="expenses">Expenses</option></select><select id="analyticsTrendGraphType" aria-label="Scoring comparison graph style"><option value="line" selected>Line Graph</option><option value="area">Smooth Area</option><option value="bar">Bar Chart</option></select></div>
       <div class="analytics-line-wrap" id="analyticsLineChart"></div>
     </div>
     <div class="analytics-card">
@@ -2392,7 +2392,11 @@ body.menu-open .app>header{z-index:1!important;}
         <button type="button" class="btn-save" data-busiest-period="day" aria-pressed="true">☀️ Day (9 AM–9 PM)</button>
         <button type="button" class="btn-cancel" data-busiest-period="night" aria-pressed="false">🌙 Night (9 PM–9 AM)</button>
       </div>
-      <div class="analytics-time-legend"><span><i class="analytics-dot" style="background:#18a7d8"></i>Mobiles Sold</span><span><i class="analytics-dot" style="background:#f59e0b"></i>Mobiles Purchased</span></div>
+      <div class="analytics-busiest-controls" style="display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;">
+        <label style="font-size:13px;color:var(--text-muted)">Metric <select id="analyticsBusiestMetric" aria-label="Busiest hour metric"><option value="both" selected>Sales + Purchases</option><option value="sale">Mobiles Sold</option><option value="purchase">Mobiles Purchased</option><option value="profit">Sale Profit</option><option value="saleAmount">Sales Amount</option><option value="purchaseAmount">Purchase Amount</option></select></label>
+        <label style="font-size:13px;color:var(--text-muted)">Graph <select id="analyticsBusiestGraphType" aria-label="Busiest hour graph type"><option value="line" selected>Line Graph</option><option value="area">Smooth Area</option><option value="bar">Bar Chart</option></select></label>
+      </div>
+      <div class="analytics-time-legend" id="analyticsBusiestLegend"><span><i class="analytics-dot" style="background:#18a7d8"></i>Mobiles Sold</span><span><i class="analytics-dot" style="background:#f59e0b"></i>Mobiles Purchased</span></div>
       <div id="analyticsBusiestLineChart" style="width:100%;overflow:hidden;margin:8px 0 12px;"></div>
       <div class="analytics-time-grid" id="analyticsTimeGrid"></div>
       <div class="analytics-time-summary" id="analyticsTimeSummary"></div>
@@ -2949,13 +2953,15 @@ body.menu-open .app>header{z-index:1!important;}
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v89</div>
-          <div class="settings-note" style="margin-top:4px;">Busiest Hour Analytics Graph Fix</div>
-          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 31 Oct 2026 • 01:17:06 PM PKT</div>
-          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Added interactive hourly sales/purchases line graph with Day (9 AM–9 PM) and Night (9 PM–9 AM) selectors; Day is selected by default. Existing analytics and business logic preserved.</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v91</div>
+          <div class="settings-note" style="margin-top:4px;">Selectable Analytics Graph Styles Across Charts</div>
+          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 31 Oct 2026 • 01:45:54 PM PKT</div>
+          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Busiest Hour and Scoring Comparison support selectable metrics and Line, Smooth Area, or Bar graph styles. Existing graphs remain default; other analytics retained.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
+          <div style="font-weight:700;margin-top:9px;">Index v91 — 31 Oct 2026 • 01:45:54 PM PKT</div>
+          <div class="settings-note">Fixed hourly graph axis so Day ends at 9 PM and Night ends at 9 AM; all 12 hourly intervals remain visible.</div>
           <div style="font-weight:700;margin-top:9px;">Index v89 — 31 Oct 2026 • 01:17:06 PM PKT</div>
           <div class="settings-note">Added interactive hourly sales/purchases line graph with Day (9 AM–9 PM) and Night (9 PM–9 AM) selectors; Day is selected by default. Existing analytics and business logic preserved.</div>
           <div style="font-weight:700;margin-top:12px;">Index v88 — 31 Oct 2026 • 12:40:04 PM PKT</div>
@@ -3022,9 +3028,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v90';
-const APP_INDEX_VERSION_NAME = 'Busiest Hour Analytics Graph Fix';
-const APP_INDEX_UPDATED = '31 Oct 2026 • 01:26:48 PM PKT • Corrected Busiest Business Hours analytics: embedded interactive blue/orange hourly line graph and Day (9 AM–9 PM)/Night (9 PM–9 AM) selector directly in that section; Day default. Existing analytics retained.';
+const APP_INDEX_VERSION = 'v91';
+const APP_INDEX_VERSION_NAME = 'Selectable Analytics Graph Styles Across Charts';
+const APP_INDEX_UPDATED = '31 Oct 2026 • 01:52:59 PM PKT • Added selectable metrics and line/smooth-area/bar graph styles in Busiest Hour and Scoring Comparison; existing graphs retained.';
 
 let inventory = [];
 
@@ -8588,11 +8594,19 @@ function analyticsRenderLine(currRange,prevRange,key){
   function y(v){return pad.t+((max-v)/(max-min))*ih;}
   function path(vals){return vals.map(function(v,i){const x=pad.l+(i/(Math.max(1,vals.length-1)))*iw;return (i?'L':'M')+x.toFixed(1)+' '+y(v).toFixed(1);}).join(' ');}
   let grid=''; for(let g=0;g<=4;g++){const val=max-((max-min)*g/4),yy=y(val);grid+='<line x1="'+pad.l+'" y1="'+yy+'" x2="'+(w-pad.r)+'" y2="'+yy+'" stroke="currentColor" opacity=".10"/><text x="'+(pad.l-7)+'" y="'+(yy+3)+'" text-anchor="end" font-size="10" fill="currentColor" opacity=".55">'+analyticsValueLabel(val,key)+'</text>';}
-  let dots=''; [a,b].forEach(function(vals,si){vals.forEach(function(v,i){if(i===0||i===vals.length-1||vals.length<=8){const x=pad.l+(i/(Math.max(1,vals.length-1)))*iw;dots+='<circle cx="'+x+'" cy="'+y(v)+'" r="3.2" fill="var(--'+(si?'nonpta':'pta')+')" stroke="var(--surface)" stroke-width="1.5"/>';}});});
+  const graphType=document.getElementById('analyticsTrendGraphType')?.value||'line';
+  let layers='';
+  [a,b].forEach(function(vals,si){if(!vals.length)return;const color='var(--'+(si?'nonpta':'pta')+')';
+    if(graphType==='bar'){const groupW=iw/vals.length,bw=Math.min(12,groupW/(b.length?2:1)-2);vals.forEach((v,i)=>{const xx=pad.l+i*groupW+groupW/2+(si?bw/2:-bw/2);layers+='<rect x="'+(xx-bw/2)+'" y="'+y(v)+'" width="'+bw+'" height="'+Math.max(0,pad.t+ih-y(v))+'" rx="2" fill="'+color+'" opacity=".85"><title>'+v+'</title></rect>';});}
+    else {if(graphType==='area'){const area='M'+pad.l+' '+(pad.t+ih)+' L'+vals.map((v,i)=>((pad.l+(i/(Math.max(1,vals.length-1)))*iw).toFixed(1)+' '+y(v).toFixed(1))).join(' L')+' L'+(pad.l+iw)+' '+(pad.t+ih)+' Z';layers+='<path d="'+area+'" fill="'+color+'" opacity=".14"/>';}
+      layers+='<path d="'+path(vals)+'" fill="none" stroke="'+color+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';
+      vals.forEach(function(v,i){if(i===0||i===vals.length-1||vals.length<=8){const xx=pad.l+(i/(Math.max(1,vals.length-1)))*iw;layers+='<circle cx="'+xx+'" cy="'+y(v)+'" r="3.2" fill="'+color+'" stroke="var(--surface)" stroke-width="1.5"/>';}});
+    }
+  });
   const title=document.getElementById('analyticsMetric').options[document.getElementById('analyticsMetric').selectedIndex].textContent;
   document.getElementById('analyticsTrendSub').textContent=title+' cumulative scoring · selected period';
   const x1=analyticsLabelDate(actualRange.from,false), x2=analyticsLabelDate(actualRange.to,false);
-  box.innerHTML='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+title+' scoring comparison"><g>'+grid+'</g>'+(a.length?'<path d="'+path(a)+'" fill="none" stroke="var(--pta)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>':'')+(b.length?'<path d="'+path(b)+'" fill="none" stroke="var(--nonpta)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>':'')+dots+'<text x="'+pad.l+'" y="'+(h-6)+'" text-anchor="start" font-size="10" fill="currentColor" opacity=".55">'+x1+'</text><text x="'+(w-pad.r)+'" y="'+(h-6)+'" text-anchor="end" font-size="10" fill="currentColor" opacity=".55">'+x2+'</text></svg><div class="analytics-legend"><span><i class="analytics-dot" style="background:var(--pta)"></i>Current</span>'+(b.length?'<span><i class="analytics-dot" style="background:var(--nonpta)"></i>Previous comparable</span>':'')+'</div>';
+  box.innerHTML='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+title+' scoring comparison"><g>'+grid+'</g>'+layers+'<text x="'+pad.l+'" y="'+(h-6)+'" text-anchor="start" font-size="10" fill="currentColor" opacity=".55">'+x1+'</text><text x="'+(w-pad.r)+'" y="'+(h-6)+'" text-anchor="end" font-size="10" fill="currentColor" opacity=".55">'+x2+'</text></svg><div class="analytics-legend"><span><i class="analytics-dot" style="background:var(--pta)"></i>Current</span>'+(b.length?'<span><i class="analytics-dot" style="background:var(--nonpta)"></i>Previous comparable</span>':'')+'</div>';
 }
 function analyticsRenderVolume(curr,prev){
   const max=Math.max(1,curr.purchaseAmount,curr.saleAmount,prev?prev.purchaseAmount:0,prev?prev.saleAmount:0);
@@ -8620,15 +8634,32 @@ function analyticsRenderTimeOfDay(range){
   document.querySelectorAll('[data-busiest-period]').forEach(b=>{const active=b.dataset.busiestPeriod===analyticsBusiestPeriod;b.classList.toggle('btn-save',active);b.classList.toggle('btn-cancel',!active);b.setAttribute('aria-pressed',active?'true':'false');});
   const active=shown.filter(r=>r.sale||r.purchase);
   const chart=document.getElementById('analyticsBusiestLineChart');
-  const W=600,H=210,L=30,R=12,T=16,B=36,pw=W-L-R,ph=H-T-B;
-  const maxVal=Math.max(1,...shown.map(r=>Math.max(r.sale,r.purchase))), yMax=Math.max(4,Math.ceil(maxVal/2)*2);
-  const x=i=>L+i*pw/(shown.length-1), y=v=>T+ph-(v/yMax)*ph;
-  let svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Busiest hour sales and purchases line graph" style="width:100%;height:auto;display:block">';
-  for(let i=0;i<=4;i++){const v=Math.round(yMax*i/4),yy=y(v);svg+='<line x1="'+L+'" y1="'+yy+'" x2="'+(W-R)+'" y2="'+yy+'" stroke="var(--border)"/><text x="'+(L-7)+'" y="'+(yy+4)+'" text-anchor="end" font-size="10" fill="var(--text-muted)">'+v+'</text>';}
-  function series(key,color){let out='<polyline points="'+shown.map((r,i)=>x(i)+','+y(r[key])).join(' ')+'" fill="none" stroke="'+color+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';shown.forEach((r,i)=>{out+='<circle cx="'+x(i)+'" cy="'+y(r[key])+'" r="3" fill="'+color+'"/>';});return out;}
-  svg+=series('sale','#18a7d8')+series('purchase','#f59e0b');
-  shown.forEach((r,i)=>{if(i%2===0||i===shown.length-1){const h=r.hour,label=(h%12||12)+(h<12?' AM':' PM');svg+='<text x="'+x(i)+'" y="'+(H-12)+'" text-anchor="middle" font-size="10" fill="var(--text-muted)">'+label+'</text>';}});
-  svg+='</svg>'; chart.innerHTML=svg;
+  const metric=document.getElementById('analyticsBusiestMetric')?.value||'both';
+  const type=document.getElementById('analyticsBusiestGraphType')?.value||'line';
+  const W=600,H=230,L=38,R=12,T=18,B=38,pw=W-L-R,ph=H-T-B;
+  const keys=metric==='both'?['sale','purchase']:[metric];
+  const names={sale:'Mobiles Sold',purchase:'Mobiles Purchased',profit:'Sale Profit',saleAmount:'Sales Amount',purchaseAmount:'Purchase Amount'};
+  const colors={sale:'#18a7d8',purchase:'#f59e0b',profit:'#20b26b',saleAmount:'#4f7de0',purchaseAmount:'#a66be0'};
+  const values=shown.flatMap(r=>keys.map(k=>Math.max(0,Number(r[k])||0)));
+  const maxVal=Math.max(1,...values), yMax=maxVal<=4?4:Math.ceil(maxVal/4)*4;
+  const x=i=>L+(i+0.5)*pw/shown.length, y=v=>T+ph-(v/yMax)*ph;
+  let svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Busiest hour selectable metric graph" style="width:100%;height:auto;display:block">';
+  for(let i=0;i<=4;i++){const v=yMax*i/4,yy=y(v);svg+='<line x1="'+L+'" y1="'+yy+'" x2="'+(W-R)+'" y2="'+yy+'" stroke="var(--border)"/><text x="'+(L-7)+'" y="'+(yy+4)+'" text-anchor="end" font-size="10" fill="var(--text-muted)">'+(metric.includes('Amount')||metric==='profit'?'Rs '+fmt(v):Math.round(v))+'</text>';}
+  keys.forEach((key,si)=>{
+    const vals=shown.map(r=>Math.max(0,Number(r[key])||0)),color=colors[key]||'#18a7d8';
+    if(type==='bar'){
+      const groupW=pw/shown.length,barW=Math.min(16,(groupW-4)/keys.length);
+      vals.forEach((v,i)=>{const xx=L+i*groupW+groupW/2+(si-(keys.length-1)/2)*barW;svg+='<rect x="'+(xx-barW/2)+'" y="'+y(v)+'" width="'+Math.max(2,barW-2)+'" height="'+Math.max(0,T+ph-y(v))+'" rx="2" fill="'+color+'" opacity=".9"><title>'+names[key]+': '+v+'</title></rect>';});
+    } else {
+      const points=vals.map((v,i)=>x(i)+','+y(v)).join(' ');
+      if(type==='area'){const area='M'+x(0)+' '+(T+ph)+' L'+points.replace(/ /g,' L')+' L'+x(vals.length-1)+' '+(T+ph)+' Z';svg+='<path d="'+area+'" fill="'+color+'" opacity=".16"/>';}
+      svg+='<polyline points="'+points+'" fill="none" stroke="'+color+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';
+      vals.forEach((v,i)=>{svg+='<circle cx="'+x(i)+'" cy="'+y(v)+'" r="2.8" fill="'+color+'"><title>'+names[key]+': '+v+'</title></circle>';});
+    }
+  });
+  for(let i=0;i<=shown.length;i+=2){const bh=(shown[0].hour+i)%24,label=(bh%12||12)+(bh<12?' AM':' PM'),xx=L+i*pw/shown.length;svg+='<text x="'+xx+'" y="'+(H-12)+'" text-anchor="middle" font-size="10" fill="var(--text-muted)">'+label+'</text>';}
+  svg+='</svg>';chart.innerHTML=svg;
+  const legend=document.getElementById('analyticsBusiestLegend');if(legend)legend.innerHTML=keys.map(k=>'<span><i class="analytics-dot" style="background:'+colors[k]+'"></i>'+names[k]+'</span>').join('');
   if(!active.length){grid.innerHTML='<div class="analytics-empty">Is Day/Night period mein exact time ke sath sale/purchase record nahi mila.</div>';document.getElementById('analyticsTimeSummary').textContent='';document.getElementById('analyticsTimeMissing').textContent='Sirf exact timestamp wale records hourly breakdown mein count hote hain.';return;}
   const sm=Math.max(1,...shown.map(r=>r.sale)),pm=Math.max(1,...shown.map(r=>r.purchase));
   grid.innerHTML=shown.map(r=>{const label=(r.hour%12||12)+(r.hour<12?' AM':' PM'),next=((r.hour+1)%24%12||12)+((r.hour+1)%24<12?' AM':' PM'),has=!!(r.sale||r.purchase);return '<div class="analytics-time-row"><div class="analytics-time-label">'+label+'–'+next+'</div><div class="analytics-time-pair"><div class="analytics-time-track"><div class="analytics-time-fill sale" style="width:'+Math.round(r.sale/sm*100)+'%"></div><div class="analytics-time-value">Sold: '+r.sale+' units · Rs '+fmt(r.saleAmount)+'</div></div><div class="analytics-time-track"><div class="analytics-time-fill purchase" style="width:'+Math.round(r.purchase/pm*100)+'%"></div><div class="analytics-time-value">Purchased: '+r.purchase+' units · Rs '+fmt(r.purchaseAmount)+'</div></div>'+(has?'<div class="analytics-time-summary" style="text-align:left;margin:2px 0 4px">Sale profit after phone expenses: Rs '+fmt(r.profit)+'</div>':'')+'</div></div>';}).join('');
@@ -8641,6 +8672,7 @@ function analyticsRenderTimeOfDay(range){
   document.getElementById('analyticsTimeMissing').textContent='Sirf exact timestamp wale records count hote hain. Hourly profit sale profit minus phone expenses hai; general business expenses ko hour-wise assign nahi kiya jata.';
 }
 document.querySelectorAll('[data-busiest-period]').forEach(function(btn){btn.addEventListener('click',function(){analyticsBusiestPeriod=btn.dataset.busiestPeriod;analyticsRenderTimeOfDay(analyticsDateRange(analyticsMode));});});
+['analyticsBusiestMetric','analyticsBusiestGraphType'].forEach(id=>document.getElementById(id)?.addEventListener('change',()=>analyticsRenderTimeOfDay(analyticsDateRange(analyticsMode))));
 
 function analyticsRenderAverages(range,curr,prev){
   const actual=range.mode==='lifetime'?analyticsRangeForLifetime():range;
