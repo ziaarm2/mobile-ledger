@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v88
-Version name: Analytics Performance Scoreboards
-Baseline: Index v87 (preserved; existing functionality and analytics retained)
-Last changed: 31 Oct 2026 • 12:40:04 PM PKT (Asia/Karachi)
-Change summary: Added cricket-style weekday performance, hour-by-hour sales/purchases/profit details, daily-average comparisons, and pending-payment analytics; preserved existing analytics and business logic.
+Current file version: Index v89
+Version name: Busiest Hour Day/Night Graph
+Baseline: Index v88 (preserved; existing functionality and analytics retained)
+Last changed: 31 Oct 2026 • 01:17:06 PM PKT (Asia/Karachi)
+Change summary: Added interactive hourly sales/purchases line graph with Day (9 AM–9 PM) and Night (9 PM–9 AM) selectors; Day is selected by default. Existing analytics and business logic preserved.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 1. Read this block and the APP_INDEX_VERSION / APP_INDEX_UPDATED constants before editing.
@@ -18,6 +18,7 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
+- Index v89 — Busiest Hour Day/Night Graph — 31 Oct 2026 • 01:17:06 PM PKT. Added interactive hourly sales/purchases line graph with Day (9 AM–9 PM) and Night (9 PM–9 AM) selectors; Day is selected by default. Existing analytics and business logic preserved.
 - Index v88 — Analytics Performance Scoreboards — 31 Oct 2026 • 12:40:04 PM PKT. Added cricket-style weekday performance, hour-by-hour sales/purchases/profit details, daily-average comparisons, and pending-payment analytics; preserved existing analytics and business logic.
 - Index v87 — Pending Payments Theme Consistency — 31 Oct 2026 • 09:49:10 AM PKT. Unified button sizes, form controls, spacing, typography, cards and colors with the existing app theme; styling-only update.
 - Index v85 — Combined Pending Totals & Manual Payment Fixes — 31 Oct 2026 • 09:34:15 AM PKT. Added all-up give/get totals including mobile sale receivables, and hardened manual-add/add-to-bill interactions and save feedback.
@@ -32,10 +33,10 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v88">
-<meta name="app-index-version-name" content="Analytics Performance Scoreboards">
-<meta name="app-index-updated" content="2026-10-31T12:40:04+05:00">
-<meta name="app-index-change-summary" content="Added cricket-style weekday performance, hour-by-hour sales/purchases/profit details, daily-average comparisons, and pending-payment analytics; preserved existing analytics and business logic.">
+<meta name="app-index-version" content="v89">
+<meta name="app-index-version-name" content="Busiest Hour Day/Night Graph">
+<meta name="app-index-updated" content="2026-10-31T13:17:06+05:00">
+<meta name="app-index-change-summary" content="Added interactive hourly sales/purchases line graph with Day (9 AM–9 PM) and Night (9 PM–9 AM) selectors; Day is selected by default. Existing analytics and business logic preserved.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -1937,7 +1938,7 @@ body.menu-open .app>header{z-index:1!important;}
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v88<span>Updated: 31 Oct 2026</span><span>12:40:04 PM PKT</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v89<span>Updated: 31 Oct 2026</span><span>01:17:06 PM PKT</span></div>
       </div>
     </div>
 
@@ -2432,7 +2433,17 @@ body.menu-open .app>header{z-index:1!important;}
       <div class="field"><label>Se</label><input type="date" id="cta-from"></div>
       <div class="field"><label>Tak</label><input type="date" id="cta-to"></div>
     </div>
+    <div class="analytics-period-switch" id="ctaPeriodSwitch" role="group" aria-label="Day or night hours" style="display:flex;gap:8px;margin-top:12px;">
+      <button type="button" class="btn-save cta-period-btn" data-period="day" aria-pressed="true" style="flex:1;padding:10px;border-radius:10px;">☀️ Day (9 AM–9 PM)</button>
+      <button type="button" class="btn-cancel cta-period-btn" data-period="night" aria-pressed="false" style="flex:1;padding:10px;border-radius:10px;">🌙 Night (9 PM–9 AM)</button>
+    </div>
     <div id="customerTimeSummary" class="stat-grid-2" style="margin-top:10px;"></div>
+    <div class="analytics-card" style="margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--surface);">
+      <div style="font-weight:800;margin-bottom:4px;">Hourly Activity Graph</div>
+      <div class="settings-note" style="margin:0 0 8px;">Sales aur purchases ki hourly quantity — selected day/night period.</div>
+      <div id="customerTimeLineChart" style="width:100%;overflow:hidden;"></div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:12px;margin-top:8px;"><span><b style="color:#18a7d8;">━</b> Mobiles Sold</span><span><b style="color:#f59e0b;">━</b> Mobiles Purchased</span></div>
+    </div>
     <div class="report-list" id="customerTimeHourlyList" style="margin-top:10px;"></div>
     <div class="settings-note" id="customerTimeMissingNote" style="margin-top:10px;"></div>
   </div>
@@ -2932,14 +2943,16 @@ body.menu-open .app>header{z-index:1!important;}
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v88</div>
-          <div class="settings-note" style="margin-top:4px;">Analytics Performance Scoreboards</div>
-          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 31 Oct 2026 • 12:40:04 PM PKT</div>
-          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Added cricket-style weekday performance, hour-by-hour sales/purchases/profit details, daily-average comparisons, and pending-payment analytics; preserved existing analytics and business logic.</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v89</div>
+          <div class="settings-note" style="margin-top:4px;">Busiest Hour Day/Night Graph</div>
+          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 31 Oct 2026 • 01:17:06 PM PKT</div>
+          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Added interactive hourly sales/purchases line graph with Day (9 AM–9 PM) and Night (9 PM–9 AM) selectors; Day is selected by default. Existing analytics and business logic preserved.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
-          <div style="font-weight:700;margin-top:9px;">Index v88 — 31 Oct 2026 • 12:40:04 PM PKT</div>
+          <div style="font-weight:700;margin-top:9px;">Index v89 — 31 Oct 2026 • 01:17:06 PM PKT</div>
+          <div class="settings-note">Added interactive hourly sales/purchases line graph with Day (9 AM–9 PM) and Night (9 PM–9 AM) selectors; Day is selected by default. Existing analytics and business logic preserved.</div>
+          <div style="font-weight:700;margin-top:12px;">Index v88 — 31 Oct 2026 • 12:40:04 PM PKT</div>
           <div class="settings-note">Added cricket-style weekday performance, hour-by-hour sales/purchases/profit details, daily-average comparisons, and pending-payment analytics; preserved existing analytics and business logic.</div>
           <div style="font-weight:700;margin-top:12px;">Index v87 — 31 Oct 2026 • 09:49:10 AM PKT</div>
           <div class="settings-note">Pending Payments Theme Consistency — unified buttons, forms, spacing, typography, borders and colors with the app theme.</div>
@@ -3003,9 +3016,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v88';
-const APP_INDEX_VERSION_NAME = 'Analytics Performance Scoreboards';
-const APP_INDEX_UPDATED = '31 Oct 2026 • 12:40:04 PM PKT • Added cricket-style weekday performance, hour-by-hour sales/purchases/profit details, daily-average comparisons, and pending-payment analytics; preserved existing analytics and business logic.';
+const APP_INDEX_VERSION = 'v89';
+const APP_INDEX_VERSION_NAME = 'Busiest Hour Day/Night Graph';
+const APP_INDEX_UPDATED = '31 Oct 2026 • 01:17:06 PM PKT • Added interactive hourly sales/purchases line graph with Day (9 AM–9 PM) and Night (9 PM–9 AM) selectors; Day is selected by default. Existing analytics and business logic preserved.';
 
 let inventory = [];
 
@@ -8179,31 +8192,72 @@ function customerDateFromISO(value){
   if(isNaN(d.getTime())) return '';
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
+let customerTimePeriod='day';
 function renderCustomerTimeAnalytics(){
   const from=document.getElementById('cta-from').value;
   const to=document.getElementById('cta-to').value;
   const rows=Array.from({length:24},function(_,h){return {hour:h,buy:0,sell:0};});
-  let buyTotal=0,sellTotal=0,unknownSell=0;
+  let unknownSell=0;
   inventory.forEach(function(e){
     if(isReturnedSale(e)) return;
     const p=entryCreatedAt(e), pd=customerDateFromISO(p);
-    if(p && (!from||pd>=from) && (!to||pd<=to)){ rows[customerHourFromISO(p)].buy++; buyTotal++; }
+    if(p && (!from||pd>=from) && (!to||pd<=to)){ const ph=customerHourFromISO(p); if(ph!==null) rows[ph].buy++; }
     if(e.sold){
       const sa=e.saleAt, sd=customerDateFromISO(sa);
-      if(sa && (!from||sd>=from) && (!to||sd<=to)){ rows[customerHourFromISO(sa)].sell++; sellTotal++; }
+      if(sa && (!from||sd>=from) && (!to||sd<=to)){ const sh=customerHourFromISO(sa); if(sh!==null) rows[sh].sell++; }
       else if(!sa){ unknownSell++; }
     }
   });
+  const hours=customerTimePeriod==='day'
+    ? Array.from({length:12},function(_,i){return i+9;})
+    : [21,22,23,0,1,2,3,4,5,6,7,8];
+  const shown=hours.map(function(h){return rows[h];});
+  const buyTotal=shown.reduce(function(n,r){return n+r.buy;},0);
+  const sellTotal=shown.reduce(function(n,r){return n+r.sell;},0);
+  document.querySelectorAll('.cta-period-btn').forEach(function(btn){
+    const active=btn.dataset.period===customerTimePeriod;
+    btn.classList.toggle('btn-save',active); btn.classList.toggle('btn-cancel',!active);
+    btn.setAttribute('aria-pressed',active?'true':'false');
+  });
   document.getElementById('customerTimeSummary').innerHTML=
-    '<div class="stat-card"><div class="stat-label">📥 Mobile bechne wale</div><div class="stat-value">'+buyTotal+'</div></div>'+
-    '<div class="stat-card"><div class="stat-label">📤 Mobile khareedne wale</div><div class="stat-value">'+sellTotal+'</div></div>';
-  const active=rows.filter(function(r){return r.buy||r.sell;});
+    '<div class="stat-card"><div class="stat-label">📱 Mobiles Sold</div><div class="stat-value">'+sellTotal+'</div></div>'+
+    '<div class="stat-card"><div class="stat-label">📦 Mobiles Purchased</div><div class="stat-value">'+buyTotal+'</div></div>';
+  const W=600,H=230,L=30,R=12,T=18,B=42, plotW=W-L-R, plotH=H-T-B;
+  const maxVal=Math.max(1,...shown.map(function(r){return Math.max(r.sell,r.buy);}));
+  const yMax=Math.max(4,Math.ceil(maxVal/2)*2);
+  const x=function(i){return L+(shown.length<2?0:i*plotW/(shown.length-1));};
+  const y=function(v){return T+plotH-(v/yMax)*plotH;};
+  let svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Hourly sales and purchases line graph" style="width:100%;height:auto;display:block;">';
+  for(let i=0;i<=4;i++){
+    const val=Math.round(yMax*i/4), yy=y(val);
+    svg+='<line x1="'+L+'" y1="'+yy+'" x2="'+(W-R)+'" y2="'+yy+'" stroke="var(--border)" stroke-width="1"/>';
+    svg+='<text x="'+(L-7)+'" y="'+(yy+4)+'" text-anchor="end" font-size="10" fill="var(--text-muted)">'+val+'</text>';
+  }
+  function series(key,color){
+    const points=shown.map(function(r,i){return x(i)+','+y(r[key]);}).join(' ');
+    let out='<polyline points="'+points+'" fill="none" stroke="'+color+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';
+    shown.forEach(function(r,i){out+='<circle cx="'+x(i)+'" cy="'+y(r[key])+'" r="3.2" fill="'+color+'"/>';});
+    return out;
+  }
+  svg+=series('sell','#18a7d8')+series('buy','#f59e0b');
+  shown.forEach(function(r,i){
+    const label=(r.hour%12||12)+(r.hour<12?' AM':' PM');
+    if(i%2===0 || i===shown.length-1) svg+='<text x="'+x(i)+'" y="'+(H-16)+'" text-anchor="middle" font-size="10" fill="var(--text-muted)">'+label+'</text>';
+  });
+  svg+='</svg>';
+  document.getElementById('customerTimeLineChart').innerHTML=svg;
+  const active=shown.filter(function(r){return r.buy||r.sell;});
   document.getElementById('customerTimeHourlyList').innerHTML=active.length?active.map(function(r){
-    const label=String(r.hour).padStart(2,'0')+':00 – '+String((r.hour+1)%24).padStart(2,'0')+':00';
-    return '<div class="report-row"><div class="rr-top"><span>'+label+'</span><span><b style="color:var(--pta);">'+r.buy+'</b> beche &nbsp; <b style="color:#7db7ff;">'+r.sell+'</b> khareede</span></div></div>';
-  }).join(''):'<div class="empty">Is date range mein koi timed customer activity nahi mili.</div>';
-  document.getElementById('customerTimeMissingNote').textContent=unknownSell?'⚠️ '+unknownSell+' purani sold entries mein exact sale time save nahi tha, isliye woh hourly sale count mein include nahi hui. Nayi sales ka exact time automatically save hoga.':'';
+    const next=(r.hour+1)%24;
+    const fmtHour=function(h){return (h%12||12)+(h<12?' AM':' PM');};
+    const label=fmtHour(r.hour)+' – '+fmtHour(next);
+    return '<div class="report-row"><div class="rr-top"><span>'+label+'</span><span><b style="color:#18a7d8;">'+r.sell+'</b> sold &nbsp; <b style="color:#f59e0b;">'+r.buy+'</b> purchased</span></div></div>';
+  }).join(''):'<div class="empty">Is day/night period aur date range mein koi timed activity nahi mili.</div>';
+  document.getElementById('customerTimeMissingNote').textContent=unknownSell?'⚠️ '+unknownSell+' purani sold entries mein exact sale time save nahi tha, isliye woh hourly sale count mein include nahi hui.':'';
 }
+document.querySelectorAll('.cta-period-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){customerTimePeriod=btn.dataset.period;renderCustomerTimeAnalytics();});
+});
 document.getElementById('btnCustomerTimeAnalytics').onclick=function(){
   document.getElementById('cta-from').value=document.getElementById('rp-from').value||'';
   document.getElementById('cta-to').value=document.getElementById('rp-to').value||'';
