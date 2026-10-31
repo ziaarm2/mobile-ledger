@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v89
-Version name: Analytics Overlay Open Fix
+Current file version: Index v90
+Version name: Analytics Startup-Safe Open Fix
 Baseline: Index v81 (locked baseline; preserve all unrelated functionality)
-Last changed: 31 Oct 2026 • 10:02:12 AM PKT (Asia/Karachi)
-Change summary: Fixed Analytics menu action so the overlay opens and registers back navigation before rendering; added visible fallback error feedback if rendering fails. No analytics calculations changed.
+Last changed: 31 Oct 2026 • 10:06:58 AM PKT (Asia/Karachi)
+Change summary: Open Analytics overlay before reading dashboard settings; safely fall back to calendar mode if settings are not initialized, and preserve visible render-error feedback.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 1. Read this block and the APP_INDEX_VERSION / APP_INDEX_UPDATED constants before editing.
@@ -18,6 +18,7 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
+- Index v90 — Analytics Startup-Safe Open Fix — 31 Oct 2026 • 10:06:58 AM PKT. Opens the Analytics sheet before accessing dashboard settings; falls back safely to calendar mode and keeps visible render-error feedback.
 - Index v89 — Analytics Overlay Open Fix — 31 Oct 2026 • 10:02:12 AM PKT. Analytics overlay now opens before rendering and displays a visible fallback message if rendering throws; analytics calculations unchanged.
 - Index v88 — Analytics Expansion — Pending Payments & Weekday Trends — 31 Oct 2026 • 09:57:46 AM PKT. Added pending balances overview, weekday activity chart and included phone expenses in realized net profit; preserved existing analytics and app behavior.
 - Index v87 — Pending Payments Theme Consistency — 31 Oct 2026 • 09:49:10 AM PKT. Unified button sizes, form controls, spacing, typography, cards and colors with the existing app theme; styling-only update.
@@ -33,10 +34,10 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v89">
-<meta name="app-index-version-name" content="Analytics Overlay Open Fix">
-<meta name="app-index-updated" content="2026-10-31T10:02:12+05:00">
-<meta name="app-index-change-summary" content="Fixed Analytics overlay opening before render and added visible fallback error feedback; calculations unchanged.">
+<meta name="app-index-version" content="v90">
+<meta name="app-index-version-name" content="Analytics Startup-Safe Open Fix">
+<meta name="app-index-updated" content="2026-10-31T10:06:58+05:00">
+<meta name="app-index-change-summary" content="Opens Analytics before accessing dashboard settings; safely defaults to calendar mode and preserves visible render-error feedback. No analytics calculations changed.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -3017,9 +3018,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v89';
-const APP_INDEX_VERSION_NAME = 'Analytics Overlay Open Fix';
-const APP_INDEX_UPDATED = '31 Oct 2026 • 10:02:12 AM PKT • Analytics overlay open order fixed; render fallback added.';
+const APP_INDEX_VERSION = 'v90';
+const APP_INDEX_VERSION_NAME = 'Analytics Startup-Safe Open Fix';
+const APP_INDEX_UPDATED = '31 Oct 2026 • 10:06:58 AM PKT • Analytics opens before settings access; startup-safe mode fallback added.';
 
 let inventory = [];
 
@@ -8730,13 +8731,15 @@ document.getElementById('btnAnalytics').onclick=function(e){
   closeMainMenu();
   const analyticsOverlay=document.getElementById('analyticsOverlay');
   if(!analyticsOverlay)return;
-  analyticsMode=['calendar','business','lifetime'].indexOf(dashboardSettings.mode)!==-1?dashboardSettings.mode:'calendar';
-  analyticsCustomFrom=''; analyticsCustomTo='';
-  // Open the overlay and register back-navigation BEFORE rendering.
-  // Previously, a render-time exception could close the menu but leave Analytics hidden.
+  // Show Analytics before reading settings or calculating data. If settings are
+  // unavailable during startup, the user should still get the Analytics sheet.
   analyticsOverlay.classList.remove('hidden');
   pushOverlayHistory('analyticsOverlay');
   try{
+    const safeDashboardSettings=(typeof dashboardSettings!=='undefined' && dashboardSettings) ? dashboardSettings : {};
+    const savedMode=safeDashboardSettings.mode;
+    analyticsMode=['calendar','business','lifetime'].indexOf(savedMode)!==-1?savedMode:'calendar';
+    analyticsCustomFrom=''; analyticsCustomTo='';
     renderAnalytics();
     const oldError=document.getElementById('analyticsLoadError');
     if(oldError)oldError.remove();
@@ -8750,7 +8753,7 @@ document.getElementById('btnAnalytics').onclick=function(e){
       const sheet=analyticsOverlay.querySelector('.analytics-sheet');
       if(sheet)sheet.insertBefore(errorBox,sheet.children[1]||null);
     }
-    errorBox.textContent='Analytics open ho gaya hai, lekin data render karte waqt error aya. Page refresh karein; agar masla rahe to is error ka screenshot bhejein.';
+    errorBox.textContent='Analytics screen open hai, lekin data load karte waqt error aya. Page refresh karein; agar masla rahe to error ka screenshot bhejein.';
   }
 };
 document.getElementById('btnAnalyticsClose').onclick=function(){requestOverlayClose();};
