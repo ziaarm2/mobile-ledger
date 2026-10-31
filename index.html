@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v91
-Version name: Analytics Click Reliability Fix
+Current file version: Index v92
+Version name: Analytics Pending Payments Scope Fix
 Baseline: Index v81 (locked baseline; preserve all unrelated functionality)
 Last changed: 31 Oct 2026 • 10:06:58 AM PKT (Asia/Karachi)
 Change summary: Open Analytics overlay before reading dashboard settings; safely fall back to calendar mode if settings are not initialized, and preserve visible render-error feedback.
@@ -18,8 +18,9 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
-- Index v91 — Analytics Click Reliability Fix — 31 Oct 2026 • 10:06:58 AM PKT. Opens the Analytics sheet before accessing dashboard settings; falls back safely to calendar mode and keeps visible render-error feedback.
-- Index v91 — Analytics Click Reliability Fix — 31 Oct 2026 • 10:11:33 AM PKT. Adds a final capture-phase Analytics click handler so the menu cannot swallow the click if an earlier handler fails to bind; explicitly marks the Analytics button as non-submit.
+- Index v92 — Analytics Click Reliability Fix — 31 Oct 2026 • 10:06:58 AM PKT. Opens the Analytics sheet before accessing dashboard settings; falls back safely to calendar mode and keeps visible render-error feedback.
+- Index v92 — Analytics Click Reliability Fix — 31 Oct 2026 • 10:11:33 AM PKT. Adds a final capture-phase Analytics click handler so the menu cannot swallow the click if an earlier handler fails to bind; explicitly marks the Analytics button as non-submit.
+- Index v92 — Analytics Pending Payments Scope Fix — 31 Oct 2026 • 10:15:00 AM PKT. Defines dueOf and receivedOf inside the Analytics pending overview so it does not depend on private helpers scoped inside another script closure.
 - Index v89 — Analytics Overlay Open Fix — 31 Oct 2026 • 10:02:12 AM PKT. Analytics overlay now opens before rendering and displays a visible fallback message if rendering throws; analytics calculations unchanged.
 - Index v88 — Analytics Expansion — Pending Payments & Weekday Trends — 31 Oct 2026 • 09:57:46 AM PKT. Added pending balances overview, weekday activity chart and included phone expenses in realized net profit; preserved existing analytics and app behavior.
 - Index v87 — Pending Payments Theme Consistency — 31 Oct 2026 • 09:49:10 AM PKT. Unified button sizes, form controls, spacing, typography, cards and colors with the existing app theme; styling-only update.
@@ -35,8 +36,8 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v91">
-<meta name="app-index-version-name" content="Analytics Click Reliability Fix">
+<meta name="app-index-version" content="v92">
+<meta name="app-index-version-name" content="Analytics Pending Payments Scope Fix">
 <meta name="app-index-updated" content="2026-10-31T10:06:58+05:00">
 <meta name="app-index-change-summary" content="Opens Analytics before accessing dashboard settings; safely defaults to calendar mode and preserves visible render-error feedback. No analytics calculations changed.">
 <meta charset="UTF-8">
@@ -1350,7 +1351,7 @@ body.menu-open .app>header{z-index:1!important;}
 }
 </style>
 
-<style id="v91-compact-professional-spacing">
+<style id="v92-compact-professional-spacing">
 /* v91: compact, consistent spacing for entry and sale sheets; behavior unchanged */
 .sheet{padding:14px 14px 24px!important;}
 .field{margin-bottom:8px!important;}
@@ -1958,7 +1959,7 @@ body.menu-open .app>header{z-index:1!important;}
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v88<span>Updated: 31 Oct 2026</span><span>09:57:46 AM PKT</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v92<span>Updated: 31 Oct 2026</span><span>10:15:00 AM PKT</span></div>
       </div>
     </div>
 
@@ -3019,8 +3020,8 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v91';
-const APP_INDEX_VERSION_NAME = 'Analytics Click Reliability Fix';
+const APP_INDEX_VERSION = 'v92';
+const APP_INDEX_VERSION_NAME = 'Analytics Pending Payments Scope Fix';
 const APP_INDEX_UPDATED = '31 Oct 2026 • 10:06:58 AM PKT • Analytics opens before settings access; startup-safe mode fallback added.';
 
 let inventory = [];
@@ -8584,6 +8585,10 @@ function analyticsRenderTimeOfDay(range){
 function analyticsRenderPendingOverview(){
   const grid=document.getElementById('analyticsPendingGrid'),note=document.getElementById('analyticsPendingNote');
   if(!grid)return;
+  // Keep payment helpers local to Analytics; helpers declared inside other IIFEs are not globally visible.
+  function analyticsSaleTotal(e){return Number(e.saleTotal!=null?e.saleTotal:(Number(e.sell)||0)*(Number(e.quantity)||1));}
+  function receivedOf(e){return Number(e.paymentReceived!=null?e.paymentReceived:analyticsSaleTotal(e));}
+  function dueOf(e){return Math.max(0,Number(e.balanceDue!=null?e.balanceDue:analyticsSaleTotal(e)-receivedOf(e)));}
   const openMobile=inventory.filter(function(e){return e.sold&&!isReturnedSale(e)&&dueOf(e)>0;});
   const mobileGet=openMobile.reduce(function(sum,e){return sum+dueOf(e);},0);
   const activeManual=(Array.isArray(manualDues)?manualDues:[]).filter(function(b){return !b.deleted;});
