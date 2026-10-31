@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v81
-Version name: Balanced Menu Footer Layout
-Baseline: Index v80 (locked baseline; preserve all unrelated functionality)
-Last changed: 31 Oct 2026 • 08:34:30 AM PKT (Asia/Karachi)
-Change summary: Repositioned the version number and update date/time to the right side of the menu footer; preserved existing business logic and app functionality.
+Current file version: Index v82
+Version name: Manual Pending Payments & Sync
+Baseline: Index v81 (locked baseline; preserve all unrelated functionality)
+Last changed: 31 Oct 2026 • 09:05:41 AM PKT (Asia/Karachi)
+Change summary: Added manual payable/receivable bills grouped by person with separate payment history and synced records.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 1. Read this block and the APP_INDEX_VERSION / APP_INDEX_UPDATED constants before editing.
@@ -18,6 +18,7 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
+- Index v82 — Manual Pending Payments & Sync — 31 Oct 2026 • 09:05:41 AM PKT. Added manual payable/receivable bills grouped by person with separate payment history and synced records.
 - Index v81 — Balanced Menu Footer Layout — 31 Oct 2026 • 08:34:30 AM PKT. Moved version number and update date/time to the right side of the menu footer.
 - Index v79 — Clean Menu Footer & Expanded About Details — 31 Oct 2026 • 08:17:44 AM PKT. Simplified footer and moved technical metadata/history into About.
 - Index v78 — Self-Documenting Version Metadata & Update History — 31 Oct 2026 • 08:07:03 AM PKT. Added permanent maintenance instructions and synchronized version metadata.
@@ -25,10 +26,10 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v81">
-<meta name="app-index-version-name" content="Balanced Menu Footer Layout">
-<meta name="app-index-updated" content="2026-10-31T08:34:30+05:00">
-<meta name="app-index-change-summary" content="Repositioned version number and update date/time to the right side of the menu footer; preserved app functionality.">
+<meta name="app-index-version" content="v82">
+<meta name="app-index-version-name" content="Manual Pending Payments &amp; Sync">
+<meta name="app-index-updated" content="2026-10-31T09:05:41+05:00">
+<meta name="app-index-change-summary" content="Added manual payable/receivable bills grouped by person with separate payment history and synced records.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -1838,7 +1839,7 @@ body.menu-open .app>header{z-index:1!important;}
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v81<span>Updated: 31 Oct 2026</span><span>08:34:30 AM PKT</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v82<span>Updated: 31 Oct 2026</span><span>09:05:41 AM PKT</span></div>
       </div>
     </div>
 
@@ -2133,7 +2134,7 @@ body.menu-open .app>header{z-index:1!important;}
   </div>
 </div>
 
-<div class="overlay hidden" id="udharOverlay"><div class="sheet" style="max-height:90vh;overflow:auto"><button type="button" class="safe-page-close" id="udharClose" aria-label="Close" title="Close">×</button><div class="sheet-handle"></div><h2>Pending payments</h2><div class="settings-note">Jin sales ki payment abhi complete nahi hui, unki list aur payment history.</div><div class="field"><label>Naam ya mobile number search karein</label><input id="udharSearch" placeholder="Customer name ya mobile search..."></div><div id="udharSummary" class="cost-summary"></div><div id="udharList"></div></div></div>
+<div class="overlay hidden" id="udharOverlay"><div class="sheet" style="max-height:90vh;overflow:auto"><button type="button" class="safe-page-close" id="udharClose" aria-label="Close" title="Close">×</button><div class="sheet-handle"></div><h2>Pending payments</h2><div class="settings-note">Manual deni/leni wali payments aur mobile sales ki existing pending payments yahan alag maintain hoti hain.</div><div class="field"><label>Naam ya mobile number search karein</label><input id="udharSearch" placeholder="Naam ya mobile number search..."></div><div class="settings-card" style="margin-top:12px;padding:14px;border:1px solid var(--border);border-radius:14px"><h3 style="margin:0 0 8px">Manual payments</h3><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn-secondary" id="manualDueAddPayable" style="flex:1;min-width:130px">＋ Deni hai</button><button type="button" class="btn-secondary" id="manualDueAddReceivable" style="flex:1;min-width:130px">＋ Leni hai</button></div><div id="manualDueSummary" class="cost-summary" style="margin-top:10px"></div><div id="manualDueList"></div></div><div style="margin-top:18px;border-top:1px solid var(--border);padding-top:14px"><h3 style="margin:0 0 4px">Mobile sales ki pending payments</h3><div class="settings-note">Mobile sale ke existing payment records yahan se hi manage honge.</div><div id="udharSummary" class="cost-summary"></div><div id="udharList"></div></div></div></div>
 <div class="overlay hidden" id="customerBookOverlay"><div class="sheet" style="max-height:90vh;overflow:auto"><button type="button" class="safe-page-close" id="customerBookClose">×</button><div class="sheet-handle"></div><h2>Customer Book</h2><div class="field"><label>Naam ya mobile number search karein</label><input id="customerBookSearch" placeholder="Customer search..."></div><div id="customerBookSummary" class="cost-summary"></div><div id="customerBookList"></div></div></div>
 
 <div class="overlay hidden" id="cropOverlay">
@@ -2820,14 +2821,18 @@ body.menu-open .app>header{z-index:1!important;}
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v80</div>
-          <div class="settings-note" style="margin-top:4px;">Footer Timestamp Consistency Fix</div>
-          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 31 Oct 2026 • 08:22:55 AM PKT</div>
-          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Footer ke date/time ko correct kiya aur tamam version metadata ka timestamp same kiya.</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v82</div>
+          <div class="settings-note" style="margin-top:4px;">Manual Pending Payments &amp; Sync</div>
+          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 31 Oct 2026 • 09:05:41 AM PKT</div>
+          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Added manual payable/receivable bills grouped by person with separate payment history and synced records.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
-          <div style="font-weight:700;margin-top:9px;">Index v80 — 31 Oct 2026 • 08:22:55 AM PKT</div>
+          <div style="font-weight:700;margin-top:9px;">Index v82 — 31 Oct 2026 • 09:05:41 AM PKT</div>
+          <div class="settings-note">Added manual payable/receivable bills grouped by person with separate payment history and synced records.</div>
+          <div style="font-weight:700;margin-top:12px;">Index v81 — 31 Oct 2026 • 08:34:30 AM PKT</div>
+          <div class="settings-note">Balanced Menu Footer Layout — version and update timestamp repositioned in menu footer.</div>
+          <div style="font-weight:700;margin-top:12px;">Index v80 — 31 Oct 2026 • 08:22:55 AM PKT</div>
           <div class="settings-note">Footer Timestamp Consistency Fix</div>
           <div style="font-weight:700;margin-top:12px;">Index v79 — 31 Oct 2026 • 08:17:44 AM PKT</div>
           <div class="settings-note">Clean Menu Footer &amp; Expanded About Details</div>
@@ -2881,9 +2886,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v81';
-const APP_INDEX_VERSION_NAME = 'Balanced Menu Footer Layout';
-const APP_INDEX_UPDATED = '31 Oct 2026 • 08:34:30 AM PKT • Repositioned version number and update date/time to the right side of the menu footer; preserved app functionality.';
+const APP_INDEX_VERSION = 'v82';
+const APP_INDEX_VERSION_NAME = 'Manual Pending Payments & Sync';
+const APP_INDEX_UPDATED = '31 Oct 2026 • 09:05:41 AM PKT • Added manual payable/receivable bills grouped by person with separate payment history and synced records.';
 
 let inventory = [];
 
@@ -3422,10 +3427,14 @@ const LS_CUSTOM_MODELS_KEY = 'mobileLedger_customModels';
 const LS_LAST_BACKUP_KEY = 'mobileLedger_lastBackup';
 const LS_REMINDER_DISMISSED_KEY = 'mobileLedger_reminderDismissedAt';
 const LS_EXPENSES_KEY = 'mobileLedger_expenses';
+const LS_MANUAL_DUES_KEY = 'mobileLedger_manualDues_v1';
+const LS_MANUAL_DUE_PAYMENTS_KEY = 'mobileLedger_manualDuePayments_v1';
 const LS_RATE_BOOK_KEY = 'mobileLedger_rateBook';
 
 let rateBook = [];
 let expenses = [];
+let manualDues = [];
+let manualDuePayments = [];
 let expenseFormState = {category:''};
 let editingExpenseId = null;
 // When true, the amount typed/edited is stored as a negative expense (money
@@ -3483,6 +3492,26 @@ function tryCommitExpenses(candidateExpenses){
   return true;
 }
 
+function loadManualDueData(){
+  try{const raw=localStorage.getItem(shopStorageKey(LS_MANUAL_DUES_KEY));manualDues=raw?JSON.parse(raw):[];if(!Array.isArray(manualDues))manualDues=[];}catch(e){manualDues=[];}
+  try{const raw=localStorage.getItem(shopStorageKey(LS_MANUAL_DUE_PAYMENTS_KEY));manualDuePayments=raw?JSON.parse(raw):[];if(!Array.isArray(manualDuePayments))manualDuePayments=[];}catch(e){manualDuePayments=[];}
+}
+function tryCommitManualDueData(nextDues,nextPayments,label){
+  if(isAdminShopView())return false;
+  const oldDues=manualDues,oldPayments=manualDuePayments;
+  let preparedDues,preparedPayments,tombDues=[],tombPayments=[];
+  try{
+    pendingTombstonesAfterCommit=null;preparedDues=prepareRecordsForCommit(Array.isArray(nextDues)?nextDues:oldDues,oldDues,'md','manualDues');tombDues=pendingTombstonesAfterCommit||loadSyncTombstones();
+    pendingTombstonesAfterCommit=null;preparedPayments=prepareRecordsForCommit(Array.isArray(nextPayments)?nextPayments:oldPayments,oldPayments,'mdp','manualDuePayments');tombPayments=pendingTombstonesAfterCommit||loadSyncTombstones();
+    const allTombs=loadSyncTombstones();const tm=new Map();allTombs.concat(tombDues,tombPayments).forEach(function(t){if(t&&t.id&&t.entityType)tm.set(t.entityType+':'+t.id,t);});
+    if(!historyApplying&&((JSON.stringify(preparedDues)!==JSON.stringify(oldDues))||(JSON.stringify(preparedPayments)!==JSON.stringify(oldPayments)))){activityBeforeFromCurrentMutation();lastUndoSnapshot=activityBeforeState;pushUndoState(label||'Pending payment change',activityBeforeState);}
+    const duesJson=JSON.stringify(preparedDues),paymentsJson=JSON.stringify(preparedPayments);
+    const duesKey=shopStorageKey(LS_MANUAL_DUES_KEY),paymentsKey=shopStorageKey(LS_MANUAL_DUE_PAYMENTS_KEY);
+    localStorage.setItem(duesKey,duesJson);localStorage.setItem(paymentsKey,paymentsJson);
+    if(localStorage.getItem(duesKey)!==duesJson||localStorage.getItem(paymentsKey)!==paymentsJson){localStorage.setItem(duesKey,JSON.stringify(oldDues));localStorage.setItem(paymentsKey,JSON.stringify(oldPayments));pendingTombstonesAfterCommit=null;return false;}
+    saveSyncTombstones(Array.from(tm.values()));manualDues=preparedDues;manualDuePayments=preparedPayments;pendingTombstonesAfterCommit=null;schedulePush();return true;
+  }catch(e){try{localStorage.setItem(shopStorageKey(LS_MANUAL_DUES_KEY),JSON.stringify(oldDues));localStorage.setItem(shopStorageKey(LS_MANUAL_DUE_PAYMENTS_KEY),JSON.stringify(oldPayments));}catch(_e){}pendingTombstonesAfterCommit=null;console.error('Pending payment storage failed',e);return false;}
+}
 function totalExpensesAllTime(){
   return expenses.reduce(function(s,x){ return s + (Number(x.amount)||0); }, 0);
 }
@@ -7457,7 +7486,7 @@ const LS_UNDO_STACK='mobileLedger_undoStack_v15';
 const LS_REDO_STACK='mobileLedger_redoStack_v15';
 const LS_WA_TEMPLATE_KEY='mobileLedger_waTemplate';
 function appStateSnapshot(){
-  return {inventory:JSON.stringify(inventory),expenses:JSON.stringify(expenses),customOptionData:JSON.stringify(customOptionData),cardDisplaySettings:JSON.stringify(cardDisplaySettings),customModels:JSON.stringify(customModels||{}),dashboardSettings:JSON.stringify(dashboardSettings||{}),rateBook:JSON.stringify(rateBook||[]),waTemplate:localStorage.getItem(shopStorageKey(LS_WA_TEMPLATE_KEY))||'',shopProfile:JSON.stringify(shopProfile||{}),uiScaleMode:uiScaleMode||'normal',dashboardSettings:JSON.stringify(dashboardSettings||{})};
+  return {inventory:JSON.stringify(inventory),expenses:JSON.stringify(expenses),manualDues:JSON.stringify(manualDues||[]),manualDuePayments:JSON.stringify(manualDuePayments||[]),customOptionData:JSON.stringify(customOptionData),cardDisplaySettings:JSON.stringify(cardDisplaySettings),customModels:JSON.stringify(customModels||{}),dashboardSettings:JSON.stringify(dashboardSettings||{}),rateBook:JSON.stringify(rateBook||[]),waTemplate:localStorage.getItem(shopStorageKey(LS_WA_TEMPLATE_KEY))||'',shopProfile:JSON.stringify(shopProfile||{}),uiScaleMode:uiScaleMode||'normal',dashboardSettings:JSON.stringify(dashboardSettings||{})};
 }
 function loadPersistentHistory(){
   try{undoStack=JSON.parse(localStorage.getItem(shopStorageKey(LS_UNDO_STACK))||'[]')||[];}catch(e){undoStack=[];}
@@ -7486,12 +7515,14 @@ function applyAppState(st){
   try{
     inventory=JSON.parse(st.inventory||'[]');
     expenses=JSON.parse(st.expenses||'[]');
+    manualDues=JSON.parse(st.manualDues||'[]');manualDuePayments=JSON.parse(st.manualDuePayments||'[]');
     customOptionData=JSON.parse(st.customOptionData||'{}');
     cardDisplaySettings=JSON.parse(st.cardDisplaySettings||'{}');
     customModels=JSON.parse(st.customModels||'{}');
     rateBook=JSON.parse(st.rateBook||'[]');
     localStorage.setItem(shopStorageKey(LS_INVENTORY_KEY),JSON.stringify(inventory));
     localStorage.setItem(shopStorageKey(LS_EXPENSES_KEY),JSON.stringify(expenses));
+    localStorage.setItem(shopStorageKey(LS_MANUAL_DUES_KEY),JSON.stringify(manualDues));localStorage.setItem(shopStorageKey(LS_MANUAL_DUE_PAYMENTS_KEY),JSON.stringify(manualDuePayments));
     localStorage.setItem(shopStorageKey(LS_CUSTOM_OPTIONS_KEY),JSON.stringify(customOptionData));
     localStorage.setItem(shopStorageKey(LS_CARD_DISPLAY_KEY),JSON.stringify(cardDisplaySettings));
     localStorage.setItem(shopStorageKey(LS_CUSTOM_MODELS_KEY),JSON.stringify(customModels));
@@ -7721,6 +7752,8 @@ function backupData(silent){
     exportedAt: new Date().toISOString(),
     inventory: inventory,
     expenses: expenses,
+    manualDues: manualDues,
+    manualDuePayments: manualDuePayments,
     customModels: customModels,
     customOptionData: customOptionData,
     cardDisplaySettings: cardDisplaySettings,
@@ -7822,6 +7855,9 @@ function restoreData(file){
       saveCustomModels();
       if(Array.isArray(parsed.expenses)){
         tryCommitExpenses(parsed.expenses);
+      }
+      if(Array.isArray(parsed.manualDues)||Array.isArray(parsed.manualDuePayments)){
+        if(!tryCommitManualDueData(Array.isArray(parsed.manualDues)?parsed.manualDues:manualDues,Array.isArray(parsed.manualDuePayments)?parsed.manualDuePayments:manualDuePayments,'Restore pending payments')){alert('Manual pending payments restore nahi ho sakin.');return;}
       }
       if(parsed.customOptionData && typeof parsed.customOptionData === 'object'){
         customOptionData = {
@@ -9658,6 +9694,7 @@ function settingsDraftApplyMemorySnapshot(st,shopRaw){
   try{
     inventory=JSON.parse(st.inventory||'[]');
     expenses=JSON.parse(st.expenses||'[]');
+    manualDues=JSON.parse(st.manualDues||'[]');manualDuePayments=JSON.parse(st.manualDuePayments||'[]');
     customOptionData=JSON.parse(st.customOptionData||'{}');
     cardDisplaySettings=JSON.parse(st.cardDisplaySettings||'{}');
     customModels=JSON.parse(st.customModels||'{}');
@@ -9681,6 +9718,7 @@ function settingsDraftSave(){
   const before=settingsDraftBaseline.app;
   try{
     localStorage.setItem(shopStorageKey(LS_CUSTOM_OPTIONS_KEY),JSON.stringify(customOptionData));
+    localStorage.setItem(shopStorageKey(LS_MANUAL_DUES_KEY),JSON.stringify(manualDues));localStorage.setItem(shopStorageKey(LS_MANUAL_DUE_PAYMENTS_KEY),JSON.stringify(manualDuePayments));
     localStorage.setItem(shopStorageKey(LS_CARD_DISPLAY_KEY),JSON.stringify(cardDisplaySettings));
     localStorage.setItem(shopStorageKey(LS_WA_TEMPLATE_KEY),getWaMessageTemplate());
     localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY),JSON.stringify(shopProfile||{}));
@@ -10235,7 +10273,7 @@ function queueSyncConflict(entityType,id,localRecord,remoteRecord){
 function renderSyncConflicts(){
   const el=document.getElementById('syncConflictList');if(!el)return;const rows=loadSyncConflicts();
   if(!rows.length){el.innerHTML='<div class="settings-note">Koi pending sync conflict nahi.</div>';return;}
-  el.innerHTML=rows.map(function(c){const a=c.localRecord||{},b=c.remoteRecord||{};const title=c.entityType==='inventory'?((a.brand||b.brand||'Mobile')+' '+(a.model||b.model||'')):(a.category||b.category||'Expense');return '<div style="border:1px solid #f87171;border-radius:10px;padding:10px;margin-top:8px;"><div style="font-weight:800;">'+escapeHtml(title)+' · '+escapeHtml(c.entityType)+'</div><div class="settings-note">Dono devices par record alag edit hua hai. Cloud sync is decision tak roki gayi hai.</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;"><div style="border:1px solid var(--border);border-radius:8px;padding:8px;"><b>Local version</b><div class="settings-note">'+escapeHtml(c.localDevice||'Unknown device')+'</div><div style="font-size:12px;margin-top:4px;">'+escapeHtml(JSON.stringify(a).slice(0,450))+'</div><button type="button" class="menu-item" data-conflict-choice="local" data-conflict-key="'+escapeHtml(c.key)+'" style="margin-top:8px;">Local version rakhein</button></div><div style="border:1px solid var(--border);border-radius:8px;padding:8px;"><b>Cloud version</b><div class="settings-note">'+escapeHtml(c.remoteDevice||'Unknown device')+'</div><div style="font-size:12px;margin-top:4px;">'+escapeHtml(JSON.stringify(b).slice(0,450))+'</div><button type="button" class="menu-item" data-conflict-choice="remote" data-conflict-key="'+escapeHtml(c.key)+'" style="margin-top:8px;">Cloud version rakhein</button></div></div></div>';}).join('');
+  el.innerHTML=rows.map(function(c){const a=c.localRecord||{},b=c.remoteRecord||{};const title=c.entityType==='inventory'?((a.brand||b.brand||'Mobile')+' '+(a.model||b.model||'')):(c.entityType==='manualDues'?((a.personName||b.personName||'Person')+' · '+(a.reason||b.reason||'Bill')):(c.entityType==='manualDuePayments'?('Payment · '+(a.billId||b.billId||'')):(a.category||b.category||'Expense')));return '<div style="border:1px solid #f87171;border-radius:10px;padding:10px;margin-top:8px;"><div style="font-weight:800;">'+escapeHtml(title)+' · '+escapeHtml(c.entityType)+'</div><div class="settings-note">Dono devices par record alag edit hua hai. Cloud sync is decision tak roki gayi hai.</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;"><div style="border:1px solid var(--border);border-radius:8px;padding:8px;"><b>Local version</b><div class="settings-note">'+escapeHtml(c.localDevice||'Unknown device')+'</div><div style="font-size:12px;margin-top:4px;">'+escapeHtml(JSON.stringify(a).slice(0,450))+'</div><button type="button" class="menu-item" data-conflict-choice="local" data-conflict-key="'+escapeHtml(c.key)+'" style="margin-top:8px;">Local version rakhein</button></div><div style="border:1px solid var(--border);border-radius:8px;padding:8px;"><b>Cloud version</b><div class="settings-note">'+escapeHtml(c.remoteDevice||'Unknown device')+'</div><div style="font-size:12px;margin-top:4px;">'+escapeHtml(JSON.stringify(b).slice(0,450))+'</div><button type="button" class="menu-item" data-conflict-choice="remote" data-conflict-key="'+escapeHtml(c.key)+'" style="margin-top:8px;">Cloud version rakhein</button></div></div></div>';}).join('');
   el.querySelectorAll('[data-conflict-choice]').forEach(function(btn){btn.onclick=function(){resolveSyncConflict(btn.getAttribute('data-conflict-key'),btn.getAttribute('data-conflict-choice'));};});
 }
 function resolveSyncConflict(key,choice){
@@ -10245,10 +10283,14 @@ function resolveSyncConflict(key,choice){
     const arr=inventory.slice();const idx=arr.findIndex(function(r){return String(r.id)===String(conflict.id);});
     if(idx>=0){if(!selected.photos&&arr[idx].photos)selected.photos=arr[idx].photos;selected._syncBaseUpdatedAt=Math.max(Number(conflict.localRecord._syncUpdatedAt||0),Number(conflict.remoteRecord._syncUpdatedAt||0));selected._syncUpdatedAt=Date.now();selected._syncDeviceId=syncDeviceId;arr[idx]=selected;tryCommitInventory(arr);}
     else {selected._syncBaseUpdatedAt=Math.max(Number(conflict.localRecord._syncUpdatedAt||0),Number(conflict.remoteRecord._syncUpdatedAt||0));selected._syncUpdatedAt=Date.now();selected._syncDeviceId=syncDeviceId;tryCommitInventory(inventory.concat([selected]));}
-  }else{
+  }else if(conflict.entityType==='expenses'){
     const arr=expenses.slice();const idx=arr.findIndex(function(r){return String(r.id)===String(conflict.id);});
     if(idx>=0){selected._syncBaseUpdatedAt=Math.max(Number(conflict.localRecord._syncUpdatedAt||0),Number(conflict.remoteRecord._syncUpdatedAt||0));selected._syncUpdatedAt=Date.now();selected._syncDeviceId=syncDeviceId;arr[idx]=selected;tryCommitExpenses(arr);}
     else {selected._syncBaseUpdatedAt=Math.max(Number(conflict.localRecord._syncUpdatedAt||0),Number(conflict.remoteRecord._syncUpdatedAt||0));selected._syncUpdatedAt=Date.now();selected._syncDeviceId=syncDeviceId;tryCommitExpenses(expenses.concat([selected]));}
+  }else if(conflict.entityType==='manualDues'||conflict.entityType==='manualDuePayments'){
+    const dues=manualDues.slice(),payments=manualDuePayments.slice();const arr=conflict.entityType==='manualDues'?dues:payments;const idx=arr.findIndex(function(r){return String(r.id)===String(conflict.id);});
+    selected._syncBaseUpdatedAt=Math.max(Number(conflict.localRecord._syncUpdatedAt||0),Number(conflict.remoteRecord._syncUpdatedAt||0));selected._syncUpdatedAt=Date.now();selected._syncDeviceId=syncDeviceId;if(idx>=0)arr[idx]=selected;else arr.push(selected);
+    tryCommitManualDueData(dues,payments,'Resolve pending payment sync conflict');
   }
   saveSyncConflicts(rows.filter(function(c){return c.key!==key;}));renderSyncConflicts();render();
   if(!hasUnresolvedSyncConflicts()){schedulePush();setAccountSyncStatus('Conflict resolve ho gaya — sync dobara try ho rahi hai…','saving');}
@@ -11220,7 +11262,7 @@ async function readChunkedCloudRecord(collectionName,id,meta){
   const root=cloudShopRef().collection(collectionName).doc(id); const snap=await root.get(); if(!snap.exists)throw new Error('Selected cloud record nahi mila.'); const d=snap.data()||{}; if(!d.complete)throw new Error('Ye backup abhi complete nahi hai.');
   const chunks=await root.collection('chunks').orderBy('index').get(); if(chunks.size!==Number(d.chunkCount||0))throw new Error('Backup ke tamam chunks available nahi hain.'); let raw='';chunks.forEach(function(c){raw+=(c.data()||{}).content||'';}); if(raw.length!==Number(d.payloadChars||raw.length))throw new Error('Backup verification fail hui.'); return {meta:d,payload:JSON.parse(raw)};
 }
-function currentBackupPayload(){return {schemaVersion:2,exportedAt:new Date().toISOString(),state:appStateSnapshot(),inventory:inventory,expenses:expenses,customModels:customModels,customOptionData:customOptionData,cardDisplaySettings:cardDisplaySettings,rateBook:rateBook,shopProfile:shopProfile};}
+function currentBackupPayload(){return {schemaVersion:3,exportedAt:new Date().toISOString(),state:appStateSnapshot(),inventory:inventory,expenses:expenses,manualDues:manualDues,manualDuePayments:manualDuePayments,customModels:customModels,customOptionData:customOptionData,cardDisplaySettings:cardDisplaySettings,rateBook:rateBook,shopProfile:shopProfile};}
 function setCloudBackupStatus(msg){const el=document.getElementById('cloudBackupStatus');if(el)el.textContent=msg;}
 async function createCloudBackup(label){
   if(isAdminShopView())throw new Error('Admin Shop view read-only hai.');
@@ -11348,6 +11390,8 @@ function buildCloudPayload(){
   return {
     inventory: inventory.map(function(e){ const c = Object.assign({}, e); delete c.photos; return c; }),
     expenses: expenses,
+    manualDues: manualDues,
+    manualDuePayments: manualDuePayments,
     customModels: customModels,
     customOptionData: customOptionData,
     cardDisplaySettings: cardDisplaySettings,
@@ -11377,20 +11421,25 @@ function attemptPush(){
       window.__remoteSyncTombstones=Array.isArray(remote.syncTombstones)?remote.syncTombstones:[];
       const mergedInventory=mergeSyncedRecords(localPayload.inventory,Array.isArray(remote.inventory)?remote.inventory:[],'inventory');
       const mergedExpenses=mergeSyncedRecords(localPayload.expenses,Array.isArray(remote.expenses)?remote.expenses:[],'expenses');
+      const mergedManualDues=mergeSyncedRecords(localPayload.manualDues,Array.isArray(remote.manualDues)?remote.manualDues:[],'manualDues');
+      const mergedManualDuePayments=mergeSyncedRecords(localPayload.manualDuePayments,Array.isArray(remote.manualDuePayments)?remote.manualDuePayments:[],'manualDuePayments');
       if(hasUnresolvedSyncConflicts()) throw new Error('SYNC_CONFLICT_PENDING');
       const tombstones=loadSyncTombstones();
       const seen=new Set(tombstones.map(function(t){return t.entityType+':'+t.id;}));
       window.__remoteSyncTombstones.forEach(function(t){const k=t.entityType+':'+t.id;if(!seen.has(k)){tombstones.push(t);seen.add(k);}});
       saveSyncTombstones(tombstones);
-      const payload=Object.assign({},localPayload,{inventory:mergedInventory.map(function(e){const c=Object.assign({},e);delete c.photos;return c;}),expenses:mergedExpenses,syncTombstones:tombstones,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+      const payload=Object.assign({},localPayload,{inventory:mergedInventory.map(function(e){const c=Object.assign({},e);delete c.photos;return c;}),expenses:mergedExpenses,manualDues:mergedManualDues,manualDuePayments:mergedManualDuePayments,syncTombstones:tombstones,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
       tx.set(shopRef,payload,{merge:true});
-      return {inventory:mergedInventory,expenses:mergedExpenses};
+      return {inventory:mergedInventory,expenses:mergedExpenses,manualDues:mergedManualDues,manualDuePayments:mergedManualDuePayments};
     }).then(function(result){
       const localPhotosById={};inventory.forEach(function(e){if(e.photos&&e.photos.length)localPhotosById[e.id]=e.photos;});
       // Merge transaction results into current state too, so changes made while
       // the request was in flight are retained and pushed in the next pass.
       inventory=mergeSyncedRecords(inventory,result.inventory,'inventory').map(function(e){const c=Object.assign({},e);c.photos=localPhotosById[e.id]||c.photos||[];return c;});
       expenses=mergeSyncedRecords(expenses,result.expenses,'expenses');
+      manualDues=mergeSyncedRecords(manualDues,result.manualDues,'manualDues');manualDuePayments=mergeSyncedRecords(manualDuePayments,result.manualDuePayments,'manualDuePayments');
+      try{localStorage.setItem(shopStorageKey(LS_MANUAL_DUES_KEY),JSON.stringify(manualDues));localStorage.setItem(shopStorageKey(LS_MANUAL_DUE_PAYMENTS_KEY),JSON.stringify(manualDuePayments));}catch(e){}
+      window.dispatchEvent(new Event('mobile-hisab-pending-payments-sync'));
       try{localStorage.setItem(shopStorageKey(LS_INVENTORY_KEY),JSON.stringify(inventory));localStorage.setItem(shopStorageKey(LS_EXPENSES_KEY),JSON.stringify(expenses));}catch(e){}
       if(versionAtSchedule > lastPushedVersion){
         lastPushedVersion = versionAtSchedule;
@@ -11472,6 +11521,9 @@ function startCloudSync(uid){
       applyingRemoteUpdate=true;
       if(Array.isArray(data.inventory)) inventory=mergeSyncedRecords(inventory,data.inventory,'inventory');
       if(Array.isArray(data.expenses)) expenses=mergeSyncedRecords(expenses,data.expenses,'expenses');
+      if(Array.isArray(data.manualDues)) manualDues=mergeSyncedRecords(manualDues,data.manualDues,'manualDues');
+      if(Array.isArray(data.manualDuePayments)) manualDuePayments=mergeSyncedRecords(manualDuePayments,data.manualDuePayments,'manualDuePayments');
+      try{localStorage.setItem(shopStorageKey(LS_MANUAL_DUES_KEY),JSON.stringify(manualDues));localStorage.setItem(shopStorageKey(LS_MANUAL_DUE_PAYMENTS_KEY),JSON.stringify(manualDuePayments));}catch(e){}
       try{localStorage.setItem(shopStorageKey(LS_INVENTORY_KEY),JSON.stringify(inventory));localStorage.setItem(shopStorageKey(LS_EXPENSES_KEY),JSON.stringify(expenses));}catch(e){}
       applyingRemoteUpdate=false;
       localVersion++;
@@ -11487,8 +11539,10 @@ function startCloudSync(uid){
     // business state with that empty snapshot. Seed/repair the cloud instead.
     const remoteInventoryCount = Array.isArray(data.inventory) ? data.inventory.length : 0;
     const remoteExpenseCount = Array.isArray(data.expenses) ? data.expenses.length : 0;
-    const localHasBusinessData = (Array.isArray(inventory) && inventory.length>0) || (Array.isArray(expenses) && expenses.length>0);
-    const remoteLooksEmpty = remoteInventoryCount===0 && remoteExpenseCount===0;
+    const remoteManualDueCount = Array.isArray(data.manualDues) ? data.manualDues.length : 0;
+    const remoteManualPaymentCount = Array.isArray(data.manualDuePayments) ? data.manualDuePayments.length : 0;
+    const localHasBusinessData = (Array.isArray(inventory) && inventory.length>0) || (Array.isArray(expenses) && expenses.length>0) || manualDues.length>0 || manualDuePayments.length>0;
+    const remoteLooksEmpty = remoteInventoryCount===0 && remoteExpenseCount===0 && remoteManualDueCount===0 && remoteManualPaymentCount===0;
     if(remoteLooksEmpty && localHasBusinessData && !hasPendingLocalChanges()){
       localVersion++;
       try{ localStorage.setItem(shopStorageKey(LS_LOCAL_VERSION_KEY), String(localVersion)); }catch(e){}
@@ -11508,6 +11562,9 @@ function startCloudSync(uid){
       expenses = mergeSyncedRecords(expenses,data.expenses,'expenses');
       try{ localStorage.setItem(shopStorageKey(LS_EXPENSES_KEY), JSON.stringify(expenses)); }catch(err){}
     }
+    if(Array.isArray(data.manualDues)){manualDues=mergeSyncedRecords(manualDues,data.manualDues,'manualDues');try{localStorage.setItem(shopStorageKey(LS_MANUAL_DUES_KEY),JSON.stringify(manualDues));}catch(err){}}
+    if(Array.isArray(data.manualDuePayments)){manualDuePayments=mergeSyncedRecords(manualDuePayments,data.manualDuePayments,'manualDuePayments');try{localStorage.setItem(shopStorageKey(LS_MANUAL_DUE_PAYMENTS_KEY),JSON.stringify(manualDuePayments));}catch(err){}}
+    window.dispatchEvent(new Event('mobile-hisab-pending-payments-sync'));
     if(data.customModels){
       customModels = data.customModels;
       try{ localStorage.setItem(shopStorageKey(LS_CUSTOM_MODELS_KEY), JSON.stringify(customModels)); }catch(err){}
@@ -11930,6 +11987,7 @@ try{document.title='Mobile Hisab by Z Mobile';}catch(e){}
 loadCustomOptionData();
 loadCustomModels();
 loadExpenses();
+loadManualDueData();
 loadRateBook();
 loadInventory();
 // Apply locally saved entry-layout/config immediately at startup instead of
@@ -12028,7 +12086,28 @@ if('serviceWorker' in navigator){
     setTimeout(()=>modal.querySelector('#ppmAmount').focus(),80);
   }
 
+  let manualDueEditingId=null;
+  function manualDuePaidTotal(bill){return manualDuePayments.filter(function(p){return String(p.billId)===String(bill.id)&&!p.deleted;}).reduce(function(sum,p){return sum+(Number(p.amount)||0);},0);}
+  function manualDueRemaining(bill){return Math.max(0,(Number(bill.amount)||0)-manualDuePaidTotal(bill));}
+  function manualDueDirectionLabel(direction){return direction==='payable'?'Deni hai':'Leni hai';}
+  function openManualDueForm(direction,bill){
+    if(isAdminShopView()){showToast('Admin Shop view read-only hai.');return;}
+    manualDueEditingId=bill?String(bill.id):null;
+    let modal=document.getElementById('manualDueModal');
+    if(!modal){modal=document.createElement('div');modal.id='manualDueModal';modal.style.cssText='position:fixed;inset:0;z-index:100001;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(15,23,42,.6);backdrop-filter:blur(3px)';modal.innerHTML='<div class="settings-card" style="width:min(100%,500px);max-height:92dvh;overflow:auto;background:var(--card,var(--surface,#fff));color:var(--text);border:1px solid var(--border);border-radius:20px;padding:18px"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h3 id="manualDueFormTitle" style="margin:0">Add payment</h3><button type="button" id="manualDueFormClose" class="btn-secondary" style="min-width:42px">✕</button></div><form id="manualDueForm"><label style="display:block;margin:12px 0 5px;font-weight:600">Payment type</label><select id="mdDirection" required style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><option value="payable">Deni hai</option><option value="receivable">Leni hai</option></select><label style="display:block;margin:12px 0 5px;font-weight:600">Person / business name *</label><input id="mdName" required maxlength="120" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><label style="display:block;margin:12px 0 5px;font-weight:600">Mobile number (optional)</label><input id="mdPhone" maxlength="40" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><label style="display:block;margin:12px 0 5px;font-weight:600">Bill / total amount (Rs.) *</label><input id="mdAmount" type="number" min="1" step="1" required style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><label style="display:block;margin:12px 0 5px;font-weight:600">Already paid / received (Rs.)</label><input id="mdInitialPaid" type="number" min="0" step="1" value="0" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><label style="display:block;margin:12px 0 5px;font-weight:600">Reason / bill title *</label><input id="mdReason" required maxlength="160" placeholder="Mobile repair, udhaar, supplier bill..." style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label style="display:block;margin:12px 0 5px;font-weight:600">Entry date *</label><input id="mdDate" type="date" required style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"></div><div><label style="display:block;margin:12px 0 5px;font-weight:600">Due date</label><input id="mdDueDate" type="date" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"></div></div><label style="display:block;margin:12px 0 5px;font-weight:600">Notes (optional)</label><textarea id="mdNotes" rows="2" maxlength="1000" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text);resize:vertical"></textarea><div style="display:flex;gap:10px;margin-top:16px"><button type="button" id="manualDueFormCancel" class="btn-secondary" style="flex:1">Cancel</button><button type="submit" class="btn-primary" style="flex:1">Save bill</button></div></form></div>';document.body.appendChild(modal);}
+    const form=modal.querySelector('#manualDueForm');form.reset();modal.style.display='flex';modal.querySelector('#mdDirection').value=bill?(bill.direction||direction):direction;modal.querySelector('#mdDirection').disabled=!!bill;modal.querySelector('#mdName').value=bill?(bill.personName||''):'';modal.querySelector('#mdPhone').value=bill?(bill.phone||''):'';modal.querySelector('#mdAmount').value=bill?String(Number(bill.amount)||0):'';modal.querySelector('#mdInitialPaid').value=bill?'0':'0';modal.querySelector('#mdInitialPaid').disabled=!!bill;modal.querySelector('#mdReason').value=bill?(bill.reason||''):'';modal.querySelector('#mdDate').value=bill?(bill.date||todayISO()):todayISO();modal.querySelector('#mdDueDate').value=bill?(bill.dueDate||''):'';modal.querySelector('#mdNotes').value=bill?(bill.notes||''):'';modal.querySelector('#manualDueFormTitle').textContent=bill?'Edit bill':'Add '+manualDueDirectionLabel(direction)+' payment';
+    const close=function(){modal.style.display='none';manualDueEditingId=null;};modal.querySelector('#manualDueFormClose').onclick=close;modal.querySelector('#manualDueFormCancel').onclick=close;modal.onclick=function(e){if(e.target===modal)close();};
+    form.onsubmit=function(e){e.preventDefault();const dir=modal.querySelector('#mdDirection').value,name=modal.querySelector('#mdName').value.trim(),phone=modal.querySelector('#mdPhone').value.trim(),amount=Number(modal.querySelector('#mdAmount').value),initial=Number(modal.querySelector('#mdInitialPaid').value||0),reason=modal.querySelector('#mdReason').value.trim(),date=modal.querySelector('#mdDate').value||todayISO(),dueDate=modal.querySelector('#mdDueDate').value,notes=modal.querySelector('#mdNotes').value.trim();if(!name||!reason||!Number.isFinite(amount)||amount<=0||!Number.isFinite(initial)||initial<0||initial>amount){alert('Naam, reason aur amount check karein. Pehle paid amount total bill se zyada nahi ho sakta.');return;}let dues=manualDues.slice(),payments=manualDuePayments.slice(),billId=manualDueEditingId;const existing=billId?dues.find(function(x){return String(x.id)===String(billId);}):null;if(existing&&manualDuePaidTotal(existing)>amount){alert('Total amount pehle se paid/received amount se kam nahi ho sakta.');return;}if(existing){dues=dues.map(function(x){return String(x.id)===String(billId)?Object.assign({},x,{direction:dir,personName:name,phone:phone,amount:amount,reason:reason,date:date,dueDate:dueDate,notes:notes}):x;});}else{billId=createUniqueRecordId('manual_due',dues);dues.push({id:billId,direction:dir,personName:name,phone:phone,amount:amount,reason:reason,date:date,dueDate:dueDate,notes:notes,createdAt:Date.now()});if(initial>0)payments.push({id:createUniqueRecordId('manual_due_payment',payments),billId:billId,amount:initial,direction:dir,date:date,time:currentLocalTimeInput(),method:'Already paid/received',note:'Entry banate waqt pehle se paid/received',createdAt:Date.now()});}if(!tryCommitManualDueData(dues,payments,existing?'Edit manual pending bill':'Add manual pending bill')){alert(SAVE_FAIL_MSG);return;}close();renderUdhar();showToast('✓ Pending payment save ho gayi.');};
+  }
+  function recordManualDuePayment(bill){
+    if(isAdminShopView()||!bill)return;const remaining=manualDueRemaining(bill);if(remaining<=0)return;let modal=document.getElementById('manualDuePaymentModal');if(!modal){modal=document.createElement('div');modal.id='manualDuePaymentModal';modal.style.cssText='position:fixed;inset:0;z-index:100002;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(15,23,42,.6)';modal.innerHTML='<div class="settings-card" style="width:min(100%,420px);background:var(--card,var(--surface,#fff));color:var(--text);border:1px solid var(--border);border-radius:18px;padding:18px"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h3 id="mdpTitle" style="margin:0">Record payment</h3><button type="button" id="mdpClose" class="btn-secondary">✕</button></div><form id="mdpForm"><div id="mdpRemaining" class="settings-note" style="margin:10px 0"></div><label style="display:block;margin:10px 0 5px;font-weight:600">Amount (Rs.) *</label><input id="mdpAmount" type="number" min="1" step="1" required style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><label style="display:block;margin:10px 0 5px;font-weight:600">Date *</label><input id="mdpDate" type="date" required style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><label style="display:block;margin:10px 0 5px;font-weight:600">Method</label><select id="mdpMethod" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><option>Cash</option><option>Easypaisa</option><option>JazzCash</option><option>Bank Transfer</option><option>Other</option></select><label style="display:block;margin:10px 0 5px;font-weight:600">Note (optional)</label><input id="mdpNote" maxlength="500" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><div style="display:flex;gap:10px;margin-top:14px"><button type="button" id="mdpCancel" class="btn-secondary" style="flex:1">Cancel</button><button type="submit" class="btn-primary" style="flex:1">Save payment</button></div></form></div>';document.body.appendChild(modal);}modal.style.display='flex';modal.querySelector('#mdpTitle').textContent=bill.direction==='payable'?'Record payment given':'Record payment received';modal.querySelector('#mdpRemaining').textContent=(bill.personName||'')+' · '+(bill.reason||'')+' · Remaining Rs. '+money(remaining);modal.querySelector('#mdpAmount').value='';modal.querySelector('#mdpAmount').max=String(remaining);modal.querySelector('#mdpDate').value=todayISO();modal.querySelector('#mdpMethod').value='Cash';modal.querySelector('#mdpNote').value='';const close=function(){modal.style.display='none';};modal.querySelector('#mdpClose').onclick=close;modal.querySelector('#mdpCancel').onclick=close;modal.onclick=function(e){if(e.target===modal)close();};modal.querySelector('#mdpForm').onsubmit=function(e){e.preventDefault();const amount=Number(modal.querySelector('#mdpAmount').value),current=manualDues.find(function(x){return String(x.id)===String(bill.id);}),due=current?manualDueRemaining(current):0;if(!current||!Number.isFinite(amount)||amount<=0||amount>due){alert('Amount baqi payment se zyada nahi ho sakti.');return;}const payments=manualDuePayments.slice();payments.push({id:createUniqueRecordId('manual_due_payment',payments),billId:String(current.id),amount:amount,direction:current.direction,date:modal.querySelector('#mdpDate').value||todayISO(),time:currentLocalTimeInput(),method:modal.querySelector('#mdpMethod').value,note:modal.querySelector('#mdpNote').value.trim(),createdAt:Date.now()});if(!tryCommitManualDueData(manualDues.slice(),payments,'Record manual pending payment')){alert(SAVE_FAIL_MSG);return;}close();renderUdhar();showToast(current.direction==='payable'?'Payment dena record ho gaya.':'Payment receive hona record ho gaya.');};}
+  function renderManualDues(){
+    const list=document.getElementById('manualDueList'),summary=document.getElementById('manualDueSummary');if(!list||!summary)return;const q=(document.getElementById('udharSearch')?.value||'').trim().toLowerCase();const active=manualDues.filter(function(b){return !b.deleted&&((b.personName||'')+' '+(b.phone||'')+' '+(b.reason||'')+' '+(b.notes||'')).toLowerCase().includes(q);});const payable=active.filter(function(b){return b.direction==='payable';}),receivable=active.filter(function(b){return b.direction==='receivable';});const sum=function(rows){return rows.reduce(function(a,b){return a+manualDueRemaining(b);},0);};summary.innerHTML='<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><span>Deni baqi: <b>Rs. '+money(sum(payable))+'</b></span><span>Leni baqi: <b>Rs. '+money(sum(receivable))+'</b></span></div>';
+    const groups=new Map();active.forEach(function(b){const key=(b.direction||'payable')+'|'+String(b.personName||'').trim().toLowerCase();if(!groups.has(key))groups.set(key,{direction:b.direction||'payable',name:b.personName||'Naam save nahi',phone:b.phone||'',bills:[]});groups.get(key).bills.push(b);});const groupRows=Array.from(groups.values()).sort(function(a,b){return a.name.localeCompare(b.name);});list.innerHTML=groupRows.length?groupRows.map(function(g){const outstanding=g.bills.reduce(function(a,b){return a+manualDueRemaining(b);},0);return '<div style="margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:12px"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><b>'+escapeHtml(g.name)+'</b><div class="settings-note">'+escapeHtml(g.phone||'')+' · '+escapeHtml(manualDueDirectionLabel(g.direction))+'</div></div><b style="white-space:nowrap">Rs. '+money(outstanding)+'</b></div>'+g.bills.map(function(b){const pays=manualDuePayments.filter(function(p){return String(p.billId)===String(b.id)&&!p.deleted;}).sort(function(a,c){return String(c.date||'').localeCompare(String(a.date||''))||Number(c.createdAt||0)-Number(a.createdAt||0);});const paid=manualDuePaidTotal(b),remain=manualDueRemaining(b);return '<div style="margin-top:10px;padding:10px;border-radius:10px;background:var(--surface-2,rgba(127,127,127,.07));border:1px solid var(--border)"><div style="display:flex;justify-content:space-between;gap:8px"><b>'+escapeHtml(b.reason||'Bill')+'</b><span style="font-size:12px">'+escapeHtml(b.date||'')+'</span></div><div>Total: Rs. '+money(b.amount)+' · '+(g.direction==='payable'?'Paid':'Received')+': Rs. '+money(paid)+'</div><div style="font-weight:800;color:'+(remain>0?'var(--danger)':'var(--pta)')+'">'+(remain>0?'Remaining':'Settled')+': Rs. '+money(remain)+'</div>'+(b.dueDate?'<div class="settings-note">Due date: '+escapeHtml(b.dueDate)+'</div>':'')+(b.notes?'<div class="settings-note">'+escapeHtml(b.notes)+'</div>':'')+(pays.length?'<details style="margin-top:7px"><summary>Payment history ('+pays.length+')</summary>'+pays.map(function(p){return '<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px"><b>Rs. '+money(p.amount)+'</b> · '+escapeHtml(p.date||'')+' '+escapeHtml(p.time||'')+' · '+escapeHtml(p.method||'')+(p.note?'<div>'+escapeHtml(p.note)+'</div>':'')+'</div>';}).join('')+'</details>':'<div class="settings-note" style="margin-top:6px">Payment history nahi.</div>')+'<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px">'+(remain>0?'<button type="button" class="btn-secondary manual-due-record-payment" data-id="'+escapeHtml(b.id)+'">'+(g.direction==='payable'?'Record payment given':'Record payment received')+'</button>':'<span class="settings-note">Fully settled</span>')+'<button type="button" class="btn-secondary manual-due-edit" data-id="'+escapeHtml(b.id)+'">Edit bill</button></div></div>';}).join('')+'</div>';}).join(''):'<div class="settings-note" style="margin-top:10px">Koi manual pending payment nahi. “Deni hai” ya “Leni hai” se naya bill add karein.</div>';
+    list.querySelectorAll('.manual-due-record-payment').forEach(function(btn){btn.onclick=function(){const bill=manualDues.find(function(b){return String(b.id)===String(btn.dataset.id);});if(bill)recordManualDuePayment(bill);};});list.querySelectorAll('.manual-due-edit').forEach(function(btn){btn.onclick=function(){const bill=manualDues.find(function(b){return String(b.id)===String(btn.dataset.id);});if(bill)openManualDueForm(bill.direction,bill);};});
+  }
   function renderUdhar(){
+    renderManualDues();
     const list=document.getElementById('udharList');if(!list)return;
     const q=(document.getElementById('udharSearch')?.value||'').trim().toLowerCase();
     const rows=inventory.filter(e=>e.sold&&!isReturnedSale(e)&&dueOf(e)>0&&((e.customer||'')+' '+(e.customerNumber||'')).toLowerCase().includes(q));
@@ -12047,6 +12126,9 @@ if('serviceWorker' in navigator){
   document.getElementById('udharClose')?.addEventListener('click',()=>document.getElementById('udharOverlay').classList.add('hidden'));
   document.getElementById('udharOverlay')?.addEventListener('click',e=>{if(e.target.id==='udharOverlay')document.getElementById('udharOverlay').classList.add('hidden')});
   document.getElementById('udharSearch')?.addEventListener('input',renderUdhar);
+  window.addEventListener('mobile-hisab-pending-payments-sync',function(){const panel=document.getElementById('udharOverlay');if(panel&&!panel.classList.contains('hidden'))renderUdhar();});
+  document.getElementById('manualDueAddPayable')?.addEventListener('click',function(){openManualDueForm('payable');});
+  document.getElementById('manualDueAddReceivable')?.addEventListener('click',function(){openManualDueForm('receivable');});
   document.getElementById('s-price')?.addEventListener('input',updateSaleBalancePreview);
   document.getElementById('s-customer-number')?.addEventListener('change',function(){
     const num=String(this.value||'').replace(/\D/g,'');if(!num)return;
