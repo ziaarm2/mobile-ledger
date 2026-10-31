@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v88
-Version name: Analytics Expansion — Pending Payments & Weekday Trends
+Current file version: Index v89
+Version name: Analytics Overlay Open Fix
 Baseline: Index v81 (locked baseline; preserve all unrelated functionality)
-Last changed: 31 Oct 2026 • 09:57:46 AM PKT (Asia/Karachi)
-Change summary: Added Analytics pending-payment overview and Monday–Sunday sales/purchase activity; aligned Analytics net profit with received-payment-based realized profit after phone expenses; retained existing period comparison and hourly analysis.
+Last changed: 31 Oct 2026 • 10:02:12 AM PKT (Asia/Karachi)
+Change summary: Fixed Analytics menu action so the overlay opens and registers back navigation before rendering; added visible fallback error feedback if rendering fails. No analytics calculations changed.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 1. Read this block and the APP_INDEX_VERSION / APP_INDEX_UPDATED constants before editing.
@@ -18,6 +18,7 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
+- Index v89 — Analytics Overlay Open Fix — 31 Oct 2026 • 10:02:12 AM PKT. Analytics overlay now opens before rendering and displays a visible fallback message if rendering throws; analytics calculations unchanged.
 - Index v88 — Analytics Expansion — Pending Payments & Weekday Trends — 31 Oct 2026 • 09:57:46 AM PKT. Added pending balances overview, weekday activity chart and included phone expenses in realized net profit; preserved existing analytics and app behavior.
 - Index v87 — Pending Payments Theme Consistency — 31 Oct 2026 • 09:49:10 AM PKT. Unified button sizes, form controls, spacing, typography, cards and colors with the existing app theme; styling-only update.
 - Index v85 — Combined Pending Totals & Manual Payment Fixes — 31 Oct 2026 • 09:34:15 AM PKT. Added all-up give/get totals including mobile sale receivables, and hardened manual-add/add-to-bill interactions and save feedback.
@@ -32,10 +33,10 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v88">
-<meta name="app-index-version-name" content="Analytics Expansion — Pending Payments & Weekday Trends">
-<meta name="app-index-updated" content="2026-10-31T09:57:46+05:00">
-<meta name="app-index-change-summary" content="Added pending-payment analytics, weekday sales/purchase trends and aligned realized net profit after phone expenses.">
+<meta name="app-index-version" content="v89">
+<meta name="app-index-version-name" content="Analytics Overlay Open Fix">
+<meta name="app-index-updated" content="2026-10-31T10:02:12+05:00">
+<meta name="app-index-change-summary" content="Fixed Analytics overlay opening before render and added visible fallback error feedback; calculations unchanged.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -3016,9 +3017,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v88';
-const APP_INDEX_VERSION_NAME = 'Analytics Expansion — Pending Payments & Weekday Trends';
-const APP_INDEX_UPDATED = '31 Oct 2026 • 09:57:46 AM PKT • Added pending-payment analytics and weekday trends; aligned realized net profit after phone expenses.';
+const APP_INDEX_VERSION = 'v89';
+const APP_INDEX_VERSION_NAME = 'Analytics Overlay Open Fix';
+const APP_INDEX_UPDATED = '31 Oct 2026 • 10:02:12 AM PKT • Analytics overlay open order fixed; render fallback added.';
 
 let inventory = [];
 
@@ -8724,13 +8725,33 @@ function renderAnalytics(){
   analyticsRenderModels(curr);
   analyticsRenderMonths();
 }
-document.getElementById('btnAnalytics').onclick=function(){
+document.getElementById('btnAnalytics').onclick=function(e){
+  if(e){e.preventDefault();e.stopPropagation();}
   closeMainMenu();
+  const analyticsOverlay=document.getElementById('analyticsOverlay');
+  if(!analyticsOverlay)return;
   analyticsMode=['calendar','business','lifetime'].indexOf(dashboardSettings.mode)!==-1?dashboardSettings.mode:'calendar';
   analyticsCustomFrom=''; analyticsCustomTo='';
-  renderAnalytics();
-  document.getElementById('analyticsOverlay').classList.remove('hidden');
+  // Open the overlay and register back-navigation BEFORE rendering.
+  // Previously, a render-time exception could close the menu but leave Analytics hidden.
+  analyticsOverlay.classList.remove('hidden');
   pushOverlayHistory('analyticsOverlay');
+  try{
+    renderAnalytics();
+    const oldError=document.getElementById('analyticsLoadError');
+    if(oldError)oldError.remove();
+  }catch(err){
+    console.error('Analytics render failed:',err);
+    let errorBox=document.getElementById('analyticsLoadError');
+    if(!errorBox){
+      errorBox=document.createElement('div');
+      errorBox.id='analyticsLoadError';
+      errorBox.style.cssText='margin:10px;padding:12px;border:1px solid #f2b8b5;border-radius:10px;background:#fff3f2;color:#9f1d18;font-size:13px;line-height:1.5;';
+      const sheet=analyticsOverlay.querySelector('.analytics-sheet');
+      if(sheet)sheet.insertBefore(errorBox,sheet.children[1]||null);
+    }
+    errorBox.textContent='Analytics open ho gaya hai, lekin data render karte waqt error aya. Page refresh karein; agar masla rahe to is error ka screenshot bhejein.';
+  }
 };
 document.getElementById('btnAnalyticsClose').onclick=function(){requestOverlayClose();};
 document.getElementById('analyticsOverlay').onclick=function(e){if(e.target.id==='analyticsOverlay')requestOverlayClose();};
