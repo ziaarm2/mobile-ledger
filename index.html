@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v90
-Version name: Analytics Startup-Safe Open Fix
+Current file version: Index v91
+Version name: Analytics Click Reliability Fix
 Baseline: Index v81 (locked baseline; preserve all unrelated functionality)
 Last changed: 31 Oct 2026 • 10:06:58 AM PKT (Asia/Karachi)
 Change summary: Open Analytics overlay before reading dashboard settings; safely fall back to calendar mode if settings are not initialized, and preserve visible render-error feedback.
@@ -18,7 +18,8 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
-- Index v90 — Analytics Startup-Safe Open Fix — 31 Oct 2026 • 10:06:58 AM PKT. Opens the Analytics sheet before accessing dashboard settings; falls back safely to calendar mode and keeps visible render-error feedback.
+- Index v91 — Analytics Click Reliability Fix — 31 Oct 2026 • 10:06:58 AM PKT. Opens the Analytics sheet before accessing dashboard settings; falls back safely to calendar mode and keeps visible render-error feedback.
+- Index v91 — Analytics Click Reliability Fix — 31 Oct 2026 • 10:11:33 AM PKT. Adds a final capture-phase Analytics click handler so the menu cannot swallow the click if an earlier handler fails to bind; explicitly marks the Analytics button as non-submit.
 - Index v89 — Analytics Overlay Open Fix — 31 Oct 2026 • 10:02:12 AM PKT. Analytics overlay now opens before rendering and displays a visible fallback message if rendering throws; analytics calculations unchanged.
 - Index v88 — Analytics Expansion — Pending Payments & Weekday Trends — 31 Oct 2026 • 09:57:46 AM PKT. Added pending balances overview, weekday activity chart and included phone expenses in realized net profit; preserved existing analytics and app behavior.
 - Index v87 — Pending Payments Theme Consistency — 31 Oct 2026 • 09:49:10 AM PKT. Unified button sizes, form controls, spacing, typography, cards and colors with the existing app theme; styling-only update.
@@ -34,8 +35,8 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v90">
-<meta name="app-index-version-name" content="Analytics Startup-Safe Open Fix">
+<meta name="app-index-version" content="v91">
+<meta name="app-index-version-name" content="Analytics Click Reliability Fix">
 <meta name="app-index-updated" content="2026-10-31T10:06:58+05:00">
 <meta name="app-index-change-summary" content="Opens Analytics before accessing dashboard settings; safely defaults to calendar mode and preserves visible render-error feedback. No analytics calculations changed.">
 <meta charset="UTF-8">
@@ -1940,7 +1941,7 @@ body.menu-open .app>header{z-index:1!important;}
         <button class="menu-item" id="btnExpenses"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="14" rx="2" stroke-width="1.8"/><path d="M7 12h10M8 9h8" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Expenses</span></button>
         <button class="menu-item" id="btnUdhar"><span class="menu-item-icon">💳</span><span class="menu-item-text">Pending payments</span></button>
         <button class="menu-item" id="btnContacts"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke-width="1.8"/><path d="M3.5 19c.5-3.3 2.4-5 5.5-5s5 1.7 5.5 5M17 11a2.5 2.5 0 1 0 0-5M16 14c2.5.2 4 1.7 4.5 5" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Contacts</span></button>
-        <button class="menu-item" id="btnAnalytics"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19V9M12 19V5M19 19v-8" stroke-width="2" stroke-linecap="round"/><path d="M3.5 19.5h17" stroke-width="1.5" stroke-linecap="round"/></svg></span><span class="menu-item-text">Analytics</span></button>
+        <button type="button" class="menu-item" id="btnAnalytics"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19V9M12 19V5M19 19v-8" stroke-width="2" stroke-linecap="round"/><path d="M3.5 19.5h17" stroke-width="1.5" stroke-linecap="round"/></svg></span><span class="menu-item-text">Analytics</span></button>
         <button class="menu-item" id="btnReports"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3.5h9l3 3V20.5H6z" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3.5v4h4M9 12h6M9 16h6" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Reports</span></button>
         <button class="menu-item" id="btnActivityHistory"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke-width="1.8"/><path d="M12 7v5l3 2M4 6l2-2M20 6l-2-2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="menu-item-text">Activity History</span></button>
         <button class="menu-item" id="btnRecycleBin"><span class="menu-item-icon">🗑️</span><span class="menu-item-text">Recycle Bin / Deleted Items</span></button>
@@ -3018,8 +3019,8 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v90';
-const APP_INDEX_VERSION_NAME = 'Analytics Startup-Safe Open Fix';
+const APP_INDEX_VERSION = 'v91';
+const APP_INDEX_VERSION_NAME = 'Analytics Click Reliability Fix';
 const APP_INDEX_UPDATED = '31 Oct 2026 • 10:06:58 AM PKT • Analytics opens before settings access; startup-safe mode fallback added.';
 
 let inventory = [];
@@ -12361,6 +12362,51 @@ if('serviceWorker' in navigator){
   });
 })();
 </script>
+<script id="v91-analytics-click-reliability-fix">
+// Final safety net: handle Analytics in the capture phase. This still works if
+// an earlier application script failed before assigning btnAnalytics.onclick.
+(function(){
+  const analyticsButton = document.getElementById('btnAnalytics');
+  if (!analyticsButton || analyticsButton.__v91AnalyticsCaptureBound) return;
+  analyticsButton.__v91AnalyticsCaptureBound = true;
+  analyticsButton.addEventListener('click', function(e){
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    const overlay = document.getElementById('analyticsOverlay');
+    if (!overlay) {
+      console.error('Analytics overlay element is missing.');
+      return;
+    }
+    overlay.classList.remove('hidden');
+    try { if (typeof closeMainMenu === 'function') closeMainMenu(); }
+    catch(menuError) { console.error('Could not close menu:', menuError); }
+    try { if (typeof pushOverlayHistory === 'function') pushOverlayHistory('analyticsOverlay'); }
+    catch(historyError) { console.error('Could not update overlay history:', historyError); }
+    try {
+      const savedMode = (typeof dashboardSettings !== 'undefined' && dashboardSettings) ? dashboardSettings.mode : 'calendar';
+      analyticsMode = ['calendar','business','lifetime'].indexOf(savedMode) !== -1 ? savedMode : 'calendar';
+      analyticsCustomFrom = '';
+      analyticsCustomTo = '';
+      if (typeof renderAnalytics !== 'function') throw new Error('renderAnalytics function is unavailable.');
+      renderAnalytics();
+      const previousError = document.getElementById('analyticsLoadError');
+      if (previousError) previousError.remove();
+    } catch(err) {
+      console.error('Analytics capture handler failed:', err);
+      let box = document.getElementById('analyticsLoadError');
+      if (!box) {
+        box = document.createElement('div');
+        box.id = 'analyticsLoadError';
+        box.style.cssText = 'margin:10px;padding:12px;border:1px solid #f2b8b5;border-radius:10px;background:#fff3f2;color:#9f1d18;font-size:13px;line-height:1.5;';
+        const sheet = overlay.querySelector('.analytics-sheet');
+        if (sheet) sheet.insertBefore(box, sheet.children[1] || null);
+      }
+      box.textContent = 'Analytics screen open ho gaya, lekin data load nahi hua. Browser mein F12 > Console ka red error screenshot bhejein.';
+    }
+  }, true);
+})();
+</script>
+
 </body>
 </html>
 
