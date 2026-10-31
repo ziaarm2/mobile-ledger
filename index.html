@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v93
+Current file version: Index v94 (candidate)
 Version name: Selectable Analytics Graph Styles Across Charts
 Baseline: Index v88 (preserved; existing functionality and analytics retained)
-Last changed: 31 Oct 2026 • 01:45:54 PM PKT (Asia/Karachi)
-Change summary: Added selectable metrics and line/smooth-area/bar graph styles in Busiest Hour and Scoring Comparison; existing graphs remain defaults and all prior analytics retained.
+Last changed: 31 Oct 2026 • 02:52:40 PM PKT (Asia/Karachi)
+Change summary: Added Staff Management UI for Gmail invitations, granular permission selection, access profiles, temporary access, revoke controls, and activity log; backend deployment and business-data permission integration required before staff can use shop data.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 1. Read this block and the APP_INDEX_VERSION / APP_INDEX_UPDATED constants before editing.
@@ -18,6 +18,7 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
+- Index v94 — Staff Access Management Candidate — 31 Oct 2026 • 02:52:40 PM PKT. Added Staff Management UI for Gmail invitations, granular permission selection, access profiles, temporary access, revoke controls, and activity log; backend deployment and business-data permission integration required before staff can use shop data.
 - Index v90 — Busiest Hour Analytics Graph Fix — 31 Oct 2026 • 01:26:48 PM PKT. Corrected Busiest Business Hours analytics: embedded interactive blue/orange hourly line graph and Day (9 AM–9 PM)/Night (9 PM–9 AM) selector directly in that section; Day default. Existing analytics retained.
 - Index v89 — Busiest Hour Analytics Graph Fix — 31 Oct 2026 • 01:17:06 PM PKT. Added graph in Customer Time Analytics modal; this was not the requested Analytics section.
 - Index v88 — Analytics Performance Scoreboards — 31 Oct 2026 • 12:40:04 PM PKT. Added cricket-style weekday performance, hour-by-hour sales/purchases/profit details, daily-average comparisons, and pending-payment analytics; preserved existing analytics and business logic.
@@ -34,10 +35,10 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v90">
-<meta name="app-index-version-name" content="Busiest Hour Analytics Graph Fix">
-<meta name="app-index-updated" content="2026-10-31T13:26:48+05:00">
-<meta name="app-index-change-summary" content="Added selectable Busiest Hour metrics and line/area/bar graph styles; existing analytics retained.">
+<meta name="app-index-version" content="v94">
+<meta name="app-index-version-name" content="Staff Access Management Candidate">
+<meta name="app-index-updated" content="2026-10-31T14:52:40+05:00">
+<meta name="app-index-change-summary" content="Added Staff Management UI for Gmail invitations, granular permission selection, access profiles, temporary access, revoke controls, and activity log; backend deployment and business-data permission integration required before staff can use shop data.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -46,6 +47,7 @@ VERSION HISTORY (newest first):
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-functions-compat.js"></script>
 <link rel="manifest" href="manifest.json?v=25">
 <meta name="theme-color" content="#0f1115">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1118,6 +1120,17 @@ body.menu-open .app>header{z-index:1!important;}
   #manualDueModal>.settings-card,#manualDuePaymentModal>.settings-card,#manualDueIncreaseModal>.settings-card{padding:14px!important}
 }
 
+
+  .staff-permission-list{display:grid;grid-template-columns:1fr;gap:7px;margin-top:10px}
+  .staff-permission-row{display:flex;align-items:flex-start;gap:9px;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
+  .staff-permission-row input{width:18px;height:18px;flex-shrink:0;margin-top:2px;accent-color:var(--accent)}
+  .staff-permission-row span{font-size:13px;line-height:1.35}
+  .staff-row{border:1px solid var(--border);border-radius:10px;padding:10px;margin-top:8px}
+  .staff-row-title{font-weight:750;overflow-wrap:anywhere}
+  .staff-row-meta{font-size:11.5px;color:var(--text-dim);margin-top:4px;line-height:1.4}
+  .staff-row-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+  .staff-row-actions button{flex:1;min-width:100px}
+
 </style>
 
 <style id="mandatory-star-style">.required-star{color:#d92d20;font-weight:800;margin-left:2px;}</style>
@@ -1939,7 +1952,7 @@ body.menu-open .app>header{z-index:1!important;}
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v89<span>Updated: 31 Oct 2026</span><span>01:17:06 PM PKT</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v94<span>Updated: 31 Oct 2026</span><span>02:52:40 PM PKT</span></div>
       </div>
     </div>
 
@@ -2732,6 +2745,7 @@ body.menu-open .app>header{z-index:1!important;}
       <div class="settings-view active" data-settings-view="home">
         <div class="settings-home-title">App ko apne business workflow ke mutabiq manage karein.</div>
         <div class="settings-category-list">
+          <button class="settings-category" data-settings-page="staff"><span class="settings-category-icon">👥</span><span class="settings-category-main"><span class="settings-category-title">Staff Management</span><span class="settings-category-sub" id="settingsSummaryStaff">Gmail access & permissions</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="account"><span class="settings-category-icon">👤</span><span class="settings-category-main"><span class="settings-category-title">Account</span><span class="settings-category-sub" id="settingsSummaryAccount">Login & cloud sync</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="shop"><span class="settings-category-icon">🏪</span><span class="settings-category-main"><span class="settings-category-title">Shop</span><span class="settings-category-sub" id="settingsSummaryShop">Shop details & contact</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="inventory"><span class="settings-category-icon">📦</span><span class="settings-category-main"><span class="settings-category-title">Stock & Pricing</span><span class="settings-category-sub">Card view, sell range & brands</span></span><span class="settings-category-arrow">›</span></button>
@@ -2919,6 +2933,28 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="settings-section-card settings-danger-card"><div class="sec-label" style="color:var(--danger);">Danger Zone</div><div class="settings-note">Clear data se app ka local business data remove ho jayega. Password protection apply hogi.</div><button class="menu-item danger" id="btnClearData" style="margin-top:10px;background:var(--surface-2);border:1px solid var(--border);">🗑️ Clear all data</button></div>
       </div>
 
+      <div class="settings-view" data-settings-view="staff">
+        <div class="settings-page-title">Staff Management</div>
+        <div class="settings-section-card">
+          <div class="sec-label">Invite staff by Gmail</div>
+          <div class="settings-note">Sirf @gmail.com address allow hai. Staff ko isi Google account se sign in karna hoga. Is candidate mein automatic email delivery provider configure nahi; invitation record backend par banta hai.</div>
+          <div class="field"><label>Staff Gmail <span class="required-star">*</span></label><input id="staffInviteEmail" type="email" autocomplete="off" placeholder="staff@gmail.com"></div>
+          <div class="field"><label>Access profile</label><select id="staffProfile"><option value="salesman">Salesman</option><option value="stockManager">Stock Manager</option><option value="accountAssistant">Account Assistant</option><option value="custom">Custom Access</option></select></div>
+          <div class="field"><label>Access duration</label><select id="staffDuration"><option value="1h">1 hour</option><option value="3h">3 hours</option><option value="8h">8 hours</option><option value="custom">Custom date/time</option><option value="permanent">Permanent</option></select></div>
+          <div class="field" id="staffExpiryWrap" style="display:none"><label>Expiry (Pakistan time)</label><input id="staffExpiry" type="datetime-local"></div>
+        </div>
+        <div class="settings-section-card">
+          <div class="sec-label">Permission checklist</div>
+          <div class="settings-note">Custom Access select kar ke har permission manually choose karein. Save/invite se pehle permissions review kar lein.</div>
+          <div id="staffPermissionChecklist" class="staff-permission-list"></div>
+          <div style="display:flex;gap:8px;margin-top:12px"><button class="menu-item" id="staffApplyProfile" style="background:var(--surface-2);border:1px solid var(--border);flex:1">Apply profile</button><button class="btn-save" id="staffInviteBtn" style="flex:1">Create invite</button></div>
+          <div id="staffManagementStatus" class="settings-note" aria-live="polite" style="margin-top:10px">Backend setup status check nahi hua.</div>
+        </div>
+        <div class="settings-section-card"><div class="sec-label">Current staff</div><div id="staffList"><div class="settings-note">Staff list load nahi hui.</div></div><button class="menu-item" id="staffRefreshBtn" style="margin-top:8px;background:var(--surface-2);border:1px solid var(--border);width:100%">↻ Refresh staff list</button></div>
+        <div class="settings-section-card"><div class="sec-label">Staff activity log</div><div id="staffActivityList"><div class="settings-note">Activity log load nahi hua.</div></div><button class="menu-item" id="staffActivityRefreshBtn" style="margin-top:8px;background:var(--surface-2);border:1px solid var(--border);width:100%">↻ Refresh activity</button></div>
+        <div class="settings-section-card" style="border-color:var(--warning, #e0a020)"><b>Security deployment required</b><div class="settings-note">Ye candidate UI Firebase callable backend ke baghair staff invite ya permissions enforce nahi karegi. Backend package deploy aur business-data access migration test hone tak staff ko live shop data access na dein.</div></div>
+      </div>
+
       <div class="settings-view" data-settings-view="shopaccess">
         <div class="settings-page-title">Shop Access Management</div>
         <div class="settings-section-card">
@@ -2953,10 +2989,10 @@ body.menu-open .app>header{z-index:1!important;}
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v91</div>
-          <div class="settings-note" style="margin-top:4px;">Selectable Analytics Graph Styles Across Charts</div>
-          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 31 Oct 2026 • 01:45:54 PM PKT</div>
-          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Busiest Hour and Scoring Comparison support selectable metrics and Line, Smooth Area, or Bar graph styles. Existing graphs remain default; other analytics retained.</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v94 (candidate)</div>
+          <div class="settings-note" style="margin-top:4px;">Staff Access Management Candidate</div>
+          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 31 Oct 2026 • 02:52:40 PM PKT</div>
+          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Added Staff Management UI for Gmail invitations, granular permission selection, access profiles, temporary access, revoke controls, and activity log; backend deployment and business-data permission integration required before staff can use shop data.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
@@ -3028,9 +3064,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v91';
-const APP_INDEX_VERSION_NAME = 'Selectable Analytics Graph Styles Across Charts';
-const APP_INDEX_UPDATED = '31 Oct 2026 • 01:52:59 PM PKT • Added selectable metrics and line/smooth-area/bar graph styles in Busiest Hour and Scoring Comparison; existing graphs retained.';
+const APP_INDEX_VERSION = 'v94';
+const APP_INDEX_VERSION_NAME = 'Staff Access Management Candidate';
+const APP_INDEX_UPDATED = '31 Oct 2026 • 02:52:40 PM PKT • Added Staff Management UI for Gmail invitations, granular permission selection, access profiles, temporary access, revoke controls, and activity log; backend deployment and business-data permission integration required before staff can use shop data.';
 
 let inventory = [];
 
@@ -9928,7 +9964,7 @@ document.getElementById('settingsAddBrandBtn').onclick = function(){
   renderBrandFilter();
 };
 
-const SETTINGS_PAGE_TITLES={home:'Settings',account:'Account',shop:'Shop',inventory:'Stock & Pricing',appearance:'Appearance',fields:'Fields & Options',whatsapp:'WhatsApp',privacy:'Privacy & Security',applock:'App Lock',backup:'Backup & Sync',data:'Data Management',about:'About',shopaccess:'Shop Access'};
+const SETTINGS_PAGE_TITLES={home:'Settings',staff:'Staff Management',account:'Account',shop:'Shop',inventory:'Stock & Pricing',appearance:'Appearance',fields:'Fields & Options',whatsapp:'WhatsApp',privacy:'Privacy & Security',applock:'App Lock',backup:'Backup & Sync',data:'Data Management',about:'About',shopaccess:'Shop Access'};
 let currentSettingsPage='home';
 function renderSettingsHomeSummaries(){
   loadDashboardSettings();
@@ -10042,6 +10078,7 @@ function openSettingsPage(page){
 
   dedupeSettingsHomeCategories();
   if(page==='shopaccess' && userRole!=='admin') page='home';
+  if(page==='staff' && !(userRole==='shop' || userRole==='owner' || userRole==='admin')) page='home';
   const targetPage=page||'home';
   if(settingsDraftActive && !settingsDraftPage(targetPage) && settingsDraftDirty){
     settingsDraftPrompt(targetPage);
@@ -10054,6 +10091,7 @@ function openSettingsPage(page){
   const back=document.getElementById('settingsBackBtn'); if(back) back.style.visibility=currentSettingsPage==='home'?'hidden':'visible';
   const heading=document.getElementById('settingsPageHeading'); if(heading) heading.textContent=SETTINGS_PAGE_TITLES[currentSettingsPage]||'Settings';
   if(currentSettingsPage==='shopaccess'){ openShopAccessSettings(); }
+  if(currentSettingsPage==='staff'){ initializeStaffAccessUI(); }
   if(currentSettingsPage==='appearance'){ renderUiScaleToggles(); }
   if(currentSettingsPage==='shop'){
     document.getElementById('settings-shopname').value=shopProfile.shopName||'';
@@ -11081,6 +11119,64 @@ function updateGoogleEnvironmentNote(){
     btn.title=unsupported?'Google login ke liye app ko https:// ya localhost/hosted web app se open karein.':'';
   }
 }
+
+// v94 Staff Access UI. All writes go through callable Cloud Functions; direct
+// client-side writes are intentionally not used for staff permissions.
+const STAFF_PERMISSION_LABELS={
+  stock_read:'View stock',stock_add:'Add stock / mobile entry',stock_edit:'Edit stock entries',stock_delete:'Delete stock entries',
+  sales_create:'Create sales',sales_edit:'Edit sales',sales_cancel:'Cancel / return sales',sale_price_view:'View sale prices',sale_price_edit:'Change sale prices',
+  purchase_create:'Record purchases',purchase_price_view:'View purchase prices',purchase_price_edit:'Change purchase prices',profit_view:'View profit',
+  payments_view:'View pending payments',payments_record:'Record customer / supplier payments',expenses_view:'View expenses',expenses_manage:'Add / edit expenses',
+  reports_view:'View reports',analytics_view:'View analytics',settings_manage:'Manage settings',backup_manage:'Backup / restore / export data',
+  staff_manage:'Manage staff access'
+};
+const STAFF_PROFILE_PERMISSIONS={
+  salesman:['stock_read','sales_create','sale_price_view','payments_view','payments_record'],
+  stockManager:['stock_read','stock_add','stock_edit','stock_delete','purchase_create'],
+  accountAssistant:['stock_read','sale_price_view','purchase_price_view','profit_view','payments_view','payments_record','expenses_view','expenses_manage','reports_view'],
+  custom:[]
+};
+function staffFunctions(){
+  if(!firebaseReady()||!fbAuth||!fbAuth.currentUser) throw new Error('Pehle owner account se Google sign in karein.');
+  if(!firebase.functions) throw new Error('Firebase Functions SDK load nahi hua.');
+  return firebase.app().functions();
+}
+function staffSelectedPermissions(){const out=[];document.querySelectorAll('#staffPermissionChecklist input[type=checkbox]:checked').forEach(x=>out.push(x.value));return out;}
+function renderStaffPermissionChecklist(selected){
+  const box=document.getElementById('staffPermissionChecklist');if(!box)return;
+  const chosen=new Set(selected||[]);
+  box.innerHTML=Object.keys(STAFF_PERMISSION_LABELS).map(function(k){return '<label class="staff-permission-row"><input type="checkbox" value="'+k+'" '+(chosen.has(k)?'checked':'')+'><span>'+escapeHtml(STAFF_PERMISSION_LABELS[k])+'</span></label>';}).join('');
+}
+function staffStatus(msg,isError){const el=document.getElementById('staffManagementStatus');if(el){el.textContent=msg;el.style.color=isError?'var(--danger)':'var(--text-dim)';}}
+function applyStaffProfile(){const p=document.getElementById('staffProfile').value;renderStaffPermissionChecklist(STAFF_PROFILE_PERMISSIONS[p]||[]);}
+function staffExpiryMs(){const d=document.getElementById('staffDuration').value;if(d==='permanent')return null;const now=Date.now();if(d==='1h')return now+3600000;if(d==='3h')return now+10800000;if(d==='8h')return now+28800000;const raw=document.getElementById('staffExpiry').value;if(!raw)throw new Error('Custom expiry date/time select karein.');const ms=new Date(raw).getTime();if(!Number.isFinite(ms)||ms<=now)throw new Error('Expiry future mein honi chahiye.');return ms;}
+function initializeStaffAccessUI(){
+  renderStaffPermissionChecklist(STAFF_PROFILE_PERMISSIONS[document.getElementById('staffProfile')?.value||'salesman']||[]);
+  const duration=document.getElementById('staffDuration');if(duration&&!duration.dataset.bound){duration.dataset.bound='1';duration.onchange=function(){document.getElementById('staffExpiryWrap').style.display=this.value==='custom'?'block':'none';};}
+  const profile=document.getElementById('staffProfile');if(profile&&!profile.dataset.bound){profile.dataset.bound='1';profile.onchange=function(){applyStaffProfile();};}
+  const apply=document.getElementById('staffApplyProfile');if(apply&&!apply.dataset.bound){apply.dataset.bound='1';apply.onclick=applyStaffProfile;}
+  const invite=document.getElementById('staffInviteBtn');if(invite&&!invite.dataset.bound){invite.dataset.bound='1';invite.onclick=sendStaffInvite;}
+  const refresh=document.getElementById('staffRefreshBtn');if(refresh&&!refresh.dataset.bound){refresh.dataset.bound='1';refresh.onclick=loadStaffList;}
+  const ar=document.getElementById('staffActivityRefreshBtn');if(ar&&!ar.dataset.bound){ar.dataset.bound='1';ar.onclick=loadStaffActivity;}
+  loadStaffList();loadStaffActivity();
+}
+async function sendStaffInvite(){
+  const email=String(document.getElementById('staffInviteEmail').value||'').trim().toLowerCase();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){staffStatus('Valid Gmail/email address enter karein.',true);return;}
+  const btn=document.getElementById('staffInviteBtn');btn.disabled=true;
+  try{const payload={email:email,profile:document.getElementById('staffProfile').value,permissions:staffSelectedPermissions(),expiresAtMs:staffExpiryMs()};await staffFunctions().httpsCallable('staffInvite')(payload);staffStatus('Invite record create ho gaya. Staff ko isi Gmail se sign in karna hoga; automatic email send nahi hui.');await loadStaffList();}
+  catch(e){staffStatus('Invite nahi bheja ja saka: '+(e.message||String(e)),true);}
+  finally{btn.disabled=false;}
+}
+async function loadStaffList(){
+  const box=document.getElementById('staffList');if(!box)return;box.innerHTML='<div class="settings-note">Loading staff…</div>';
+  try{const r=await staffFunctions().httpsCallable('staffList')({});const rows=(r.data&&r.data.staff)||[];if(!rows.length){box.innerHTML='<div class="settings-note">Abhi koi staff invite nahi hai.</div>';return;}
+    box.innerHTML=rows.map(function(x){const expiry=x.expiresAtMs?new Date(x.expiresAtMs).toLocaleString('en-PK'):'Permanent';const perms=(x.permissions||[]).length;return '<div class="staff-row"><div class="staff-row-title">'+escapeHtml(x.email||'Unknown email')+'</div><div class="staff-row-meta">Profile: '+escapeHtml(x.profile||'custom')+' · Status: '+escapeHtml(x.status||'invited')+'<br>Permissions: '+perms+' · Expiry: '+escapeHtml(expiry)+'</div><div class="staff-row-actions"><button class="menu-item" data-staff-edit="'+escapeHtml(x.id)+'" style="background:var(--surface-2);border:1px solid var(--border)">Edit permissions</button><button class="menu-item" data-staff-revoke="'+escapeHtml(x.id)+'" style="background:var(--surface-2);border:1px solid var(--border);color:var(--danger)">Revoke access</button></div></div>';}).join('');
+    box.querySelectorAll('[data-staff-revoke]').forEach(function(b){b.onclick=async function(){if(!confirm('Is staff ka access revoke karna hai?'))return;try{await staffFunctions().httpsCallable('staffRevoke')({staffId:b.dataset.staffRevoke});staffStatus('Staff access revoke ho gaya.');await loadStaffList();}catch(e){staffStatus('Revoke fail: '+(e.message||e),true);}};});
+    box.querySelectorAll('[data-staff-edit]').forEach(function(b){b.onclick=async function(){const row=rows.find(x=>x.id===b.dataset.staffEdit);if(!row)return;document.getElementById('staffInviteEmail').value=row.email||'';document.getElementById('staffProfile').value='custom';renderStaffPermissionChecklist(row.permissions||[]);document.getElementById('staffInviteBtn').textContent='Save permission changes';document.getElementById('staffInviteBtn').onclick=async function(){try{await staffFunctions().httpsCallable('staffUpdate')({staffId:row.id,profile:'custom',permissions:staffSelectedPermissions(),expiresAtMs:row.expiresAtMs||null});staffStatus('Permissions update ho gayi.');document.getElementById('staffInviteBtn').textContent='Create invite';document.getElementById('staffInviteBtn').onclick=sendStaffInvite;await loadStaffList();}catch(e){staffStatus('Update fail: '+(e.message||e),true);}};};});
+  }catch(e){box.innerHTML='<div class="settings-note">Staff list available nahi: '+escapeHtml(e.message||String(e))+'</div>';staffStatus('Backend deploy / permissions check karein.',true);}
+}
+async function loadStaffActivity(){const box=document.getElementById('staffActivityList');if(!box)return;box.innerHTML='<div class="settings-note">Loading activity…</div>';try{const r=await staffFunctions().httpsCallable('staffActivityList')({});const rows=(r.data&&r.data.events)||[];box.innerHTML=rows.length?rows.map(function(x){return '<div class="staff-row"><div class="staff-row-title">'+escapeHtml(x.action||'Activity')+'</div><div class="staff-row-meta">'+escapeHtml(x.email||'Staff')+' · '+escapeHtml(new Date(x.createdAtMs||0).toLocaleString('en-PK'))+'<br>'+escapeHtml(x.detail||'')+'</div></div>';}).join(''):'<div class="settings-note">Abhi activity record nahi hui.</div>';}catch(e){box.innerHTML='<div class="settings-note">Activity log backend deploy hone ke baad available hoga.</div>';}}
+
 function initFirebaseSync(){
   updateGoogleEnvironmentNote();
   if(!firebaseReady()){
