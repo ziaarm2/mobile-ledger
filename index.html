@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v84
-Version name: Single Manual Payment Button & Direction Colors
+Current file version: Index v85
+Version name: Combined Pending Totals & Manual Payment Fixes
 Baseline: Index v81 (locked baseline; preserve all unrelated functionality)
-Last changed: 31 Oct 2026 • 09:27:47 AM PKT (Asia/Karachi)
-Change summary: Replaced two manual-payment buttons with one button; labeled direction You will give/You will get and color-coded give green, get red.
+Last changed: 31 Oct 2026 • 09:34:15 AM PKT (Asia/Karachi)
+Change summary: Added combined overall pending totals for manual and mobile-sales balances; hardened Manual Payment click handling and Add to bill form save/error feedback.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 1. Read this block and the APP_INDEX_VERSION / APP_INDEX_UPDATED constants before editing.
@@ -18,6 +18,7 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
+- Index v85 — Combined Pending Totals & Manual Payment Fixes — 31 Oct 2026 • 09:34:15 AM PKT. Added all-up give/get totals including mobile sale receivables, and hardened manual-add/add-to-bill interactions and save feedback.
 - Index v84 — Manual Payment Controls & No Default Direction — 31 Oct 2026 • 09:27:47 AM PKT. Added soft-delete option, increase-bill amount action with adjustment history, and visible side-by-side direction choices with no default selection for new bills.
 - Index v83 — Single Manual Payment Button & Direction Colors — 31 Oct 2026 • 09:20:54 AM PKT. Replaced two direction buttons with one Manual Payment button; You will give is green and You will get is red.
 - Index v82 — Manual Pending Payments & Sync — 31 Oct 2026 • 09:05:41 AM PKT. Added manual payable/receivable bills grouped by person with separate payment history and synced records.
@@ -28,10 +29,10 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v84">
-<meta name="app-index-version-name" content="Manual Payment Controls &amp; No Default Direction">
-<meta name="app-index-updated" content="2026-10-31T09:20:54+05:00">
-<meta name="app-index-change-summary" content="Replaced two manual-payment buttons with one button; labeled direction You will give/You will get and color-coded give green, get red.">
+<meta name="app-index-version" content="v85">
+<meta name="app-index-version-name" content="Combined Pending Totals &amp; Manual Payment Fixes">
+<meta name="app-index-updated" content="2026-10-31T09:34:15+05:00">
+<meta name="app-index-change-summary" content="Added combined pending totals for manual and mobile-sales balances; improved manual payment button and add-to-bill saving feedback.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -1841,7 +1842,7 @@ body.menu-open .app>header{z-index:1!important;}
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v84<span>Updated: 31 Oct 2026</span><span>09:26:45 AM PKT</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v85<span>Updated: 31 Oct 2026</span><span>09:34:15 AM PKT</span></div>
       </div>
     </div>
 
@@ -2136,7 +2137,7 @@ body.menu-open .app>header{z-index:1!important;}
   </div>
 </div>
 
-<div class="overlay hidden" id="udharOverlay"><div class="sheet" style="max-height:90vh;overflow:auto"><button type="button" class="safe-page-close" id="udharClose" aria-label="Close" title="Close">×</button><div class="sheet-handle"></div><h2>Pending payments</h2><div class="settings-note">Manual deni/leni wali payments aur mobile sales ki existing pending payments yahan alag maintain hoti hain.</div><div class="field"><label>Naam ya mobile number search karein</label><input id="udharSearch" placeholder="Naam ya mobile number search..."></div><div class="settings-card" style="margin-top:12px;padding:14px;border:1px solid var(--border);border-radius:14px"><h3 style="margin:0 0 8px">Manual payments</h3><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn-primary" id="manualDueAdd" style="flex:1;min-width:180px">＋ Manual Payment</button></div><div class="settings-note" style="margin-top:7px">Green = You will give (deni hai) · Red = You will get (leni hai)</div><div id="manualDueSummary" class="cost-summary" style="margin-top:10px"></div><div id="manualDueList"></div></div><div style="margin-top:18px;border-top:1px solid var(--border);padding-top:14px"><h3 style="margin:0 0 4px">Mobile sales ki pending payments</h3><div class="settings-note">Mobile sale ke existing payment records yahan se hi manage honge.</div><div id="udharSummary" class="cost-summary"></div><div id="udharList"></div></div></div></div>
+<div class="overlay hidden" id="udharOverlay"><div class="sheet" style="max-height:90vh;overflow:auto"><button type="button" class="safe-page-close" id="udharClose" aria-label="Close" title="Close">×</button><div class="sheet-handle"></div><h2>Pending payments</h2><div class="settings-note">Manual deni/leni wali payments aur mobile sales ki existing pending payments yahan alag maintain hoti hain.</div><div id="udharOverallSummary" class="settings-card" style="margin:12px 0;padding:14px;border:1px solid var(--border);border-radius:16px;background:var(--surface-2,rgba(127,127,127,.04))" aria-live="polite"></div><div class="field"><label>Naam ya mobile number search karein</label><input id="udharSearch" placeholder="Naam ya mobile number search..."></div><div class="settings-card" style="margin-top:12px;padding:14px;border:1px solid var(--border);border-radius:14px"><h3 style="margin:0 0 8px">Manual payments</h3><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn-primary" id="manualDueAdd" style="flex:1;min-width:180px;position:relative;z-index:2;pointer-events:auto;touch-action:manipulation">＋ Manual Payment</button></div><div class="settings-note" style="margin-top:7px">Green = You will give (deni hai) · Red = You will get (leni hai)</div><div id="manualDueSummary" class="cost-summary" style="margin-top:10px"></div><div id="manualDueList"></div></div><div style="margin-top:18px;border-top:1px solid var(--border);padding-top:14px"><h3 style="margin:0 0 4px">Mobile sales ki pending payments</h3><div class="settings-note">Mobile sale ke existing payment records yahan se hi manage honge.</div><div id="udharSummary" class="cost-summary"></div><div id="udharList"></div></div></div></div>
 <div class="overlay hidden" id="customerBookOverlay"><div class="sheet" style="max-height:90vh;overflow:auto"><button type="button" class="safe-page-close" id="customerBookClose">×</button><div class="sheet-handle"></div><h2>Customer Book</h2><div class="field"><label>Naam ya mobile number search karein</label><input id="customerBookSearch" placeholder="Customer search..."></div><div id="customerBookSummary" class="cost-summary"></div><div id="customerBookList"></div></div></div>
 
 <div class="overlay hidden" id="cropOverlay">
@@ -2823,15 +2824,15 @@ body.menu-open .app>header{z-index:1!important;}
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v84</div>
-          <div class="settings-note" style="margin-top:4px;">Manual Payment Controls &amp; No Default Direction</div>
-          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 31 Oct 2026 • 09:27:47 AM PKT</div>
-          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Added delete option, add more amount to bill, and side-by-side direction choices with no default selected.</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v85</div>
+          <div class="settings-note" style="margin-top:4px;">Combined Pending Totals &amp; Manual Payment Fixes</div>
+          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 31 Oct 2026 • 09:34:15 AM PKT</div>
+          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Combined total pending balances for manual bills and mobile sales; improved manual-payment actions and add-to-bill save feedback.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
-          <div style="font-weight:700;margin-top:9px;">Index v84 — 31 Oct 2026 • 09:27:47 AM PKT</div>
-          <div class="settings-note">Manual Payment Controls &amp; No Default Direction — delete manual bills, add extra amount to a bill, and select either direction from visible buttons without a default selection.</div>
+          <div style="font-weight:700;margin-top:9px;">Index v85 — 31 Oct 2026 • 09:34:15 AM PKT</div>
+          <div class="settings-note">Combined Pending Totals &amp; Manual Payment Fixes — overall give/get totals include manual bills and mobile sale pending balances; strengthened add-payment interactions.</div>
           <div style="font-weight:700;margin-top:12px;">Index v83 — 31 Oct 2026 • 09:20:54 AM PKT</div>
           <div class="settings-note">Single Manual Payment Button &amp; Direction Colors — one button; You will give green and You will get red.</div>
           <div style="font-weight:700;margin-top:12px;">Index v82 — 31 Oct 2026 • 09:05:41 AM PKT</div>
@@ -2892,9 +2893,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v84';
-const APP_INDEX_VERSION_NAME = 'Manual Payment Controls & No Default Direction';
-const APP_INDEX_UPDATED = '31 Oct 2026 • 09:27:47 AM PKT • Added manual bill soft-delete, add-to-bill amount history, and visible direction choices with no default selection.';
+const APP_INDEX_VERSION = 'v85';
+const APP_INDEX_VERSION_NAME = 'Combined Pending Totals & Manual Payment Fixes';
+const APP_INDEX_UPDATED = '31 Oct 2026 • 09:34:15 AM PKT • Combined manual and mobile-sale pending totals; hardened Manual Payment and Add to bill save interactions.';
 
 let inventory = [];
 
@@ -12115,7 +12116,7 @@ if('serviceWorker' in navigator){
     const current=manualDues.find(function(x){return String(x.id)===String(bill.id);});if(!current||current.deleted)return;
     modal.style.display='flex';modal.querySelector('#mdiInfo').textContent=(current.personName||'')+' · '+(current.reason||'')+' · Current total Rs. '+money(current.amount);modal.querySelector('#mdiAmount').value='';modal.querySelector('#mdiNote').value='';
     const close=function(){modal.style.display='none';};modal.querySelector('#mdiClose').onclick=close;modal.querySelector('#mdiCancel').onclick=close;modal.onclick=function(e){if(e.target===modal)close();};
-    modal.querySelector('#mdiForm').onsubmit=function(e){e.preventDefault();const extra=Number(modal.querySelector('#mdiAmount').value),note=modal.querySelector('#mdiNote').value.trim();const fresh=manualDues.find(function(x){return String(x.id)===String(current.id);});if(!fresh||!Number.isFinite(extra)||extra<=0){alert('Additional amount 0 se zyada enter karein.');return;}const dues=manualDues.map(function(x){if(String(x.id)!==String(fresh.id))return x;const history=Array.isArray(x.amountAdjustments)?x.amountAdjustments.slice():[];history.push({amount:extra,note:note,date:todayISO(),time:currentLocalTimeInput(),createdAt:Date.now()});return Object.assign({},x,{amount:(Number(x.amount)||0)+extra,amountAdjustments:history,lastUpdated:Date.now()});});if(!tryCommitManualDueData(dues,manualDuePayments.slice(),'Increase manual bill amount')){alert(SAVE_FAIL_MSG);return;}close();renderUdhar();showToast('Bill mein Rs. '+money(extra)+' add ho gaye.');};
+    modal.querySelector('#mdiForm').onsubmit=function(e){e.preventDefault();e.stopPropagation();const submitBtn=modal.querySelector('#mdiForm button[type=submit]');if(submitBtn&&submitBtn.dataset.busy==='1')return;const extra=Number(modal.querySelector('#mdiAmount').value),note=modal.querySelector('#mdiNote').value.trim();const fresh=manualDues.find(function(x){return String(x.id)===String(current.id)&&!x.deleted;});if(!fresh){alert('Yeh bill nahi mil raha. Pending Payments dobara open karein.');return;}if(!Number.isFinite(extra)||extra<=0){alert('Additional amount 0 se zyada enter karein.');modal.querySelector('#mdiAmount').focus();return;}const dues=manualDues.map(function(x){if(String(x.id)!==String(fresh.id))return x;const history=Array.isArray(x.amountAdjustments)?x.amountAdjustments.slice():[];history.push({amount:extra,note:note,date:todayISO(),time:currentLocalTimeInput(),createdAt:Date.now()});return Object.assign({},x,{amount:(Number(x.amount)||0)+extra,amountAdjustments:history,lastUpdated:Date.now()});});let saved=false;try{saved=tryCommitManualDueData(dues,manualDuePayments.slice(),'Increase manual bill amount');}catch(err){console.error('Add-to-bill save failed',err);saved=false;}if(!saved){alert((typeof SAVE_FAIL_MSG!=='undefined'?SAVE_FAIL_MSG:'Save nahi ho saka.')+' Amount add nahi hui; dobara try karein.');return;}if(submitBtn)submitBtn.dataset.busy='0';close();renderUdhar();showToast('✓ Bill mein Rs. '+money(extra)+' add ho gaye.');};
   }
   function deleteManualDueBill(bill){
     if(isAdminShopView()||!bill)return;const remaining=manualDueRemaining(bill);if(!confirm('Kya aap '+(bill.personName||'is person')+' ka “'+(bill.reason||'Bill')+'” delete karna chahte hain? Is bill ki payment history bhi hidden ho jayegi.'))return;
@@ -12131,9 +12132,17 @@ if('serviceWorker' in navigator){
     renderManualDues();
     const list=document.getElementById('udharList');if(!list)return;
     const q=(document.getElementById('udharSearch')?.value||'').trim().toLowerCase();
-    const rows=inventory.filter(e=>e.sold&&!isReturnedSale(e)&&dueOf(e)>0&&((e.customer||'')+' '+(e.customerNumber||'')).toLowerCase().includes(q));
+    const allActiveManual=manualDues.filter(b=>!b.deleted);
+    const manualGive=allActiveManual.filter(b=>b.direction==='payable').reduce((a,b)=>a+manualDueRemaining(b),0);
+    const manualGet=allActiveManual.filter(b=>b.direction==='receivable').reduce((a,b)=>a+manualDueRemaining(b),0);
+    const allMobilePending=inventory.filter(e=>e.sold&&!isReturnedSale(e)&&dueOf(e)>0);
+    const mobileGet=allMobilePending.reduce((a,e)=>a+dueOf(e),0);
+    const totalGive=manualGive, totalGet=manualGet+mobileGet;
+    const overall=document.getElementById('udharOverallSummary');
+    if(overall)overall.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px"><div style="font-size:15px;font-weight:900;letter-spacing:.2px">TOTAL PENDING PAYMENTS</div><div class="settings-note">Manual + mobile sales</div></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px"><div style="padding:13px;border-radius:12px;border:1px solid #16a34a;background:rgba(22,163,74,.08)"><div style="font-size:12px;font-weight:800;color:#15803d">🟢 YOU WILL GIVE · DENI HAI</div><div style="font-size:clamp(20px,5vw,26px);font-weight:900;color:#15803d;margin-top:5px">Rs. '+money(totalGive)+'</div><div class="settings-note" style="margin-top:5px">Manual bills only</div></div><div style="padding:13px;border-radius:12px;border:1px solid #dc2626;background:rgba(220,38,38,.07)"><div style="font-size:12px;font-weight:800;color:#b91c1c">🔴 YOU WILL GET · LENI HAI</div><div style="font-size:clamp(20px,5vw,26px);font-weight:900;color:#b91c1c;margin-top:5px">Rs. '+money(totalGet)+'</div><div class="settings-note" style="margin-top:5px">Manual: Rs. '+money(manualGet)+' · Mobile sales: Rs. '+money(mobileGet)+'</div></div></div><div class="settings-note" style="margin-top:10px">Mobile sales ki customer-pending amount “You will get” mein included hai. Search karne se yeh overall totals change nahi honge.</div>';
+    const rows=allMobilePending.filter(e=>((e.customer||'')+' '+(e.customerNumber||'')).toLowerCase().includes(q));
     const total=rows.reduce((a,e)=>a+dueOf(e),0);
-    document.getElementById('udharSummary').innerHTML='<span>Pending sales: '+rows.length+' · Total pending</span><strong>Rs. '+money(total)+'</strong>';
+    document.getElementById('udharSummary').innerHTML='<span>Pending sales: '+rows.length+' · Filtered pending</span><strong>Rs. '+money(total)+'</strong>';
     list.innerHTML=rows.length?rows.map(e=>'<div class="settings-card" style="margin-top:12px;padding:14px;border:1px solid var(--border);border-radius:14px"><b>'+escapeHtml(e.customer||'Naam save nahi')+'</b><div>'+escapeHtml(e.customerNumber||'Number save nahi')+'</div><div style="margin-top:6px">'+escapeHtml((e.brand||'')+' '+(e.model||''))+' · '+escapeHtml(e.saleDate||'Date nahi')+'</div><div>Sale: Rs. '+money(saleTotalOf(e))+' · Received: Rs. '+money(receivedOf(e))+'</div><div style="color:var(--danger);font-weight:700">Pending: Rs. '+money(dueOf(e))+'</div>'+(Array.isArray(e.payments)&&e.payments.length?'<details style="margin-top:8px"><summary>Payment history ('+e.payments.length+')</summary>'+e.payments.map(p=>'<div style="padding:7px 0;border-bottom:1px solid var(--border);font-size:12px"><b>Rs. '+money(p.amount)+'</b> · '+escapeHtml(p.date||'')+' '+escapeHtml(p.time||'')+' · '+escapeHtml(p.method||'')+(p.note?'<div>'+escapeHtml(p.note)+'</div>':'')+'</div>').join('')+'</details>':'<div class="settings-note" style="margin-top:8px">Abhi payment history nahi.</div>')+'<button type="button" class="btn-secondary udhar-receive" data-id="'+escapeHtml(e.id)+'" style="margin-top:8px">Add payment</button></div>').join(''):'<div class="settings-note">Koi pending payment nahi.</div>';
     list.querySelectorAll('.udhar-receive').forEach(btn=>btn.onclick=function(){receiveCustomerPayment(this.dataset.id);setTimeout(renderUdhar,100);});
   }
@@ -12148,7 +12157,7 @@ if('serviceWorker' in navigator){
   document.getElementById('udharOverlay')?.addEventListener('click',e=>{if(e.target.id==='udharOverlay')document.getElementById('udharOverlay').classList.add('hidden')});
   document.getElementById('udharSearch')?.addEventListener('input',renderUdhar);
   window.addEventListener('mobile-hisab-pending-payments-sync',function(){const panel=document.getElementById('udharOverlay');if(panel&&!panel.classList.contains('hidden'))renderUdhar();});
-  document.getElementById('manualDueAdd')?.addEventListener('click',function(){openManualDueForm('payable');});
+  document.addEventListener('click',function(e){const btn=e.target&&e.target.closest?e.target.closest('#manualDueAdd'):null;if(!btn)return;e.preventDefault();e.stopPropagation();if(typeof e.stopImmediatePropagation==='function')e.stopImmediatePropagation();openManualDueForm('',null);},true);
   document.getElementById('s-price')?.addEventListener('input',updateSaleBalancePreview);
   document.getElementById('s-customer-number')?.addEventListener('change',function(){
     const num=String(this.value||'').replace(/\D/g,'');if(!num)return;
