@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v87
-Version name: Pending Payments Theme Consistency
+Current file version: Index v88
+Version name: Analytics Expansion — Pending Payments & Weekday Trends
 Baseline: Index v81 (locked baseline; preserve all unrelated functionality)
-Last changed: 31 Oct 2026 • 09:49:10 AM PKT (Asia/Karachi)
-Change summary: Matched Pending Payments buttons, forms, spacing, typography, borders and colors to the app's established theme; no payment logic or sync behavior changed.
+Last changed: 31 Oct 2026 • 09:57:46 AM PKT (Asia/Karachi)
+Change summary: Added Analytics pending-payment overview and Monday–Sunday sales/purchase activity; aligned Analytics net profit with received-payment-based realized profit after phone expenses; retained existing period comparison and hourly analysis.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 1. Read this block and the APP_INDEX_VERSION / APP_INDEX_UPDATED constants before editing.
@@ -18,6 +18,7 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
+- Index v88 — Analytics Expansion — Pending Payments & Weekday Trends — 31 Oct 2026 • 09:57:46 AM PKT. Added pending balances overview, weekday activity chart and included phone expenses in realized net profit; preserved existing analytics and app behavior.
 - Index v87 — Pending Payments Theme Consistency — 31 Oct 2026 • 09:49:10 AM PKT. Unified button sizes, form controls, spacing, typography, cards and colors with the existing app theme; styling-only update.
 - Index v85 — Combined Pending Totals & Manual Payment Fixes — 31 Oct 2026 • 09:34:15 AM PKT. Added all-up give/get totals including mobile sale receivables, and hardened manual-add/add-to-bill interactions and save feedback.
 - Index v86 — Pending Payments Layout & Add-to-Bill Reliability — 31 Oct 2026 • 09:48:00 AM PKT. Reordered sections to mobile sales first, manual payments second, combined totals last; improved theme-consistent summary cards and add-to-bill save feedback/submit handling.
@@ -31,10 +32,10 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v87">
-<meta name="app-index-version-name" content="Pending Payments Theme Consistency">
-<meta name="app-index-updated" content="2026-10-31T09:49:10+05:00">
-<meta name="app-index-change-summary" content="Matched Pending Payments buttons, forms, spacing, typography, borders and colors to the existing app theme; styling-only update.">
+<meta name="app-index-version" content="v88">
+<meta name="app-index-version-name" content="Analytics Expansion — Pending Payments & Weekday Trends">
+<meta name="app-index-updated" content="2026-10-31T09:57:46+05:00">
+<meta name="app-index-change-summary" content="Added pending-payment analytics, weekday sales/purchase trends and aligned realized net profit after phone expenses.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -1115,6 +1116,25 @@ body.menu-open .app>header{z-index:1!important;}
   #manualDueModal>.settings-card,#manualDuePaymentModal>.settings-card,#manualDueIncreaseModal>.settings-card{padding:14px!important}
 }
 
+
+/* Index v88: Analytics additions styled with the app's existing design tokens. */
+.analytics-pending-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:10px}
+.analytics-pending-tile{min-width:0;border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:12px}
+.analytics-pending-tile .apt-label{font-size:10px;line-height:1.35;font-weight:800;letter-spacing:.35px;text-transform:uppercase;color:var(--text-dim)}
+.analytics-pending-tile .apt-value{font-size:clamp(16px,4vw,22px);line-height:1.25;font-weight:900;margin-top:5px;overflow-wrap:anywhere;color:var(--text)}
+.analytics-pending-tile .apt-sub{font-size:11px;color:var(--text-dim);margin-top:5px;line-height:1.4}
+.analytics-pending-tile.give .apt-value{color:#16a34a}.analytics-pending-tile.get .apt-value{color:#dc2626}.analytics-pending-tile.mobile .apt-value{color:var(--accent)}
+.analytics-pending-note{font-size:11px;color:var(--text-dim);line-height:1.5;margin-top:9px}
+.analytics-weekday-grid{display:flex;flex-direction:column;gap:9px;margin-top:10px}
+.analytics-weekday-row{display:grid;grid-template-columns:46px minmax(0,1fr) 76px;align-items:center;gap:8px}
+.analytics-weekday-name{font-size:11px;font-weight:800;color:var(--text-dim)}
+.analytics-weekday-bars{display:flex;flex-direction:column;gap:4px;min-width:0}
+.analytics-weekday-track{height:8px;background:var(--surface-2);border-radius:20px;overflow:hidden}
+.analytics-weekday-fill{height:100%;border-radius:20px;min-width:0}
+.analytics-weekday-fill.sale{background:var(--pta)}.analytics-weekday-fill.purchase{background:var(--nonpta)}
+.analytics-weekday-values{font-size:10px;color:var(--text-dim);text-align:right;line-height:1.35;white-space:nowrap}
+@media(max-width:380px){.analytics-pending-grid{gap:7px}.analytics-pending-tile{padding:10px}.analytics-weekday-row{grid-template-columns:39px minmax(0,1fr) 69px;gap:6px}}
+
 </style>
 
 <style id="mandatory-star-style">.required-star{color:#d92d20;font-weight:800;margin-left:2px;}</style>
@@ -1935,7 +1955,7 @@ body.menu-open .app>header{z-index:1!important;}
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v87<span>Updated: 31 Oct 2026</span><span>09:49:10 AM PKT</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v88<span>Updated: 31 Oct 2026</span><span>09:57:46 AM PKT</span></div>
       </div>
     </div>
 
@@ -2370,6 +2390,11 @@ body.menu-open .app>header{z-index:1!important;}
       <div id="analyticsDeadStockWrap"></div>
     </div>
     <div class="analytics-scoreboard" id="analyticsScoreboard"></div>
+    <div class="analytics-card" id="analyticsPendingPaymentsCard">
+      <div class="analytics-card-head"><div><div class="analytics-card-title">💳 PENDING PAYMENTS OVERVIEW</div><div class="analytics-card-sub">Mobile sale receivables and manually added bills · current outstanding balances</div></div></div>
+      <div class="analytics-pending-grid" id="analyticsPendingGrid"></div><div class="analytics-pending-note" id="analyticsPendingNote"></div>
+    </div>
+
     <div class="analytics-card">
       <div class="analytics-card-head"><div><div class="analytics-card-title">SCORING COMPARISON</div><div class="analytics-card-sub" id="analyticsTrendSub">Current vs previous comparable period</div></div><select id="analyticsMetric"><option value="profit" selected>Profit</option><option value="soldUnits">Mobiles sold</option><option value="purchasedUnits">Mobiles purchased</option><option value="sales">Sales</option><option value="purchases">Purchase</option><option value="expenses">Expenses</option></select></div>
       <div class="analytics-line-wrap" id="analyticsLineChart"></div>
@@ -2390,7 +2415,12 @@ body.menu-open .app>header{z-index:1!important;}
       <div class="analytics-time-missing" id="analyticsTimeMissing"></div>
     </div>
 
-    <div class="analytics-card">
+    <div class="analytics-card" id="analyticsWeekdayCard">
+        <div class="analytics-card-head"><div><div class="analytics-card-title">📅 BUSIEST DAY OF WEEK</div><div class="analytics-card-sub">Monday to Sunday · mobile units sold and purchased in the selected period</div></div></div>
+        <div class="analytics-weekday-grid" id="analyticsWeekdayGrid"></div>
+        <div class="analytics-time-summary" id="analyticsWeekdaySummary"></div><div class="analytics-time-missing" id="analyticsWeekdayMissing"></div>
+      </div>
+      <div class="analytics-card">
       <div class="analytics-card-head"><div><div class="analytics-card-title">STOCK PERFORMANCE</div><div class="analytics-card-sub">Current stock snapshot — not limited to selected period</div></div></div>
       <div class="analytics-stock-grid" id="analyticsStockGrid"></div>
     </div>
@@ -2917,14 +2947,14 @@ body.menu-open .app>header{z-index:1!important;}
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v87</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v88</div>
           <div class="settings-note" style="margin-top:4px;">Combined Pending Totals &amp; Manual Payment Fixes</div>
           <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 31 Oct 2026 • 09:34:15 AM PKT</div>
           <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Reordered pending payments sections; improved theme consistency and Add to bill submit feedback.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
-          <div style="font-weight:700;margin-top:9px;">Index v87 — 31 Oct 2026 • 09:49:10 AM PKT</div>
+          <div style="font-weight:700;margin-top:9px;">Index v88 — 31 Oct 2026 • 09:57:46 AM PKT</div>
           <div class="settings-note">Combined Pending Totals &amp; Manual Payment Fixes — overall give/get totals include manual bills and mobile sale pending balances; strengthened add-payment interactions.</div>
           <div style="font-weight:700;margin-top:12px;">Index v83 — 31 Oct 2026 • 09:20:54 AM PKT</div>
           <div class="settings-note">Single Manual Payment Button &amp; Direction Colors — one button; You will give green and You will get red.</div>
@@ -2986,9 +3016,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v87';
-const APP_INDEX_VERSION_NAME = 'Pending Payments Theme Consistency';
-const APP_INDEX_UPDATED = '31 Oct 2026 • 09:49:10 AM PKT • Matched Pending Payments controls and layout to the existing app theme; styling-only update.';
+const APP_INDEX_VERSION = 'v88';
+const APP_INDEX_VERSION_NAME = 'Analytics Expansion — Pending Payments & Weekday Trends';
+const APP_INDEX_UPDATED = '31 Oct 2026 • 09:57:46 AM PKT • Added pending-payment analytics and weekday trends; aligned realized net profit after phone expenses.';
 
 let inventory = [];
 
@@ -8420,7 +8450,7 @@ function analyticsMetrics(range){
   const sales=analyticsSaleRecords().filter(function(e){return analyticsInRange(e.date,range);});
   const purchaseAmount=purchases.reduce(function(s,e){return s+e.amount;},0);
   const saleAmount=sales.reduce(function(s,e){return s+e.amount;},0);
-  const grossProfit=sales.reduce(function(s,e){return s+e.profit;},0);
+  const grossProfit=sales.reduce(function(s,e){return s+e.profit-(Number(e.phoneExpenses)||0);},0);
   const expenses=analyticsExpenseTotal(range);
   return {purchases:purchases,sales:sales,purchaseAmount:purchaseAmount,saleAmount:saleAmount,grossProfit:grossProfit,expenses:expenses,netProfit:grossProfit-expenses,purchasedUnits:purchases.reduce(function(s,e){return s+e.qty;},0),soldUnits:sales.reduce(function(s,e){return s+e.qty;},0)};
 }
@@ -8547,6 +8577,51 @@ function analyticsRenderTimeOfDay(range){
   document.getElementById('analyticsTimeSummary').textContent=[s,p].filter(Boolean).join(' • ');
   document.getElementById('analyticsTimeMissing').textContent='Sirf un records ko count kiya gaya hai jin mein exact time available hai.';
 }
+
+function analyticsRenderPendingOverview(){
+  const grid=document.getElementById('analyticsPendingGrid'),note=document.getElementById('analyticsPendingNote');
+  if(!grid)return;
+  const openMobile=inventory.filter(function(e){return e.sold&&!isReturnedSale(e)&&dueOf(e)>0;});
+  const mobileGet=openMobile.reduce(function(sum,e){return sum+dueOf(e);},0);
+  const activeManual=(Array.isArray(manualDues)?manualDues:[]).filter(function(b){return !b.deleted;});
+  const giveBills=activeManual.filter(function(b){return b.direction==='payable'&&manualDueRemaining(b)>0;});
+  const getBills=activeManual.filter(function(b){return b.direction==='receivable'&&manualDueRemaining(b)>0;});
+  const give=giveBills.reduce(function(sum,b){return sum+manualDueRemaining(b);},0);
+  const manualGet=getBills.reduce(function(sum,b){return sum+manualDueRemaining(b);},0);
+  const totalGet=mobileGet+manualGet;
+  const today=dateOnly(todayISO());
+  const overdueManual=activeManual.filter(function(b){return manualDueRemaining(b)>0&&b.dueDate&&dateOnly(b.dueDate)<today;});
+  const partialManual=activeManual.filter(function(b){const paid=manualDuePaidTotal(b);return paid>0&&manualDueRemaining(b)>0;});
+  const partialMobile=inventory.filter(function(e){return e.sold&&!isReturnedSale(e)&&receivedOf(e)>0&&dueOf(e)>0;});
+  const fullyPaidManual=activeManual.filter(function(b){return Number(b.amount)>0&&manualDueRemaining(b)<=0&&manualDuePaidTotal(b)>=Number(b.amount);});
+  const fullyPaidMobile=inventory.filter(function(e){return e.sold&&!isReturnedSale(e)&&dueOf(e)<=0;});
+  const tiles=[
+    {cls:'give',label:'You will give · Deni hai',value:give,sub:giveBills.length+' open manual bill(s)'},
+    {cls:'get',label:'You will get · Leni hai',value:totalGet,sub:(getBills.length+openMobile.length)+' open bill(s), mobile sales included'},
+    {cls:'mobile',label:'Mobile sales pending',value:mobileGet,sub:openMobile.length+' customer sale(s)'},
+    {cls:'',label:'Manual payments pending',value:give+manualGet,sub:giveBills.length+' give · '+getBills.length+' get bill(s)'},
+    {cls:'get',label:'Overdue manual bills',value:overdueManual.length,sub:'Bills past due date with balance remaining'},
+    {cls:'',label:'Payment status',value:partialManual.length+partialMobile.length,sub:'Partially paid · '+(fullyPaidManual.length+fullyPaidMobile.length)+' fully paid bill(s)'}
+  ];
+  grid.innerHTML=tiles.map(function(t){return '<div class="analytics-pending-tile '+t.cls+'"><div class="apt-label">'+t.label+'</div><div class="apt-value">Rs '+fmt(t.value)+'</div><div class="apt-sub">'+t.sub+'</div></div>';}).join('');
+  if(note)note.textContent='Outstanding balance is calculated after recorded partial payments. “You will get” combines mobile-sale customer balances and manual receivables; mobile-sale balances are not counted twice.';
+}
+function analyticsRenderWeekday(range){
+  const grid=document.getElementById('analyticsWeekdayGrid');if(!grid)return;
+  const names=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const rows=names.map(function(name,index){return {name:name,index:index,sale:0,purchase:0,saleAmount:0,purchaseAmount:0};});
+  const m=analyticsMetrics(range);
+  function dayIndex(value){const d=dateOnly(value);if(!d)return -1;const parts=d.split('-').map(Number);if(parts.length!==3||!parts[0]||!parts[1]||!parts[2])return -1;const date=new Date(parts[0],parts[1]-1,parts[2],12,0,0);return isNaN(date.getTime())?-1:date.getDay();}
+  m.sales.forEach(function(e){const i=dayIndex(e.date);if(i>=0){rows[i].sale+=Number(e.qty)||0;rows[i].saleAmount+=Number(e.amount)||0;}});
+  m.purchases.forEach(function(e){const i=dayIndex(e.date);if(i>=0){rows[i].purchase+=Number(e.qty)||0;rows[i].purchaseAmount+=Number(e.amount)||0;}});
+  const maxSale=Math.max(1,...rows.map(function(r){return r.sale;})),maxPurchase=Math.max(1,...rows.map(function(r){return r.purchase;}));
+  grid.innerHTML=rows.map(function(r){return '<div class="analytics-weekday-row"><div class="analytics-weekday-name">'+r.name.slice(0,3)+'</div><div class="analytics-weekday-bars"><div class="analytics-weekday-track" title="Sold: '+r.sale+'"><div class="analytics-weekday-fill sale" style="width:'+Math.round(r.sale/maxSale*100)+'%"></div></div><div class="analytics-weekday-track" title="Purchased: '+r.purchase+'"><div class="analytics-weekday-fill purchase" style="width:'+Math.round(r.purchase/maxPurchase*100)+'%"></div></div></div><div class="analytics-weekday-values">S '+r.sale+' · P '+r.purchase+'</div></div>';}).join('');
+  const salesTop=rows.reduce(function(a,b){return b.sale>a.sale?b:a;},rows[0]),purchaseTop=rows.reduce(function(a,b){return b.purchase>a.purchase?b:a;},rows[0]);
+  const summary=document.getElementById('analyticsWeekdaySummary');
+  if(summary)summary.textContent=(salesTop.sale?'Most sales: '+salesTop.name+' ('+salesTop.sale+' mobiles)':'No sales in period')+' · '+(purchaseTop.purchase?'Most purchases: '+purchaseTop.name+' ('+purchaseTop.purchase+' mobiles)':'No purchases in period');
+  const missing=document.getElementById('analyticsWeekdayMissing');if(missing)missing.textContent='Bar order: first = mobiles sold, second = mobiles purchased. Counts use each record’s saved transaction date.';
+}
+
 function analyticsRenderStock(){
   const stock=analyticsCurrentStock();
   document.getElementById('analyticsStockGrid').innerHTML='<div class="analytics-stock-box"><div class="analytics-stock-value">'+stock.units+'</div><div class="analytics-stock-label">Mobiles in stock</div></div><div class="analytics-stock-box"><div class="analytics-stock-value">Rs '+fmt(stock.investment)+'</div><div class="analytics-stock-label">Stock investment</div></div><div class="analytics-stock-box"><div class="analytics-stock-value">'+stock.models+'</div><div class="analytics-stock-label">Unique models in stock</div></div>';
@@ -8642,6 +8717,8 @@ function renderAnalytics(){
   analyticsRenderVolume(curr,previous);
   analyticsRenderQuantity(curr,previous);
   analyticsRenderTimeOfDay(range);
+  analyticsRenderWeekday(range);
+  analyticsRenderPendingOverview();
   analyticsRenderStock();
   analyticsRenderBrands(curr);
   analyticsRenderModels(curr);
