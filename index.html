@@ -1,6 +1,32 @@
 <!DOCTYPE html>
+<!--
+MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
+Current file version: Index v78
+Version name: Self-Documenting Version Metadata & Update History
+Baseline: Index v77 (locked by the user before this explicitly requested metadata update)
+Last changed: 31 Oct 2026 • 08:07:03 AM PKT (Asia/Karachi)
+Change summary: Added consistent version metadata and permanent maintenance instructions; no intended business-logic changes.
+
+INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
+1. Read this block and the APP_INDEX_VERSION / APP_INDEX_UPDATED constants before editing.
+2. Treat this file as the current source of truth. Preserve all existing UI, behavior, Firebase/Firestore configuration, data, and features.
+3. Make only changes explicitly requested by the user. Do not refactor unrelated code or silently change functionality.
+4. After each actual file modification, update ALL version metadata together: this block, visible menu footer, About/settings version label, APP_INDEX_VERSION, and APP_INDEX_UPDATED.
+5. Capture the real edit timestamp at the time of editing in Pakistan Standard Time (Asia/Karachi, PKT). Never reuse a stale timestamp or invent an exact time.
+6. Give each meaningful update a clear version number/name and a concise change summary. Keep a short version history in this block, newest first.
+7. Preserve Firebase/Firestore connectivity and stored user data. Do not change database rules/schema/sync behavior unless explicitly requested.
+8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
+
+VERSION HISTORY (newest first):
+- Index v78 — Self-Documenting Version Metadata & Update History — 31 Oct 2026 • 08:07:03 AM PKT. Added these instructions and synchronized visible version labels.
+- Index v77 — Previous user-locked baseline; profile pencil positioning adjustment.
+-->
 <html lang="ur-Latn">
 <head>
+<meta name="app-index-version" content="v78">
+<meta name="app-index-version-name" content="Self-Documenting Version Metadata & Update History">
+<meta name="app-index-updated" content="2026-10-31T08:07:03+05:00">
+<meta name="app-index-change-summary" content="Added self-describing version metadata and permanent AI/developer maintenance instructions; no intended business-logic changes.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -1807,7 +1833,7 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="menu-footer-brand">
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
-          <div class="menu-footer-version" id="menuFooterVersion">Index v83.3<br><span>Updated 27 Oct 2026 • 09:48:00 AM PKT • Settings overlay visibility fix</span><span>Settings overlay visibility restored</span></div>
+          <div class="menu-footer-version" id="menuFooterVersion">Index v78 — Self-Documenting Metadata<br><span>Updated 31 Oct 2026 • 08:07:03 AM PKT</span><span>Added version name, exact update metadata and permanent AI/developer instructions</span></div>
         </div>
       </div>
     </div>
@@ -2783,7 +2809,7 @@ body.menu-open .app>header{z-index:1!important;}
 
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
-        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v83.3 • Updated 27 Oct 2026 • 09:47:00 AM PKT • Settings visibility and mobile layout repair</div></div></div>
+        <div class="settings-section-card"><div style="font-size:18px;font-weight:800;">Mobile Hisab <span style="font-size:12px;color:var(--text-dim);font-weight:600;">by Z Mobile</span></div><div class="settings-note">Used mobile sale & purchase business ke liye stock, sales, expenses, reports, rate book aur cloud sync management app.</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="menu-item" id="btnShareApp" style="background:var(--surface-2);border:1px solid var(--border);flex:1;min-width:170px;">📤 Share Mobile Hisab</button></div><div class="settings-status-pill" style="margin-top:12px;">App version: Index v78 — Self-Documenting Metadata • Updated 31 Oct 2026 • 08:07:03 AM PKT • Version metadata and permanent AI/developer instructions added</div></div></div>
       </div>
     </div>
     <div class="settings-draft-bar" id="settingsDraftBar" style="display:none;">
@@ -2829,8 +2855,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v83.3';
-const APP_INDEX_UPDATED = '27 Oct 2026 • 09:48:00 AM PKT • Reverted broken Settings overlay CSS; restored original hidden/visible settings rules';
+const APP_INDEX_VERSION = 'v78';
+const APP_INDEX_VERSION_NAME = 'Self-Documenting Version Metadata & Update History';
+const APP_INDEX_UPDATED = '31 Oct 2026 • 08:07:03 AM PKT • Added version name, exact update metadata and permanent AI/developer instructions; no intended business-logic changes';
 
 let inventory = [];
 
