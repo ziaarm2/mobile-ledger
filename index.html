@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v80
-Version name: Footer Timestamp Consistency Fix
-Baseline: Index v78 (previous current version; preserve all unrelated functionality)
-Last changed: 31 Oct 2026 • 08:22:55 AM PKT (Asia/Karachi)
-Change summary: Corrected the footer timestamp and synchronized all version metadata to one exact Pakistan time; no intended business-logic changes.
+Current file version: Index v81
+Version name: Balanced Menu Footer Layout
+Baseline: Index v80 (locked baseline; preserve all unrelated functionality)
+Last changed: 31 Oct 2026 • 08:34:30 AM PKT (Asia/Karachi)
+Change summary: Repositioned the version number and update date/time to the right side of the menu footer; preserved existing business logic and app functionality.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 1. Read this block and the APP_INDEX_VERSION / APP_INDEX_UPDATED constants before editing.
@@ -18,17 +18,17 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
-- Index v80 — Footer Timestamp Consistency Fix — 31 Oct 2026 • 08:22:55 AM PKT. Corrected footer timestamp and synchronized version metadata.
+- Index v81 — Balanced Menu Footer Layout — 31 Oct 2026 • 08:34:30 AM PKT. Moved version number and update date/time to the right side of the menu footer.
 - Index v79 — Clean Menu Footer & Expanded About Details — 31 Oct 2026 • 08:17:44 AM PKT. Simplified footer and moved technical metadata/history into About.
 - Index v78 — Self-Documenting Version Metadata & Update History — 31 Oct 2026 • 08:07:03 AM PKT. Added permanent maintenance instructions and synchronized version metadata.
 - Index v77 — Previous user-locked baseline; profile pencil positioning adjustment.
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v80">
-<meta name="app-index-version-name" content="Footer Timestamp Consistency Fix">
-<meta name="app-index-updated" content="2026-10-31T08:22:55+05:00">
-<meta name="app-index-change-summary" content="Corrected the footer timestamp and synchronized all version metadata to one exact Pakistan time; no intended business-logic changes.">
+<meta name="app-index-version" content="v81">
+<meta name="app-index-version-name" content="Balanced Menu Footer Layout">
+<meta name="app-index-updated" content="2026-10-31T08:34:30+05:00">
+<meta name="app-index-change-summary" content="Repositioned version number and update date/time to the right side of the menu footer; preserved app functionality.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -832,14 +832,15 @@ body.menu-open .app>header{z-index:1!important;}
 .menu-item.danger .menu-item-icon{color:#df3d48;}
 .menu-item-text{min-width:0;flex:1;}
 .menu-divider{height:1px;background:#e5e9ef;margin:9px 4px;}
-.menu-footer{padding:14px 22px 16px;border-top:1px solid #dfe4eb;background:#fff;flex:0 0 auto;}
-.menu-footer-brand{display:flex;align-items:center;gap:11px;min-width:0;}
+.menu-footer{padding:14px 22px 16px;border-top:1px solid #dfe4eb;background:#fff;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.menu-footer-brand{display:flex;align-items:center;gap:11px;min-width:0;flex:1 1 auto;}
 .menu-footer-logo{width:48px;height:48px;border-radius:50%;overflow:hidden;background:#f5f7fa;flex:0 0 48px;}
 .menu-footer-logo img{width:100%;height:100%;object-fit:cover;display:block;}
 .menu-footer-name{font-size:17px;font-weight:800;color:#263449;line-height:1.15;}
 .menu-footer-sub{font-size:12px;color:#8993a2;margin-top:4px;}
-.menu-footer-version{font-size:12px;color:#98a2b3;margin:9px 0 0;white-space:normal;text-align:left;line-height:1.35;min-width:0;max-width:none;flex:none;}
+.menu-footer-version{font-size:12px;color:#98a2b3;margin:0 0 0 auto;white-space:normal;text-align:right;line-height:1.35;min-width:0;max-width:46%;flex:0 1 auto;overflow-wrap:anywhere;}
 .menu-footer-version span{font-size:10px;color:#98a2b3;display:block;margin-top:2px;}
+@media(max-width:380px){.menu-footer{padding-left:14px;padding-right:14px;gap:8px}.menu-footer-logo{width:40px;height:40px;flex-basis:40px}.menu-footer-name{font-size:15px}.menu-footer-sub{font-size:11px}.menu-footer-version{font-size:11px;max-width:48%}.menu-footer-version span{font-size:9px}}
 .overlay{background:rgba(15,23,42,.48);}
 .sheet{background:#fff;color:#172033;border:1px solid #d9dee7;box-shadow:0 -10px 30px rgba(16,24,40,.12);}
 /* Stock entry is a standalone full-screen page: do not show the dashboard behind it. */
@@ -1837,7 +1838,7 @@ body.menu-open .app>header{z-index:1!important;}
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v80<span>Updated: 31 Oct 2026</span><span>08:22:55 AM PKT</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v81<span>Updated: 31 Oct 2026</span><span>08:34:30 AM PKT</span></div>
       </div>
     </div>
 
@@ -2880,9 +2881,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v80';
-const APP_INDEX_VERSION_NAME = 'Footer Timestamp Consistency Fix';
-const APP_INDEX_UPDATED = '31 Oct 2026 • 08:22:55 AM PKT • Corrected the footer timestamp and synchronized all version metadata to one exact Pakistan time; no intended business-logic changes.';
+const APP_INDEX_VERSION = 'v81';
+const APP_INDEX_VERSION_NAME = 'Balanced Menu Footer Layout';
+const APP_INDEX_UPDATED = '31 Oct 2026 • 08:34:30 AM PKT • Repositioned version number and update date/time to the right side of the menu footer; preserved app functionality.';
 
 let inventory = [];
 
