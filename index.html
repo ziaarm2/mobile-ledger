@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v92
-Version name: Analytics Pending Payments Scope Fix
+Current file version: Index v87
+Version name: Pending Payments Theme Consistency
 Baseline: Index v81 (locked baseline; preserve all unrelated functionality)
-Last changed: 31 Oct 2026 • 10:06:58 AM PKT (Asia/Karachi)
-Change summary: Open Analytics overlay before reading dashboard settings; safely fall back to calendar mode if settings are not initialized, and preserve visible render-error feedback.
+Last changed: 31 Oct 2026 • 09:49:10 AM PKT (Asia/Karachi)
+Change summary: Matched Pending Payments buttons, forms, spacing, typography, borders and colors to the app's established theme; no payment logic or sync behavior changed.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 1. Read this block and the APP_INDEX_VERSION / APP_INDEX_UPDATED constants before editing.
@@ -18,11 +18,6 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
-- Index v92 — Analytics Click Reliability Fix — 31 Oct 2026 • 10:06:58 AM PKT. Opens the Analytics sheet before accessing dashboard settings; falls back safely to calendar mode and keeps visible render-error feedback.
-- Index v92 — Analytics Click Reliability Fix — 31 Oct 2026 • 10:11:33 AM PKT. Adds a final capture-phase Analytics click handler so the menu cannot swallow the click if an earlier handler fails to bind; explicitly marks the Analytics button as non-submit.
-- Index v92 — Analytics Pending Payments Scope Fix — 31 Oct 2026 • 10:15:00 AM PKT. Defines dueOf and receivedOf inside the Analytics pending overview so it does not depend on private helpers scoped inside another script closure.
-- Index v89 — Analytics Overlay Open Fix — 31 Oct 2026 • 10:02:12 AM PKT. Analytics overlay now opens before rendering and displays a visible fallback message if rendering throws; analytics calculations unchanged.
-- Index v88 — Analytics Expansion — Pending Payments & Weekday Trends — 31 Oct 2026 • 09:57:46 AM PKT. Added pending balances overview, weekday activity chart and included phone expenses in realized net profit; preserved existing analytics and app behavior.
 - Index v87 — Pending Payments Theme Consistency — 31 Oct 2026 • 09:49:10 AM PKT. Unified button sizes, form controls, spacing, typography, cards and colors with the existing app theme; styling-only update.
 - Index v85 — Combined Pending Totals & Manual Payment Fixes — 31 Oct 2026 • 09:34:15 AM PKT. Added all-up give/get totals including mobile sale receivables, and hardened manual-add/add-to-bill interactions and save feedback.
 - Index v86 — Pending Payments Layout & Add-to-Bill Reliability — 31 Oct 2026 • 09:48:00 AM PKT. Reordered sections to mobile sales first, manual payments second, combined totals last; improved theme-consistent summary cards and add-to-bill save feedback/submit handling.
@@ -36,10 +31,10 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v92">
-<meta name="app-index-version-name" content="Analytics Pending Payments Scope Fix">
-<meta name="app-index-updated" content="2026-10-31T10:06:58+05:00">
-<meta name="app-index-change-summary" content="Opens Analytics before accessing dashboard settings; safely defaults to calendar mode and preserves visible render-error feedback. No analytics calculations changed.">
+<meta name="app-index-version" content="v87">
+<meta name="app-index-version-name" content="Pending Payments Theme Consistency">
+<meta name="app-index-updated" content="2026-10-31T09:49:10+05:00">
+<meta name="app-index-change-summary" content="Matched Pending Payments buttons, forms, spacing, typography, borders and colors to the existing app theme; styling-only update.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -1120,25 +1115,6 @@ body.menu-open .app>header{z-index:1!important;}
   #manualDueModal>.settings-card,#manualDuePaymentModal>.settings-card,#manualDueIncreaseModal>.settings-card{padding:14px!important}
 }
 
-
-/* Index v88: Analytics additions styled with the app's existing design tokens. */
-.analytics-pending-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:10px}
-.analytics-pending-tile{min-width:0;border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:12px}
-.analytics-pending-tile .apt-label{font-size:10px;line-height:1.35;font-weight:800;letter-spacing:.35px;text-transform:uppercase;color:var(--text-dim)}
-.analytics-pending-tile .apt-value{font-size:clamp(16px,4vw,22px);line-height:1.25;font-weight:900;margin-top:5px;overflow-wrap:anywhere;color:var(--text)}
-.analytics-pending-tile .apt-sub{font-size:11px;color:var(--text-dim);margin-top:5px;line-height:1.4}
-.analytics-pending-tile.give .apt-value{color:#16a34a}.analytics-pending-tile.get .apt-value{color:#dc2626}.analytics-pending-tile.mobile .apt-value{color:var(--accent)}
-.analytics-pending-note{font-size:11px;color:var(--text-dim);line-height:1.5;margin-top:9px}
-.analytics-weekday-grid{display:flex;flex-direction:column;gap:9px;margin-top:10px}
-.analytics-weekday-row{display:grid;grid-template-columns:46px minmax(0,1fr) 76px;align-items:center;gap:8px}
-.analytics-weekday-name{font-size:11px;font-weight:800;color:var(--text-dim)}
-.analytics-weekday-bars{display:flex;flex-direction:column;gap:4px;min-width:0}
-.analytics-weekday-track{height:8px;background:var(--surface-2);border-radius:20px;overflow:hidden}
-.analytics-weekday-fill{height:100%;border-radius:20px;min-width:0}
-.analytics-weekday-fill.sale{background:var(--pta)}.analytics-weekday-fill.purchase{background:var(--nonpta)}
-.analytics-weekday-values{font-size:10px;color:var(--text-dim);text-align:right;line-height:1.35;white-space:nowrap}
-@media(max-width:380px){.analytics-pending-grid{gap:7px}.analytics-pending-tile{padding:10px}.analytics-weekday-row{grid-template-columns:39px minmax(0,1fr) 69px;gap:6px}}
-
 </style>
 
 <style id="mandatory-star-style">.required-star{color:#d92d20;font-weight:800;margin-left:2px;}</style>
@@ -1351,7 +1327,7 @@ body.menu-open .app>header{z-index:1!important;}
 }
 </style>
 
-<style id="v92-compact-professional-spacing">
+<style id="v91-compact-professional-spacing">
 /* v91: compact, consistent spacing for entry and sale sheets; behavior unchanged */
 .sheet{padding:14px 14px 24px!important;}
 .field{margin-bottom:8px!important;}
@@ -1942,7 +1918,7 @@ body.menu-open .app>header{z-index:1!important;}
         <button class="menu-item" id="btnExpenses"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="14" rx="2" stroke-width="1.8"/><path d="M7 12h10M8 9h8" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Expenses</span></button>
         <button class="menu-item" id="btnUdhar"><span class="menu-item-icon">💳</span><span class="menu-item-text">Pending payments</span></button>
         <button class="menu-item" id="btnContacts"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke-width="1.8"/><path d="M3.5 19c.5-3.3 2.4-5 5.5-5s5 1.7 5.5 5M17 11a2.5 2.5 0 1 0 0-5M16 14c2.5.2 4 1.7 4.5 5" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Contacts</span></button>
-        <button type="button" class="menu-item" id="btnAnalytics"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19V9M12 19V5M19 19v-8" stroke-width="2" stroke-linecap="round"/><path d="M3.5 19.5h17" stroke-width="1.5" stroke-linecap="round"/></svg></span><span class="menu-item-text">Analytics</span></button>
+        <button class="menu-item" id="btnAnalytics"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19V9M12 19V5M19 19v-8" stroke-width="2" stroke-linecap="round"/><path d="M3.5 19.5h17" stroke-width="1.5" stroke-linecap="round"/></svg></span><span class="menu-item-text">Analytics</span></button>
         <button class="menu-item" id="btnReports"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3.5h9l3 3V20.5H6z" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3.5v4h4M9 12h6M9 16h6" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="menu-item-text">Reports</span></button>
         <button class="menu-item" id="btnActivityHistory"><span class="menu-item-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke-width="1.8"/><path d="M12 7v5l3 2M4 6l2-2M20 6l-2-2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="menu-item-text">Activity History</span></button>
         <button class="menu-item" id="btnRecycleBin"><span class="menu-item-icon">🗑️</span><span class="menu-item-text">Recycle Bin / Deleted Items</span></button>
@@ -1959,7 +1935,7 @@ body.menu-open .app>header{z-index:1!important;}
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v92<span>Updated: 31 Oct 2026</span><span>10:15:00 AM PKT</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v87<span>Updated: 31 Oct 2026</span><span>09:49:10 AM PKT</span></div>
       </div>
     </div>
 
@@ -2394,11 +2370,6 @@ body.menu-open .app>header{z-index:1!important;}
       <div id="analyticsDeadStockWrap"></div>
     </div>
     <div class="analytics-scoreboard" id="analyticsScoreboard"></div>
-    <div class="analytics-card" id="analyticsPendingPaymentsCard">
-      <div class="analytics-card-head"><div><div class="analytics-card-title">💳 PENDING PAYMENTS OVERVIEW</div><div class="analytics-card-sub">Mobile sale receivables and manually added bills · current outstanding balances</div></div></div>
-      <div class="analytics-pending-grid" id="analyticsPendingGrid"></div><div class="analytics-pending-note" id="analyticsPendingNote"></div>
-    </div>
-
     <div class="analytics-card">
       <div class="analytics-card-head"><div><div class="analytics-card-title">SCORING COMPARISON</div><div class="analytics-card-sub" id="analyticsTrendSub">Current vs previous comparable period</div></div><select id="analyticsMetric"><option value="profit" selected>Profit</option><option value="soldUnits">Mobiles sold</option><option value="purchasedUnits">Mobiles purchased</option><option value="sales">Sales</option><option value="purchases">Purchase</option><option value="expenses">Expenses</option></select></div>
       <div class="analytics-line-wrap" id="analyticsLineChart"></div>
@@ -2419,12 +2390,7 @@ body.menu-open .app>header{z-index:1!important;}
       <div class="analytics-time-missing" id="analyticsTimeMissing"></div>
     </div>
 
-    <div class="analytics-card" id="analyticsWeekdayCard">
-        <div class="analytics-card-head"><div><div class="analytics-card-title">📅 BUSIEST DAY OF WEEK</div><div class="analytics-card-sub">Monday to Sunday · mobile units sold and purchased in the selected period</div></div></div>
-        <div class="analytics-weekday-grid" id="analyticsWeekdayGrid"></div>
-        <div class="analytics-time-summary" id="analyticsWeekdaySummary"></div><div class="analytics-time-missing" id="analyticsWeekdayMissing"></div>
-      </div>
-      <div class="analytics-card">
+    <div class="analytics-card">
       <div class="analytics-card-head"><div><div class="analytics-card-title">STOCK PERFORMANCE</div><div class="analytics-card-sub">Current stock snapshot — not limited to selected period</div></div></div>
       <div class="analytics-stock-grid" id="analyticsStockGrid"></div>
     </div>
@@ -2951,14 +2917,14 @@ body.menu-open .app>header{z-index:1!important;}
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v88</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v87</div>
           <div class="settings-note" style="margin-top:4px;">Combined Pending Totals &amp; Manual Payment Fixes</div>
           <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 31 Oct 2026 • 09:34:15 AM PKT</div>
           <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Reordered pending payments sections; improved theme consistency and Add to bill submit feedback.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
-          <div style="font-weight:700;margin-top:9px;">Index v88 — 31 Oct 2026 • 09:57:46 AM PKT</div>
+          <div style="font-weight:700;margin-top:9px;">Index v87 — 31 Oct 2026 • 09:49:10 AM PKT</div>
           <div class="settings-note">Combined Pending Totals &amp; Manual Payment Fixes — overall give/get totals include manual bills and mobile sale pending balances; strengthened add-payment interactions.</div>
           <div style="font-weight:700;margin-top:12px;">Index v83 — 31 Oct 2026 • 09:20:54 AM PKT</div>
           <div class="settings-note">Single Manual Payment Button &amp; Direction Colors — one button; You will give green and You will get red.</div>
@@ -3020,9 +2986,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v92';
-const APP_INDEX_VERSION_NAME = 'Analytics Pending Payments Scope Fix';
-const APP_INDEX_UPDATED = '31 Oct 2026 • 10:06:58 AM PKT • Analytics opens before settings access; startup-safe mode fallback added.';
+const APP_INDEX_VERSION = 'v87';
+const APP_INDEX_VERSION_NAME = 'Pending Payments Theme Consistency';
+const APP_INDEX_UPDATED = '31 Oct 2026 • 09:49:10 AM PKT • Matched Pending Payments controls and layout to the existing app theme; styling-only update.';
 
 let inventory = [];
 
@@ -8454,7 +8420,7 @@ function analyticsMetrics(range){
   const sales=analyticsSaleRecords().filter(function(e){return analyticsInRange(e.date,range);});
   const purchaseAmount=purchases.reduce(function(s,e){return s+e.amount;},0);
   const saleAmount=sales.reduce(function(s,e){return s+e.amount;},0);
-  const grossProfit=sales.reduce(function(s,e){return s+e.profit-(Number(e.phoneExpenses)||0);},0);
+  const grossProfit=sales.reduce(function(s,e){return s+e.profit;},0);
   const expenses=analyticsExpenseTotal(range);
   return {purchases:purchases,sales:sales,purchaseAmount:purchaseAmount,saleAmount:saleAmount,grossProfit:grossProfit,expenses:expenses,netProfit:grossProfit-expenses,purchasedUnits:purchases.reduce(function(s,e){return s+e.qty;},0),soldUnits:sales.reduce(function(s,e){return s+e.qty;},0)};
 }
@@ -8581,55 +8547,6 @@ function analyticsRenderTimeOfDay(range){
   document.getElementById('analyticsTimeSummary').textContent=[s,p].filter(Boolean).join(' • ');
   document.getElementById('analyticsTimeMissing').textContent='Sirf un records ko count kiya gaya hai jin mein exact time available hai.';
 }
-
-function analyticsRenderPendingOverview(){
-  const grid=document.getElementById('analyticsPendingGrid'),note=document.getElementById('analyticsPendingNote');
-  if(!grid)return;
-  // Keep payment helpers local to Analytics; helpers declared inside other IIFEs are not globally visible.
-  function analyticsSaleTotal(e){return Number(e.saleTotal!=null?e.saleTotal:(Number(e.sell)||0)*(Number(e.quantity)||1));}
-  function receivedOf(e){return Number(e.paymentReceived!=null?e.paymentReceived:analyticsSaleTotal(e));}
-  function dueOf(e){return Math.max(0,Number(e.balanceDue!=null?e.balanceDue:analyticsSaleTotal(e)-receivedOf(e)));}
-  const openMobile=inventory.filter(function(e){return e.sold&&!isReturnedSale(e)&&dueOf(e)>0;});
-  const mobileGet=openMobile.reduce(function(sum,e){return sum+dueOf(e);},0);
-  const activeManual=(Array.isArray(manualDues)?manualDues:[]).filter(function(b){return !b.deleted;});
-  const giveBills=activeManual.filter(function(b){return b.direction==='payable'&&manualDueRemaining(b)>0;});
-  const getBills=activeManual.filter(function(b){return b.direction==='receivable'&&manualDueRemaining(b)>0;});
-  const give=giveBills.reduce(function(sum,b){return sum+manualDueRemaining(b);},0);
-  const manualGet=getBills.reduce(function(sum,b){return sum+manualDueRemaining(b);},0);
-  const totalGet=mobileGet+manualGet;
-  const today=dateOnly(todayISO());
-  const overdueManual=activeManual.filter(function(b){return manualDueRemaining(b)>0&&b.dueDate&&dateOnly(b.dueDate)<today;});
-  const partialManual=activeManual.filter(function(b){const paid=manualDuePaidTotal(b);return paid>0&&manualDueRemaining(b)>0;});
-  const partialMobile=inventory.filter(function(e){return e.sold&&!isReturnedSale(e)&&receivedOf(e)>0&&dueOf(e)>0;});
-  const fullyPaidManual=activeManual.filter(function(b){return Number(b.amount)>0&&manualDueRemaining(b)<=0&&manualDuePaidTotal(b)>=Number(b.amount);});
-  const fullyPaidMobile=inventory.filter(function(e){return e.sold&&!isReturnedSale(e)&&dueOf(e)<=0;});
-  const tiles=[
-    {cls:'give',label:'You will give · Deni hai',value:give,sub:giveBills.length+' open manual bill(s)'},
-    {cls:'get',label:'You will get · Leni hai',value:totalGet,sub:(getBills.length+openMobile.length)+' open bill(s), mobile sales included'},
-    {cls:'mobile',label:'Mobile sales pending',value:mobileGet,sub:openMobile.length+' customer sale(s)'},
-    {cls:'',label:'Manual payments pending',value:give+manualGet,sub:giveBills.length+' give · '+getBills.length+' get bill(s)'},
-    {cls:'get',label:'Overdue manual bills',value:overdueManual.length,sub:'Bills past due date with balance remaining'},
-    {cls:'',label:'Payment status',value:partialManual.length+partialMobile.length,sub:'Partially paid · '+(fullyPaidManual.length+fullyPaidMobile.length)+' fully paid bill(s)'}
-  ];
-  grid.innerHTML=tiles.map(function(t){return '<div class="analytics-pending-tile '+t.cls+'"><div class="apt-label">'+t.label+'</div><div class="apt-value">Rs '+fmt(t.value)+'</div><div class="apt-sub">'+t.sub+'</div></div>';}).join('');
-  if(note)note.textContent='Outstanding balance is calculated after recorded partial payments. “You will get” combines mobile-sale customer balances and manual receivables; mobile-sale balances are not counted twice.';
-}
-function analyticsRenderWeekday(range){
-  const grid=document.getElementById('analyticsWeekdayGrid');if(!grid)return;
-  const names=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const rows=names.map(function(name,index){return {name:name,index:index,sale:0,purchase:0,saleAmount:0,purchaseAmount:0};});
-  const m=analyticsMetrics(range);
-  function dayIndex(value){const d=dateOnly(value);if(!d)return -1;const parts=d.split('-').map(Number);if(parts.length!==3||!parts[0]||!parts[1]||!parts[2])return -1;const date=new Date(parts[0],parts[1]-1,parts[2],12,0,0);return isNaN(date.getTime())?-1:date.getDay();}
-  m.sales.forEach(function(e){const i=dayIndex(e.date);if(i>=0){rows[i].sale+=Number(e.qty)||0;rows[i].saleAmount+=Number(e.amount)||0;}});
-  m.purchases.forEach(function(e){const i=dayIndex(e.date);if(i>=0){rows[i].purchase+=Number(e.qty)||0;rows[i].purchaseAmount+=Number(e.amount)||0;}});
-  const maxSale=Math.max(1,...rows.map(function(r){return r.sale;})),maxPurchase=Math.max(1,...rows.map(function(r){return r.purchase;}));
-  grid.innerHTML=rows.map(function(r){return '<div class="analytics-weekday-row"><div class="analytics-weekday-name">'+r.name.slice(0,3)+'</div><div class="analytics-weekday-bars"><div class="analytics-weekday-track" title="Sold: '+r.sale+'"><div class="analytics-weekday-fill sale" style="width:'+Math.round(r.sale/maxSale*100)+'%"></div></div><div class="analytics-weekday-track" title="Purchased: '+r.purchase+'"><div class="analytics-weekday-fill purchase" style="width:'+Math.round(r.purchase/maxPurchase*100)+'%"></div></div></div><div class="analytics-weekday-values">S '+r.sale+' · P '+r.purchase+'</div></div>';}).join('');
-  const salesTop=rows.reduce(function(a,b){return b.sale>a.sale?b:a;},rows[0]),purchaseTop=rows.reduce(function(a,b){return b.purchase>a.purchase?b:a;},rows[0]);
-  const summary=document.getElementById('analyticsWeekdaySummary');
-  if(summary)summary.textContent=(salesTop.sale?'Most sales: '+salesTop.name+' ('+salesTop.sale+' mobiles)':'No sales in period')+' · '+(purchaseTop.purchase?'Most purchases: '+purchaseTop.name+' ('+purchaseTop.purchase+' mobiles)':'No purchases in period');
-  const missing=document.getElementById('analyticsWeekdayMissing');if(missing)missing.textContent='Bar order: first = mobiles sold, second = mobiles purchased. Counts use each record’s saved transaction date.';
-}
-
 function analyticsRenderStock(){
   const stock=analyticsCurrentStock();
   document.getElementById('analyticsStockGrid').innerHTML='<div class="analytics-stock-box"><div class="analytics-stock-value">'+stock.units+'</div><div class="analytics-stock-label">Mobiles in stock</div></div><div class="analytics-stock-box"><div class="analytics-stock-value">Rs '+fmt(stock.investment)+'</div><div class="analytics-stock-label">Stock investment</div></div><div class="analytics-stock-box"><div class="analytics-stock-value">'+stock.models+'</div><div class="analytics-stock-label">Unique models in stock</div></div>';
@@ -8725,42 +8642,18 @@ function renderAnalytics(){
   analyticsRenderVolume(curr,previous);
   analyticsRenderQuantity(curr,previous);
   analyticsRenderTimeOfDay(range);
-  analyticsRenderWeekday(range);
-  analyticsRenderPendingOverview();
   analyticsRenderStock();
   analyticsRenderBrands(curr);
   analyticsRenderModels(curr);
   analyticsRenderMonths();
 }
-document.getElementById('btnAnalytics').onclick=function(e){
-  if(e){e.preventDefault();e.stopPropagation();}
+document.getElementById('btnAnalytics').onclick=function(){
   closeMainMenu();
-  const analyticsOverlay=document.getElementById('analyticsOverlay');
-  if(!analyticsOverlay)return;
-  // Show Analytics before reading settings or calculating data. If settings are
-  // unavailable during startup, the user should still get the Analytics sheet.
-  analyticsOverlay.classList.remove('hidden');
+  analyticsMode=['calendar','business','lifetime'].indexOf(dashboardSettings.mode)!==-1?dashboardSettings.mode:'calendar';
+  analyticsCustomFrom=''; analyticsCustomTo='';
+  renderAnalytics();
+  document.getElementById('analyticsOverlay').classList.remove('hidden');
   pushOverlayHistory('analyticsOverlay');
-  try{
-    const safeDashboardSettings=(typeof dashboardSettings!=='undefined' && dashboardSettings) ? dashboardSettings : {};
-    const savedMode=safeDashboardSettings.mode;
-    analyticsMode=['calendar','business','lifetime'].indexOf(savedMode)!==-1?savedMode:'calendar';
-    analyticsCustomFrom=''; analyticsCustomTo='';
-    renderAnalytics();
-    const oldError=document.getElementById('analyticsLoadError');
-    if(oldError)oldError.remove();
-  }catch(err){
-    console.error('Analytics render failed:',err);
-    let errorBox=document.getElementById('analyticsLoadError');
-    if(!errorBox){
-      errorBox=document.createElement('div');
-      errorBox.id='analyticsLoadError';
-      errorBox.style.cssText='margin:10px;padding:12px;border:1px solid #f2b8b5;border-radius:10px;background:#fff3f2;color:#9f1d18;font-size:13px;line-height:1.5;';
-      const sheet=analyticsOverlay.querySelector('.analytics-sheet');
-      if(sheet)sheet.insertBefore(errorBox,sheet.children[1]||null);
-    }
-    errorBox.textContent='Analytics screen open hai, lekin data load karte waqt error aya. Page refresh karein; agar masla rahe to error ka screenshot bhejein.';
-  }
 };
 document.getElementById('btnAnalyticsClose').onclick=function(){requestOverlayClose();};
 document.getElementById('analyticsOverlay').onclick=function(e){if(e.target.id==='analyticsOverlay')requestOverlayClose();};
@@ -12367,51 +12260,6 @@ if('serviceWorker' in navigator){
   });
 })();
 </script>
-<script id="v91-analytics-click-reliability-fix">
-// Final safety net: handle Analytics in the capture phase. This still works if
-// an earlier application script failed before assigning btnAnalytics.onclick.
-(function(){
-  const analyticsButton = document.getElementById('btnAnalytics');
-  if (!analyticsButton || analyticsButton.__v91AnalyticsCaptureBound) return;
-  analyticsButton.__v91AnalyticsCaptureBound = true;
-  analyticsButton.addEventListener('click', function(e){
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    const overlay = document.getElementById('analyticsOverlay');
-    if (!overlay) {
-      console.error('Analytics overlay element is missing.');
-      return;
-    }
-    overlay.classList.remove('hidden');
-    try { if (typeof closeMainMenu === 'function') closeMainMenu(); }
-    catch(menuError) { console.error('Could not close menu:', menuError); }
-    try { if (typeof pushOverlayHistory === 'function') pushOverlayHistory('analyticsOverlay'); }
-    catch(historyError) { console.error('Could not update overlay history:', historyError); }
-    try {
-      const savedMode = (typeof dashboardSettings !== 'undefined' && dashboardSettings) ? dashboardSettings.mode : 'calendar';
-      analyticsMode = ['calendar','business','lifetime'].indexOf(savedMode) !== -1 ? savedMode : 'calendar';
-      analyticsCustomFrom = '';
-      analyticsCustomTo = '';
-      if (typeof renderAnalytics !== 'function') throw new Error('renderAnalytics function is unavailable.');
-      renderAnalytics();
-      const previousError = document.getElementById('analyticsLoadError');
-      if (previousError) previousError.remove();
-    } catch(err) {
-      console.error('Analytics capture handler failed:', err);
-      let box = document.getElementById('analyticsLoadError');
-      if (!box) {
-        box = document.createElement('div');
-        box.id = 'analyticsLoadError';
-        box.style.cssText = 'margin:10px;padding:12px;border:1px solid #f2b8b5;border-radius:10px;background:#fff3f2;color:#9f1d18;font-size:13px;line-height:1.5;';
-        const sheet = overlay.querySelector('.analytics-sheet');
-        if (sheet) sheet.insertBefore(box, sheet.children[1] || null);
-      }
-      box.textContent = 'Analytics screen open ho gaya, lekin data load nahi hua. Browser mein F12 > Console ka red error screenshot bhejein.';
-    }
-  }, true);
-})();
-</script>
-
 </body>
 </html>
 
