@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v89
-Version name: Busiest Hour Day/Night Graph
+Current file version: Index v90
+Version name: Busiest Hour Analytics Graph Fix
 Baseline: Index v88 (preserved; existing functionality and analytics retained)
-Last changed: 31 Oct 2026 • 01:17:06 PM PKT (Asia/Karachi)
-Change summary: Added interactive hourly sales/purchases line graph with Day (9 AM–9 PM) and Night (9 PM–9 AM) selectors; Day is selected by default. Existing analytics and business logic preserved.
+Last changed: 31 Oct 2026 • 01:26:48 PM PKT (Asia/Karachi)
+Change summary: Corrected Busiest Business Hours analytics: embedded interactive blue/orange hourly line graph and Day (9 AM–9 PM)/Night (9 PM–9 AM) selector directly in that section; Day default. Existing analytics retained.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 1. Read this block and the APP_INDEX_VERSION / APP_INDEX_UPDATED constants before editing.
@@ -18,7 +18,8 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
-- Index v89 — Busiest Hour Day/Night Graph — 31 Oct 2026 • 01:17:06 PM PKT. Added interactive hourly sales/purchases line graph with Day (9 AM–9 PM) and Night (9 PM–9 AM) selectors; Day is selected by default. Existing analytics and business logic preserved.
+- Index v90 — Busiest Hour Analytics Graph Fix — 31 Oct 2026 • 01:26:48 PM PKT. Corrected Busiest Business Hours analytics: embedded interactive blue/orange hourly line graph and Day (9 AM–9 PM)/Night (9 PM–9 AM) selector directly in that section; Day default. Existing analytics retained.
+- Index v89 — Busiest Hour Analytics Graph Fix — 31 Oct 2026 • 01:17:06 PM PKT. Added graph in Customer Time Analytics modal; this was not the requested Analytics section.
 - Index v88 — Analytics Performance Scoreboards — 31 Oct 2026 • 12:40:04 PM PKT. Added cricket-style weekday performance, hour-by-hour sales/purchases/profit details, daily-average comparisons, and pending-payment analytics; preserved existing analytics and business logic.
 - Index v87 — Pending Payments Theme Consistency — 31 Oct 2026 • 09:49:10 AM PKT. Unified button sizes, form controls, spacing, typography, cards and colors with the existing app theme; styling-only update.
 - Index v85 — Combined Pending Totals & Manual Payment Fixes — 31 Oct 2026 • 09:34:15 AM PKT. Added all-up give/get totals including mobile sale receivables, and hardened manual-add/add-to-bill interactions and save feedback.
@@ -33,10 +34,10 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v89">
-<meta name="app-index-version-name" content="Busiest Hour Day/Night Graph">
-<meta name="app-index-updated" content="2026-10-31T13:17:06+05:00">
-<meta name="app-index-change-summary" content="Added interactive hourly sales/purchases line graph with Day (9 AM–9 PM) and Night (9 PM–9 AM) selectors; Day is selected by default. Existing analytics and business logic preserved.">
+<meta name="app-index-version" content="v90">
+<meta name="app-index-version-name" content="Busiest Hour Analytics Graph Fix">
+<meta name="app-index-updated" content="2026-10-31T13:26:48+05:00">
+<meta name="app-index-change-summary" content="Corrected Busiest Business Hours analytics: embedded interactive blue/orange hourly line graph and Day (9 AM–9 PM)/Night (9 PM–9 AM) selector directly in that section; Day default. Existing analytics retained.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -2387,7 +2388,12 @@ body.menu-open .app>header{z-index:1!important;}
     </div>
     <div class="analytics-card">
       <div class="analytics-card-head"><div><div class="analytics-card-title">⏰ BUSIEST BUSINESS HOURS</div><div class="analytics-card-sub">Selected period mein sale aur purchase kis waqt zyada hui</div></div></div>
-      <div class="analytics-time-legend"><span><i class="analytics-dot" style="background:var(--pta)"></i>Sale</span><span><i class="analytics-dot" style="background:var(--nonpta)"></i>Purchase</span></div>
+      <div class="analytics-period-switch" id="analyticsBusiestPeriodSwitch" role="group" aria-label="Busiest hour day or night" style="display:flex;gap:8px;margin:10px 0;">
+        <button type="button" class="btn-save" data-busiest-period="day" aria-pressed="true">☀️ Day (9 AM–9 PM)</button>
+        <button type="button" class="btn-cancel" data-busiest-period="night" aria-pressed="false">🌙 Night (9 PM–9 AM)</button>
+      </div>
+      <div class="analytics-time-legend"><span><i class="analytics-dot" style="background:#18a7d8"></i>Mobiles Sold</span><span><i class="analytics-dot" style="background:#f59e0b"></i>Mobiles Purchased</span></div>
+      <div id="analyticsBusiestLineChart" style="width:100%;overflow:hidden;margin:8px 0 12px;"></div>
       <div class="analytics-time-grid" id="analyticsTimeGrid"></div>
       <div class="analytics-time-summary" id="analyticsTimeSummary"></div>
       <div class="analytics-time-missing" id="analyticsTimeMissing"></div>
@@ -2944,7 +2950,7 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
           <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v89</div>
-          <div class="settings-note" style="margin-top:4px;">Busiest Hour Day/Night Graph</div>
+          <div class="settings-note" style="margin-top:4px;">Busiest Hour Analytics Graph Fix</div>
           <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 31 Oct 2026 • 01:17:06 PM PKT</div>
           <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Added interactive hourly sales/purchases line graph with Day (9 AM–9 PM) and Night (9 PM–9 AM) selectors; Day is selected by default. Existing analytics and business logic preserved.</div>
         </div>
@@ -3016,9 +3022,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v89';
-const APP_INDEX_VERSION_NAME = 'Busiest Hour Day/Night Graph';
-const APP_INDEX_UPDATED = '31 Oct 2026 • 01:17:06 PM PKT • Added interactive hourly sales/purchases line graph with Day (9 AM–9 PM) and Night (9 PM–9 AM) selectors; Day is selected by default. Existing analytics and business logic preserved.';
+const APP_INDEX_VERSION = 'v90';
+const APP_INDEX_VERSION_NAME = 'Busiest Hour Analytics Graph Fix';
+const APP_INDEX_UPDATED = '31 Oct 2026 • 01:26:48 PM PKT • Corrected Busiest Business Hours analytics: embedded interactive blue/orange hourly line graph and Day (9 AM–9 PM)/Night (9 PM–9 AM) selector directly in that section; Day default. Existing analytics retained.';
 
 let inventory = [];
 
@@ -8601,6 +8607,7 @@ function analyticsRenderQuantity(curr,prev){
   }
   document.getElementById('analyticsQuantityBars').innerHTML=group('PURCHASED',curr.purchasedUnits,prev&&prev.purchasedUnits,'purchasedUnits')+group('SOLD',curr.soldUnits,prev&&prev.soldUnits,'soldUnits')+'<div class="analytics-quantity-note" style="grid-column:1 / -1;">Numbers = total mobile units in the selected period.</div>';
 }
+let analyticsBusiestPeriod='day';
 function analyticsRenderTimeOfDay(range){
   const grid=document.getElementById('analyticsTimeGrid');
   if(!grid) return;
@@ -8608,17 +8615,33 @@ function analyticsRenderTimeOfDay(range){
   const m=analyticsMetrics(range);
   m.sales.forEach(e=>{const d=e.exactTime?new Date(e.exactTime):null;if(d&&!isNaN(d.getTime())){const r=rows[d.getHours()];r.sale+=Number(e.qty)||0;r.saleAmount+=Number(e.amount)||0;r.profit+=(Number(e.profit)||0)-(Number(e.phoneExpenses)||0);}});
   m.purchases.forEach(e=>{const d=e.exactTime?new Date(e.exactTime):null;if(d&&!isNaN(d.getTime())){const r=rows[d.getHours()];r.purchase+=Number(e.qty)||0;r.purchaseAmount+=Number(e.amount)||0;}});
-  const active=rows.filter(r=>r.sale||r.purchase);
-  if(!active.length){grid.innerHTML='<div class="analytics-empty">Is period mein exact time ke sath sale/purchase record nahi mila.</div>';document.getElementById('analyticsTimeSummary').textContent='';document.getElementById('analyticsTimeMissing').textContent='Exact timestamp wale records hi hourly breakdown mein count hote hain.';return;}
-  const sm=Math.max(1,...active.map(r=>r.sale)),pm=Math.max(1,...active.map(r=>r.purchase));
-  grid.innerHTML=rows.map(r=>{const label=String(r.hour).padStart(2,'0')+':00',has=!!(r.sale||r.purchase);return '<div class="analytics-time-row"><div class="analytics-time-label">'+label+'</div><div class="analytics-time-pair"><div class="analytics-time-track"><div class="analytics-time-fill sale" style="width:'+Math.round(r.sale/sm*100)+'%"></div><div class="analytics-time-value">Sale: '+r.sale+' units · Rs '+fmt(r.saleAmount)+'</div></div><div class="analytics-time-track"><div class="analytics-time-fill purchase" style="width:'+Math.round(r.purchase/pm*100)+'%"></div><div class="analytics-time-value">Purchase: '+r.purchase+' units · Rs '+fmt(r.purchaseAmount)+'</div></div>'+(has?'<div class="analytics-time-summary" style="text-align:left;margin:2px 0 4px">Sale profit after phone expenses: Rs '+fmt(r.profit)+'</div>':'')+'</div></div>';}).join('');
-  const topS=active.reduce((a,b)=>b.sale>a.sale?b:a,active[0]),topP=active.reduce((a,b)=>b.purchase>a.purchase?b:a,active[0]),topProfit=active.reduce((a,b)=>b.profit>a.profit?b:a,active[0]);
-  const ss=topS.sale?'Most sold: '+String(topS.hour).padStart(2,'0')+':00–'+String((topS.hour+1)%24).padStart(2,'0')+':00 ('+topS.sale+' mobiles)':'';
-  const ps=topP.purchase?'Most purchased: '+String(topP.hour).padStart(2,'0')+':00–'+String((topP.hour+1)%24).padStart(2,'0')+':00 ('+topP.purchase+' mobiles)':'';
-  const pr=topProfit.profit?'Highest sale profit: '+String(topProfit.hour).padStart(2,'0')+':00 (Rs '+fmt(topProfit.profit)+')':'';
+  const hours=analyticsBusiestPeriod==='day'?Array.from({length:12},(_,i)=>i+9):[21,22,23,0,1,2,3,4,5,6,7,8];
+  const shown=hours.map(h=>rows[h]);
+  document.querySelectorAll('[data-busiest-period]').forEach(b=>{const active=b.dataset.busiestPeriod===analyticsBusiestPeriod;b.classList.toggle('btn-save',active);b.classList.toggle('btn-cancel',!active);b.setAttribute('aria-pressed',active?'true':'false');});
+  const active=shown.filter(r=>r.sale||r.purchase);
+  const chart=document.getElementById('analyticsBusiestLineChart');
+  const W=600,H=210,L=30,R=12,T=16,B=36,pw=W-L-R,ph=H-T-B;
+  const maxVal=Math.max(1,...shown.map(r=>Math.max(r.sale,r.purchase))), yMax=Math.max(4,Math.ceil(maxVal/2)*2);
+  const x=i=>L+i*pw/(shown.length-1), y=v=>T+ph-(v/yMax)*ph;
+  let svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Busiest hour sales and purchases line graph" style="width:100%;height:auto;display:block">';
+  for(let i=0;i<=4;i++){const v=Math.round(yMax*i/4),yy=y(v);svg+='<line x1="'+L+'" y1="'+yy+'" x2="'+(W-R)+'" y2="'+yy+'" stroke="var(--border)"/><text x="'+(L-7)+'" y="'+(yy+4)+'" text-anchor="end" font-size="10" fill="var(--text-muted)">'+v+'</text>';}
+  function series(key,color){let out='<polyline points="'+shown.map((r,i)=>x(i)+','+y(r[key])).join(' ')+'" fill="none" stroke="'+color+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';shown.forEach((r,i)=>{out+='<circle cx="'+x(i)+'" cy="'+y(r[key])+'" r="3" fill="'+color+'"/>';});return out;}
+  svg+=series('sale','#18a7d8')+series('purchase','#f59e0b');
+  shown.forEach((r,i)=>{if(i%2===0||i===shown.length-1){const h=r.hour,label=(h%12||12)+(h<12?' AM':' PM');svg+='<text x="'+x(i)+'" y="'+(H-12)+'" text-anchor="middle" font-size="10" fill="var(--text-muted)">'+label+'</text>';}});
+  svg+='</svg>'; chart.innerHTML=svg;
+  if(!active.length){grid.innerHTML='<div class="analytics-empty">Is Day/Night period mein exact time ke sath sale/purchase record nahi mila.</div>';document.getElementById('analyticsTimeSummary').textContent='';document.getElementById('analyticsTimeMissing').textContent='Sirf exact timestamp wale records hourly breakdown mein count hote hain.';return;}
+  const sm=Math.max(1,...shown.map(r=>r.sale)),pm=Math.max(1,...shown.map(r=>r.purchase));
+  grid.innerHTML=shown.map(r=>{const label=(r.hour%12||12)+(r.hour<12?' AM':' PM'),next=((r.hour+1)%24%12||12)+((r.hour+1)%24<12?' AM':' PM'),has=!!(r.sale||r.purchase);return '<div class="analytics-time-row"><div class="analytics-time-label">'+label+'–'+next+'</div><div class="analytics-time-pair"><div class="analytics-time-track"><div class="analytics-time-fill sale" style="width:'+Math.round(r.sale/sm*100)+'%"></div><div class="analytics-time-value">Sold: '+r.sale+' units · Rs '+fmt(r.saleAmount)+'</div></div><div class="analytics-time-track"><div class="analytics-time-fill purchase" style="width:'+Math.round(r.purchase/pm*100)+'%"></div><div class="analytics-time-value">Purchased: '+r.purchase+' units · Rs '+fmt(r.purchaseAmount)+'</div></div>'+(has?'<div class="analytics-time-summary" style="text-align:left;margin:2px 0 4px">Sale profit after phone expenses: Rs '+fmt(r.profit)+'</div>':'')+'</div></div>';}).join('');
+  const topS=shown.reduce((a,b)=>b.sale>a.sale?b:a,shown[0]),topP=shown.reduce((a,b)=>b.purchase>a.purchase?b:a,shown[0]),topProfit=shown.reduce((a,b)=>b.profit>a.profit?b:a,shown[0]);
+  const label=h=>(h%12||12)+(h<12?' AM':' PM');
+  const ss=topS.sale?'Most sold: '+label(topS.hour)+'–'+label((topS.hour+1)%24)+' ('+topS.sale+' mobiles)':'';
+  const ps=topP.purchase?'Most purchased: '+label(topP.hour)+'–'+label((topP.hour+1)%24)+' ('+topP.purchase+' mobiles)':'';
+  const pr=topProfit.profit?'Highest sale profit: '+label(topProfit.hour)+' (Rs '+fmt(topProfit.profit)+')':'';
   document.getElementById('analyticsTimeSummary').textContent=[ss,ps,pr].filter(Boolean).join(' • ');
   document.getElementById('analyticsTimeMissing').textContent='Sirf exact timestamp wale records count hote hain. Hourly profit sale profit minus phone expenses hai; general business expenses ko hour-wise assign nahi kiya jata.';
 }
+document.querySelectorAll('[data-busiest-period]').forEach(function(btn){btn.addEventListener('click',function(){analyticsBusiestPeriod=btn.dataset.busiestPeriod;analyticsRenderTimeOfDay(analyticsDateRange(analyticsMode));});});
+
 function analyticsRenderAverages(range,curr,prev){
   const actual=range.mode==='lifetime'?analyticsRangeForLifetime():range;
   const days=actual.from&&actual.to?Math.max(1,analyticsDaysBetween(actual.from,actual.to)+1):1;
