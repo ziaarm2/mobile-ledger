@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v94
-Version name: Sold Entry Recalculation & Stock Timeline Analytics
+Current file version: Index v95
+Version name: Complete Sold Payment Editing & Flexible Analytics Comparison
 Baseline: User-provided Index v93 file (preserved; all existing functionality retained)
-Last changed: 02 Nov 2026 • 07:32:09 PM PKT (Asia/Karachi)
-Change summary: Made sold-entry sale details and sale expenses editable with recalculated sale totals, dues and profit; added month-by-month stock-level and purchased-vs-sold comparison line graphs.
+Last changed: 02 Nov 2026 • 09:31:37 PM PKT (Asia/Karachi)
+Change summary: Added editable received/remaining amounts to sold-entry editing with recalculated sale totals, dues and profit; added same-date monthly and rolling 28-day stock/purchase/sales comparisons and a sticky Analytics close button.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 1. Read this block and the APP_INDEX_VERSION / APP_INDEX_UPDATED constants before editing.
@@ -18,7 +18,7 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
-- Index v94 — Sold Entry Recalculation & Stock Timeline Analytics — 02 Nov 2026 • 07:32:09 PM PKT. Added sold-entry edit recalculation and current-vs-previous month stock/purchase/sales line graphs; no unrelated features intentionally changed.
+- Index v95 — Complete Sold Payment Editing & Flexible Analytics Comparison — 02 Nov 2026 • 09:31:37 PM PKT. Added editable received/remaining payment amounts for sold records, same-date monthly and rolling 28-day comparisons, and sticky Analytics close button; no unrelated features intentionally changed.
 - Index v90 — Busiest Hour Analytics Graph Fix — 31 Oct 2026 • 01:26:48 PM PKT. Corrected Busiest Business Hours analytics: embedded interactive blue/orange hourly line graph and Day (9 AM–9 PM)/Night (9 PM–9 AM) selector directly in that section; Day default. Existing analytics retained.
 - Index v89 — Busiest Hour Analytics Graph Fix — 31 Oct 2026 • 01:17:06 PM PKT. Added graph in Customer Time Analytics modal; this was not the requested Analytics section.
 - Index v88 — Analytics Performance Scoreboards — 31 Oct 2026 • 12:40:04 PM PKT. Added cricket-style weekday performance, hour-by-hour sales/purchases/profit details, daily-average comparisons, and pending-payment analytics; preserved existing analytics and business logic.
@@ -35,10 +35,10 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v94">
-<meta name="app-index-version-name" content="Sold Entry Recalculation & Stock Timeline Analytics">
-<meta name="app-index-updated" content="2026-11-02T19:32:09+05:00">
-<meta name="app-index-change-summary" content="Sold entry details and sale expenses are editable with recalculated totals, dues and profit; added monthly stock level and purchased-vs-sold comparison line graphs.">
+<meta name="app-index-version" content="v95">
+<meta name="app-index-version-name" content="Complete Sold Payment Editing & Flexible Analytics Comparison">
+<meta name="app-index-updated" content="2026-11-02T21:31:37+05:00">
+<meta name="app-index-change-summary" content="Sold entry details, received amount and remaining balance are editable with recalculated totals and profit; added same-date monthly and rolling 28-day stock/purchase/sales comparisons and sticky Analytics close button.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -1837,6 +1837,14 @@ body.menu-open .app>header{z-index:1!important;}
 @media(max-width:420px){#menuDropdown .menu-profile{gap:10px;padding-left:14px;padding-right:58px;}#menuDropdown .menu-profile-avatar{width:64px;height:64px;flex-basis:64px;}#menuDropdown .menu-profile-edit{right:14px;top:58px!important;bottom:auto;width:28px;height:28px;flex-basis:28px;z-index:21;}#menuDropdown .menu-profile-edit svg{width:22px;height:22px;}#menuDropdown .menu-account-dropdown{width:min(220px,calc(100vw - 110px));min-width:170px;}}
 </style>
 
+
+<style id="v95-analytics-sticky-close-and-period-switch">
+/* Keep Analytics close control available while the user scrolls through long graphs. */
+#analyticsOverlay > .analytics-sheet > .sheet-head { position:sticky !important; top:0 !important; z-index:50 !important; background:var(--bg,var(--surface)) !important; padding-top:calc(10px + env(safe-area-inset-top,0px)) !important; }
+.analytics-timeline-switch{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:9px 0 11px;}
+.analytics-timeline-switch button{min-height:40px;border-radius:9px;font-size:11px;font-weight:800;}
+.analytics-timeline-switch button.active{background:var(--pta);color:var(--surface);border:1px solid var(--pta);}
+</style>
 </head>
 <body>
 <div id="mobileCloudStartupGate" role="status" aria-live="polite"><div class="gate-card"><img class="gate-logo" src="icon-192.png" alt="Mobile Hisab" onerror="this.style.display='none'"><div class="gate-title">Mobile Hisab</div><div class="gate-by">by Z Mobile</div><div class="gate-status">Latest data verify kiya ja raha hai…</div><div class="gate-loader" aria-hidden="true"><i></i></div></div></div>
@@ -2142,6 +2150,11 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="field date-time-field"><label>Sale Time</label><input id="f-saletime" type="time"></div>
       </div>
       <div class="field"><label>Payment method</label><input id="f-payment" placeholder="Cash / Easypaisa"></div>
+      <div class="two-col sale-payment-fields" id="saleEditPaymentFields" style="margin-top:10px;">
+        <div class="field"><label>Received amount</label><input id="f-edit-received" type="number" min="0" inputmode="decimal" placeholder="Rs."></div>
+        <div class="field"><label>Remaining / baqi</label><input id="f-edit-due" type="number" min="0" inputmode="decimal" placeholder="Rs. 0"></div>
+      </div>
+      <div class="settings-note" style="margin-top:4px;">Received aur Remaining ka total sale price × quantity ke barabar hona chahiye. Amount edit karne par baqi raqam automatically adjust hogi.</div>
       <div id="saleEditExpenseWrap" class="field" style="margin-top:8px;">
         <label>🎁 Sale ke waqt hua extra kharcha</label>
         <div class="settings-note" style="margin:4px 0 7px;">Sale price ya expense edit karne par profit dobara calculate hoga.</div>
@@ -2436,7 +2449,11 @@ body.menu-open .app>header{z-index:1!important;}
       <div class="analytics-model-list" id="analyticsModelList"></div>
     </div>
     <div class="analytics-card">
-      <div class="analytics-card-head"><div><div class="analytics-card-title">📦 MONTHLY STOCK LEVEL</div><div class="analytics-card-sub" id="analyticsStockTimelineSub">Har din ke end par estimated available stock — current month vs last month</div></div></div>
+      <div class="analytics-card-head"><div><div class="analytics-card-title">📦 STOCK LEVEL COMPARISON</div><div class="analytics-card-sub" id="analyticsStockTimelineSub">Har din ke end par estimated available stock — current month ki same date tak vs previous month</div></div></div>
+      <div class="analytics-timeline-switch" id="analyticsTimelineRangeSwitch" role="group" aria-label="Timeline comparison period">
+        <button type="button" class="btn-save active" data-timeline-mode="month" aria-pressed="true">Same date last month</button>
+        <button type="button" class="btn-cancel" data-timeline-mode="28days" aria-pressed="false">Last 28 days</button>
+      </div>
       <div class="analytics-month-wrap"><div class="analytics-month-chart" id="analyticsStockTimelineChart"></div></div>
     </div>
     <div class="analytics-card">
@@ -2968,15 +2985,15 @@ body.menu-open .app>header{z-index:1!important;}
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v94</div>
-          <div class="settings-note" style="margin-top:4px;">Sold Entry Recalculation & Stock Timeline Analytics</div>
-          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 02 Nov 2026 • 07:32:09 PM PKT</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v95</div>
+          <div class="settings-note" style="margin-top:4px;">Complete Sold Payment Editing & Flexible Analytics Comparison</div>
+          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 02 Nov 2026 • 09:31:37 PM PKT</div>
           <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Sold entry details and sale expenses can be edited; sale totals, pending balance and profit recalculate. Added current-vs-previous month stock-level and purchased-vs-sold line graphs.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
-          <div style="font-weight:700;margin-top:9px;">Index v94 — 02 Nov 2026 • 07:32:09 PM PKT</div>
-          <div class="settings-note">Sold entry edits now recalculate sale totals, outstanding balance and profit; added monthly stock level and purchased-vs-sold line graph comparisons. Existing features retained.</div>
+          <div style="font-weight:700;margin-top:9px;">Index v95 — 02 Nov 2026 • 09:31:37 PM PKT</div>
+          <div class="settings-note">Sold entry edits now recalculate sale totals, received/remaining balance and profit; added same-date monthly and rolling 28-day comparison graphs and sticky Analytics close button. Existing features retained.</div>
           <div style="font-weight:700;margin-top:9px;">Index v91 — 31 Oct 2026 • 01:45:54 PM PKT</div>
           <div class="settings-note">Fixed hourly graph axis so Day ends at 9 PM and Night ends at 9 AM; all 12 hourly intervals remain visible.</div>
           <div style="font-weight:700;margin-top:9px;">Index v89 — 31 Oct 2026 • 01:17:06 PM PKT</div>
@@ -3045,9 +3062,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v94';
-const APP_INDEX_VERSION_NAME = 'Sold Entry Recalculation & Stock Timeline Analytics';
-const APP_INDEX_UPDATED = '02 Nov 2026 • 07:32:09 PM PKT';
+const APP_INDEX_VERSION = 'v95';
+const APP_INDEX_VERSION_NAME = 'Complete Sold Payment Editing & Flexible Analytics Comparison';
+const APP_INDEX_UPDATED = '02 Nov 2026 • 09:31:37 PM PKT';
 
 let inventory = [];
 
@@ -7179,6 +7196,14 @@ function openEdit(id){
     document.getElementById('f-customer').value = e.customer || '';
     document.getElementById('f-customer-number').value = e.customerNumber || '';
     document.getElementById('f-payment').value = e.payment || '';
+    const editSaleTotal = Number(e.saleTotal!=null?e.saleTotal:(Number(e.sell)||0)*(Number(e.quantity)||1));
+    const editSaleReceived = Math.max(0,Number(e.paymentReceived!=null?e.paymentReceived:editSaleTotal)||0);
+    const editSaleDue = Math.max(0,Number(e.balanceDue!=null?e.balanceDue:editSaleTotal-editSaleReceived)||0);
+    document.getElementById('f-edit-received').value = String(Math.min(editSaleTotal,editSaleReceived));
+    document.getElementById('f-edit-due').value = String(editSaleDue);
+    const editFullyPaid = editSaleDue <= 0.01;
+    document.getElementById('f-edit-received').dataset.manual = editFullyPaid ? '0' : '1';
+    document.getElementById('f-edit-due').dataset.manual = editFullyPaid ? '0' : '1';
     renderPhoneExpenseRows('f-sale-expenses', e.saleExpenses || []);
     document.getElementById('f-saledate').value = e.saleDate || todayISO();
     document.getElementById('f-saletime').value = e.saleTime || '';
@@ -7186,6 +7211,10 @@ function openEdit(id){
     document.getElementById('saleFieldsWrap').classList.remove('show');
     renderPhoneExpenseRows('f-sale-expenses', []);
     document.getElementById('f-customer-number').value = '';
+    document.getElementById('f-edit-received').value = '';
+    document.getElementById('f-edit-due').value = '0';
+    document.getElementById('f-edit-received').dataset.manual = '0';
+    document.getElementById('f-edit-due').dataset.manual = '0';
     document.getElementById('f-saledate').value = todayISO();
     document.getElementById('f-saletime').value = currentLocalTimeInput();
   }
@@ -7317,6 +7346,16 @@ function saveEntry(){
     data.customer = document.getElementById('f-customer').value.trim();
     data.customerNumber = document.getElementById('f-customer-number').value.trim();
     data.payment = document.getElementById('f-payment').value.trim();
+    const editSaleTotal = Number(data.sell||0) * Math.max(1,Number(data.quantity)||1);
+    const receivedRaw = document.getElementById('f-edit-received').value.trim();
+    const dueRaw = document.getElementById('f-edit-due').value.trim();
+    const editReceived = receivedRaw==='' ? editSaleTotal : Number(receivedRaw);
+    const editDue = dueRaw==='' ? Math.max(0,editSaleTotal-editReceived) : Number(dueRaw);
+    if(!Number.isFinite(editReceived)||editReceived<0||editReceived>editSaleTotal){alert('Received amount total sale price se zyada ya negative nahi ho sakti.');document.getElementById('f-edit-received').focus();return;}
+    if(!Number.isFinite(editDue)||editDue<0||Math.abs((editReceived+editDue)-editSaleTotal)>0.01){alert('Received amount aur Remaining ka total sale price × quantity ke barabar hona chahiye.');document.getElementById('f-edit-due').focus();return;}
+    data.saleTotal = editSaleTotal;
+    data.paymentReceived = editReceived;
+    data.balanceDue = editDue;
     data.saleDate = document.getElementById('f-saledate').value || todayISO();
     data.saleTime = document.getElementById('f-saletime').value || '';
   } else {
@@ -7352,23 +7391,16 @@ function saveEntry(){
       const salePrice=data.sell==null?0:Number(data.sell)||0;
       const newSaleTotal=salePrice*newQty;
       const oldSaleTotal=Number(oldEntry.saleTotal!=null?oldEntry.saleTotal:(Number(oldEntry.sell)||0)*oldQty);
-      const wasFullyPaid=Number(oldEntry.balanceDue!=null?oldEntry.balanceDue:Math.max(0,oldSaleTotal-Number(oldEntry.paymentReceived!=null?oldEntry.paymentReceived:oldSaleTotal)))<=0.01;
-      let received=Math.max(0,Number(oldEntry.paymentReceived!=null?oldEntry.paymentReceived:oldSaleTotal)||0);
+      const received=Math.max(0,Math.min(newSaleTotal,Number(data.paymentReceived!=null?data.paymentReceived:oldEntry.paymentReceived!=null?oldEntry.paymentReceived:newSaleTotal)||0));
       let paymentHistory=Array.isArray(oldEntry.payments)?oldEntry.payments.map(function(p){return Object.assign({},p);}):[];
-      if(wasFullyPaid){
-        received=newSaleTotal;
-        // When a fully-paid sale's entered price was wrong, keep its recorded
-        // payment history total aligned with the corrected sale total.
-        const historyTotal=paymentHistory.reduce(function(sum,p){return sum+(Number(p.amount)||0);},0);
-        if(paymentHistory.length && Math.abs(historyTotal-oldSaleTotal)<0.01){
-          let delta=newSaleTotal-historyTotal;
-          for(let pi=paymentHistory.length-1;pi>=0&&Math.abs(delta)>0.01;pi--){
-            const before=Math.max(0,Number(paymentHistory[pi].amount)||0);
-            if(delta>=0){paymentHistory[pi].amount=before+delta;delta=0;}
-            else {const take=Math.min(before,-delta);paymentHistory[pi].amount=before-take;delta+=take;}
-          }
-        }
-      }else received=Math.min(received,newSaleTotal);
+      const historyTotal=paymentHistory.reduce(function(sum,p){return sum+(Number(p.amount)||0);},0);
+      let delta=received-historyTotal;
+      for(let pi=paymentHistory.length-1;pi>=0&&Math.abs(delta)>0.01;pi--){
+        const before=Math.max(0,Number(paymentHistory[pi].amount)||0);
+        if(delta>=0){paymentHistory[pi].amount=before+delta;delta=0;}
+        else {const take=Math.min(before,-delta);paymentHistory[pi].amount=before-take;delta+=take;}
+      }
+      if(!paymentHistory.length && received>0){paymentHistory.push({amount:received,date:data.saleDate||oldEntry.saleDate||todayISO(),time:data.saleTime||oldEntry.saleTime||'',method:data.payment||oldEntry.payment||'',note:'Sale payment amount (edited)'});}
       data.saleTotal=newSaleTotal;
       data.paymentReceived=received;
       data.balanceDue=Math.max(0,newSaleTotal-received);
@@ -8901,34 +8933,55 @@ function analyticsRenderComparisonSvg(targetId, rows, series, ariaLabel, axisLab
   const legend='<div class="analytics-legend">'+series.map(function(se){return '<span><i class="analytics-dot" style="background:'+se.color+'"></i>'+escapeHtml(se.label)+'</span>';}).join('')+'</div>';
   el.innerHTML='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+escapeHtml(ariaLabel)+'">'+grid+paths+labels+'</svg>'+legend+'<div class="analytics-quantity-note">'+escapeHtml(axisLabel||'Units')+'</div>';
 }
-function analyticsRenderStockTimeline(){
-  const now=new Date(), cur=analyticsMonthEventRecords(new Date(now.getFullYear(),now.getMonth(),1)), prev=analyticsMonthEventRecords(new Date(now.getFullYear(),now.getMonth()-1,1));
-  const currentStock=analyticsCurrentStock().units;
-  const curPurch=cur.purchases.reduce(function(s,e){return s+e.qty;},0),curSales=cur.sales.reduce(function(s,e){return s+e.qty;},0);
-  const prevPurch=prev.purchases.reduce(function(s,e){return s+e.qty;},0),prevSales=prev.sales.reduce(function(s,e){return s+e.qty;},0);
-  const curOpening=Math.max(0,currentStock-curPurch+curSales), prevEnd=Math.max(0,currentStock-curPurch+curSales), prevOpening=Math.max(0,prevEnd-prevPurch+prevSales);
-  const count=Math.max(cur.days,prev.days), rows=[];let c=curOpening,p=prevOpening;
-  for(let d=1;d<=count;d++){
-    if(d<=cur.days){const key=isoDateLocal(new Date(now.getFullYear(),now.getMonth(),d));cur.purchases.filter(function(e){return dateOnly(e.date)===key;}).forEach(function(e){c+=e.qty;});cur.sales.filter(function(e){return dateOnly(e.date)===key;}).forEach(function(e){c-=e.qty;});}
-    if(d<=prev.days){const pd=new Date(now.getFullYear(),now.getMonth()-1,d);const key=isoDateLocal(pd);prev.purchases.filter(function(e){return dateOnly(e.date)===key;}).forEach(function(e){p+=e.qty;});prev.sales.filter(function(e){return dateOnly(e.date)===key;}).forEach(function(e){p-=e.qty;});}
-    rows.push({label:String(d),current:d<=Math.min(cur.days,now.getDate())?Math.max(0,c):null,previous:d<=prev.days?Math.max(0,p):null});
-  }
-  // Current stock is the known endpoint; correct the current-month curve for rounding/legacy data.
-  const lastCur=rows.filter(function(r){return r.current!=null;}).slice(-1)[0];
-  if(lastCur && lastCur.current!==currentStock){const delta=currentStock-lastCur.current;rows.forEach(function(r){if(r.current!=null)r.current=Math.max(0,r.current+delta);});}
-  const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const s=document.getElementById('analyticsStockTimelineSub');if(s)s.textContent='Estimated end-of-day available units · '+monthNames[now.getMonth()]+' vs '+monthNames[(now.getMonth()+11)%12]+' · opening stock inferred from saved records';
-  analyticsRenderComparisonSvg('analyticsStockTimelineChart',rows,[{key:'current',label:monthNames[now.getMonth()]+' stock',color:'var(--pta)'},{key:'previous',label:monthNames[(now.getMonth()+11)%12]+' stock',color:'var(--nonpta)'}],'Monthly stock level comparison','Available mobile units');
-  const movement=[];
-  for(let d=1;d<=count;d++){
-    const curKey=d<=Math.min(cur.days,now.getDate())?isoDateLocal(new Date(now.getFullYear(),now.getMonth(),d)):'';
-    const prevKey=d<=prev.days?isoDateLocal(new Date(now.getFullYear(),now.getMonth()-1,d)):'';
-    const sumOn=function(arr,key){return key?arr.filter(function(e){return dateOnly(e.date)===key;}).reduce(function(a,e){return a+e.qty;},0):null;};
-    movement.push({label:String(d),curBought:sumOn(cur.purchases,curKey),curSold:sumOn(cur.sales,curKey),prevBought:sumOn(prev.purchases,prevKey),prevSold:sumOn(prev.sales,prevKey)});
-  }
-  const msub=document.getElementById('analyticsMovementTimelineSub');if(msub)msub.textContent='Daily units purchased and sold · '+monthNames[now.getMonth()]+' vs '+monthNames[(now.getMonth()+11)%12]+' · values are quantity, not rupees';
-  analyticsRenderComparisonSvg('analyticsMovementTimelineChart',movement,[{key:'curBought',label:monthNames[now.getMonth()]+' bought',color:'var(--nonpta)'},{key:'curSold',label:monthNames[now.getMonth()]+' sold',color:'var(--pta)'},{key:'prevBought',label:monthNames[(now.getMonth()+11)%12]+' bought',color:'currentColor'},{key:'prevSold',label:monthNames[(now.getMonth()+11)%12]+' sold',color:'#9b59b6'}],'Daily purchased versus sold mobile comparison','Mobiles per day');
+let analyticsTimelineMode='month';
+function analyticsTimelineEvents(){
+  return {purchases:analyticsPurchaseRecords(),sales:analyticsSaleRecords()};
 }
+function analyticsStockAtEndOfDate(key,currentStock,events){
+  const boughtAfter=events.purchases.reduce(function(sum,e){return sum+(dateOnly(e.date)>key?e.qty:0);},0);
+  const soldAfter=events.sales.reduce(function(sum,e){return sum+(dateOnly(e.date)>key?e.qty:0);},0);
+  return Math.max(0,currentStock-boughtAfter+soldAfter);
+}
+function analyticsRenderStockTimeline(){
+  const now=new Date(); now.setHours(12,0,0,0);
+  const todayKey=isoDateLocal(now), currentStock=analyticsCurrentStock().units;
+  const events=analyticsTimelineEvents();
+  const sumOn=function(arr,key){return key?arr.filter(function(e){return dateOnly(e.date)===key;}).reduce(function(a,e){return a+e.qty;},0):null;};
+  const rows=[], movement=[];
+  const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  if(analyticsTimelineMode==='28days'){
+    for(let i=0;i<28;i++){
+      const currentDate=new Date(now);currentDate.setDate(now.getDate()-(27-i));
+      const previousDate=new Date(currentDate);previousDate.setDate(currentDate.getDate()-28);
+      const currentKey=isoDateLocal(currentDate), previousKey=isoDateLocal(previousDate);
+      const label=String(currentDate.getDate()).padStart(2,'0')+'/'+String(currentDate.getMonth()+1).padStart(2,'0');
+      rows.push({label:label,current:analyticsStockAtEndOfDate(currentKey,currentStock,events),previous:analyticsStockAtEndOfDate(previousKey,currentStock,events)});
+      movement.push({label:label,curBought:sumOn(events.purchases,currentKey),curSold:sumOn(events.sales,currentKey),prevBought:sumOn(events.purchases,previousKey),prevSold:sumOn(events.sales,previousKey)});
+    }
+    const stockSub=document.getElementById('analyticsStockTimelineSub');if(stockSub)stockSub.textContent='Daily end-of-day stock · last 28 days vs the 28 days immediately before them';
+    const movementSub=document.getElementById('analyticsMovementTimelineSub');if(movementSub)movementSub.textContent='Daily mobiles purchased and sold · last 28 days vs previous 28 days';
+    analyticsRenderComparisonSvg('analyticsStockTimelineChart',rows,[{key:'current',label:'Last 28 days stock',color:'var(--pta)'},{key:'previous',label:'Previous 28 days stock',color:'var(--nonpta)'}],'Last 28 days stock level comparison','Available mobile units');
+    analyticsRenderComparisonSvg('analyticsMovementTimelineChart',movement,[{key:'curBought',label:'Last 28d bought',color:'var(--nonpta)'},{key:'curSold',label:'Last 28d sold',color:'var(--pta)'},{key:'prevBought',label:'Previous 28d bought',color:'currentColor'},{key:'prevSold',label:'Previous 28d sold',color:'#9b59b6'}],'Last 28 days purchased versus sold comparison','Mobiles per day');
+  }else{
+    const curStart=new Date(now.getFullYear(),now.getMonth(),1,12), prevStart=new Date(now.getFullYear(),now.getMonth()-1,1,12);
+    const curDays=now.getDate(), prevDays=new Date(now.getFullYear(),now.getMonth(),0).getDate();
+    const count=Math.min(curDays,prevDays);
+    for(let d=1;d<=count;d++){
+      const currentDate=new Date(curStart.getFullYear(),curStart.getMonth(),d,12), previousDate=new Date(prevStart.getFullYear(),prevStart.getMonth(),d,12);
+      const currentKey=isoDateLocal(currentDate), previousKey=isoDateLocal(previousDate);
+      rows.push({label:String(d),current:analyticsStockAtEndOfDate(currentKey,currentStock,events),previous:analyticsStockAtEndOfDate(previousKey,currentStock,events)});
+      movement.push({label:String(d),curBought:sumOn(events.purchases,currentKey),curSold:sumOn(events.sales,currentKey),prevBought:sumOn(events.purchases,previousKey),prevSold:sumOn(events.sales,previousKey)});
+    }
+    const currentMonth=monthNames[now.getMonth()], previousMonth=monthNames[(now.getMonth()+11)%12];
+    const stockSub=document.getElementById('analyticsStockTimelineSub');if(stockSub)stockSub.textContent='Har din ke end par estimated stock · '+currentMonth+' ki '+curDays+' tareekh tak vs '+previousMonth+' ki '+count+' tareekh tak';
+    const movementSub=document.getElementById('analyticsMovementTimelineSub');if(movementSub)movementSub.textContent='Daily purchased/sold units · '+currentMonth+' ki '+curDays+' tareekh tak vs '+previousMonth+' ki '+count+' tareekh tak';
+    analyticsRenderComparisonSvg('analyticsStockTimelineChart',rows,[{key:'current',label:currentMonth+' stock',color:'var(--pta)'},{key:'previous',label:previousMonth+' stock',color:'var(--nonpta)'}],'Same-date monthly stock level comparison','Available mobile units');
+    analyticsRenderComparisonSvg('analyticsMovementTimelineChart',movement,[{key:'curBought',label:currentMonth+' bought',color:'var(--nonpta)'},{key:'curSold',label:currentMonth+' sold',color:'var(--pta)'},{key:'prevBought',label:previousMonth+' bought',color:'currentColor'},{key:'prevSold',label:previousMonth+' sold',color:'#9b59b6'}],'Same-date monthly purchased versus sold comparison','Mobiles per day');
+  }
+  document.querySelectorAll('[data-timeline-mode]').forEach(function(btn){const active=btn.dataset.timelineMode===analyticsTimelineMode;btn.classList.toggle('active',active);btn.classList.toggle('btn-save',active);btn.classList.toggle('btn-cancel',!active);btn.setAttribute('aria-pressed',active?'true':'false');});
+}
+document.querySelectorAll('[data-timeline-mode]').forEach(function(btn){btn.addEventListener('click',function(){analyticsTimelineMode=btn.dataset.timelineMode==='28days'?'28days':'month';analyticsRenderStockTimeline();});});
+
 function renderAnalytics(){
   const custom=document.getElementById('analyticsCustomRange');
   if(analyticsMode==='custom') custom.classList.remove('hidden'); else custom.classList.add('hidden');
@@ -8963,6 +9016,30 @@ document.getElementById('btnAnalytics').onclick=function(){
   document.getElementById('analyticsOverlay').classList.remove('hidden');
   pushOverlayHistory('analyticsOverlay');
 };
+function updateEditSaleBalancePreview(source){
+  const receivedEl=document.getElementById('f-edit-received'), dueEl=document.getElementById('f-edit-due');
+  if(!receivedEl||!dueEl)return;
+  const qty=Math.max(1,Number(document.getElementById('f-qty').value||1));
+  const price=parsePrice((document.getElementById('f-sellprice').value||'').trim())||0;
+  const total=price*qty;
+  if(source==='price'){
+    if(receivedEl.dataset.manual!=='1'&&dueEl.dataset.manual!=='1'){receivedEl.value=String(total);dueEl.value='0';}
+    else if(receivedEl.dataset.manual==='1'){dueEl.value=String(Math.max(0,total-(Number(receivedEl.value)||0)));dueEl.dataset.manual='0';}
+    else {receivedEl.value=String(Math.max(0,total-(Number(dueEl.value)||0)));receivedEl.dataset.manual='0';}
+    return;
+  }
+  if(source==='received'){
+    receivedEl.dataset.manual='1';dueEl.dataset.manual='0';
+    dueEl.value=String(Math.max(0,total-(Number(receivedEl.value)||0)));
+  }else if(source==='due'){
+    dueEl.dataset.manual='1';receivedEl.dataset.manual='0';
+    receivedEl.value=String(Math.max(0,total-(Number(dueEl.value)||0)));
+  }
+}
+document.getElementById('f-edit-received').addEventListener('input',function(){updateEditSaleBalancePreview('received');});
+document.getElementById('f-edit-due').addEventListener('input',function(){updateEditSaleBalancePreview('due');});
+document.getElementById('f-sellprice').addEventListener('input',function(){updateEditSaleBalancePreview('price');});
+document.getElementById('f-qty').addEventListener('input',function(){updateEditSaleBalancePreview('price');});
 document.getElementById('btnAnalyticsClose').onclick=function(){requestOverlayClose();};
 document.getElementById('analyticsOverlay').onclick=function(e){if(e.target.id==='analyticsOverlay')requestOverlayClose();};
 document.querySelectorAll('[data-analytics-period]').forEach(function(btn){btn.onclick=function(){
