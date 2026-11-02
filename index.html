@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v93
-Version name: Selectable Analytics Graph Styles Across Charts
-Baseline: Index v88 (preserved; existing functionality and analytics retained)
-Last changed: 31 Oct 2026 • 01:45:54 PM PKT (Asia/Karachi)
-Change summary: Added selectable metrics and line/smooth-area/bar graph styles in Busiest Hour and Scoring Comparison; existing graphs remain defaults and all prior analytics retained.
+Current file version: Index v94
+Version name: Sold Entry Recalculation & Stock Timeline Analytics
+Baseline: User-provided Index v93 file (preserved; all existing functionality retained)
+Last changed: 02 Nov 2026 • 07:32:09 PM PKT (Asia/Karachi)
+Change summary: Made sold-entry sale details and sale expenses editable with recalculated sale totals, dues and profit; added month-by-month stock-level and purchased-vs-sold comparison line graphs.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 1. Read this block and the APP_INDEX_VERSION / APP_INDEX_UPDATED constants before editing.
@@ -18,6 +18,7 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
+- Index v94 — Sold Entry Recalculation & Stock Timeline Analytics — 02 Nov 2026 • 07:32:09 PM PKT. Added sold-entry edit recalculation and current-vs-previous month stock/purchase/sales line graphs; no unrelated features intentionally changed.
 - Index v90 — Busiest Hour Analytics Graph Fix — 31 Oct 2026 • 01:26:48 PM PKT. Corrected Busiest Business Hours analytics: embedded interactive blue/orange hourly line graph and Day (9 AM–9 PM)/Night (9 PM–9 AM) selector directly in that section; Day default. Existing analytics retained.
 - Index v89 — Busiest Hour Analytics Graph Fix — 31 Oct 2026 • 01:17:06 PM PKT. Added graph in Customer Time Analytics modal; this was not the requested Analytics section.
 - Index v88 — Analytics Performance Scoreboards — 31 Oct 2026 • 12:40:04 PM PKT. Added cricket-style weekday performance, hour-by-hour sales/purchases/profit details, daily-average comparisons, and pending-payment analytics; preserved existing analytics and business logic.
@@ -34,10 +35,10 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v90">
-<meta name="app-index-version-name" content="Busiest Hour Analytics Graph Fix">
-<meta name="app-index-updated" content="2026-10-31T13:26:48+05:00">
-<meta name="app-index-change-summary" content="Added selectable Busiest Hour metrics and line/area/bar graph styles; existing analytics retained.">
+<meta name="app-index-version" content="v94">
+<meta name="app-index-version-name" content="Sold Entry Recalculation & Stock Timeline Analytics">
+<meta name="app-index-updated" content="2026-11-02T19:32:09+05:00">
+<meta name="app-index-change-summary" content="Sold entry details and sale expenses are editable with recalculated totals, dues and profit; added monthly stock level and purchased-vs-sold comparison line graphs.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -2141,6 +2142,12 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="field date-time-field"><label>Sale Time</label><input id="f-saletime" type="time"></div>
       </div>
       <div class="field"><label>Payment method</label><input id="f-payment" placeholder="Cash / Easypaisa"></div>
+      <div id="saleEditExpenseWrap" class="field" style="margin-top:8px;">
+        <label>🎁 Sale ke waqt hua extra kharcha</label>
+        <div class="settings-note" style="margin:4px 0 7px;">Sale price ya expense edit karne par profit dobara calculate hoga.</div>
+        <div id="f-sale-expenses" class="phone-expense-list"></div>
+        <button type="button" class="add-extra-buy" id="addSaleEditExpenseBtn">+ Sale ka expense add karein</button>
+      </div>
     </div>
 
     <div class="more-toggle" id="moreToggle">+ Add more Details</div>
@@ -2427,6 +2434,14 @@ body.menu-open .app>header{z-index:1!important;}
     <div class="analytics-card">
       <div class="analytics-card-head"><div><div class="analytics-card-title">MODEL PERFORMANCE</div><div class="analytics-card-sub">Top models by sold quantity and realized profit</div></div></div>
       <div class="analytics-model-list" id="analyticsModelList"></div>
+    </div>
+    <div class="analytics-card">
+      <div class="analytics-card-head"><div><div class="analytics-card-title">📦 MONTHLY STOCK LEVEL</div><div class="analytics-card-sub" id="analyticsStockTimelineSub">Har din ke end par estimated available stock — current month vs last month</div></div></div>
+      <div class="analytics-month-wrap"><div class="analytics-month-chart" id="analyticsStockTimelineChart"></div></div>
+    </div>
+    <div class="analytics-card">
+      <div class="analytics-card-head"><div><div class="analytics-card-title">📈 PURCHASED vs SOLD UNITS</div><div class="analytics-card-sub" id="analyticsMovementTimelineSub">Daily purchased aur sold mobiles — current month vs last month</div></div></div>
+      <div class="analytics-month-wrap"><div class="analytics-month-chart" id="analyticsMovementTimelineChart"></div></div>
     </div>
     <div class="analytics-card">
       <div class="analytics-card-head"><div><div class="analytics-card-title" id="analyticsTrendTitle">BUSINESS TREND</div><div class="analytics-card-sub" id="analyticsMonthSub">Purchase, sale and net profit over time</div></div></div>
@@ -2953,13 +2968,15 @@ body.menu-open .app>header{z-index:1!important;}
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v91</div>
-          <div class="settings-note" style="margin-top:4px;">Selectable Analytics Graph Styles Across Charts</div>
-          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 31 Oct 2026 • 01:45:54 PM PKT</div>
-          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Busiest Hour and Scoring Comparison support selectable metrics and Line, Smooth Area, or Bar graph styles. Existing graphs remain default; other analytics retained.</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v94</div>
+          <div class="settings-note" style="margin-top:4px;">Sold Entry Recalculation & Stock Timeline Analytics</div>
+          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 02 Nov 2026 • 07:32:09 PM PKT</div>
+          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Sold entry details and sale expenses can be edited; sale totals, pending balance and profit recalculate. Added current-vs-previous month stock-level and purchased-vs-sold line graphs.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
+          <div style="font-weight:700;margin-top:9px;">Index v94 — 02 Nov 2026 • 07:32:09 PM PKT</div>
+          <div class="settings-note">Sold entry edits now recalculate sale totals, outstanding balance and profit; added monthly stock level and purchased-vs-sold line graph comparisons. Existing features retained.</div>
           <div style="font-weight:700;margin-top:9px;">Index v91 — 31 Oct 2026 • 01:45:54 PM PKT</div>
           <div class="settings-note">Fixed hourly graph axis so Day ends at 9 PM and Night ends at 9 AM; all 12 hourly intervals remain visible.</div>
           <div style="font-weight:700;margin-top:9px;">Index v89 — 31 Oct 2026 • 01:17:06 PM PKT</div>
@@ -3028,9 +3045,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v91';
-const APP_INDEX_VERSION_NAME = 'Selectable Analytics Graph Styles Across Charts';
-const APP_INDEX_UPDATED = '31 Oct 2026 • 01:52:59 PM PKT • Added selectable metrics and line/smooth-area/bar graph styles in Busiest Hour and Scoring Comparison; existing graphs retained.';
+const APP_INDEX_VERSION = 'v94';
+const APP_INDEX_VERSION_NAME = 'Sold Entry Recalculation & Stock Timeline Analytics';
+const APP_INDEX_UPDATED = '02 Nov 2026 • 07:32:09 PM PKT';
 
 let inventory = [];
 
@@ -7162,10 +7179,12 @@ function openEdit(id){
     document.getElementById('f-customer').value = e.customer || '';
     document.getElementById('f-customer-number').value = e.customerNumber || '';
     document.getElementById('f-payment').value = e.payment || '';
+    renderPhoneExpenseRows('f-sale-expenses', e.saleExpenses || []);
     document.getElementById('f-saledate').value = e.saleDate || todayISO();
     document.getElementById('f-saletime').value = e.saleTime || '';
   } else {
     document.getElementById('saleFieldsWrap').classList.remove('show');
+    renderPhoneExpenseRows('f-sale-expenses', []);
     document.getElementById('f-customer-number').value = '';
     document.getElementById('f-saledate').value = todayISO();
     document.getElementById('f-saletime').value = currentLocalTimeInput();
@@ -7285,7 +7304,8 @@ function saveEntry(){
     data.sold = true;
     const sellVal = document.getElementById('f-sellprice').value.trim();
     const buyVal = document.getElementById('f-buy-insale').value.trim() || document.getElementById('f-buy').value.trim();
-    if(sellVal !== '' && parsePrice(sellVal)===null){ alert('Sale price samajh nahi aaya. "45000" ya "45k" jese likhein.'); return; }
+    if(sellVal === ''){ alert('Sale price zaroori hai.'); document.getElementById('f-sellprice').focus(); return; }
+    if(parsePrice(sellVal)===null){ alert('Sale price samajh nahi aaya. "45000" ya "45k" jese likhein.'); return; }
     if(buyVal === ''){ alert('Buy price zaroori hai. "40000" ya "40k" jese likhein.'); document.getElementById('f-buy-insale').focus(); return; }
     const parsedSoldBuy = parsePrice(buyVal);
     if(parsedSoldBuy===null || parsedSoldBuy<=0){ alert('Buy price sahi likhein. "40000" ya "40k" jese likhein.'); document.getElementById('f-buy-insale').focus(); return; }
@@ -7309,6 +7329,7 @@ function saveEntry(){
 
   try{
     data.phoneExpenses = readPhoneExpenseRows('f-phone-expenses');
+    if(formState.isSold) data.saleExpenses = readPhoneExpenseRows('f-sale-expenses');
   }catch(err){
     alert(err.message || 'Phone expense check karein.');
     return;
@@ -7325,7 +7346,46 @@ function saveEntry(){
   if(editingId){
     const idx = candidate.findIndex(function(x){return x.id===editingId;});
     if(idx===-1){ alert('Ye entry ab nahi mili — shayad kahin aur se delete ho gayi.'); return; }
-    candidate[idx] = Object.assign({}, candidate[idx], data);
+    const oldEntry=candidate[idx];
+    if(oldEntry.sold && !isReturnedSale(oldEntry)){
+      const oldQty=Math.max(1,Number(oldEntry.quantity)||1), newQty=Math.max(1,Number(data.quantity)||1);
+      const salePrice=data.sell==null?0:Number(data.sell)||0;
+      const newSaleTotal=salePrice*newQty;
+      const oldSaleTotal=Number(oldEntry.saleTotal!=null?oldEntry.saleTotal:(Number(oldEntry.sell)||0)*oldQty);
+      const wasFullyPaid=Number(oldEntry.balanceDue!=null?oldEntry.balanceDue:Math.max(0,oldSaleTotal-Number(oldEntry.paymentReceived!=null?oldEntry.paymentReceived:oldSaleTotal)))<=0.01;
+      let received=Math.max(0,Number(oldEntry.paymentReceived!=null?oldEntry.paymentReceived:oldSaleTotal)||0);
+      let paymentHistory=Array.isArray(oldEntry.payments)?oldEntry.payments.map(function(p){return Object.assign({},p);}):[];
+      if(wasFullyPaid){
+        received=newSaleTotal;
+        // When a fully-paid sale's entered price was wrong, keep its recorded
+        // payment history total aligned with the corrected sale total.
+        const historyTotal=paymentHistory.reduce(function(sum,p){return sum+(Number(p.amount)||0);},0);
+        if(paymentHistory.length && Math.abs(historyTotal-oldSaleTotal)<0.01){
+          let delta=newSaleTotal-historyTotal;
+          for(let pi=paymentHistory.length-1;pi>=0&&Math.abs(delta)>0.01;pi--){
+            const before=Math.max(0,Number(paymentHistory[pi].amount)||0);
+            if(delta>=0){paymentHistory[pi].amount=before+delta;delta=0;}
+            else {const take=Math.min(before,-delta);paymentHistory[pi].amount=before-take;delta+=take;}
+          }
+        }
+      }else received=Math.min(received,newSaleTotal);
+      data.saleTotal=newSaleTotal;
+      data.paymentReceived=received;
+      data.balanceDue=Math.max(0,newSaleTotal-received);
+      data.payments=paymentHistory;
+      data.stockId=oldEntry.stockId;
+      data.saleAt=oldEntry.saleAt || oldEntry.lastUpdated || new Date().toISOString();
+      // If the sold quantity changes, keep the linked stock quantity in sync.
+      if(oldEntry.stockId!=null && newQty!==oldQty){
+        const stockIdx=candidate.findIndex(function(x,j){return j!==idx && String(x.id)===String(oldEntry.stockId) && !x.sold;});
+        if(stockIdx>=0){
+          const stock=candidate[stockIdx], adjusted=(Number(stock.quantity)||0)+(oldQty-newQty);
+          if(adjusted<0){alert('Is stock record mein itne extra mobiles available nahi. Sale quantity change karne se pehle stock check karein.');return;}
+          candidate[stockIdx]=Object.assign({},stock,{quantity:adjusted,lastUpdated:todayStr()});
+        }else if(newQty!==oldQty){alert('Is sale ka original stock record nahi mila; quantity change nahi ki gayi.');return;}
+      }
+    }
+    candidate[idx] = Object.assign({}, oldEntry, data);
   } else {
     const extraBlocks = Array.from(document.querySelectorAll('#extraBuyList .extra-piece-block'));
     const extras = [];
@@ -7580,6 +7640,12 @@ document.getElementById('addExtraBuyBtn').onclick = addExtraBuyRow;
 document.getElementById('addSalePhoneExpenseBtn').onclick = function(){ addPhoneExpenseRow('s-phone-expenses'); updateSellProfitPreview(); };
 document.getElementById('btnCancel').onclick = closeSheet;
 document.getElementById('btnSave').onclick = saveEntry;
+const addSaleEditExpenseBtn=document.getElementById('addSaleEditExpenseBtn');
+if(addSaleEditExpenseBtn) addSaleEditExpenseBtn.onclick=function(){
+  const host=document.getElementById('f-sale-expenses');
+  const rows=host?host.querySelectorAll('.phone-expense-row').length:0;
+  addPhoneExpenseRow('f-sale-expenses');
+};
 document.getElementById('overlay').onclick = function(e){ if(e.target.id==='overlay') closeSheet(); };
 document.getElementById('btnSellCancel').onclick = closeSellSheet;
 document.getElementById('btnSellConfirm').onclick = confirmSell;
@@ -8814,6 +8880,55 @@ function analyticsRenderSnapshot(range,curr){
 let analyticsMode='calendar';
 let analyticsCustomFrom='';
 let analyticsCustomTo='';
+function analyticsMonthEventRecords(monthDate){
+  const year=monthDate.getFullYear(), month=monthDate.getMonth();
+  const start=isoDateLocal(new Date(year,month,1)), end=isoDateLocal(new Date(year,month+1,0));
+  const purchases=analyticsPurchaseRecords().filter(function(e){const d=dateOnly(e.date);return d>=start&&d<=end;});
+  const sales=analyticsSaleRecords().filter(function(e){const d=dateOnly(e.date);return d>=start&&d<=end;});
+  return {start:start,end:end,purchases:purchases,sales:sales,days:new Date(year,month+1,0).getDate()};
+}
+function analyticsRenderComparisonSvg(targetId, rows, series, ariaLabel, axisLabel){
+  const el=document.getElementById(targetId); if(!el)return;
+  if(!rows.length){el.innerHTML='<div class="analytics-empty">Abhi graph ke liye data nahi hai.</div>';return;}
+  const w=560,h=245,pad={l:36,r:12,t:16,b:31},iw=w-pad.l-pad.r,ih=h-pad.t-pad.b;
+  const max=Math.max(1,...rows.flatMap(function(r){return series.map(function(s){return r[s.key]==null?0:(Number(r[s.key])||0);});}));
+  function x(i){return pad.l+(i/(Math.max(1,rows.length-1)))*iw;}
+  function y(v){return pad.t+(1-(Number(v)||0)/max)*ih;}
+  let grid='';for(let g=0;g<=4;g++){const val=max*g/4,yy=y(val);grid+='<line x1="'+pad.l+'" y1="'+yy+'" x2="'+(w-pad.r)+'" y2="'+yy+'" stroke="currentColor" opacity=".10"/><text x="'+(pad.l-6)+'" y="'+(yy+3)+'" text-anchor="end" font-size="9" fill="currentColor" opacity=".6">'+Math.round(val)+'</text>';}
+  const paths=series.map(function(se){let d='',started=false;const dots=rows.map(function(r,i){if(r[se.key]==null){started=false;return '';}d+=(started?'L':'M')+x(i).toFixed(1)+' '+y(r[se.key]).toFixed(1)+' ';started=true;return '<circle cx="'+x(i)+'" cy="'+y(r[se.key])+'" r="2.3" fill="'+se.color+'"/>';}).join('');return '<path d="'+d+'" fill="none" stroke="'+se.color+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+dots;}).join('');
+  const step=Math.max(1,Math.ceil(rows.length/8));
+  const labels=rows.map(function(r,i){if(i%step!==0&&i!==rows.length-1)return '';return '<text x="'+x(i)+'" y="'+(h-9)+'" text-anchor="middle" font-size="9" fill="currentColor" opacity=".65">'+r.label+'</text>';}).join('');
+  const legend='<div class="analytics-legend">'+series.map(function(se){return '<span><i class="analytics-dot" style="background:'+se.color+'"></i>'+escapeHtml(se.label)+'</span>';}).join('')+'</div>';
+  el.innerHTML='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+escapeHtml(ariaLabel)+'">'+grid+paths+labels+'</svg>'+legend+'<div class="analytics-quantity-note">'+escapeHtml(axisLabel||'Units')+'</div>';
+}
+function analyticsRenderStockTimeline(){
+  const now=new Date(), cur=analyticsMonthEventRecords(new Date(now.getFullYear(),now.getMonth(),1)), prev=analyticsMonthEventRecords(new Date(now.getFullYear(),now.getMonth()-1,1));
+  const currentStock=analyticsCurrentStock().units;
+  const curPurch=cur.purchases.reduce(function(s,e){return s+e.qty;},0),curSales=cur.sales.reduce(function(s,e){return s+e.qty;},0);
+  const prevPurch=prev.purchases.reduce(function(s,e){return s+e.qty;},0),prevSales=prev.sales.reduce(function(s,e){return s+e.qty;},0);
+  const curOpening=Math.max(0,currentStock-curPurch+curSales), prevEnd=Math.max(0,currentStock-curPurch+curSales), prevOpening=Math.max(0,prevEnd-prevPurch+prevSales);
+  const count=Math.max(cur.days,prev.days), rows=[];let c=curOpening,p=prevOpening;
+  for(let d=1;d<=count;d++){
+    if(d<=cur.days){const key=isoDateLocal(new Date(now.getFullYear(),now.getMonth(),d));cur.purchases.filter(function(e){return dateOnly(e.date)===key;}).forEach(function(e){c+=e.qty;});cur.sales.filter(function(e){return dateOnly(e.date)===key;}).forEach(function(e){c-=e.qty;});}
+    if(d<=prev.days){const pd=new Date(now.getFullYear(),now.getMonth()-1,d);const key=isoDateLocal(pd);prev.purchases.filter(function(e){return dateOnly(e.date)===key;}).forEach(function(e){p+=e.qty;});prev.sales.filter(function(e){return dateOnly(e.date)===key;}).forEach(function(e){p-=e.qty;});}
+    rows.push({label:String(d),current:d<=Math.min(cur.days,now.getDate())?Math.max(0,c):null,previous:d<=prev.days?Math.max(0,p):null});
+  }
+  // Current stock is the known endpoint; correct the current-month curve for rounding/legacy data.
+  const lastCur=rows.filter(function(r){return r.current!=null;}).slice(-1)[0];
+  if(lastCur && lastCur.current!==currentStock){const delta=currentStock-lastCur.current;rows.forEach(function(r){if(r.current!=null)r.current=Math.max(0,r.current+delta);});}
+  const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const s=document.getElementById('analyticsStockTimelineSub');if(s)s.textContent='Estimated end-of-day available units · '+monthNames[now.getMonth()]+' vs '+monthNames[(now.getMonth()+11)%12]+' · opening stock inferred from saved records';
+  analyticsRenderComparisonSvg('analyticsStockTimelineChart',rows,[{key:'current',label:monthNames[now.getMonth()]+' stock',color:'var(--pta)'},{key:'previous',label:monthNames[(now.getMonth()+11)%12]+' stock',color:'var(--nonpta)'}],'Monthly stock level comparison','Available mobile units');
+  const movement=[];
+  for(let d=1;d<=count;d++){
+    const curKey=d<=Math.min(cur.days,now.getDate())?isoDateLocal(new Date(now.getFullYear(),now.getMonth(),d)):'';
+    const prevKey=d<=prev.days?isoDateLocal(new Date(now.getFullYear(),now.getMonth()-1,d)):'';
+    const sumOn=function(arr,key){return key?arr.filter(function(e){return dateOnly(e.date)===key;}).reduce(function(a,e){return a+e.qty;},0):null;};
+    movement.push({label:String(d),curBought:sumOn(cur.purchases,curKey),curSold:sumOn(cur.sales,curKey),prevBought:sumOn(prev.purchases,prevKey),prevSold:sumOn(prev.sales,prevKey)});
+  }
+  const msub=document.getElementById('analyticsMovementTimelineSub');if(msub)msub.textContent='Daily units purchased and sold · '+monthNames[now.getMonth()]+' vs '+monthNames[(now.getMonth()+11)%12]+' · values are quantity, not rupees';
+  analyticsRenderComparisonSvg('analyticsMovementTimelineChart',movement,[{key:'curBought',label:monthNames[now.getMonth()]+' bought',color:'var(--nonpta)'},{key:'curSold',label:monthNames[now.getMonth()]+' sold',color:'var(--pta)'},{key:'prevBought',label:monthNames[(now.getMonth()+11)%12]+' bought',color:'currentColor'},{key:'prevSold',label:monthNames[(now.getMonth()+11)%12]+' sold',color:'#9b59b6'}],'Daily purchased versus sold mobile comparison','Mobiles per day');
+}
 function renderAnalytics(){
   const custom=document.getElementById('analyticsCustomRange');
   if(analyticsMode==='custom') custom.classList.remove('hidden'); else custom.classList.add('hidden');
@@ -8838,6 +8953,7 @@ function renderAnalytics(){
   analyticsRenderBrands(curr);
   analyticsRenderModels(curr);
   analyticsRenderMonths();
+  analyticsRenderStockTimeline();
 }
 document.getElementById('btnAnalytics').onclick=function(){
   closeMainMenu();
