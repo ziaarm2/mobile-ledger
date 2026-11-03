@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v111
-- Index v111 — Unified Close Button Design — 03 Nov 2026 • 02:38:53 PM PKT. Standardized close controls across sheets, overlays and dialogs with a consistent 44px rounded-square button, clear X glyph, subtle border/shadow and reliable tap target.
-- Index v110 — Expenses Bottom Actions & Safe Area — 03 Nov 2026 • 02:05:00 PM PKT. Fixed Expenses overlay on mobile: expense form and filtered expense list scroll independently while the bottom Close action remains pinned above the iPhone home indicator; added safe-area spacing to prevent content and controls being clipped. Preserved expense calculations and existing actions.
+Current file version: Index v107
+- Index v112 — Unified Close Buttons & Loading Fix — 03 Nov 2026 • 02:05:00 PM PKT. Fixed Expenses overlay on mobile: expense form and filtered expense list scroll independently while the bottom Close action remains pinned above the iPhone home indicator; added safe-area spacing to prevent content and controls being clipped. Preserved expense calculations and existing actions.
 Version name: Mandatory Signup Details
 Baseline: User-provided Index v93 file (preserved; all existing functionality retained)
-Last changed: 03 Nov 2026 • 02:38:53 PM PKT (Asia/Karachi)
+Last changed: 03 Nov 2026 • 11:12:00 AM PKT (Asia/Karachi)
 Change summary: Added specification tags and an expandable More details section to sold/returned mobile cards; retained existing sale/purchase data, calculations and workflows.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
@@ -41,10 +40,10 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v111">
-<meta name="app-index-version-name" content="Unified Close Button Design">
-<meta name="app-index-updated" content="2026-11-03T14:38:53+05:00">
-<meta name="app-index-change-summary" content="Purchase cards show only the exact Buy Time entered in the form; sold/returned cards show the exact Sale Time entered in the sale form. No inferred or generated fallback times.">
+<meta name="app-index-version" content="v107">
+<meta name="app-index-version-name" content="Exact Purchase & Sale Entry Times">
+<meta name="app-index-updated" content="2026-11-03T15:25:00+05:00">
+<meta name="app-index-change-summary" content="Standardized close buttons across app sheets and dialogs. Fixed the prior loading-screen regression by keeping the CSS in the document head rather than inside the report-generation JavaScript string. Preserved app data and calculations.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -1871,6 +1870,64 @@ body.menu-open .app>header{z-index:1!important;}
 .analytics-timeline-switch button{min-height:40px;border-radius:9px;font-size:11px;font-weight:800;}
 .analytics-timeline-switch button.active{background:var(--pta);color:var(--surface);border:1px solid var(--pta);}
 </style>
+
+<style id="v112-unified-close-button-design">
+/* v112: Unified, clearly tappable close buttons across app sheets and dialogs. */
+.safe-page-close, .menu-safe-close, .settings-close-x,
+.sheet-head > button.icon-btn[id$="Close"],
+button[id$="Close"].icon-btn,
+button[id="ppmClose"], button[id="manualDueFormClose"],
+button[id="mdpClose"], button[id="mdiClose"]{
+  width:44px !important;
+  height:44px !important;
+  min-width:44px !important;
+  min-height:44px !important;
+  box-sizing:border-box !important;
+  flex:0 0 44px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  padding:0 !important;
+  margin:0 !important;
+  border:1px solid #cbd3de !important;
+  border-radius:12px !important;
+  background:#f7f8fb !important;
+  color:#172033 !important;
+  font-family:Arial,sans-serif !important;
+  font-size:27px !important;
+  font-weight:400 !important;
+  line-height:1 !important;
+  text-align:center !important;
+  box-shadow:0 2px 8px rgba(15,23,42,.10) !important;
+  cursor:pointer !important;
+  -webkit-tap-highlight-color:transparent !important;
+  touch-action:manipulation !important;
+}
+.safe-page-close, .menu-safe-close{
+  position:absolute !important;
+  top:calc(10px + env(safe-area-inset-top,0px)) !important;
+  right:12px !important;
+  z-index:10020 !important;
+}
+.safe-page-close:active, .menu-safe-close:active, .settings-close-x:active,
+.sheet-head > button.icon-btn[id$="Close"]:active,
+button[id$="Close"].icon-btn:active,
+button[id="ppmClose"]:active, button[id="manualDueFormClose"]:active,
+button[id="mdpClose"]:active, button[id="mdiClose"]:active{
+  background:#e9edf4 !important;
+  transform:scale(.96) !important;
+}
+@media(hover:hover){
+  .safe-page-close:hover, .menu-safe-close:hover, .settings-close-x:hover,
+  .sheet-head > button.icon-btn[id$="Close"]:hover,
+  button[id$="Close"].icon-btn:hover,
+  button[id="ppmClose"]:hover, button[id="manualDueFormClose"]:hover,
+  button[id="mdpClose"]:hover, button[id="mdiClose"]:hover{
+    background:#eef1f6 !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="mobileCloudStartupGate" role="status" aria-live="polite"><div class="gate-card"><img class="gate-logo" src="icon-192.png" alt="Mobile Hisab" onerror="this.style.display='none'"><div class="gate-title">Mobile Hisab</div><div class="gate-by">by Z Mobile</div><div class="gate-status">Latest data verify kiya ja raha hai…</div><div class="gate-loader" aria-hidden="true"><i></i></div></div></div>
@@ -1974,7 +2031,7 @@ body.menu-open .app>header{z-index:1!important;}
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v111<span>Updated: 03 Nov 2026</span><span>02:38:53 PM PKT</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v107<span>Updated: 03 Nov 2026</span><span>12:05:00 PM PKT</span></div>
       </div>
     </div>
 
@@ -3035,10 +3092,10 @@ body.menu-open .app>header{z-index:1!important;}
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v111</div>
-          <div class="settings-note" style="margin-top:4px;">Unified Close Button Design</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v107</div>
+          <div class="settings-note" style="margin-top:4px;">Signup Shop Contact &amp; Location Details</div>
           <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 03 Nov 2026 • 11:12:00 AM PKT</div>
-          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Close buttons across app sheets, overlays and dialogs now share a consistent, larger rounded-square design with a clear X and easier tap target. Existing app functionality and data are unchanged.</div>
+          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Sold cards now show specification tags and an expandable More details section with purchase/sale timestamps, prices, profit, customer, payment, IMEI, seller, expenses and payment history. Existing calculations and stored data are unchanged.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
@@ -3124,9 +3181,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v111';
-const APP_INDEX_VERSION_NAME = 'Unified Close Button Design';
-const APP_INDEX_UPDATED = '03 Nov 2026 • 02:38:53 PM PKT';
+const APP_INDEX_VERSION = 'v112';
+const APP_INDEX_VERSION_NAME = 'Unified Close Buttons & Loading Fix';
+const APP_INDEX_UPDATED = '03 Nov 2026 • 03:25:00 PM PKT';
 
 let inventory = [];
 
@@ -8650,42 +8707,7 @@ document.getElementById('btnReportsPdf').onclick = function(){
     '.summary-table td{border:none;padding:4px 8px;}'+
     '.summary-table .net td{border-top:2px solid #333;font-weight:bold;font-size:14px;}'+
     '@media print{ body{padding:0;} }'+
-    '</style>
-<style id="v111-unified-close-button-design">
-/* v111: One consistent, clearly tappable close control across app sheets and dialogs. */
-.safe-page-close, .menu-safe-close, .settings-close-x,
-.sheet-head > button.icon-btn[id$="Close"],
-button[id$="Close"].icon-btn,
-button[id="ppmClose"], button[id="manualDueFormClose"],
-button[id="mdpClose"], button[id="mdiClose"]{
-  width:44px !important; height:44px !important; min-width:44px !important; min-height:44px !important;
-  box-sizing:border-box !important; flex:0 0 44px !important;
-  display:inline-flex !important; align-items:center !important; justify-content:center !important;
-  padding:0 !important; margin:0 !important;
-  border:1px solid #cbd3de !important; border-radius:12px !important;
-  background:#f7f8fb !important; color:#172033 !important;
-  font-family:Arial, sans-serif !important; font-size:27px !important;
-  font-weight:400 !important; line-height:1 !important; text-align:center !important;
-  box-shadow:0 2px 8px rgba(15,23,42,.10) !important;
-  cursor:pointer !important; -webkit-tap-highlight-color:transparent !important;
-  touch-action:manipulation !important;
-}
-.safe-page-close, .menu-safe-close { position:absolute !important; top:calc(10px + env(safe-area-inset-top,0px)) !important; right:12px !important; z-index:10020 !important; }
-.sheet-head > button.icon-btn[id$="Close"], button[id$="Close"].icon-btn { border-radius:12px !important; }
-.safe-page-close:active, .menu-safe-close:active, .settings-close-x:active,
-.sheet-head > button.icon-btn[id$="Close"]:active, button[id$="Close"].icon-btn:active,
-button[id="ppmClose"]:active, button[id="manualDueFormClose"]:active,
-button[id="mdpClose"]:active, button[id="mdiClose"]:active {
-  background:#e9edf4 !important; transform:scale(.96) !important;
-}
-@media (hover:hover){
-  .safe-page-close:hover, .menu-safe-close:hover, .settings-close-x:hover,
-  .sheet-head > button.icon-btn[id$="Close"]:hover, button[id$="Close"].icon-btn:hover,
-  button[id="ppmClose"]:hover, button[id="manualDueFormClose"]:hover,
-  button[id="mdpClose"]:hover, button[id="mdiClose"]:hover { background:#eef1f6 !important; }
-}
-</style>
-</head><body>'+
+    '</style></head><body>'+
     '<h1>Mobile Hisab — Sales Report</h1>'+
     '<div class="sub">'+rangeLabel+(brand!=='all'?(' • Brand: '+brand):'')+' • Banaya gaya: '+formatDateDisplay(todayISO())+'</div>'+
     '<h2>Sales</h2>'+
