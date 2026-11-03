@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v99
-Version name: Shop Save Feedback & Purchase Count
+Current file version: Index v100
+Version name: Minimal Corner Rent Status Badge
 Baseline: User-provided Index v93 file (preserved; all existing functionality retained)
-Last changed: 03 Nov 2026 • 09:18:10 AM PKT (Asia/Karachi)
-Change summary: Shop Profile save now gives Saving/Saved feedback and returns to Settings home; dashboard adds Purchased quantity beside Sold; Rent Paid/Unpaid badge remains compact. Purchase counts use purchase date and existing quantity; rent/profit calculations unchanged.
+Last changed: 03 Nov 2026 • 09:26:50 AM PKT (Asia/Karachi)
+Change summary: Repositioned Rent Paid/Unpaid into a tiny top-right corner badge on the Net Profit card; preserved Shop Profile save feedback, Purchased count, and all rent/profit calculations.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 1. Read this block and the APP_INDEX_VERSION / APP_INDEX_UPDATED constants before editing.
@@ -18,6 +18,7 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
+- Index v100 — Minimal Corner Rent Status Badge — 03 Nov 2026 • 09:26:50 AM PKT. Moved Rent Paid/Unpaid to a tiny top-right corner badge on the Net Profit card; no calculation changes.
 - Index v99 — Shop Save Feedback & Purchase Count — 03 Nov 2026 • 09:18:10 AM PKT. Added clear one-tap Shop Profile save feedback/return to Settings home and Purchased quantity beside Sold; rent badge retained.
 - Index v97 — Rent Defaults & Dashboard/Analytics Visibility — 03 Nov 2026 • 08:52:22 AM PKT. Shop Profile one-tap save; Analytics close-only sticky control; attractive Rent Paid/Rent Unpaid status badges.
 - Index v96 — Rent Management & Payment Recovery Details — 02 Nov 2026 • 10:40:00 PM PKT. Added rent settings/reminders, rent-paid expense creation, Before Rent/After Rent status labels, and payment recovery detail view.
@@ -37,10 +38,10 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v99">
-<meta name="app-index-version-name" content="Shop Save Feedback & Purchase Count">
-<meta name="app-index-updated" content="2026-11-03T09:18:10+05:00">
-<meta name="app-index-change-summary" content="Set Rent par as the default shop-type choice in signup and Settings; added rent status, due date, reminder state and Before Rent/After Rent profit context to Dashboard and Analytics without changing actual profit/expense calculations.">
+<meta name="app-index-version" content="v100">
+<meta name="app-index-version-name" content="Minimal Corner Rent Status Badge">
+<meta name="app-index-updated" content="2026-11-03T09:26:50+05:00">
+<meta name="app-index-change-summary" content="Moved Rent Paid/Unpaid into a tiny top-right corner status badge on the Net Profit card; kept profit value and calculations unchanged.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -1847,6 +1848,11 @@ body.menu-open .app>header{z-index:1!important;}
 .rent-status-badge{display:inline-flex;align-items:center;vertical-align:middle;white-space:nowrap;padding:3px 8px;border-radius:999px;font-size:10px;line-height:1.35;font-weight:850;letter-spacing:.15px;margin-left:4px;border:1px solid transparent;}
 .rent-status-badge.is-unpaid{color:#9f1239;background:#fff1f2;border-color:#fecdd3;}
 .rent-status-badge.is-paid{color:#166534;background:#dcfce7;border-color:#bbf7d0;}
+/* Minimal rent state marker: quiet, anchored in the profit card corner. */
+#stats .stat.rent-profit-stat{position:relative;padding-top:22px;}
+#stats .rent-corner-badge{position:absolute;top:5px;right:6px;z-index:1;display:inline-flex;align-items:center;white-space:nowrap;padding:2px 5px;border-radius:999px;font-size:8px;line-height:1.25;font-weight:850;letter-spacing:.35px;text-transform:uppercase;border:1px solid transparent;margin:0;}
+#stats .rent-corner-badge.is-unpaid{color:#9f1239;background:#fff5f6;border-color:#fbcbd3;}
+#stats .rent-corner-badge.is-paid{color:#166534;background:#f0fdf4;border-color:#bbf7d0;}
 .analytics-timeline-switch{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:9px 0 11px;}
 .analytics-timeline-switch button{min-height:40px;border-radius:9px;font-size:11px;font-weight:800;}
 .analytics-timeline-switch button.active{background:var(--pta);color:var(--surface);border:1px solid var(--pta);}
@@ -1954,7 +1960,7 @@ body.menu-open .app>header{z-index:1!important;}
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v89<span>Updated: 31 Oct 2026</span><span>01:17:06 PM PKT</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v100<span>Updated: 03 Nov 2026</span><span>09:26:50 AM PKT</span></div>
       </div>
     </div>
 
@@ -3000,13 +3006,15 @@ body.menu-open .app>header{z-index:1!important;}
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v99</div>
-          <div class="settings-note" style="margin-top:4px;">Shop Save Feedback & Purchase Count</div>
-          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 03 Nov 2026 • 09:18:10 AM PKT</div>
-          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Shop Profile now shows Saving/Saved feedback and returns to Settings home; Purchased quantity appears beside Sold; rent status badge remains compact. Rent/profit calculations unchanged.</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v100</div>
+          <div class="settings-note" style="margin-top:4px;">Minimal Corner Rent Status Badge</div>
+          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 03 Nov 2026 • 09:26:50 AM PKT</div>
+          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Rent Paid/Unpaid now appears as a tiny top-right badge on the Net Profit card. Shop save feedback, Purchased count and all calculations are unchanged.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
+          <div style="font-weight:700;margin-top:9px;">Index v100 — 03 Nov 2026 • 09:26:50 AM PKT</div>
+          <div class="settings-note">Moved Rent Paid/Unpaid into a tiny top-right corner badge on the Net Profit card; no profit calculation changes.</div>
           <div style="font-weight:700;margin-top:9px;">Index v99 — 03 Nov 2026 • 09:18:10 AM PKT</div>
           <div class="settings-note">Shop Profile now gives Saving/Saved feedback and returns to Settings home; Purchased count appears beside Sold.</div>
           <div style="font-weight:700;margin-top:9px;">Index v98 — 03 Nov 2026 • 09:05:36 AM PKT</div>
@@ -3085,9 +3093,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v99';
-const APP_INDEX_VERSION_NAME = 'Shop Save Feedback & Purchase Count';
-const APP_INDEX_UPDATED = '03 Nov 2026 • 09:18:10 AM PKT';
+const APP_INDEX_VERSION = 'v100';
+const APP_INDEX_VERSION_NAME = 'Minimal Corner Rent Status Badge';
+const APP_INDEX_UPDATED = '03 Nov 2026 • 09:26:50 AM PKT';
 
 let inventory = [];
 
@@ -5061,8 +5069,14 @@ function renderStats(){
     '<div class="stat"><div class="v num">'+soldUnits+'</div><div class="l">Sold</div></div>'+
     '<div class="stat"><div class="v num">'+purchasedUnits+'</div><div class="l">Purchased</div></div>'+
     '<div class="stat"><div class="v num" style="color:'+netProfitColor+'">'+displayProfitHtml(netProfit)+'</div><div class="l">Net Profit</div></div>';
-  const profitLabel=document.querySelector('#stats .stat:nth-child(5) .l');
-  if(profitLabel&&shopProfile.rentType==='rented'){const paid=(Array.isArray(shopProfile.rentPaidMonths)?shopProfile.rentPaidMonths:[]).includes(rentMonthKey(new Date()));profitLabel.innerHTML+=' <small class=\"rent-status-badge '+(paid?'is-paid':'is-unpaid')+'\">'+(paid?'Rent Paid':'Rent Unpaid')+'</small>'; }
+  const profitCard=document.querySelector('#stats .stat:nth-child(5)');
+  if(profitCard){
+    profitCard.classList.toggle('rent-profit-stat',shopProfile.rentType==='rented');
+    if(shopProfile.rentType==='rented'){
+      const paid=(Array.isArray(shopProfile.rentPaidMonths)?shopProfile.rentPaidMonths:[]).includes(rentMonthKey(new Date()));
+      profitCard.insertAdjacentHTML('afterbegin','<small data-rent-corner-badge class="rent-corner-badge '+(paid?'is-paid':'is-unpaid')+'">'+(paid?'Rent Paid':'Rent Unpaid')+'</small>');
+    }
+  }
   document.querySelectorAll('[data-stats-period]').forEach(function(btn){
     btn.onclick=function(){
       dashboardSettings.mode=this.dataset.statsPeriod;
@@ -8221,11 +8235,9 @@ function renderRentInfoSurfaces(){
   const paid=(Array.isArray(shopProfile.rentPaidMonths)?shopProfile.rentPaidMonths:[]).includes(rentMonthKey(new Date()));
   const dashboardProfitEl=document.querySelector('#stats .stat:nth-child(5)');
   if(dashboardProfitEl){
-    const label=dashboardProfitEl.querySelector('.l');
-    if(label){
-      const old=label.querySelector('[data-rent-profit-status]');if(old)old.remove();
-      if(shopProfile.rentType==='rented')label.insertAdjacentHTML('beforeend',' <small data-rent-profit-status class="rent-status-badge '+(paid?'is-paid':'is-unpaid')+'">'+(paid?'Rent Paid':'Rent Unpaid')+'</small>');
-    }
+    dashboardProfitEl.classList.toggle('rent-profit-stat',shopProfile.rentType==='rented');
+    const old=dashboardProfitEl.querySelector('[data-rent-corner-badge]');if(old)old.remove();
+    if(shopProfile.rentType==='rented')dashboardProfitEl.insertAdjacentHTML('afterbegin','<small data-rent-corner-badge class="rent-corner-badge '+(paid?'is-paid':'is-unpaid')+'">'+(paid?'Rent Paid':'Rent Unpaid')+'</small>');
   }
   const info=document.getElementById('analyticsRentInfo');
   if(info){const m=analyticsMetrics(analyticsDateRange('calendar'));const p=(m&&Number.isFinite(Number(m.netProfit)))?Number(m.netProfit):0;info.innerHTML=renderRentInfoCardHtml('analytics',p);}
