@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v107
+Current file version: Index v114
+- Index v114 — Combined Brand Filter & Stock Shop Labels — 03 Nov 2026 • 04:18:00 PM PKT. Hardened iOS brand-chip taps and ensured source shop labels resolve on Available/stock cards.
 - Index v113 — Combined Shop Labels & Brand Filter Fix — 03 Nov 2026 • 02:05:00 PM PKT. Fixed Expenses overlay on mobile: expense form and filtered expense list scroll independently while the bottom Close action remains pinned above the iPhone home indicator; added safe-area spacing to prevent content and controls being clipped. Preserved expense calculations and existing actions.
 Version name: Mandatory Signup Details
 Baseline: User-provided Index v93 file (preserved; all existing functionality retained)
@@ -40,10 +41,10 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v107">
-<meta name="app-index-version-name" content="Exact Purchase & Sale Entry Times">
-<meta name="app-index-updated" content="2026-11-03T15:55:00+05:00">
-<meta name="app-index-change-summary" content="All Shops Combined now shows the source shop name on stock and sold mobile cards, including grouped model cards. Brand chips use direct touch-safe handlers and immediately repaint the inventory while keeping status filters independent. Existing inventory, calculations and Firestore data remain unchanged.">
+<meta name="app-index-version" content="v114">
+<meta name="app-index-version-name" content="Combined Brand Filter & Stock Shop Labels">
+<meta name="app-index-updated" content="2026-11-03T16:18:00+05:00">
+<meta name="app-index-change-summary" content="Hardened iOS brand-chip interaction so selecting a brand immediately repaints the combined inventory without requiring a status-filter tap. Stock/Available cards now resolve and display their source shop name reliably. Existing inventory, calculations, Firestore schema and sync behavior remain unchanged.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -2056,7 +2057,7 @@ button[id="mdpClose"]:active, button[id="mdiClose"]:active{
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v107<span>Updated: 03 Nov 2026</span><span>12:05:00 PM PKT</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v114<span>Updated: 03 Nov 2026</span><span>04:18:00 PM PKT</span></div>
       </div>
     </div>
 
@@ -3117,14 +3118,14 @@ button[id="mdpClose"]:active, button[id="mdiClose"]:active{
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v107</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v114</div>
           <div class="settings-note" style="margin-top:4px;">Signup Shop Contact &amp; Location Details</div>
           <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 03 Nov 2026 • 11:12:00 AM PKT</div>
           <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Sold cards now show specification tags and an expandable More details section with purchase/sale timestamps, prices, profit, customer, payment, IMEI, seller, expenses and payment history. Existing calculations and stored data are unchanged.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
-          <div style="font-weight:700;margin-top:9px;">Index v107 — 03 Nov 2026 • 12:05:00 PM PKT</div>
+          <div style="font-weight:700;margin-top:9px;">Index v114 — 03 Nov 2026 • 04:18:00 PM PKT</div>
           <div class="settings-note">Added specification tags and expandable More details on sold/returned mobile cards, including purchase/sale timestamps, customer, payment, IMEI and payment history.</div>
           <div style="font-weight:700;margin-top:9px;">Index v104 — 03 Nov 2026 • 10:02:45 AM PKT</div>
           <div class="settings-note">Purchase and sale cards show only the user-entered Buy Time/Sale Time; no inferred timestamps.</div>
@@ -3206,9 +3207,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v112';
-const APP_INDEX_VERSION_NAME = 'Combined Shop Labels & Brand Filter Fix';
-const APP_INDEX_UPDATED = '03 Nov 2026 • 03:55:00 PM PKT';
+const APP_INDEX_VERSION = 'v114';
+const APP_INDEX_VERSION_NAME = 'Combined Brand Filter & Stock Shop Labels';
+const APP_INDEX_UPDATED = '03 Nov 2026 • 04:18:00 PM PKT';
 
 let inventory = [];
 
@@ -5286,17 +5287,27 @@ function renderBrandFilter(){
   // Update the combined brand state and repaint both chip rows + inventory
   // immediately; the status filter remains independent.
   wrap.querySelectorAll('button.chip[data-brand]').forEach(function(chip){
-    chip.onclick = function(ev){
-      ev.preventDefault();
-      ev.stopPropagation();
-      const val = chip.getAttribute('data-brand') || 'all';
-      const isCombined = (userRole==='admin' && adminViewActive && adminViewShopId==='__combined__');
-      if(isCombined) adminCombinedBrandFilter = val;
-      else currentBrandFilter = val;
-      renderBrandFilter();
-      renderList();
+    const applyBrandFilter=function(ev){
+      if(ev){ev.preventDefault();ev.stopPropagation();}
+      const val=chip.getAttribute('data-brand')||'all';
+      const isCombined=(userRole==='admin' && adminViewActive && adminViewShopId==='__combined__');
+      if(isCombined) adminCombinedBrandFilter=val;
+      else currentBrandFilter=val;
+      // Update selected chip immediately, then repaint the list on the next
+      // frame so iOS Safari has completed the touch/click event first.
+      wrap.querySelectorAll('button.chip[data-brand]').forEach(function(x){
+        const active=(x.getAttribute('data-brand')||'all')===val;
+        x.classList.toggle('active',active);
+        x.setAttribute('aria-pressed',active?'true':'false');
+      });
+      requestAnimationFrame(function(){renderList();});
       if(!isCombined) saveUIState();
     };
+    chip.onclick=applyBrandFilter;
+    chip.addEventListener('pointerup',function(ev){
+      if(ev.pointerType==='touch' || ev.pointerType==='pen') applyBrandFilter(ev);
+    },{passive:false});
+    chip.setAttribute('aria-pressed',(chip.getAttribute('data-brand')||'all')===activeBrandFilter?'true':'false');
   });
 }
 
@@ -5725,8 +5736,16 @@ function cardPhotoHtml(e){
 }
 
 function adminCombinedShopBadge(e){
-  if(!(userRole==='admin' && adminViewActive && adminViewShopId==='__combined__') || !e || !e._adminShopName) return '';
-  return '<div class="admin-combined-shop-label">🏪 Shop: '+adminEscape(e._adminShopName)+'</div>';
+  if(!(userRole==='admin' && adminViewActive && adminViewShopId==='__combined__') || !e) return '';
+  // Resolve the shop label from the copied row first, then from its source ID.
+  // This keeps the label visible on Available/stock cards even if an older
+  // cached row did not carry the denormalized _adminShopName property.
+  let shopName=String(e._adminShopName||'').trim();
+  if(!shopName && e._adminShopId && adminShopCache && adminShopCache[e._adminShopId]){
+    shopName=String(adminShopCache[e._adminShopId].shopName||'').trim();
+  }
+  if(!shopName) shopName='Shop name unavailable';
+  return '<div class="admin-combined-shop-label">🏪 '+adminEscape(shopName)+'</div>';
 }
 
 function renderSingleStockCard(e){
