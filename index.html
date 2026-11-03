@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v102
+Current file version: Index v103
+- Index v103 — Available Date Exact Time — 03 Nov 2026 • 09:54:00 AM PKT. Available stock cards now show the saved purchase/availability time alongside the date in 12-hour AM/PM format; older entries fall back to the timestamp embedded in their inventory ID when available. Existing purchase dates and business calculations are unchanged.
 Version name: Inline Rent Status Under Net Profit
 Baseline: User-provided Index v93 file (preserved; all existing functionality retained)
 Last changed: 03 Nov 2026 • 09:37:11 AM PKT (Asia/Karachi)
@@ -18,7 +19,7 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
-- Index v102 — Plain Rent Status & Due-Date Reminder Placement — 03 Nov 2026 • 10:05:00 AM PKT. Changed rent status to plain red/green text below Net Profit; renamed Rent date to Rent date; reminder now appears only on/after rent date between header and period filters.
+- Index v103 — Plain Rent Status & Due-Date Reminder Placement — 03 Nov 2026 • 10:05:00 AM PKT. Changed rent status to plain red/green text below Net Profit; renamed Rent date to Rent date; reminder now appears only on/after rent date between header and period filters.
 - Index v100 — Minimal Corner Rent Status Badge — 03 Nov 2026 • 09:26:50 AM PKT. Moved Rent Paid/Unpaid to a tiny top-right corner badge on the Net Profit card; no calculation changes.
 - Index v99 — Shop Save Feedback & Purchase Count — 03 Nov 2026 • 09:18:10 AM PKT. Added clear one-tap Shop Profile save feedback/return to Settings home and Purchased quantity beside Sold; rent badge retained.
 - Index v97 — Rent Defaults & Dashboard/Analytics Visibility — 03 Nov 2026 • 08:52:22 AM PKT. Shop Profile one-tap save; Analytics close-only sticky control; attractive Rent Paid/Rent Unpaid status badges.
@@ -39,7 +40,7 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v102">
+<meta name="app-index-version" content="v103">
 <meta name="app-index-version-name" content="Inline Rent Status Under Net Profit">
 <meta name="app-index-updated" content="2026-11-03T09:37:11+05:00">
 <meta name="app-index-change-summary" content="Moved the small Rent Paid/Unpaid badge directly below the Net Profit label; kept profit value and calculations unchanged.">
@@ -1961,7 +1962,7 @@ body.menu-open .app>header{z-index:1!important;}
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v102<span>Updated: 03 Nov 2026</span><span>10:05:00 AM PKT</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v103<span>Updated: 03 Nov 2026</span><span>10:05:00 AM PKT</span></div>
       </div>
     </div>
 
@@ -3007,14 +3008,14 @@ body.menu-open .app>header{z-index:1!important;}
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v102</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v103</div>
           <div class="settings-note" style="margin-top:4px;">Inline Rent Status Under Net Profit</div>
           <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 03 Nov 2026 • 09:37:11 AM PKT</div>
           <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Rent Paid/Unpaid now appears as a tiny top-right badge on the Net Profit card. Shop save feedback, Purchased count and all calculations are unchanged.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
-          <div style="font-weight:700;margin-top:9px;">Index v102 — 03 Nov 2026 • 10:05:00 AM PKT</div>
+          <div style="font-weight:700;margin-top:9px;">Index v103 — 03 Nov 2026 • 10:05:00 AM PKT</div>
           <div class="settings-note">Moved Rent Paid/Unpaid into a tiny small badge below the Net Profit label on the Net Profit card; no profit calculation changes.</div>
           <div style="font-weight:700;margin-top:9px;">Index v99 — 03 Nov 2026 • 09:18:10 AM PKT</div>
           <div class="settings-note">Shop Profile now gives Saving/Saved feedback and returns to Settings home; Purchased count appears beside Sold.</div>
@@ -3094,7 +3095,7 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v102';
+const APP_INDEX_VERSION = 'v103';
 const APP_INDEX_VERSION_NAME = 'Inline Rent Status Under Net Profit';
 const APP_INDEX_UPDATED = '03 Nov 2026 • 09:37:11 AM PKT';
 
@@ -4820,6 +4821,23 @@ function activityDateMatches(e, type, from, to){
   }
   return true;
 }
+function formatClockTimeDisplay(value){
+  if(!value) return '';
+  const m=String(value).match(/^(\d{1,2}):(\d{2})/);
+  if(!m) return String(value);
+  let h=Number(m[1]); const mins=m[2];
+  if(!Number.isFinite(h)||h<0||h>23) return String(value);
+  const suffix=h>=12?'PM':'AM'; h=h%12||12;
+  return h+':'+mins+' '+suffix;
+}
+function inventoryAvailableTime(e){
+  if(e && e.buyTime) return formatClockTimeDisplay(e.buyTime);
+  // Older entries may not have buyTime saved; use the timestamp embedded in
+  // the locally generated inventory ID when available.
+  const stamp=idTimestamp(e && e.id);
+  if(stamp){ const d=new Date(stamp); if(!isNaN(d.getTime())) return formatClockTimeDisplay(String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')); }
+  return '';
+}
 function activityDateHtml(e){
   if(isReturnedSale(e)){
     return '<div class="sale-meta">Sold: '+formatDateDisplay(dateOnly(e.saleDate))+' • Returned: '+formatDateTimeDisplay(e.returnedAt)+'</div>';
@@ -4827,7 +4845,9 @@ function activityDateHtml(e){
   if(e.sold){
     return '<div class="sale-meta">Sold: '+formatDateDisplay(dateOnly(e.saleDate))+'</div>';
   }
-  return '<div class="sale-meta">Available: '+formatDateDisplay(dateOnly(e.availableDate || e.buyDate))+'</div>';
+  const availableDate=formatDateDisplay(dateOnly(e.availableDate || e.buyDate));
+  const availableTime=inventoryAvailableTime(e);
+  return '<div class="sale-meta">Available: '+availableDate+(availableTime?' • '+availableTime:'')+'</div>';
 }
 function bindPhoneExpenseEnter(row){
   const amt=row.querySelector('.pe-amount');
