@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v98
-Version name: Rent Defaults & Dashboard/Analytics Visibility
+Current file version: Index v99
+Version name: Shop Save Feedback & Purchase Count
 Baseline: User-provided Index v93 file (preserved; all existing functionality retained)
-Last changed: 03 Nov 2026 • 08:52:22 AM PKT (Asia/Karachi)
-Change summary: Shop Profile saves immediately from its own button; Analytics keeps only the close button fixed while scrolling; rent status uses compact Rent Paid/Rent Unpaid badges. Existing rent and profit calculations remain unchanged.
+Last changed: 03 Nov 2026 • 09:18:10 AM PKT (Asia/Karachi)
+Change summary: Shop Profile save now gives Saving/Saved feedback and returns to Settings home; dashboard adds Purchased quantity beside Sold; Rent Paid/Unpaid badge remains compact. Purchase counts use purchase date and existing quantity; rent/profit calculations unchanged.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 1. Read this block and the APP_INDEX_VERSION / APP_INDEX_UPDATED constants before editing.
@@ -18,6 +18,7 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
+- Index v99 — Shop Save Feedback & Purchase Count — 03 Nov 2026 • 09:18:10 AM PKT. Added clear one-tap Shop Profile save feedback/return to Settings home and Purchased quantity beside Sold; rent badge retained.
 - Index v97 — Rent Defaults & Dashboard/Analytics Visibility — 03 Nov 2026 • 08:52:22 AM PKT. Shop Profile one-tap save; Analytics close-only sticky control; attractive Rent Paid/Rent Unpaid status badges.
 - Index v96 — Rent Management & Payment Recovery Details — 02 Nov 2026 • 10:40:00 PM PKT. Added rent settings/reminders, rent-paid expense creation, Before Rent/After Rent status labels, and payment recovery detail view.
 - Index v90 — Busiest Hour Analytics Graph Fix — 31 Oct 2026 • 01:26:48 PM PKT. Corrected Busiest Business Hours analytics: embedded interactive blue/orange hourly line graph and Day (9 AM–9 PM)/Night (9 PM–9 AM) selector directly in that section; Day default. Existing analytics retained.
@@ -36,9 +37,9 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v98">
-<meta name="app-index-version-name" content="Shop Profile One-Tap Save, Analytics Close-Only Sticky & Rent Status Badges">
-<meta name="app-index-updated" content="2026-11-03T09:05:36+05:00">
+<meta name="app-index-version" content="v99">
+<meta name="app-index-version-name" content="Shop Save Feedback & Purchase Count">
+<meta name="app-index-updated" content="2026-11-03T09:18:10+05:00">
 <meta name="app-index-change-summary" content="Set Rent par as the default shop-type choice in signup and Settings; added rent status, due date, reminder state and Before Rent/After Rent profit context to Dashboard and Analytics without changing actual profit/expense calculations.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
@@ -86,7 +87,7 @@ VERSION HISTORY (newest first):
 
   header{position:sticky;top:0;z-index:10;background:var(--bg);padding:16px 16px 12px;border-bottom:1px solid var(--border);}
   header h1{font-size:19px;font-weight:600;margin:0 0 12px;letter-spacing:-0.2px;}
-  .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch;}
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-items:stretch;}
   .stats-period-pill{grid-column:1 / -1;justify-content:flex-start;margin:0 0 0;}
   .stats-period-pill span{white-space:nowrap;}
   .stat{background:var(--surface);border-radius:var(--radius);padding:10px 8px;text-align:center;min-width:0;}
@@ -2999,14 +3000,18 @@ body.menu-open .app>header{z-index:1!important;}
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v98</div>
-          <div class="settings-note" style="margin-top:4px;">Rent Defaults & Dashboard/Analytics Visibility</div>
-          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 03 Nov 2026 • 08:52:22 AM PKT</div>
-          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Shop Profile now saves directly from Save Shop Profile; only Analytics close button stays fixed during scrolling; rent status appears as a compact Rent Paid/Rent Unpaid badge. Actual profit and expenses are not double-adjusted.</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v99</div>
+          <div class="settings-note" style="margin-top:4px;">Shop Save Feedback & Purchase Count</div>
+          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 03 Nov 2026 • 09:18:10 AM PKT</div>
+          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Shop Profile now shows Saving/Saved feedback and returns to Settings home; Purchased quantity appears beside Sold; rent status badge remains compact. Rent/profit calculations unchanged.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
+          <div style="font-weight:700;margin-top:9px;">Index v99 — 03 Nov 2026 • 09:18:10 AM PKT</div>
+          <div class="settings-note">Shop Profile now gives Saving/Saved feedback and returns to Settings home; Purchased count appears beside Sold.</div>
           <div style="font-weight:700;margin-top:9px;">Index v98 — 03 Nov 2026 • 09:05:36 AM PKT</div>
+          <div class="settings-note">Shop Profile one-tap save; Analytics close-only sticky control; compact Rent Paid/Rent Unpaid status badges.</div>
+          <div style="font-weight:700;margin-top:9px;">Index v97 — 03 Nov 2026 • 08:52:22 AM PKT</div>
           <div class="settings-note">Defaulted shop type to Rent par and surfaced rent status, due date, reminder state and Before Rent/After Rent context in Dashboard and Analytics.</div>
           <div style="font-weight:700;margin-top:9px;">Index v96 — 02 Nov 2026 • 10:40:00 PM PKT</div>
           <div class="settings-note">Added rent settings/reminders, rent-paid expense creation, Before Rent/After Rent status labels and recovered payment details.</div>
@@ -3080,9 +3085,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v98';
-const APP_INDEX_VERSION_NAME = 'Rent Defaults & Dashboard/Analytics Visibility';
-const APP_INDEX_UPDATED = '03 Nov 2026 • 08:52:22 AM PKT';
+const APP_INDEX_VERSION = 'v99';
+const APP_INDEX_VERSION_NAME = 'Shop Save Feedback & Purchase Count';
+const APP_INDEX_UPDATED = '03 Nov 2026 • 09:18:10 AM PKT';
 
 let inventory = [];
 
@@ -5030,6 +5035,8 @@ function renderStats(){
     return dashboardDateInRange(d,range);
   });
   const soldUnits=soldItems.reduce(function(s,e){return s+(Number(e.quantity)||0);},0);
+  const purchasedItems=inventory.filter(function(e){const d=e.buyDate||e.purchaseDate||e.availableDate||e.lastUpdated;return !!d&&dashboardDateInRange(d,range);});
+  const purchasedUnits=purchasedItems.reduce(function(s,e){return s+(Number(e.quantity)||0);},0);
   const grossProfit=soldItems.filter(function(e){return e.buy!=null&&e.sell!=null;}).reduce(function(s,e){return s+saleBaseProfit(e);},0);
   const netProfit=grossProfit-expensesForDashboardRange(range);
   const netProfitColor=netProfit>=0?'var(--pta)':'var(--danger)';
@@ -5052,8 +5059,9 @@ function renderStats(){
     '</div>'+
     '<div class="stat"><div class="v num">'+availableUnits+'</div><div class="l">Stock mein</div></div>'+
     '<div class="stat"><div class="v num">'+soldUnits+'</div><div class="l">Sold</div></div>'+
+    '<div class="stat"><div class="v num">'+purchasedUnits+'</div><div class="l">Purchased</div></div>'+
     '<div class="stat"><div class="v num" style="color:'+netProfitColor+'">'+displayProfitHtml(netProfit)+'</div><div class="l">Net Profit</div></div>';
-  const profitLabel=document.querySelector('#stats .stat:nth-child(4) .l');
+  const profitLabel=document.querySelector('#stats .stat:nth-child(5) .l');
   if(profitLabel&&shopProfile.rentType==='rented'){const paid=(Array.isArray(shopProfile.rentPaidMonths)?shopProfile.rentPaidMonths:[]).includes(rentMonthKey(new Date()));profitLabel.innerHTML+=' <small class=\"rent-status-badge '+(paid?'is-paid':'is-unpaid')+'\">'+(paid?'Rent Paid':'Rent Unpaid')+'</small>'; }
   document.querySelectorAll('[data-stats-period]').forEach(function(btn){
     btn.onclick=function(){
@@ -8211,7 +8219,7 @@ function renderRentInfoCardHtml(context, profitBeforeRent){
 }
 function renderRentInfoSurfaces(){
   const paid=(Array.isArray(shopProfile.rentPaidMonths)?shopProfile.rentPaidMonths:[]).includes(rentMonthKey(new Date()));
-  const dashboardProfitEl=document.querySelector('#stats .stat:nth-child(4)');
+  const dashboardProfitEl=document.querySelector('#stats .stat:nth-child(5)');
   if(dashboardProfitEl){
     const label=dashboardProfitEl.querySelector('.l');
     if(label){
@@ -10343,16 +10351,29 @@ document.getElementById('settingsBackBtn').onclick=function(){openSettingsPage('
 document.getElementById('settingsOpenAccountBtn').onclick=function(){ requestOverlayClose(); setTimeout(function(){ document.getElementById('btnAccount').click(); },120); };
 document.getElementById('settingsSaveShopProfile').onclick=function(){
   if(isAdminShopView()){ alert('Admin Shop view read-only hai.'); return; }
+  const btn=this,originalText=btn.textContent;
+  if(btn.dataset.saving==='1')return;
   const shopName=document.getElementById('settings-shopname').value.trim();
-  if(!shopName){ alert('Shop Name likhein.'); return; }
+  if(!shopName){ alert('Shop Name likhein.'); document.getElementById('settings-shopname').focus(); return; }
   const rentType=document.getElementById('settings-rent-type').value;
   const monthlyRent=Math.max(0,Number(document.getElementById('settings-rent-amount').value)||0);
   const rentDueDay=Math.min(31,Math.max(1,Number(document.getElementById('settings-rent-day').value)||1));
-  shopProfile=Object.assign({},shopProfile,{shopName:shopName,ownerName:document.getElementById('settings-ownername').value.trim(),shopPhone:document.getElementById('settings-shopphone').value.trim(),rentType:rentType,monthlyRent:monthlyRent,rentDueDay:rentDueDay,rentReminderEnabled:document.getElementById('settings-rent-reminder').value!=='off',rentPaidMonths:Array.isArray(shopProfile.rentPaidMonths)?shopProfile.rentPaidMonths:[]});
-  try{localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY),JSON.stringify(shopProfile));}catch(e){alert('Shop profile save nahi ho saka.');return;}
+  const previous=JSON.stringify(shopProfile||{});
+  const nextProfile=Object.assign({},shopProfile,{shopName:shopName,ownerName:document.getElementById('settings-ownername').value.trim(),shopPhone:document.getElementById('settings-shopphone').value.trim(),rentType:rentType,monthlyRent:monthlyRent,rentDueDay:rentDueDay,rentReminderEnabled:document.getElementById('settings-rent-reminder').value!=='off',rentPaidMonths:Array.isArray(shopProfile.rentPaidMonths)?shopProfile.rentPaidMonths:[]});
+  btn.dataset.saving='1';btn.disabled=true;btn.textContent='Saving…';btn.style.opacity='.78';btn.style.transform='scale(.985)';
+  try{
+    localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY),JSON.stringify(nextProfile));
+    shopProfile=nextProfile;
+  }catch(e){btn.dataset.saving='0';btn.disabled=false;btn.textContent=originalText;btn.style.opacity='';btn.style.transform='';alert('Shop profile save nahi ho saka.');return;}
   schedulePush();
-  if(settingsDraftActive){settingsDraftBaseline={app:appStateSnapshot(),shop:JSON.stringify(shopProfile||{})};settingsDraftDirty=false;settingsDraftRefreshBar();}
-  updateAccountUI(); renderSettingsHomeSummaries(); renderRentReminder(); renderBeforeAfterRentStatus(); render(); showToast('✓ Shop profile save ho gaya.');
+  settingsDraftBaseline={app:appStateSnapshot(),shop:JSON.stringify(shopProfile||{})};settingsDraftDirty=false;
+  updateAccountUI();renderSettingsHomeSummaries();renderRentReminder();renderBeforeAfterRentStatus();renderStats();render();
+  btn.textContent='Saved ✓';btn.style.opacity='1';btn.style.transform='scale(1)';
+  showToast('✓ Shop profile save ho gaya.');
+  setTimeout(function(){
+    btn.dataset.saving='0';btn.disabled=false;btn.textContent=originalText;btn.style.opacity='';btn.style.transform='';
+    settingsDraftEndDiscard();openSettingsPage('home');
+  },450);
 };
 document.getElementById('settings-rent-type').addEventListener('change',function(){document.getElementById('settings-rent-fields').style.display=this.value==='rented'?'block':'none';});
 function rentMonthKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
