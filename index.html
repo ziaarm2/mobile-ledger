@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v114
+Current file version: Index v115
+- Index v115 — Storage Quota & History Safety Fix — 03 Nov 2026 • 06:03:06 PM PKT. Removed duplicate full-app Undo/Redo snapshots from localStorage; current-session Undo/Redo stays in memory, durable Activity History snapshots use IndexedDB, and the large localStorage fallback copy is no longer created. Added specific local-save failure diagnostics. Existing inventory format, Firebase/Firestore sync, calculations and UI are preserved.
 - Index v114 — Combined Brand Filter & Stock Shop Labels — 03 Nov 2026 • 04:18:00 PM PKT. Hardened iOS brand-chip taps and ensured source shop labels resolve on Available/stock cards.
 - Index v113 — Combined Shop Labels & Brand Filter Fix — 03 Nov 2026 • 02:05:00 PM PKT. Fixed Expenses overlay on mobile: expense form and filtered expense list scroll independently while the bottom Close action remains pinned above the iPhone home indicator; added safe-area spacing to prevent content and controls being clipped. Preserved expense calculations and existing actions.
 Version name: Mandatory Signup Details
@@ -41,10 +42,10 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v114">
-<meta name="app-index-version-name" content="Combined Brand Filter & Stock Shop Labels">
-<meta name="app-index-updated" content="2026-11-03T16:18:00+05:00">
-<meta name="app-index-change-summary" content="Hardened iOS brand-chip interaction so selecting a brand immediately repaints the combined inventory without requiring a status-filter tap. Stock/Available cards now resolve and display their source shop name reliably. Existing inventory, calculations, Firestore schema and sync behavior remain unchanged.">
+<meta name="app-index-version" content="v115">
+<meta name="app-index-version-name" content="Storage Quota & History Safety Fix">
+<meta name="app-index-updated" content="2026-11-03T18:03:06+05:00">
+<meta name="app-index-change-summary" content="Reduced localStorage quota pressure by keeping Undo/Redo snapshots in memory instead of persisting duplicate full-app snapshots, relying on the existing IndexedDB Activity History for durable snapshots, and removing duplicate localStorage fallback copies. Added precise local-save diagnostics. Existing inventory format, Firebase/Firestore sync, calculations and UI are preserved.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -2057,7 +2058,7 @@ button[id="mdpClose"]:active, button[id="mdiClose"]:active{
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v114<span>Updated: 03 Nov 2026</span><span>04:18:00 PM PKT</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v115<span>Updated: 03 Nov 2026</span><span>06:03:06 PM PKT</span></div>
       </div>
     </div>
 
@@ -3118,15 +3119,17 @@ button[id="mdpClose"]:active, button[id="mdiClose"]:active{
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v114</div>
-          <div class="settings-note" style="margin-top:4px;">Signup Shop Contact &amp; Location Details</div>
-          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 03 Nov 2026 • 11:12:00 AM PKT</div>
-          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Sold cards now show specification tags and an expandable More details section with purchase/sale timestamps, prices, profit, customer, payment, IMEI, seller, expenses and payment history. Existing calculations and stored data are unchanged.</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v115</div>
+          <div class="settings-note" style="margin-top:4px;">Storage Quota &amp; History Safety Fix</div>
+          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 03 Nov 2026 • 06:03:06 PM PKT</div>
+          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Reduced localStorage quota pressure by moving duplicate Undo/Redo snapshot persistence out of localStorage. Current-session Undo/Redo remains available; durable Activity History snapshots continue using IndexedDB. Added clearer save-failure diagnostics. Inventory format, Firebase/Firestore sync, calculations and existing UI are unchanged.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
+          <div style="font-weight:700;margin-top:9px;">Index v115 — 03 Nov 2026 • 06:03:06 PM PKT</div>
+          <div class="settings-note">Reduced localStorage quota pressure: Undo/Redo snapshots are no longer duplicated in localStorage; durable Activity History snapshots use IndexedDB. Added specific save-failure diagnostics. Inventory and cloud sync format unchanged.</div>
           <div style="font-weight:700;margin-top:9px;">Index v114 — 03 Nov 2026 • 04:18:00 PM PKT</div>
-          <div class="settings-note">Added specification tags and expandable More details on sold/returned mobile cards, including purchase/sale timestamps, customer, payment, IMEI and payment history.</div>
+          <div class="settings-note">Hardened iOS brand-chip taps and ensured source shop labels resolve on Available/stock cards.</div>
           <div style="font-weight:700;margin-top:9px;">Index v104 — 03 Nov 2026 • 10:02:45 AM PKT</div>
           <div class="settings-note">Purchase and sale cards show only the user-entered Buy Time/Sale Time; no inferred timestamps.</div>
           <div style="font-weight:700;margin-top:9px;">Index v99 — 03 Nov 2026 • 09:18:10 AM PKT</div>
@@ -3207,9 +3210,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v114';
-const APP_INDEX_VERSION_NAME = 'Combined Brand Filter & Stock Shop Labels';
-const APP_INDEX_UPDATED = '03 Nov 2026 • 04:18:00 PM PKT';
+const APP_INDEX_VERSION = 'v115';
+const APP_INDEX_VERSION_NAME = 'Storage Quota & History Safety Fix';
+const APP_INDEX_UPDATED = '03 Nov 2026 • 06:03:06 PM PKT';
 
 let inventory = [];
 
@@ -4330,8 +4333,10 @@ async function loadInventory(){
 // read-back confirms it) do we swap it in as the real inventory. This is the
 // core guarantee: if this returns false, nothing on disk or in memory changed,
 // so the form still has the person's typed data and nothing is silently lost.
+let lastInventoryStorageFailure = '';
 function tryCommitInventory(candidateInventory){
   if(isAdminShopView()) return false;
+  lastInventoryStorageFailure = '';
   candidateInventory=prepareRecordsForCommit(candidateInventory,inventory,'e','inventory');
   if(!historyApplying && JSON.stringify(candidateInventory)!==JSON.stringify(inventory)){
     activityBeforeFromCurrentMutation();
@@ -4348,14 +4353,17 @@ function tryCommitInventory(candidateInventory){
     // silently ignore writes in private/incognito mode instead of throwing).
     const check = localStorage.getItem(shopStorageKey(LS_INVENTORY_KEY));
     if(check !== json){
+      lastInventoryStorageFailure='Browser ne write ko confirm nahi kiya (storage blocked ya quota limit).';
       pendingTombstonesAfterCommit=null;return false;
     }
   }catch(e){
+    lastInventoryStorageFailure=(e && (e.name||e.message)) ? String(e.name||e.message) : 'Unknown storage error';
     pendingTombstonesAfterCommit=null;console.error('Storage error', e);
     return false;
   }
   if(pendingTombstonesAfterCommit){saveSyncTombstones(pendingTombstonesAfterCommit);pendingTombstonesAfterCommit=null;}
   inventory = candidateInventory;
+  lastInventoryStorageFailure = '';
   schedulePush();
   return true;
 }
@@ -4372,7 +4380,10 @@ async function saveInventory(){
   schedulePush();
 }
 
-const SAVE_FAIL_MSG = 'Save nahi ho saka — phone ki storage full ho sakti hai ya browser ki private/incognito mode mein hain. Aap ka type kiya hua data abhi bhi is form mein mojood hai, kahin gaya nahi. Purani "Sold" entries delete karke ya kam photos rakh kar dobara "Save" dabayein.';
+function getSaveFailMessage(){
+  const detail=lastInventoryStorageFailure ? ('\n\nTechnical detail: '+lastInventoryStorageFailure) : '';
+  return 'Save nahi ho saka. Aap ka type kiya hua data form mein mojood hai — form band na karein.\n\nChrome ki site storage write fail hui hai; phone ki khaali physical storage is se alag hoti hai. Chrome mein normal mode use karein, app ka data/cookies clear na karein, aur dobara try karne se pehle internet/sync status check karein.'+detail;
+}
 
 function showSaveError(bannerId, msg){
   const el = document.getElementById(bannerId);
@@ -6167,12 +6178,12 @@ function deleteSelectedEntries(){
   const ids=new Set(entries.map(function(e){return String(e.id);}));
   const removed=inventory.filter(function(e){return ids.has(String(e.id));});
   const candidate=inventory.filter(function(e){return !ids.has(String(e.id));});
-  if(!tryCommitInventory(candidate)){alert(SAVE_FAIL_MSG);return;}
+  if(!tryCommitInventory(candidate)){alert(getSaveFailMessage());return;}
   setShareSelectMode(false);
   render();
   showUndoToast(entries.length+' mobile delete ho gaye.',function(){
     if(tryCommitInventory(inventory.concat(removed))){render();showToast('✓ Wapis aa gaye');}
-    else alert(SAVE_FAIL_MSG);
+    else alert(getSaveFailMessage());
   });
   backupAfterChange();
 }
@@ -6430,7 +6441,7 @@ function deleteEntry(id){
   const candidate = inventory.slice(0,idx).concat(inventory.slice(idx+1));
   const ok = tryCommitInventory(candidate);
   if(!ok){
-    alert(SAVE_FAIL_MSG);
+    alert(getSaveFailMessage());
     return;
   }
   // Explicit deletion tombstone prevents stale cloud snapshots from resurrecting this ID.
@@ -6453,7 +6464,7 @@ function deleteEntry(id){
       render();
       showToast('✓ Wapis aa gayi');
     } else {
-      alert(SAVE_FAIL_MSG);
+      alert(getSaveFailMessage());
     }
   });
   backupAfterChange();
@@ -6476,7 +6487,7 @@ function splitEntry(id){
   }
   const ok = tryCommitInventory(candidate);
   if(!ok){
-    alert(SAVE_FAIL_MSG);
+    alert(getSaveFailMessage());
     return;
   }
   render();
@@ -7719,7 +7730,7 @@ function saveEntry(){
   if(imeiError){ showSaveError('saveErrorBanner','⚠️ '+imeiError); return; }
   const ok = tryCommitInventory(candidate);
   if(!ok){
-    showSaveError('saveErrorBanner', SAVE_FAIL_MSG);
+    showSaveError('saveErrorBanner', getSaveFailMessage());
     return; // sheet stays open, form data untouched, nothing was lost
   }
 
@@ -7880,7 +7891,7 @@ function confirmSell(){
 
   const ok = tryCommitInventory(finalCandidate);
   if(!ok){
-    showSaveError('sellErrorBanner', SAVE_FAIL_MSG);
+    showSaveError('sellErrorBanner', getSaveFailMessage());
     return; // sell sheet stays open, nothing was changed, retry after freeing space
   }
 
@@ -7954,21 +7965,27 @@ function appStateSnapshot(){
   return {inventory:JSON.stringify(inventory),expenses:JSON.stringify(expenses),manualDues:JSON.stringify(manualDues||[]),manualDuePayments:JSON.stringify(manualDuePayments||[]),customOptionData:JSON.stringify(customOptionData),cardDisplaySettings:JSON.stringify(cardDisplaySettings),customModels:JSON.stringify(customModels||{}),dashboardSettings:JSON.stringify(dashboardSettings||{}),rateBook:JSON.stringify(rateBook||[]),waTemplate:localStorage.getItem(shopStorageKey(LS_WA_TEMPLATE_KEY))||'',shopProfile:JSON.stringify(shopProfile||{}),uiScaleMode:uiScaleMode||'normal',dashboardSettings:JSON.stringify(dashboardSettings||{})};
 }
 function loadPersistentHistory(){
-  try{undoStack=JSON.parse(localStorage.getItem(shopStorageKey(LS_UNDO_STACK))||'[]')||[];}catch(e){undoStack=[];}
-  try{redoStack=JSON.parse(localStorage.getItem(shopStorageKey(LS_REDO_STACK))||'[]')||[];}catch(e){redoStack=[];}
-  if(!Array.isArray(undoStack))undoStack=[]; if(!Array.isArray(redoStack))redoStack=[];
+  // v115: Full app snapshots are intentionally NOT reloaded from localStorage.
+  // Activity History keeps durable before/after snapshots in IndexedDB; the
+  // compact header Undo/Redo stack is session-local to avoid quota exhaustion.
+  undoStack=[]; redoStack=[];
+  // Once IndexedDB is available, discard only the two obsolete duplicate
+  // stack keys for this shop; durable Activity History remains untouched.
+  openActivityStateDB().then(function(){
+    try{localStorage.removeItem(shopStorageKey(LS_UNDO_STACK));localStorage.removeItem(shopStorageKey(LS_REDO_STACK));}catch(e){}
+  }).catch(function(err){console.warn('Undo history DB unavailable; legacy history keys retained',err);});
   updateHistoryButtons();
 }
 function persistHistory(){
-  try{localStorage.setItem(shopStorageKey(LS_UNDO_STACK),JSON.stringify(undoStack.slice(-60)));}catch(e){}
-  try{localStorage.setItem(shopStorageKey(LS_REDO_STACK),JSON.stringify(redoStack.slice(-60)));}catch(e){}
+  // Intentionally memory-only. Do not serialize full inventory/photo snapshots
+  // into localStorage; durable Activity History is already stored in IndexedDB.
 }
 function pushUndoState(label,state){
   if(historyApplying||!state)return;
   undoStack.push({label:label||'Change',state:state,time:Date.now()});
-  if(undoStack.length>60)undoStack.shift();
+  if(undoStack.length>5)undoStack.shift();
   redoStack=[];
-  persistHistory(); updateHistoryButtons();
+  updateHistoryButtons();
 }
 function pushUndoHistory(label){
   if(historyApplying)return;
@@ -8126,12 +8143,9 @@ function logActivity(type,title,detail){
     localStorage.setItem(shopStorageKey(LS_ACTIVITY_KEY),JSON.stringify(arr.slice(0,300)));
   }catch(e){}
   if(before&&after){
-    // Keep a small local fallback as well. This makes Activity History usable
-    // even on browsers where IndexedDB is blocked or temporarily unavailable.
-    try{
-      const fallback=JSON.stringify({id:id,before:before,after:after,savedAt:Date.now()});
-      if(fallback.length<=2500000) localStorage.setItem(activityStateFallbackKey(id),fallback);
-    }catch(e){}
+    // v115: Keep full before/after snapshots in IndexedDB only. Duplicating
+    // these potentially large payloads in localStorage consumed the same quota
+    // needed by inventory saves on some Chrome installations.
     putActivityState(id,before,after).then(function(){
       try{const q=JSON.parse(localStorage.getItem(shopStorageKey(LS_CLOUD_HISTORY_QUEUE_KEY))||'[]')||[];q.push({id:id,time:new Date().toISOString(),type:type||'info',title:title||'',detail:detail||''});localStorage.setItem(shopStorageKey(LS_CLOUD_HISTORY_QUEUE_KEY),JSON.stringify(q.slice(-1000)));}catch(e){}
       flushCloudHistoryQueue();
@@ -8180,7 +8194,7 @@ function renderRecycleBin(){
     const exists=inventory.some(function(x){return String(x.id)===String(record.id);});
     if(exists){alert('Ye entry pehle se stock mein mojood hai. Duplicate restore nahi ki gayi.');return;}
     const candidate=inventory.concat([JSON.parse(JSON.stringify(record))]);
-    if(!tryCommitInventory(candidate)){alert(SAVE_FAIL_MSG);return;}
+    if(!tryCommitInventory(candidate)){alert(getSaveFailMessage());return;}
     // Remove only this recycle-bin item after successful restore.
     activity.recycleRecord=null;activity.restoredAt=new Date().toISOString();activity.restored=true;
     try{localStorage.setItem(shopStorageKey(LS_ACTIVITY_KEY),JSON.stringify(all));}catch(e){}
@@ -9473,7 +9487,7 @@ function deleteExpenseEntry(id){
   pushUndoHistory('Expense delete');
   const candidate = expenses.filter(function(x){ return x.id!==id; });
   const ok = tryCommitExpenses(candidate);
-  if(!ok){ if(undoStack.length) undoStack.pop(); updateHistoryButtons(); alert(SAVE_FAIL_MSG); return; }
+  if(!ok){ if(undoStack.length) undoStack.pop(); updateHistoryButtons(); alert(getSaveFailMessage()); return; }
   logActivity('expense','Expense delete ki',id);
   if(editingExpenseId===id) resetExpenseForm(); // was mid-edit on the entry that just got deleted
   renderExpensesList();
@@ -9554,7 +9568,7 @@ document.getElementById('btnAddExpense').onclick = function(){
     candidate = [entry].concat(expenses);
   }
   const ok = tryCommitExpenses(candidate);
-  if(!ok){ if(undoStack.length) undoStack.pop(); updateHistoryButtons(); alert(SAVE_FAIL_MSG); return; }
+  if(!ok){ if(undoStack.length) undoStack.pop(); updateHistoryButtons(); alert(getSaveFailMessage()); return; }
   logActivity('expense',wasEditing?'Expense update ki':'Expense add ki',category+' · '+Math.abs(amount));
   resetExpenseForm();
   renderExpensesList();
@@ -12913,7 +12927,7 @@ if('serviceWorker' in navigator){
       const payments=Array.isArray(current.payments)?current.payments.slice():[];payments.push({amount:amount,date:todayISO(),time:currentLocalTimeInput(),method:method,note:note});
       const received=receivedOf(current)+amount;
       const copy=inventory.map(x=>String(x.id)!==String(id)?x:Object.assign({},x,{payments:payments,paymentReceived:received,balanceDue:Math.max(0,saleTotalOf(x)-received),lastUpdated:todayStr()}));
-      if(!tryCommitInventory(copy)){alert(SAVE_FAIL_MSG);return;}
+      if(!tryCommitInventory(copy)){alert(getSaveFailMessage());return;}
       close();renderCustomerBook();render();renderUdhar();showToast('Payment history mein save ho gayi: Rs. '+money(amount));
     };
     setTimeout(()=>modal.querySelector('#ppmAmount').focus(),80);
@@ -12931,10 +12945,10 @@ if('serviceWorker' in navigator){
     if(!modal){modal=document.createElement('div');modal.id='manualDueModal';modal.style.cssText='position:fixed;inset:0;z-index:100001;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(15,23,42,.6);backdrop-filter:blur(3px)';modal.innerHTML='<div class="settings-card" style="width:min(100%,500px);max-height:92dvh;overflow:auto;background:var(--card,var(--surface,#fff));color:var(--text);border:1px solid var(--border);border-radius:20px;padding:18px"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h3 id="manualDueFormTitle" style="margin:0">Add payment</h3><button type="button" id="manualDueFormClose" class="btn-secondary" style="min-width:42px">✕</button></div><form id="manualDueForm"><label style="display:block;margin:12px 0 7px;font-weight:700">Payment type — select one *</label><div id="mdDirectionOptions" style="display:grid;grid-template-columns:1fr 1fr;gap:9px"><button type="button" data-manual-direction="payable" class="btn-secondary" style="min-height:64px;border:1px solid var(--border);border-radius:12px;padding:10px;color:var(--text);background:var(--surface-2,rgba(127,127,127,.05));font-weight:800">🟢 You will give<div style="font-size:12px;font-weight:600;margin-top:3px">Deni hai</div></button><button type="button" data-manual-direction="receivable" class="btn-secondary" style="min-height:64px;border:1px solid var(--border);border-radius:12px;padding:10px;color:var(--text);background:var(--surface-2,rgba(127,127,127,.05));font-weight:800">🔴 You will get<div style="font-size:12px;font-weight:600;margin-top:3px">Leni hai</div></button></div><input id="mdDirection" type="hidden" value=""><label style="display:block;margin:12px 0 5px;font-weight:600">Person / business name *</label><input id="mdName" required maxlength="120" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><label style="display:block;margin:12px 0 5px;font-weight:600">Mobile number (optional)</label><input id="mdPhone" maxlength="40" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><label style="display:block;margin:12px 0 5px;font-weight:600">Bill / total amount (Rs.) *</label><input id="mdAmount" type="number" min="1" step="1" required style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><label style="display:block;margin:12px 0 5px;font-weight:600">Already paid / received (Rs.)</label><input id="mdInitialPaid" type="number" min="0" step="1" value="0" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><label style="display:block;margin:12px 0 5px;font-weight:600">Reason / bill title *</label><input id="mdReason" required maxlength="160" placeholder="Mobile repair, udhaar, supplier bill..." style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label style="display:block;margin:12px 0 5px;font-weight:600">Entry date *</label><input id="mdDate" type="date" required style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"></div><div><label style="display:block;margin:12px 0 5px;font-weight:600">Due date</label><input id="mdDueDate" type="date" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"></div></div><label style="display:block;margin:12px 0 5px;font-weight:600">Notes (optional)</label><textarea id="mdNotes" rows="2" maxlength="1000" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text);resize:vertical"></textarea><div style="display:flex;gap:10px;margin-top:16px"><button type="button" id="manualDueFormCancel" class="btn-secondary" style="flex:1">Cancel</button><button type="submit" class="btn-primary" style="flex:1">Save bill</button></div></form></div>';document.body.appendChild(modal);}
     const form=modal.querySelector('#manualDueForm');form.reset();modal.style.display='flex';const directionInput=modal.querySelector('#mdDirection');directionInput.value=bill?(bill.direction||direction):'';const directionButtons=Array.from(modal.querySelectorAll('[data-manual-direction]'));const paintDirectionChoices=function(selected,locked){directionInput.value=selected||'';directionButtons.forEach(function(btn){const d=btn.dataset.manualDirection,active=d===selected;btn.style.opacity=locked&&!active?'.58':'1';btn.style.filter=locked&&!active?'grayscale(.25)':'none';btn.style.boxShadow=active?'0 0 0 2px '+(d==='payable'?'rgba(22,163,74,.18)':'rgba(220,38,38,.18)'):'none';btn.style.borderWidth=active?'3px':'1px';btn.style.borderColor=active?(d==='payable'?'#16a34a':'#dc2626'):'var(--border)';btn.style.color=active?(d==='payable'?'#15803d':'#b91c1c'):'var(--text)';btn.style.background=active?(d==='payable'?'rgba(22,163,74,.10)':'rgba(220,38,38,.10)'):'var(--surface-2,rgba(127,127,127,.05))';btn.setAttribute('aria-pressed',active?'true':'false');btn.disabled=!!locked;});};directionButtons.forEach(function(btn){btn.onclick=function(){if(!bill)paintDirectionChoices(btn.dataset.manualDirection,false);};});paintDirectionChoices(bill?(bill.direction||direction):'',!!bill);modal.querySelector('#mdName').value=bill?(bill.personName||''):'';modal.querySelector('#mdPhone').value=bill?(bill.phone||''):'';modal.querySelector('#mdAmount').value=bill?String(Number(bill.amount)||0):'';modal.querySelector('#mdInitialPaid').value=bill?'0':'0';modal.querySelector('#mdInitialPaid').disabled=!!bill;modal.querySelector('#mdReason').value=bill?(bill.reason||''):'';modal.querySelector('#mdDate').value=bill?(bill.date||todayISO()):todayISO();modal.querySelector('#mdDueDate').value=bill?(bill.dueDate||''):'';modal.querySelector('#mdNotes').value=bill?(bill.notes||''):'';modal.querySelector('#manualDueFormTitle').textContent=bill?'Edit bill':'Add manual payment';
     const close=function(){modal.style.display='none';manualDueEditingId=null;};modal.querySelector('#manualDueFormClose').onclick=close;modal.querySelector('#manualDueFormCancel').onclick=close;modal.onclick=function(e){if(e.target===modal)close();};
-    form.onsubmit=function(e){e.preventDefault();const dir=modal.querySelector('#mdDirection').value,name=modal.querySelector('#mdName').value.trim(),phone=modal.querySelector('#mdPhone').value.trim(),amount=Number(modal.querySelector('#mdAmount').value),initial=Number(modal.querySelector('#mdInitialPaid').value||0),reason=modal.querySelector('#mdReason').value.trim(),date=modal.querySelector('#mdDate').value||todayISO(),dueDate=modal.querySelector('#mdDueDate').value,notes=modal.querySelector('#mdNotes').value.trim();if(!dir){alert('Pehle You will give ya You will get select karein.');return;}if(!name||!reason||!Number.isFinite(amount)||amount<=0||!Number.isFinite(initial)||initial<0||initial>amount){alert('Naam, reason aur amount check karein. Pehle paid amount total bill se zyada nahi ho sakta.');return;}let dues=manualDues.slice(),payments=manualDuePayments.slice(),billId=manualDueEditingId;const existing=billId?dues.find(function(x){return String(x.id)===String(billId);}):null;if(existing&&manualDuePaidTotal(existing)>amount){alert('Total amount pehle se paid/received amount se kam nahi ho sakta.');return;}if(existing){dues=dues.map(function(x){return String(x.id)===String(billId)?Object.assign({},x,{direction:dir,personName:name,phone:phone,amount:amount,reason:reason,date:date,dueDate:dueDate,notes:notes}):x;});}else{billId=createUniqueRecordId('manual_due',dues);dues.push({id:billId,direction:dir,personName:name,phone:phone,amount:amount,reason:reason,date:date,dueDate:dueDate,notes:notes,createdAt:Date.now()});if(initial>0)payments.push({id:createUniqueRecordId('manual_due_payment',payments),billId:billId,amount:initial,direction:dir,date:date,time:currentLocalTimeInput(),method:'Already paid/received',note:'Entry banate waqt pehle se paid/received',createdAt:Date.now()});}if(!tryCommitManualDueData(dues,payments,existing?'Edit manual pending bill':'Add manual pending bill')){alert(SAVE_FAIL_MSG);return;}close();renderUdhar();showToast('✓ Pending payment save ho gayi.');};
+    form.onsubmit=function(e){e.preventDefault();const dir=modal.querySelector('#mdDirection').value,name=modal.querySelector('#mdName').value.trim(),phone=modal.querySelector('#mdPhone').value.trim(),amount=Number(modal.querySelector('#mdAmount').value),initial=Number(modal.querySelector('#mdInitialPaid').value||0),reason=modal.querySelector('#mdReason').value.trim(),date=modal.querySelector('#mdDate').value||todayISO(),dueDate=modal.querySelector('#mdDueDate').value,notes=modal.querySelector('#mdNotes').value.trim();if(!dir){alert('Pehle You will give ya You will get select karein.');return;}if(!name||!reason||!Number.isFinite(amount)||amount<=0||!Number.isFinite(initial)||initial<0||initial>amount){alert('Naam, reason aur amount check karein. Pehle paid amount total bill se zyada nahi ho sakta.');return;}let dues=manualDues.slice(),payments=manualDuePayments.slice(),billId=manualDueEditingId;const existing=billId?dues.find(function(x){return String(x.id)===String(billId);}):null;if(existing&&manualDuePaidTotal(existing)>amount){alert('Total amount pehle se paid/received amount se kam nahi ho sakta.');return;}if(existing){dues=dues.map(function(x){return String(x.id)===String(billId)?Object.assign({},x,{direction:dir,personName:name,phone:phone,amount:amount,reason:reason,date:date,dueDate:dueDate,notes:notes}):x;});}else{billId=createUniqueRecordId('manual_due',dues);dues.push({id:billId,direction:dir,personName:name,phone:phone,amount:amount,reason:reason,date:date,dueDate:dueDate,notes:notes,createdAt:Date.now()});if(initial>0)payments.push({id:createUniqueRecordId('manual_due_payment',payments),billId:billId,amount:initial,direction:dir,date:date,time:currentLocalTimeInput(),method:'Already paid/received',note:'Entry banate waqt pehle se paid/received',createdAt:Date.now()});}if(!tryCommitManualDueData(dues,payments,existing?'Edit manual pending bill':'Add manual pending bill')){alert(getSaveFailMessage());return;}close();renderUdhar();showToast('✓ Pending payment save ho gayi.');};
   }
   function recordManualDuePayment(bill){
-    if(isAdminShopView()||!bill)return;const remaining=manualDueRemaining(bill);if(remaining<=0)return;let modal=document.getElementById('manualDuePaymentModal');if(!modal){modal=document.createElement('div');modal.id='manualDuePaymentModal';modal.style.cssText='position:fixed;inset:0;z-index:100002;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(15,23,42,.6)';modal.innerHTML='<div class="settings-card" style="width:min(100%,420px);background:var(--card,var(--surface,#fff));color:var(--text);border:1px solid var(--border);border-radius:18px;padding:18px"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h3 id="mdpTitle" style="margin:0">Record payment</h3><button type="button" id="mdpClose" class="btn-secondary">✕</button></div><form id="mdpForm"><div id="mdpRemaining" class="settings-note" style="margin:10px 0"></div><label style="display:block;margin:10px 0 5px;font-weight:600">Amount (Rs.) *</label><input id="mdpAmount" type="number" min="1" step="1" required style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><label style="display:block;margin:10px 0 5px;font-weight:600">Date *</label><input id="mdpDate" type="date" required style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><label style="display:block;margin:10px 0 5px;font-weight:600">Method</label><select id="mdpMethod" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><option>Cash</option><option>Easypaisa</option><option>JazzCash</option><option>Bank Transfer</option><option>Other</option></select><label style="display:block;margin:10px 0 5px;font-weight:600">Note (optional)</label><input id="mdpNote" maxlength="500" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><div style="display:flex;gap:10px;margin-top:14px"><button type="button" id="mdpCancel" class="btn-secondary" style="flex:1">Cancel</button><button type="submit" class="btn-primary" style="flex:1">Save payment</button></div></form></div>';document.body.appendChild(modal);}modal.style.display='flex';modal.querySelector('#mdpTitle').textContent=bill.direction==='payable'?'Record payment given':'Record payment received';modal.querySelector('#mdpRemaining').textContent=(bill.personName||'')+' · '+(bill.reason||'')+' · Remaining Rs. '+money(remaining);modal.querySelector('#mdpAmount').value='';modal.querySelector('#mdpAmount').max=String(remaining);modal.querySelector('#mdpDate').value=todayISO();modal.querySelector('#mdpMethod').value='Cash';modal.querySelector('#mdpNote').value='';const close=function(){modal.style.display='none';};modal.querySelector('#mdpClose').onclick=close;modal.querySelector('#mdpCancel').onclick=close;modal.onclick=function(e){if(e.target===modal)close();};modal.querySelector('#mdpForm').onsubmit=function(e){e.preventDefault();const amount=Number(modal.querySelector('#mdpAmount').value),current=manualDues.find(function(x){return String(x.id)===String(bill.id);}),due=current?manualDueRemaining(current):0;if(!current||!Number.isFinite(amount)||amount<=0||amount>due){alert('Amount baqi payment se zyada nahi ho sakti.');return;}const payments=manualDuePayments.slice();payments.push({id:createUniqueRecordId('manual_due_payment',payments),billId:String(current.id),amount:amount,direction:current.direction,date:modal.querySelector('#mdpDate').value||todayISO(),time:currentLocalTimeInput(),method:modal.querySelector('#mdpMethod').value,note:modal.querySelector('#mdpNote').value.trim(),createdAt:Date.now()});if(!tryCommitManualDueData(manualDues.slice(),payments,'Record manual pending payment')){alert(SAVE_FAIL_MSG);return;}close();renderUdhar();showToast(current.direction==='payable'?'Payment dena record ho gaya.':'Payment receive hona record ho gaya.');};}
+    if(isAdminShopView()||!bill)return;const remaining=manualDueRemaining(bill);if(remaining<=0)return;let modal=document.getElementById('manualDuePaymentModal');if(!modal){modal=document.createElement('div');modal.id='manualDuePaymentModal';modal.style.cssText='position:fixed;inset:0;z-index:100002;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(15,23,42,.6)';modal.innerHTML='<div class="settings-card" style="width:min(100%,420px);background:var(--card,var(--surface,#fff));color:var(--text);border:1px solid var(--border);border-radius:18px;padding:18px"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h3 id="mdpTitle" style="margin:0">Record payment</h3><button type="button" id="mdpClose" class="btn-secondary">✕</button></div><form id="mdpForm"><div id="mdpRemaining" class="settings-note" style="margin:10px 0"></div><label style="display:block;margin:10px 0 5px;font-weight:600">Amount (Rs.) *</label><input id="mdpAmount" type="number" min="1" step="1" required style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><label style="display:block;margin:10px 0 5px;font-weight:600">Date *</label><input id="mdpDate" type="date" required style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><label style="display:block;margin:10px 0 5px;font-weight:600">Method</label><select id="mdpMethod" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><option>Cash</option><option>Easypaisa</option><option>JazzCash</option><option>Bank Transfer</option><option>Other</option></select><label style="display:block;margin:10px 0 5px;font-weight:600">Note (optional)</label><input id="mdpNote" maxlength="500" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg,var(--surface));color:var(--text)"><div style="display:flex;gap:10px;margin-top:14px"><button type="button" id="mdpCancel" class="btn-secondary" style="flex:1">Cancel</button><button type="submit" class="btn-primary" style="flex:1">Save payment</button></div></form></div>';document.body.appendChild(modal);}modal.style.display='flex';modal.querySelector('#mdpTitle').textContent=bill.direction==='payable'?'Record payment given':'Record payment received';modal.querySelector('#mdpRemaining').textContent=(bill.personName||'')+' · '+(bill.reason||'')+' · Remaining Rs. '+money(remaining);modal.querySelector('#mdpAmount').value='';modal.querySelector('#mdpAmount').max=String(remaining);modal.querySelector('#mdpDate').value=todayISO();modal.querySelector('#mdpMethod').value='Cash';modal.querySelector('#mdpNote').value='';const close=function(){modal.style.display='none';};modal.querySelector('#mdpClose').onclick=close;modal.querySelector('#mdpCancel').onclick=close;modal.onclick=function(e){if(e.target===modal)close();};modal.querySelector('#mdpForm').onsubmit=function(e){e.preventDefault();const amount=Number(modal.querySelector('#mdpAmount').value),current=manualDues.find(function(x){return String(x.id)===String(bill.id);}),due=current?manualDueRemaining(current):0;if(!current||!Number.isFinite(amount)||amount<=0||amount>due){alert('Amount baqi payment se zyada nahi ho sakti.');return;}const payments=manualDuePayments.slice();payments.push({id:createUniqueRecordId('manual_due_payment',payments),billId:String(current.id),amount:amount,direction:current.direction,date:modal.querySelector('#mdpDate').value||todayISO(),time:currentLocalTimeInput(),method:modal.querySelector('#mdpMethod').value,note:modal.querySelector('#mdpNote').value.trim(),createdAt:Date.now()});if(!tryCommitManualDueData(manualDues.slice(),payments,'Record manual pending payment')){alert(getSaveFailMessage());return;}close();renderUdhar();showToast(current.direction==='payable'?'Payment dena record ho gaya.':'Payment receive hona record ho gaya.');};}
   function increaseManualDueBill(bill){
     if(isAdminShopView()||!bill)return;
     let modal=document.getElementById('manualDueIncreaseModal');
@@ -12942,13 +12956,13 @@ if('serviceWorker' in navigator){
     const current=manualDues.find(function(x){return String(x.id)===String(bill.id)&&!x.deleted;});if(!current){showToast('Yeh bill nahi mil raha. Pending Payments dobara kholein.');return;}
     modal.style.display='flex';modal.querySelector('#mdiInfo').textContent=(current.personName||'')+' · '+(current.reason||'')+' · Current total Rs. '+money(current.amount)+' · Remaining Rs. '+money(manualDueRemaining(current));modal.querySelector('#mdiAmount').value='';modal.querySelector('#mdiNote').value='';modal.querySelector('#mdiError').style.display='none';
     const close=function(){modal.style.display='none';};modal.querySelector('#mdiClose').onclick=close;modal.querySelector('#mdiCancel').onclick=close;modal.onclick=function(e){if(e.target===modal)close();};
-    const saveExtra=function(e){if(e){e.preventDefault();e.stopPropagation();}const error=modal.querySelector('#mdiError'),submitBtn=modal.querySelector('#mdiSubmit');if(submitBtn.dataset.busy==='1')return;const extra=Number(modal.querySelector('#mdiAmount').value),note=modal.querySelector('#mdiNote').value.trim();const fresh=manualDues.find(function(x){return String(x.id)===String(current.id)&&!x.deleted;});if(!fresh){error.textContent='Yeh bill nahi mil raha. Pending Payments dobara kholein.';error.style.display='block';return;}if(!Number.isFinite(extra)||extra<=0){error.textContent='Additional amount mein 0 se zyada raqam enter karein.';error.style.display='block';modal.querySelector('#mdiAmount').focus();return;}submitBtn.dataset.busy='1';submitBtn.disabled=true;submitBtn.textContent='Saving…';const dues=manualDues.map(function(x){if(String(x.id)!==String(fresh.id))return x;const history=Array.isArray(x.amountAdjustments)?x.amountAdjustments.slice():[];history.push({amount:extra,note:note,date:todayISO(),time:currentLocalTimeInput(),createdAt:Date.now()});return Object.assign({},x,{amount:(Number(x.amount)||0)+extra,amountAdjustments:history,lastUpdated:Date.now()});});let saved=false;try{saved=tryCommitManualDueData(dues,manualDuePayments.slice(),'Increase manual bill amount');}catch(err){console.error('Add-to-bill save failed',err);saved=false;}submitBtn.dataset.busy='0';submitBtn.disabled=false;submitBtn.textContent='Add amount';if(!saved){error.textContent=(typeof SAVE_FAIL_MSG!=='undefined'?SAVE_FAIL_MSG:'Save nahi ho saka.')+' Amount add nahi hui. Internet/local storage ya read-only mode check karke dobara try karein.';error.style.display='block';return;}close();renderUdhar();showToast('✓ Bill mein Rs. '+money(extra)+' add ho gaye.');};
+    const saveExtra=function(e){if(e){e.preventDefault();e.stopPropagation();}const error=modal.querySelector('#mdiError'),submitBtn=modal.querySelector('#mdiSubmit');if(submitBtn.dataset.busy==='1')return;const extra=Number(modal.querySelector('#mdiAmount').value),note=modal.querySelector('#mdiNote').value.trim();const fresh=manualDues.find(function(x){return String(x.id)===String(current.id)&&!x.deleted;});if(!fresh){error.textContent='Yeh bill nahi mil raha. Pending Payments dobara kholein.';error.style.display='block';return;}if(!Number.isFinite(extra)||extra<=0){error.textContent='Additional amount mein 0 se zyada raqam enter karein.';error.style.display='block';modal.querySelector('#mdiAmount').focus();return;}submitBtn.dataset.busy='1';submitBtn.disabled=true;submitBtn.textContent='Saving…';const dues=manualDues.map(function(x){if(String(x.id)!==String(fresh.id))return x;const history=Array.isArray(x.amountAdjustments)?x.amountAdjustments.slice():[];history.push({amount:extra,note:note,date:todayISO(),time:currentLocalTimeInput(),createdAt:Date.now()});return Object.assign({},x,{amount:(Number(x.amount)||0)+extra,amountAdjustments:history,lastUpdated:Date.now()});});let saved=false;try{saved=tryCommitManualDueData(dues,manualDuePayments.slice(),'Increase manual bill amount');}catch(err){console.error('Add-to-bill save failed',err);saved=false;}submitBtn.dataset.busy='0';submitBtn.disabled=false;submitBtn.textContent='Add amount';if(!saved){error.textContent=(typeof getSaveFailMessage()!=='undefined'?getSaveFailMessage():'Save nahi ho saka.')+' Amount add nahi hui. Internet/local storage ya read-only mode check karke dobara try karein.';error.style.display='block';return;}close();renderUdhar();showToast('✓ Bill mein Rs. '+money(extra)+' add ho gaye.');};
     modal.querySelector('#mdiForm').onsubmit=saveExtra;setTimeout(function(){modal.querySelector('#mdiAmount').focus();},60);
   }
   function deleteManualDueBill(bill){
     if(isAdminShopView()||!bill)return;const remaining=manualDueRemaining(bill);if(!confirm('Kya aap '+(bill.personName||'is person')+' ka “'+(bill.reason||'Bill')+'” delete karna chahte hain? Is bill ki payment history bhi hidden ho jayegi.'))return;
     const now=Date.now();const dues=manualDues.map(function(x){return String(x.id)===String(bill.id)?Object.assign({},x,{deleted:true,deletedAt:now,lastUpdated:now}):x;});const payments=manualDuePayments.map(function(p){return String(p.billId)===String(bill.id)?Object.assign({},p,{deleted:true,deletedAt:now,lastUpdated:now}):p;});
-    if(!tryCommitManualDueData(dues,payments,'Delete manual pending bill')){alert(SAVE_FAIL_MSG);return;}renderUdhar();showToast('Manual bill delete ho gaya. Undo option available ho to restore kar sakte hain.');
+    if(!tryCommitManualDueData(dues,payments,'Delete manual pending bill')){alert(getSaveFailMessage());return;}renderUdhar();showToast('Manual bill delete ho gaya. Undo option available ho to restore kar sakte hain.');
   }
   function renderManualDues(){
     const list=document.getElementById('manualDueList'),summary=document.getElementById('manualDueSummary');if(!list||!summary)return;const q=(document.getElementById('udharSearch')?.value||'').trim().toLowerCase();const active=manualDues.filter(function(b){return !b.deleted&&((b.personName||'')+' '+(b.phone||'')+' '+(b.reason||'')+' '+(b.notes||'')).toLowerCase().includes(q);});const payable=active.filter(function(b){return b.direction==='payable';}),receivable=active.filter(function(b){return b.direction==='receivable';});const sum=function(rows){return rows.reduce(function(a,b){return a+manualDueRemaining(b);},0);};summary.innerHTML='<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><span style="color:#16a34a">🟢 You will give: <b>Rs. '+money(sum(payable))+'</b></span><span style="color:#dc2626">🔴 You will get: <b>Rs. '+money(sum(receivable))+'</b></span></div>';
