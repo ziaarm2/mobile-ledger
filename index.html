@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v95
+Current file version: Index v96
 Version name: Complete Sold Payment Editing & Flexible Analytics Comparison
 Baseline: User-provided Index v93 file (preserved; all existing functionality retained)
 Last changed: 02 Nov 2026 • 09:31:37 PM PKT (Asia/Karachi)
@@ -18,7 +18,7 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
-- Index v95 — Complete Sold Payment Editing & Flexible Analytics Comparison — 02 Nov 2026 • 09:31:37 PM PKT. Added editable received/remaining payment amounts for sold records, same-date monthly and rolling 28-day comparisons, and sticky Analytics close button; no unrelated features intentionally changed.
+- Index v96 — Rent Management & Payment Recovery Details — 02 Nov 2026 • 10:40:00 PM PKT. Added rent settings/reminders, rent-paid expense creation, Before Rent/After Rent status labels, and payment recovery detail view.
 - Index v90 — Busiest Hour Analytics Graph Fix — 31 Oct 2026 • 01:26:48 PM PKT. Corrected Busiest Business Hours analytics: embedded interactive blue/orange hourly line graph and Day (9 AM–9 PM)/Night (9 PM–9 AM) selector directly in that section; Day default. Existing analytics retained.
 - Index v89 — Busiest Hour Analytics Graph Fix — 31 Oct 2026 • 01:17:06 PM PKT. Added graph in Customer Time Analytics modal; this was not the requested Analytics section.
 - Index v88 — Analytics Performance Scoreboards — 31 Oct 2026 • 12:40:04 PM PKT. Added cricket-style weekday performance, hour-by-hour sales/purchases/profit details, daily-average comparisons, and pending-payment analytics; preserved existing analytics and business logic.
@@ -35,10 +35,10 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v95">
-<meta name="app-index-version-name" content="Complete Sold Payment Editing & Flexible Analytics Comparison">
-<meta name="app-index-updated" content="2026-11-02T21:31:37+05:00">
-<meta name="app-index-change-summary" content="Sold entry details, received amount and remaining balance are editable with recalculated totals and profit; added same-date monthly and rolling 28-day stock/purchase/sales comparisons and sticky Analytics close button.">
+<meta name="app-index-version" content="v96">
+<meta name="app-index-version-name" content="Rent Management & Payment Recovery Details">
+<meta name="app-index-updated" content="2026-11-02T22:40:00+05:00">
+<meta name="app-index-change-summary" content="Added rent status/settings/reminders, rent-paid expense creation, Before Rent/After Rent labels and recovered payment details; preserves existing v95 features.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -2617,6 +2617,8 @@ body.menu-open .app>header{z-index:1!important;}
           <div id="accSignupOnlyFields" style="display:none;">
             <div class="field"><label>Shop Name</label><input type="text" id="acc-shopname" placeholder="e.g. Z Mobile" autocomplete="organization"></div>
             <div class="field"><label>Owner Name</label><input type="text" id="acc-ownername" placeholder="Owner ka naam" autocomplete="name"></div>
+            <div class="field"><label>Aapki shop rented hai ya apni?</label><select id="acc-rent-type"><option value="owned">Apni shop</option><option value="rented">Rent par</option></select></div>
+            <div id="acc-rent-fields" style="display:none;"><div class="field"><label>Monthly rent (Rs.)</label><input id="acc-rent-amount" type="number" min="1" placeholder="20000"></div><div class="field"><label>Har mahine rent ki date (1–31)</label><input id="acc-rent-day" type="number" min="1" max="31" placeholder="5"></div><div class="settings-note">Rent ki amount aur date sahi likhein taake reminder aur expenses sahi rahen.</div></div>
           </div>
 
           <div class="field"><label>Email</label><input type="email" id="acc-email" placeholder="aap@example.com" autocomplete="username"></div>
@@ -2794,6 +2796,9 @@ body.menu-open .app>header{z-index:1!important;}
           <div class="field"><label>Shop Name</label><input type="text" id="settings-shopname" placeholder="e.g. Z Mobile"></div>
           <div class="field"><label>Owner Name</label><input type="text" id="settings-ownername" placeholder="Owner ka naam"></div>
           <div class="field"><label>Shop Phone (contact only)</label><input type="tel" id="settings-shopphone" placeholder="03xx xxxxxxx"></div>
+          <div class="sec-label" style="margin-top:18px;">Rent Management</div>
+          <div class="field"><label>Shop type</label><select id="settings-rent-type"><option value="owned">Apni shop</option><option value="rented">Rent par</option></select></div>
+          <div id="settings-rent-fields" style="display:none;"><div class="two-col"><div class="field"><label>Monthly rent (Rs.)</label><input id="settings-rent-amount" type="number" min="0" inputmode="decimal" placeholder="20000"></div><div class="field"><label>Rent due day</label><input id="settings-rent-day" type="number" min="1" max="31" placeholder="5"></div></div><div class="field"><label>Rent reminder</label><select id="settings-rent-reminder"><option value="on">ON</option><option value="off">OFF</option></select></div><div class="settings-note">Rent ki amount aur due date sahi likhein. Paid confirm karne par rent expense automatically add hoga.</div><button type="button" class="btn-cancel" id="settings-rent-paid" style="width:100%;margin-top:8px;">Confirm current month's rent paid</button></div>
           <button class="btn-save" id="settingsSaveShopProfile" style="width:100%;padding:12px;border:0;border-radius:10px;margin-top:4px;">Save Shop Profile</button>
         </div>
       </div>
@@ -3062,9 +3067,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v95';
-const APP_INDEX_VERSION_NAME = 'Complete Sold Payment Editing & Flexible Analytics Comparison';
-const APP_INDEX_UPDATED = '02 Nov 2026 • 09:31:37 PM PKT';
+const APP_INDEX_VERSION = 'v96';
+const APP_INDEX_VERSION_NAME = 'Rent Management & Payment Recovery Details';
+const APP_INDEX_UPDATED = '02 Nov 2026 • 10:40:00 PM PKT';
 
 let inventory = [];
 
@@ -3244,7 +3249,7 @@ const OPEN_REPAIR_OPTS = ['No open, no repair','Repaired','Refurbished'];
 const PACKING_OPTS = ['No pack','Water pack','Air tight'];
 // Shop expenses — these get subtracted from sales profit so "Total profit"
 // reflects actual net profit, not just phone buy/sell margins.
-const EXPENSE_CATEGORY_OPTS = ['Rent','Refreshment','Repair','Jelly/Protector','Utility Bill','Transport','Salary','Other'];
+const EXPENSE_CATEGORY_OPTS = ['Refreshment','Repair','Jelly/Protector','Utility Bill','Transport','Salary','Other'];
 
 // Lets the shop owner add or remove chip options themselves — no coding
 // needed. Built-in options can be hidden (not deleted from code), and any
@@ -8635,7 +8640,7 @@ function analyticsDifferenceHtml(curr,prev,key){
   return '<span class="analytics-diff">'+sign+(key==='soldUnits'||key==='purchasedUnits'?Math.abs(Math.round(diff)):'Rs '+fmt(Math.abs(diff)))+' vs previous</span>';
 }
 function analyticsRenderScoreboard(curr,prev){
-  const cards=[['Profit',curr.netProfit,prev&&prev.netProfit,'profit','Net profit'],['Mobiles sold',curr.soldUnits,prev&&prev.soldUnits,'soldUnits','Units sold'],['Mobiles purchased',curr.purchasedUnits,prev&&prev.purchasedUnits,'purchasedUnits','Units purchased'],['Sale',curr.saleAmount,prev&&prev.saleAmount,'sales','Sales volume'],['Purchase',curr.purchaseAmount,prev&&prev.purchaseAmount,'purchases','Investment in phones'],['Expenses',curr.expenses,prev&&prev.expenses,'expenses','Total business expenses']];
+  const cards=[['Profit',curr.netProfit,prev&&prev.netProfit,'profit','Net profit <span data-rent-profit-status style="font-size:10px;display:block;margin-top:3px;">'+(shopProfile.rentType==='rented'&&!(Array.isArray(shopProfile.rentPaidMonths)&&shopProfile.rentPaidMonths.includes(rentMonthKey(new Date())))?'Before Rent':'After Rent')+'</span>'],['Mobiles sold',curr.soldUnits,prev&&prev.soldUnits,'soldUnits','Units sold'],['Mobiles purchased',curr.purchasedUnits,prev&&prev.purchasedUnits,'purchasedUnits','Units purchased'],['Sale',curr.saleAmount,prev&&prev.saleAmount,'sales','Sales volume'],['Purchase',curr.purchaseAmount,prev&&prev.purchaseAmount,'purchases','Investment in phones'],['Expenses',curr.expenses,prev&&prev.expenses,'expenses','Total business expenses']];
   document.getElementById('analyticsScoreboard').innerHTML=cards.map(function(c){
     const pv=c[2]==null?null:c[2], avg=c[3]==='profit'?(curr.soldUnits?curr.netProfit/curr.soldUnits:0):null, avgPrev=c[3]==='profit'&&prev?(prev.soldUnits?prev.netProfit/prev.soldUnits:0):null;
     const sub=c[3]==='profit'?'Avg profit / mobile: Rs '+fmt(avg):(c[3]==='purchases'&&curr.purchasedUnits===0?'No purchases recorded':(c[3]==='sales'&&curr.soldUnits===0?'No sales recorded':c[4]));
@@ -8832,7 +8837,8 @@ function analyticsPendingSnapshot(range){
     ['Overdue manual bills',overdue,'Rs '+fmt(overdue),'Due date passed; still outstanding'],
     ['Payments recovered',recovered,'Rs '+fmt(recovered),'Selected period']
   ];
-  document.getElementById('analyticsPendingGrid').innerHTML=cards.map(function(c){return '<div class="analytics-pending-item"><div class="analytics-pending-label">'+c[0]+'</div><div class="analytics-pending-value">'+c[2]+'</div><div class="analytics-pending-sub">'+c[3]+'</div></div>';}).join('');
+  document.getElementById('analyticsPendingGrid').innerHTML=cards.map(function(c,i){return '<div class="analytics-pending-item" '+(i===4?'role="button" tabindex="0" style="cursor:pointer;" data-recovered-details="1"':'')+'><div class="analytics-pending-label">'+c[0]+'</div><div class="analytics-pending-value">'+c[2]+'</div><div class="analytics-pending-sub">'+c[3]+(i===4?' · Tap for details':'')+'</div></div>';}).join('');
+  const rec=document.querySelector('[data-recovered-details]');if(rec){const openDetails=function(){const rows=[];inventory.filter(e=>e.sold&&!isReturnedSale(e)).forEach(function(e){(Array.isArray(e.payments)?e.payments:[]).forEach(function(p){if(inRange(p.date))rows.push({date:p.date,amount:Number(p.amount)||0,customer:e.customerName||e.customer||e.buyerName||'Customer not recorded',phone:e.customerPhone||e.buyerPhone||'',mobile:[e.brand,e.model].filter(Boolean).join(' '),source:'Mobile sale'});});});(manualDuePayments||[]).filter(function(p){if(p.deleted||!inRange(p.date))return false;const bill=activeBills.find(function(b){return String(b.id)===String(p.billId);});return !!bill&&bill.direction==='receivable';}).forEach(function(p){const bill=activeBills.find(function(b){return String(b.id)===String(p.billId);})||{};rows.push({date:p.date,amount:Number(p.amount)||0,customer:bill.personName||bill.name||'Customer',phone:bill.phone||'',mobile:bill.reason||'Manual receivable',source:'Manual payment'});});rows.sort((a,b)=>String(b.date).localeCompare(String(a.date)));alert('PAYMENTS RECOVERED DETAILS\n\n'+(rows.length?rows.map(function(r){return (r.date||'No date')+' · Rs '+fmt(r.amount)+'\n'+r.customer+(r.phone?' · '+r.phone:'')+'\n'+r.mobile+' ('+r.source+')';}).join('\n\n'):'Selected period mein recovery details nahi milin.'));};rec.onclick=openDetails;rec.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();openDetails();}};}
 }
 function analyticsRenderStock(){
   const stock=analyticsCurrentStock();
@@ -9171,7 +9177,7 @@ document.addEventListener('click', function(e){
 
 // ---------- Expenses ----------
 function renderExpenseCategoryChips(){
-  const opts = getFieldOptions('expenseCategory', EXPENSE_CATEGORY_OPTS);
+  const opts = getFieldOptions('expenseCategory', EXPENSE_CATEGORY_OPTS).filter(function(x){return String(x).trim().toLowerCase()!=='rent';});
   const list = opts.indexOf('Other')!==-1 ? opts : opts.concat(['Other']);
   const box = document.getElementById('expenseCategoryChips');
   box.innerHTML = list.map(function(o){
@@ -9230,7 +9236,7 @@ function editExpenseEntry(id){
   const entry = expenses.find(function(x){ return x.id===id; });
   if(!entry) return;
   editingExpenseId = id;
-  const knownOpts = getFieldOptions('expenseCategory', EXPENSE_CATEGORY_OPTS);
+  const knownOpts = getFieldOptions('expenseCategory', EXPENSE_CATEGORY_OPTS).filter(function(x){return String(x).trim().toLowerCase()!=='rent';});
   const isKnown = knownOpts.indexOf(entry.category)!==-1;
   expenseFormState.category = isKnown ? entry.category : 'Other';
   renderExpenseCategoryChips();
@@ -10252,6 +10258,11 @@ function openSettingsPage(page){
     document.getElementById('settings-shopname').value=shopProfile.shopName||'';
     document.getElementById('settings-ownername').value=shopProfile.ownerName||'';
     document.getElementById('settings-shopphone').value=shopProfile.shopPhone||'';
+    document.getElementById('settings-rent-type').value=shopProfile.rentType||'owned';
+    document.getElementById('settings-rent-amount').value=Number(shopProfile.monthlyRent)||'';
+    document.getElementById('settings-rent-day').value=Number(shopProfile.rentDueDay)||1;
+    document.getElementById('settings-rent-reminder').value=shopProfile.rentReminderEnabled===false?'off':'on';
+    document.getElementById('settings-rent-fields').style.display=shopProfile.rentType==='rented'?'block':'none';
   }
   renderSettingsHomeSummaries();
   const wrap=document.querySelector('#settingsOverlay .settings-page-wrap'); if(wrap) wrap.scrollTop=0;
@@ -10285,11 +10296,38 @@ document.getElementById('settingsSaveShopProfile').onclick=function(){
   if(isAdminShopView()){ alert('Admin Shop view read-only hai.'); return; }
   const shopName=document.getElementById('settings-shopname').value.trim();
   if(!shopName){ alert('Shop Name likhein.'); return; }
-  shopProfile={shopName:shopName,ownerName:document.getElementById('settings-ownername').value.trim(),shopPhone:document.getElementById('settings-shopphone').value.trim()};
+  const rentType=document.getElementById('settings-rent-type').value;
+  const monthlyRent=Math.max(0,Number(document.getElementById('settings-rent-amount').value)||0);
+  const rentDueDay=Math.min(31,Math.max(1,Number(document.getElementById('settings-rent-day').value)||1));
+  shopProfile=Object.assign({},shopProfile,{shopName:shopName,ownerName:document.getElementById('settings-ownername').value.trim(),shopPhone:document.getElementById('settings-shopphone').value.trim(),rentType:rentType,monthlyRent:monthlyRent,rentDueDay:rentDueDay,rentReminderEnabled:document.getElementById('settings-rent-reminder').value!=='off',rentPaidMonths:Array.isArray(shopProfile.rentPaidMonths)?shopProfile.rentPaidMonths:[]});
   if(settingsDraftActive){ settingsDraftMarkDirty(); updateAccountUI(); renderSettingsHomeSummaries(); return; }
   try{localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY),JSON.stringify(shopProfile));}catch(e){}
-  schedulePush(); updateAccountUI(); renderSettingsHomeSummaries(); showToast('✓ Shop profile save ho gaya.');
+  schedulePush(); updateAccountUI(); renderSettingsHomeSummaries(); renderRentReminder(); showToast('✓ Shop profile save ho gaya.');
 };
+document.getElementById('settings-rent-type').addEventListener('change',function(){document.getElementById('settings-rent-fields').style.display=this.value==='rented'?'block':'none';});
+function rentMonthKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+function renderRentReminder(){
+  let el=document.getElementById('rentReminderBanner');
+  if(!el){el=document.createElement('div');el.id='rentReminderBanner';el.style.cssText='display:none;margin:8px 12px;padding:10px 12px;border:1px solid #ef4444;border-radius:10px;background:#fff1f2;color:#991b1b;font-size:12px;font-weight:700;';const app=document.querySelector('.app');if(app)app.insertBefore(el,app.firstChild);}
+  const now=new Date(),key=rentMonthKey(now),due=Math.min(31,Math.max(1,Number(shopProfile.rentDueDay)||1)),dueDate=new Date(now.getFullYear(),now.getMonth(),due);const paid=(Array.isArray(shopProfile.rentPaidMonths)?shopProfile.rentPaidMonths:[]).includes(key);const active=shopProfile.rentType==='rented'&&Number(shopProfile.monthlyRent)>0&&shopProfile.rentReminderEnabled!==false&&!paid;
+  if(!active){el.style.display='none';return;}
+  const days=Math.floor((new Date(now.getFullYear(),now.getMonth(),now.getDate())-new Date(dueDate.getFullYear(),dueDate.getMonth(),dueDate.getDate()))/86400000);
+  el.style.display='block';el.innerHTML='🔴 Rent Unpaid · '+(days<0?'Rent due '+Math.abs(days)+' day(s) mein':'Rent date se '+days+' din guzar gaye')+' · Rs '+fmt(Number(shopProfile.monthlyRent))+' <button type="button" id="rentBannerPaid" style="margin-left:8px;border:0;border-radius:6px;padding:5px 8px;background:#166534;color:#fff;font-weight:800;">Paid</button>';
+  document.getElementById('rentBannerPaid').onclick=confirmCurrentRentPaid;
+}
+function confirmCurrentRentPaid(){
+  if(isAdminShopView()){alert('Admin Shop view read-only hai.');return;}
+  if(shopProfile.rentType!=='rented'||!(Number(shopProfile.monthlyRent)>0)){showToast('Pehle Settings mein rent ki details save karein.');return;}
+  const now=new Date(),key=rentMonthKey(now),paid=Array.isArray(shopProfile.rentPaidMonths)?shopProfile.rentPaidMonths.slice():[];if(paid.includes(key)){showToast('Is month ka rent pehle hi paid mark hai.');return;}
+  const date=isoDateLocal(now),entry={id:createUniqueRecordId('exp',expenses),category:'Rent',amount:Number(shopProfile.monthlyRent),date:date,notes:'Monthly rent · '+key,autoRent:true,rentMonth:key};
+  const ok=tryCommitExpenses(expenses.concat([entry]));if(!ok){showToast('Rent expense save nahi hua. Dobara try karein.');return;}
+  shopProfile.rentPaidMonths=paid.concat([key]);try{localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY),JSON.stringify(shopProfile));}catch(e){}schedulePush();renderRentReminder();showToast('✓ Rent paid confirm ho gaya aur expense add ho gaya.');
+}
+document.getElementById('settings-rent-paid').onclick=confirmCurrentRentPaid;
+function renderBeforeAfterRentStatus(){
+ const now=new Date(),key=rentMonthKey(now),paid=(Array.isArray(shopProfile.rentPaidMonths)?shopProfile.rentPaidMonths:[]).includes(key);document.querySelectorAll('[data-rent-profit-status]').forEach(function(el){el.textContent=shopProfile.rentType==='rented'?(paid?'After Rent':'Before Rent'):'';el.style.color=paid?'#15803d':'#dc2626';});
+}
+setInterval(renderRentReminder,60000);document.addEventListener('DOMContentLoaded',renderRentReminder);setTimeout(renderRentReminder,1200);
 
 async function shareMobileHisabApp(){
   const url = window.location.href.split('#')[0];
@@ -10793,7 +10831,7 @@ let lastPushedVersion = 0;
 try{ localVersion = Number(localStorage.getItem(shopStorageKey(LS_LOCAL_VERSION_KEY))||0) || 0; }catch(e){}
 try{ lastPushedVersion = Number(localStorage.getItem(shopStorageKey(LS_LAST_PUSHED_VERSION_KEY))||0) || 0; }catch(e){}
 function hasPendingLocalChanges(){ return localVersion > lastPushedVersion; }
-let shopProfile = {shopName:"", ownerName:""};
+let shopProfile = {shopName:"", ownerName:"", rentType:"owned", monthlyRent:0, rentDueDay:1, rentReminderEnabled:true, rentPaidMonths:[]};
 // Multi-user foundation: every account has a role + a shopId (the Firestore
 // doc under /shops/ that their data lives in). Right now every account is
 // its own 'owner' with shopId === their own uid — this is the base every
@@ -12169,6 +12207,7 @@ document.getElementById('btnAccountLogin').onclick = function(){
     .then(function(){ saveCurrentAccountEmail(email); showToast('✓ Login ho gaya — sync shuru.'); })
     .catch(function(err){ showAccountError(friendlyAuthError(err)); });
 };
+document.getElementById('acc-rent-type').addEventListener('change',function(){document.getElementById('acc-rent-fields').style.display=this.value==='rented'?'block':'none';});
 document.getElementById('btnAccountSignup').onclick = function(){
   if(!firebaseReady()){ showAccountError('Sync abhi set up nahi hua (Firebase config missing).'); return; }
   const email = document.getElementById('acc-email').value.trim();
@@ -12176,13 +12215,18 @@ document.getElementById('btnAccountSignup').onclick = function(){
   const confirmPass = document.getElementById('acc-password-confirm').value;
   const shopName = document.getElementById('acc-shopname').value.trim();
   const ownerName = document.getElementById('acc-ownername').value.trim();
+  const rentType = document.getElementById('acc-rent-type').value;
+  const monthlyRent = Math.max(0,Number(document.getElementById('acc-rent-amount').value)||0);
+  const rentDueDay = Math.min(31,Math.max(1,Number(document.getElementById('acc-rent-day').value)||1));
+  if(rentType==='rented'&&monthlyRent<=0){showAccountError('Monthly rent ki sahi amount likhein.');return;}
+  if(rentType==='rented'&&(!document.getElementById('acc-rent-day').value||Number(document.getElementById('acc-rent-day').value)<1||Number(document.getElementById('acc-rent-day').value)>31)){showAccountError('Rent ki date 1 se 31 ke darmiyan likhein.');return;}
   if(!email || !pass){ showAccountError('Email aur password dono likhein.'); return; }
   if(pass.length < 6){ showAccountError('Password kam se kam 6 characters ka ho.'); return; }
   if(pass !== confirmPass){ showAccountError('Confirm Password match nahi karta.'); return; }
   if(!shopName){ showAccountError('Shop Name likhein.'); return; }
   fbAuth.createUserWithEmailAndPassword(email, pass)
     .then(function(){
-      shopProfile = {shopName:shopName, ownerName:ownerName, shopPhone:''};
+      shopProfile = {shopName:shopName, ownerName:ownerName, shopPhone:'', rentType:rentType, monthlyRent:rentType==='rented'?monthlyRent:0, rentDueDay:rentDueDay, rentReminderEnabled:true, rentPaidMonths:[]};
       try{ localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY), JSON.stringify(shopProfile)); }catch(e){}
       const u=fbAuth.currentUser; if(!u) return;
       const payload={role:'shop',shopId:u.uid,accessStatus:'active',accessReason:'',email:u.email||email,shopName:shopName,ownerName:ownerName,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
