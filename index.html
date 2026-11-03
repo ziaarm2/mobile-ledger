@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v101
+Current file version: Index v102
 Version name: Inline Rent Status Under Net Profit
 Baseline: User-provided Index v93 file (preserved; all existing functionality retained)
 Last changed: 03 Nov 2026 • 09:37:11 AM PKT (Asia/Karachi)
@@ -18,7 +18,7 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
-- Index v101 — Inline Rent Status Under Net Profit — 03 Nov 2026 • 09:37:11 AM PKT. Moved the small Rent Paid/Unpaid badge below the Net Profit label; no calculation changes.
+- Index v102 — Plain Rent Status & Due-Date Reminder Placement — 03 Nov 2026 • 10:05:00 AM PKT. Changed rent status to plain red/green text below Net Profit; renamed Rent date to Rent date; reminder now appears only on/after rent date between header and period filters.
 - Index v100 — Minimal Corner Rent Status Badge — 03 Nov 2026 • 09:26:50 AM PKT. Moved Rent Paid/Unpaid to a tiny top-right corner badge on the Net Profit card; no calculation changes.
 - Index v99 — Shop Save Feedback & Purchase Count — 03 Nov 2026 • 09:18:10 AM PKT. Added clear one-tap Shop Profile save feedback/return to Settings home and Purchased quantity beside Sold; rent badge retained.
 - Index v97 — Rent Defaults & Dashboard/Analytics Visibility — 03 Nov 2026 • 08:52:22 AM PKT. Shop Profile one-tap save; Analytics close-only sticky control; attractive Rent Paid/Rent Unpaid status badges.
@@ -39,7 +39,7 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v101">
+<meta name="app-index-version" content="v102">
 <meta name="app-index-version-name" content="Inline Rent Status Under Net Profit">
 <meta name="app-index-updated" content="2026-11-03T09:37:11+05:00">
 <meta name="app-index-change-summary" content="Moved the small Rent Paid/Unpaid badge directly below the Net Profit label; kept profit value and calculations unchanged.">
@@ -1851,9 +1851,9 @@ body.menu-open .app>header{z-index:1!important;}
 .rent-status-badge.is-paid{color:#166534;background:#dcfce7;border-color:#bbf7d0;}
 /* Minimal rent state marker: quiet, anchored in the profit card corner. */
 #stats .stat.rent-profit-stat{position:relative;}
-#stats .rent-corner-badge{position:static;display:block;width:max-content;max-width:100%;margin:3px auto 0;padding:1px 5px;border-radius:999px;font-size:8px;line-height:1.25;font-weight:850;letter-spacing:.25px;text-transform:uppercase;white-space:nowrap;border:1px solid transparent;}
-#stats .rent-corner-badge.is-unpaid{color:#b42336;background:#fff5f5;border-color:#f3c5ca;}
-#stats .rent-corner-badge.is-paid{color:#166534;background:#f0fdf4;border-color:#bbf7d0;}
+#stats .rent-corner-badge{display:block;width:max-content;max-width:100%;margin:2px auto 0;padding:0;border:0;background:transparent;font-size:9px;line-height:1.2;font-weight:750;letter-spacing:0;text-transform:none;white-space:nowrap;}
+#stats .rent-corner-badge.is-unpaid{color:#dc2626;}
+#stats .rent-corner-badge.is-paid{color:#15803d;}
 .analytics-timeline-switch{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:9px 0 11px;}
 .analytics-timeline-switch button{min-height:40px;border-radius:9px;font-size:11px;font-weight:800;}
 .analytics-timeline-switch button.active{background:var(--pta);color:var(--surface);border:1px solid var(--pta);}
@@ -1961,7 +1961,7 @@ body.menu-open .app>header{z-index:1!important;}
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v101<span>Updated: 03 Nov 2026</span><span>09:37:11 AM PKT</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v102<span>Updated: 03 Nov 2026</span><span>10:05:00 AM PKT</span></div>
       </div>
     </div>
 
@@ -2815,7 +2815,7 @@ body.menu-open .app>header{z-index:1!important;}
           <div class="field"><label>Shop Phone (contact only)</label><input type="tel" id="settings-shopphone" placeholder="03xx xxxxxxx"></div>
           <div class="sec-label" style="margin-top:18px;">Rent Management</div>
           <div class="field"><label>Shop type</label><select id="settings-rent-type"><option value="rented" selected>Rent par</option><option value="owned">Apni shop</option></select></div>
-          <div id="settings-rent-fields" style="display:none;"><div class="two-col"><div class="field"><label>Monthly rent (Rs.)</label><input id="settings-rent-amount" type="number" min="0" inputmode="decimal" placeholder="20000"></div><div class="field"><label>Rent due day</label><input id="settings-rent-day" type="number" min="1" max="31" placeholder="5"></div></div><div class="field"><label>Rent reminder</label><select id="settings-rent-reminder"><option value="on">ON</option><option value="off">OFF</option></select></div><div class="settings-note">Rent ki amount aur due date sahi likhein. Paid confirm karne par rent expense automatically add hoga.</div><button type="button" class="btn-cancel" id="settings-rent-paid" style="width:100%;margin-top:8px;">Confirm current month's rent paid</button></div>
+          <div id="settings-rent-fields" style="display:none;"><div class="two-col"><div class="field"><label>Monthly rent (Rs.)</label><input id="settings-rent-amount" type="number" min="0" inputmode="decimal" placeholder="20000"></div><div class="field"><label>Rent date</label><input id="settings-rent-day" type="number" min="1" max="31" placeholder="5"></div></div><div class="field"><label>Rent reminder</label><select id="settings-rent-reminder"><option value="on">ON</option><option value="off">OFF</option></select></div><div class="settings-note">Rent ki amount aur rent date sahi likhein. Paid confirm karne par rent expense automatically add hoga.</div><button type="button" class="btn-cancel" id="settings-rent-paid" style="width:100%;margin-top:8px;">Confirm current month's rent paid</button></div>
           <button class="btn-save" id="settingsSaveShopProfile" style="width:100%;padding:12px;border:0;border-radius:10px;margin-top:4px;">Save Shop Profile</button>
         </div>
       </div>
@@ -3007,14 +3007,14 @@ body.menu-open .app>header{z-index:1!important;}
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v101</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v102</div>
           <div class="settings-note" style="margin-top:4px;">Inline Rent Status Under Net Profit</div>
           <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 03 Nov 2026 • 09:37:11 AM PKT</div>
           <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Rent Paid/Unpaid now appears as a tiny top-right badge on the Net Profit card. Shop save feedback, Purchased count and all calculations are unchanged.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
-          <div style="font-weight:700;margin-top:9px;">Index v101 — 03 Nov 2026 • 09:37:11 AM PKT</div>
+          <div style="font-weight:700;margin-top:9px;">Index v102 — 03 Nov 2026 • 10:05:00 AM PKT</div>
           <div class="settings-note">Moved Rent Paid/Unpaid into a tiny small badge below the Net Profit label on the Net Profit card; no profit calculation changes.</div>
           <div style="font-weight:700;margin-top:9px;">Index v99 — 03 Nov 2026 • 09:18:10 AM PKT</div>
           <div class="settings-note">Shop Profile now gives Saving/Saved feedback and returns to Settings home; Purchased count appears beside Sold.</div>
@@ -3094,7 +3094,7 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v101';
+const APP_INDEX_VERSION = 'v102';
 const APP_INDEX_VERSION_NAME = 'Inline Rent Status Under Net Profit';
 const APP_INDEX_UPDATED = '03 Nov 2026 • 09:37:11 AM PKT';
 
@@ -8226,7 +8226,7 @@ function renderRentInfoCardHtml(context, profitBeforeRent){
   const dateLabel=String(day)+' '+now.toLocaleString('en-PK',{month:'short'});
   const body='<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">'+
     '<strong>Rs. '+fmt(amount)+'/month</strong></div>'+
-    '<div class="settings-note" style="margin-top:6px">Rent due: '+escapeHtml(dateLabel)+' · Reminder: '+(shopProfile.rentReminderEnabled===false?'OFF':'ON')+'</div>'+
+    '<div class="settings-note" style="margin-top:6px">Rent date: '+escapeHtml(dateLabel)+' · Reminder: '+(shopProfile.rentReminderEnabled===false?'OFF':'ON')+'</div>'+
     '<div style="margin-top:7px"><span class="rent-status-badge '+(paid?'is-paid':'is-unpaid')+'">'+(paid?'Rent Paid':'Rent Unpaid')+'</span></div>'+
     (!paid?'<div class="settings-note" style="margin-top:4px">Rent pay karne ke baad estimated profit: <b>Rs. '+fmt(adjusted)+'</b></div>':'');
   if(context==='dashboard')return '<div class="stat-card" style="grid-column:1/-1;text-align:left"><div class="l" style="margin-bottom:8px">SHOP RENT</div>'+body+'</div>';
@@ -10392,11 +10392,12 @@ document.getElementById('settings-rent-type').addEventListener('change',function
 function rentMonthKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
 function renderRentReminder(){
   let el=document.getElementById('rentReminderBanner');
-  if(!el){el=document.createElement('div');el.id='rentReminderBanner';el.style.cssText='display:none;margin:8px 12px;padding:10px 12px;border:1px solid #ef4444;border-radius:10px;background:#fff1f2;color:#991b1b;font-size:12px;font-weight:700;';const app=document.querySelector('.app');if(app)app.insertBefore(el,app.firstChild);}
+  if(!el){el=document.createElement('div');el.id='rentReminderBanner';el.style.cssText='display:none;margin:8px 12px;padding:10px 12px;border:1px solid #fecaca;border-radius:10px;background:#fff7f7;color:#991b1b;font-size:12px;font-weight:700;';const app=document.querySelector('.app');const searchRow=app&&app.querySelector('.search-row');if(app)app.insertBefore(el,searchRow||null);}
   const now=new Date(),key=rentMonthKey(now),due=Math.min(31,Math.max(1,Number(shopProfile.rentDueDay)||1)),dueDate=new Date(now.getFullYear(),now.getMonth(),due);const paid=(Array.isArray(shopProfile.rentPaidMonths)?shopProfile.rentPaidMonths:[]).includes(key);const active=shopProfile.rentType==='rented'&&Number(shopProfile.monthlyRent)>0&&shopProfile.rentReminderEnabled!==false&&!paid;
   if(!active){el.style.display='none';return;}
   const days=Math.floor((new Date(now.getFullYear(),now.getMonth(),now.getDate())-new Date(dueDate.getFullYear(),dueDate.getMonth(),dueDate.getDate()))/86400000);
-  el.style.display='block';el.innerHTML='🔴 Rent Unpaid · '+(days<0?'Rent due '+Math.abs(days)+' day(s) mein':'Rent date se '+days+' din guzar gaye')+' · Rs '+fmt(Number(shopProfile.monthlyRent))+' <button type="button" id="rentBannerPaid" style="margin-left:8px;border:0;border-radius:6px;padding:5px 8px;background:#166534;color:#fff;font-weight:800;">Paid</button>';
+  if(days<0){el.style.display='none';return;}
+  el.style.display='block';el.innerHTML='🔴 Rent Unpaid · Rent date '+(days===0?'aaj hai':'ko '+days+' din guzar gaye')+' · Rs '+fmt(Number(shopProfile.monthlyRent))+' <button type="button" id="rentBannerPaid" style="margin-left:8px;border:0;border-radius:6px;padding:5px 8px;background:#166534;color:#fff;font-weight:800;">Paid</button>';
   document.getElementById('rentBannerPaid').onclick=confirmCurrentRentPaid;
 }
 function confirmCurrentRentPaid(){
