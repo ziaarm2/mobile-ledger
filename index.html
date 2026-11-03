@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v105
-- Index v105 — Sold Card Tags & Expandable Details — 03 Nov 2026 • 11:12:00 AM PKT. Sold cards now show the same useful specification tags as stock cards and an expandable More details section with purchase/sale timestamps, prices, profit, customer, payment, IMEI, seller, expenses and payment history. No calculations or stored data schema changed.
-Version name: Sold Card Tags & Expandable Details
+Current file version: Index v107
+- Index v107 — Mandatory Signup Details — 03 Nov 2026 • 12:05:00 PM PKT. Made all new-account signup details mandatory: shop name, owner name, shop phone, shop address, city, email, password and confirm password; monthly rent and rent date are mandatory only when Rent par is selected. Existing accounts and business data remain unchanged.
+Version name: Mandatory Signup Details
 Baseline: User-provided Index v93 file (preserved; all existing functionality retained)
 Last changed: 03 Nov 2026 • 11:12:00 AM PKT (Asia/Karachi)
 Change summary: Added specification tags and an expandable More details section to sold/returned mobile cards; retained existing sale/purchase data, calculations and workflows.
@@ -40,7 +40,7 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v105">
+<meta name="app-index-version" content="v107">
 <meta name="app-index-version-name" content="Exact Purchase & Sale Entry Times">
 <meta name="app-index-updated" content="2026-11-03T10:02:45+05:00">
 <meta name="app-index-change-summary" content="Purchase cards show only the exact Buy Time entered in the form; sold/returned cards show the exact Sale Time entered in the sale form. No inferred or generated fallback times.">
@@ -1973,7 +1973,7 @@ body.menu-open .app>header{z-index:1!important;}
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v105<span>Updated: 03 Nov 2026</span><span>11:12:00 AM PKT</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v107<span>Updated: 03 Nov 2026</span><span>12:05:00 PM PKT</span></div>
       </div>
     </div>
 
@@ -2644,15 +2644,18 @@ body.menu-open .app>header{z-index:1!important;}
           <div class="auth-subtitle" id="authFormSubtitle">Email aur password se continue karein</div>
 
           <div id="accSignupOnlyFields" style="display:none;">
-            <div class="field"><label>Shop Name</label><input type="text" id="acc-shopname" placeholder="e.g. Z Mobile" autocomplete="organization"></div>
-            <div class="field"><label>Owner Name</label><input type="text" id="acc-ownername" placeholder="Owner ka naam" autocomplete="name"></div>
+            <div class="field"><label>Shop Name</label><input type="text" id="acc-shopname" required placeholder="e.g. Z Mobile" autocomplete="organization"></div>
+            <div class="field"><label>Owner Name</label><input type="text" id="acc-ownername" required placeholder="Owner ka naam" autocomplete="name"></div>
+            <div class="field"><label>Shop Phone Number</label><input type="tel" id="acc-shopphone" required placeholder="03xx xxxxxxx" autocomplete="tel"></div>
+            <div class="field"><label>Shop Address</label><input type="text" id="acc-shopaddress" required placeholder="Shop ka mukammal address" autocomplete="street-address"></div>
+            <div class="field"><label>City</label><input type="text" id="acc-shopcity" required placeholder="e.g. Rahim Yar Khan" autocomplete="address-level2"></div>
             <div class="field"><label>Aapki shop rented hai ya apni?</label><select id="acc-rent-type"><option value="rented" selected>Rent par</option><option value="owned">Apni shop</option></select></div>
-            <div id="acc-rent-fields" style="display:block;"><div class="field"><label>Monthly rent (Rs.)</label><input id="acc-rent-amount" type="number" min="1" placeholder="20000"></div><div class="field"><label>Har mahine rent ki date (1–31)</label><input id="acc-rent-day" type="number" min="1" max="31" placeholder="5"></div><div class="settings-note">Rent ki amount aur date sahi likhein taake reminder aur expenses sahi rahen.</div></div>
+            <div id="acc-rent-fields" style="display:block;"><div class="field"><label>Monthly rent (Rs.)</label><input id="acc-rent-amount" required type="number" min="1" placeholder="20000"></div><div class="field"><label>Har mahine rent ki date (1–31)</label><input id="acc-rent-day" required type="number" min="1" max="31" placeholder="5"></div><div class="settings-note">Rent ki amount aur date sahi likhein taake reminder aur expenses sahi rahen.</div></div>
           </div>
 
-          <div class="field"><label>Email</label><input type="email" id="acc-email" placeholder="aap@example.com" autocomplete="username"></div>
-          <div class="field password-wrap"><label>Password</label><input type="password" id="acc-password" placeholder="Kam se kam 6 characters" autocomplete="current-password"><button type="button" class="password-eye" data-password-target="acc-password" aria-label="Show password">👁</button></div>
-          <div id="accConfirmPasswordField" class="field password-wrap" style="display:none;"><label>Confirm Password</label><input type="password" id="acc-password-confirm" placeholder="Password dobara likhein" autocomplete="new-password"><button type="button" class="password-eye" data-password-target="acc-password-confirm" aria-label="Show password">👁</button></div>
+          <div class="field"><label>Email</label><input type="email" id="acc-email" required placeholder="aap@example.com" autocomplete="username"></div>
+          <div class="field password-wrap"><label>Password</label><input type="password" id="acc-password" required placeholder="Kam se kam 6 characters" autocomplete="current-password"><button type="button" class="password-eye" data-password-target="acc-password" aria-label="Show password">👁</button></div>
+          <div id="accConfirmPasswordField" class="field password-wrap" style="display:none;"><label>Confirm Password</label><input type="password" id="acc-password-confirm" required placeholder="Password dobara likhein" autocomplete="new-password"><button type="button" class="password-eye" data-password-target="acc-password-confirm" aria-label="Show password">👁</button></div>
 
           <div id="accForgotRow" style="text-align:right;margin:-2px 0 12px;">
             <a href="javascript:void(0)" id="btnAccountForgotPassword" style="color:var(--accent);font-size:12px;text-decoration:none;font-weight:700;">Forgot password?</a>
@@ -3019,14 +3022,14 @@ body.menu-open .app>header{z-index:1!important;}
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v105</div>
-          <div class="settings-note" style="margin-top:4px;">Sold Card Tags &amp; Expandable Details</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v107</div>
+          <div class="settings-note" style="margin-top:4px;">Signup Shop Contact &amp; Location Details</div>
           <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 03 Nov 2026 • 11:12:00 AM PKT</div>
           <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Sold cards now show specification tags and an expandable More details section with purchase/sale timestamps, prices, profit, customer, payment, IMEI, seller, expenses and payment history. Existing calculations and stored data are unchanged.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
-          <div style="font-weight:700;margin-top:9px;">Index v105 — 03 Nov 2026 • 11:12:00 AM PKT</div>
+          <div style="font-weight:700;margin-top:9px;">Index v107 — 03 Nov 2026 • 12:05:00 PM PKT</div>
           <div class="settings-note">Added specification tags and expandable More details on sold/returned mobile cards, including purchase/sale timestamps, customer, payment, IMEI and payment history.</div>
           <div style="font-weight:700;margin-top:9px;">Index v104 — 03 Nov 2026 • 10:02:45 AM PKT</div>
           <div class="settings-note">Purchase and sale cards show only the user-entered Buy Time/Sale Time; no inferred timestamps.</div>
@@ -3108,8 +3111,8 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v105';
-const APP_INDEX_VERSION_NAME = 'Sold Card Tags & Expandable Details';
+const APP_INDEX_VERSION = 'v107';
+const APP_INDEX_VERSION_NAME = 'Mandatory Signup Details';
 const APP_INDEX_UPDATED = '03 Nov 2026 • 11:12:00 AM PKT';
 
 let inventory = [];
@@ -12374,21 +12377,30 @@ document.getElementById('btnAccountSignup').onclick = function(){
   const confirmPass = document.getElementById('acc-password-confirm').value;
   const shopName = document.getElementById('acc-shopname').value.trim();
   const ownerName = document.getElementById('acc-ownername').value.trim();
+  const shopPhone = document.getElementById('acc-shopphone').value.trim();
+  const shopAddress = document.getElementById('acc-shopaddress').value.trim();
+  const shopCity = document.getElementById('acc-shopcity').value.trim();
   const rentType = document.getElementById('acc-rent-type').value;
   const monthlyRent = Math.max(0,Number(document.getElementById('acc-rent-amount').value)||0);
   const rentDueDay = Math.min(31,Math.max(1,Number(document.getElementById('acc-rent-day').value)||1));
-  if(rentType==='rented'&&monthlyRent<=0){showAccountError('Monthly rent ki sahi amount likhein.');return;}
-  if(rentType==='rented'&&(!document.getElementById('acc-rent-day').value||Number(document.getElementById('acc-rent-day').value)<1||Number(document.getElementById('acc-rent-day').value)>31)){showAccountError('Rent ki date 1 se 31 ke darmiyan likhein.');return;}
+  // Every signup field is mandatory. Rent amount/date are required only for rented shops.
+  if(!shopName){ showAccountError('Shop Name likhein.'); document.getElementById('acc-shopname').focus(); return; }
+  if(!ownerName){ showAccountError('Owner Name likhein.'); document.getElementById('acc-ownername').focus(); return; }
+  if(!shopPhone){ showAccountError('Shop Phone Number likhein.'); document.getElementById('acc-shopphone').focus(); return; }
+  if(!shopAddress){ showAccountError('Shop Address likhein.'); document.getElementById('acc-shopaddress').focus(); return; }
+  if(!shopCity){ showAccountError('City likhein.'); document.getElementById('acc-shopcity').focus(); return; }
+  if(rentType==='rented'&&monthlyRent<=0){showAccountError('Monthly rent ki sahi amount likhein.');document.getElementById('acc-rent-amount').focus();return;}
+  if(rentType==='rented'&&(!document.getElementById('acc-rent-day').value||Number(document.getElementById('acc-rent-day').value)<1||Number(document.getElementById('acc-rent-day').value)>31)){showAccountError('Rent ki date 1 se 31 ke darmiyan likhein.');document.getElementById('acc-rent-day').focus();return;}
   if(!email || !pass){ showAccountError('Email aur password dono likhein.'); return; }
   if(pass.length < 6){ showAccountError('Password kam se kam 6 characters ka ho.'); return; }
+  if(!confirmPass){ showAccountError('Confirm Password dobara likhein.'); document.getElementById('acc-password-confirm').focus(); return; }
   if(pass !== confirmPass){ showAccountError('Confirm Password match nahi karta.'); return; }
-  if(!shopName){ showAccountError('Shop Name likhein.'); return; }
   fbAuth.createUserWithEmailAndPassword(email, pass)
     .then(function(){
-      shopProfile = {shopName:shopName, ownerName:ownerName, shopPhone:'', rentType:rentType, monthlyRent:rentType==='rented'?monthlyRent:0, rentDueDay:rentDueDay, rentReminderEnabled:true, rentPaidMonths:[]};
+      shopProfile = {shopName:shopName, ownerName:ownerName, shopPhone:shopPhone, shopAddress:shopAddress, shopCity:shopCity, rentType:rentType, monthlyRent:rentType==='rented'?monthlyRent:0, rentDueDay:rentDueDay, rentReminderEnabled:true, rentPaidMonths:[]};
       try{ localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY), JSON.stringify(shopProfile)); }catch(e){}
       const u=fbAuth.currentUser; if(!u) return;
-      const payload={role:'shop',shopId:u.uid,accessStatus:'active',accessReason:'',email:u.email||email,shopName:shopName,ownerName:ownerName,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+      const payload={role:'shop',shopId:u.uid,accessStatus:'active',accessReason:'',email:u.email||email,shopName:shopName,ownerName:ownerName,shopPhone:shopPhone,shopAddress:shopAddress,shopCity:shopCity,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
       return fbDb.collection('users').doc(u.uid).set(payload,{merge:true}).then(function(){
         userRole='shop'; userShopId=u.uid; userAccessStatus='active'; userAccessReason='';
         setAuthGateView('unlocked');
