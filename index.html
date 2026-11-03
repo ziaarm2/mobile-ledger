@@ -2,7 +2,7 @@
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
 Current file version: Index v107
-- Index v112 — Unified Close Buttons & Loading Fix — 03 Nov 2026 • 02:05:00 PM PKT. Fixed Expenses overlay on mobile: expense form and filtered expense list scroll independently while the bottom Close action remains pinned above the iPhone home indicator; added safe-area spacing to prevent content and controls being clipped. Preserved expense calculations and existing actions.
+- Index v113 — Combined Shop Labels & Brand Filter Fix — 03 Nov 2026 • 02:05:00 PM PKT. Fixed Expenses overlay on mobile: expense form and filtered expense list scroll independently while the bottom Close action remains pinned above the iPhone home indicator; added safe-area spacing to prevent content and controls being clipped. Preserved expense calculations and existing actions.
 Version name: Mandatory Signup Details
 Baseline: User-provided Index v93 file (preserved; all existing functionality retained)
 Last changed: 03 Nov 2026 • 11:12:00 AM PKT (Asia/Karachi)
@@ -42,8 +42,8 @@ VERSION HISTORY (newest first):
 <head>
 <meta name="app-index-version" content="v107">
 <meta name="app-index-version-name" content="Exact Purchase & Sale Entry Times">
-<meta name="app-index-updated" content="2026-11-03T15:25:00+05:00">
-<meta name="app-index-change-summary" content="Standardized close buttons across app sheets and dialogs. Fixed the prior loading-screen regression by keeping the CSS in the document head rather than inside the report-generation JavaScript string. Preserved app data and calculations.">
+<meta name="app-index-updated" content="2026-11-03T15:55:00+05:00">
+<meta name="app-index-change-summary" content="All Shops Combined now shows the source shop name on stock and sold mobile cards, including grouped model cards. Brand chips use direct touch-safe handlers and immediately repaint the inventory while keeping status filters independent. Existing inventory, calculations and Firestore data remain unchanged.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -1928,6 +1928,31 @@ button[id="mdpClose"]:active, button[id="mdiClose"]:active{
 }
 </style>
 
+
+<style id="v113-combined-shop-brand-filter-fix">
+.admin-combined-shop-label{
+  display:block !important;
+  width:fit-content !important;
+  max-width:100% !important;
+  margin:6px 0 8px !important;
+  padding:4px 9px !important;
+  border:1px solid #c9dcff !important;
+  border-radius:7px !important;
+  background:#eef5ff !important;
+  color:#2865ad !important;
+  font-size:12px !important;
+  font-weight:750 !important;
+  line-height:1.35 !important;
+  overflow-wrap:anywhere !important;
+}
+#brandFilterChips .chip[data-brand]{
+  cursor:pointer !important;
+  pointer-events:auto !important;
+  touch-action:manipulation !important;
+  -webkit-tap-highlight-color:transparent !important;
+}
+</style>
+
 </head>
 <body>
 <div id="mobileCloudStartupGate" role="status" aria-live="polite"><div class="gate-card"><img class="gate-logo" src="icon-192.png" alt="Mobile Hisab" onerror="this.style.display='none'"><div class="gate-title">Mobile Hisab</div><div class="gate-by">by Z Mobile</div><div class="gate-status">Latest data verify kiya ja raha hai…</div><div class="gate-loader" aria-hidden="true"><i></i></div></div></div>
@@ -3182,8 +3207,8 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
 });
 
 const APP_INDEX_VERSION = 'v112';
-const APP_INDEX_VERSION_NAME = 'Unified Close Buttons & Loading Fix';
-const APP_INDEX_UPDATED = '03 Nov 2026 • 03:25:00 PM PKT';
+const APP_INDEX_VERSION_NAME = 'Combined Shop Labels & Brand Filter Fix';
+const APP_INDEX_UPDATED = '03 Nov 2026 • 03:55:00 PM PKT';
 
 let inventory = [];
 
@@ -5256,39 +5281,23 @@ function renderBrandFilter(){
       return '<button type="button" class="chip '+(activeBrandFilter===b?'active':'')+'" data-brand="'+b+'">'+b+'</button>';
     }).join('');
 
-  // Brand filtering has one canonical interaction path: click.
-  // Do not split the state update between pointerdown and click. Repainting
-  // during pointerdown can replace the pressed button before the browser's
-  // click event is dispatched, which makes the tap look like it did nothing
-  // on some touch browsers. A normal click is generated for mouse, touch and
-  // keyboard activation, so it is sufficient and keeps state + repaint atomic.
-  if(!wrap.__brandFilterDelegated){
-    wrap.__brandFilterDelegated = true;
-    wrap.addEventListener('click', function(e){
-      const chip = e.target.closest('.chip[data-brand]');
-      if(!chip || !wrap.contains(chip)) return;
-      e.preventDefault();
-      e.stopPropagation();
-
+  // Bind each chip directly after it is rendered. This avoids delegated
+  // click handlers being affected by overlay/touch event propagation on iOS.
+  // Update the combined brand state and repaint both chip rows + inventory
+  // immediately; the status filter remains independent.
+  wrap.querySelectorAll('button.chip[data-brand]').forEach(function(chip){
+    chip.onclick = function(ev){
+      ev.preventDefault();
+      ev.stopPropagation();
       const val = chip.getAttribute('data-brand') || 'all';
       const isCombined = (userRole==='admin' && adminViewActive && adminViewShopId==='__combined__');
-
-      // Combined Data owns its own brand-filter state. Never read/write the
-      // normal shop's currentBrandFilter while Combined Data is open.
-      if(isCombined){
-        adminCombinedBrandFilter = val;
-      }else{
-        currentBrandFilter = val;
-      }
-
-      // The brand state is changed first, then the list is rendered from that
-      // exact state. This prevents the lower filter row from being required to
-      // trigger a second repaint before the selected brand becomes visible.
-      render();
-
+      if(isCombined) adminCombinedBrandFilter = val;
+      else currentBrandFilter = val;
+      renderBrandFilter();
+      renderList();
       if(!isCombined) saveUIState();
-    });
-  }
+    };
+  });
 }
 
 function renderFilterChips(){
@@ -5717,7 +5726,7 @@ function cardPhotoHtml(e){
 
 function adminCombinedShopBadge(e){
   if(!(userRole==='admin' && adminViewActive && adminViewShopId==='__combined__') || !e || !e._adminShopName) return '';
-  return '<div class=\"sale-meta\" style=\"margin-top:4px;color:var(--accent);font-weight:750;\">🏪 '+adminEscape(e._adminShopName)+'</div>';
+  return '<div class="admin-combined-shop-label">🏪 Shop: '+adminEscape(e._adminShopName)+'</div>';
 }
 
 function renderSingleStockCard(e){
@@ -5754,6 +5763,12 @@ function renderStockGroup(g){
   }
   const totalQty = g.pieces.reduce(function(s,p){return s+(p.quantity||0);}, 0);
   const compact = cardDisplaySettings.cardViewMode === 'compact';
+  const combinedShopNames = (userRole==='admin' && adminViewActive && adminViewShopId==='__combined__')
+    ? Array.from(new Set(g.pieces.map(function(p){return p._adminShopName||'';}).filter(Boolean)))
+    : [];
+  const groupShopLabel = combinedShopNames.length
+    ? '<div class="admin-combined-shop-label">🏪 Shop'+(combinedShopNames.length>1?'s':'')+': '+combinedShopNames.map(adminEscape).join(', ')+'</div>'
+    : '';
   const inner = g.pieces.map(function(e){
     const outOfStock = (e.quantity||0) <= 0;
     const canSplit = !outOfStock && (e.quantity||1) > 1;
@@ -5780,6 +5795,7 @@ function renderStockGroup(g){
   return (
     '<div class="card group-card '+(compact?'compact ':'')+'multi-selectable" data-multi-group-ids="'+g.pieces.map(function(x){return x.id;}).join(',')+'"><div class="multi-select-mark">✓</div>'+
       '<div class="card-title">'+g.brand+' '+g.model+'</div>'+
+      groupShopLabel+
       '<div class="card-sub">'+g.pieces.length+' alag pieces &bull; '+totalQty+' total stock mein</div>'+
       '<div class="piece-list">'+inner+'</div>'+
       '<button class="add-piece-btn" data-piece-brand="'+encodeURIComponent(g.brand)+'" data-piece-model="'+encodeURIComponent(g.model)+'">+ Isi model ka naya piece add karein</button>'+
