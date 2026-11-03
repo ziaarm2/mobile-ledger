@@ -2,7 +2,7 @@
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
 Current file version: Index v107
-- Index v107 — Mandatory Signup Details — 03 Nov 2026 • 12:05:00 PM PKT. Made all new-account signup details mandatory: shop name, owner name, shop phone, shop address, city, email, password and confirm password; monthly rent and rent date are mandatory only when Rent par is selected. Existing accounts and business data remain unchanged.
+- Index v108 — Existing Shop Profile Fields & Address Label — 03 Nov 2026 • 12:22:00 PM PKT. Changed Shop Address placeholder to a simple neutral prompt; exposed phone, address, city, shop type, monthly rent, rent date and reminder settings in existing-shop profile editors (Settings, Account Shop Profile and Google setup); saves preserve existing rent/payment history and unrelated profile properties.
 Version name: Mandatory Signup Details
 Baseline: User-provided Index v93 file (preserved; all existing functionality retained)
 Last changed: 03 Nov 2026 • 11:12:00 AM PKT (Asia/Karachi)
@@ -2647,7 +2647,7 @@ body.menu-open .app>header{z-index:1!important;}
             <div class="field"><label>Shop Name</label><input type="text" id="acc-shopname" required placeholder="e.g. Z Mobile" autocomplete="organization"></div>
             <div class="field"><label>Owner Name</label><input type="text" id="acc-ownername" required placeholder="Owner ka naam" autocomplete="name"></div>
             <div class="field"><label>Shop Phone Number</label><input type="tel" id="acc-shopphone" required placeholder="03xx xxxxxxx" autocomplete="tel"></div>
-            <div class="field"><label>Shop Address</label><input type="text" id="acc-shopaddress" required placeholder="Shop ka mukammal address" autocomplete="street-address"></div>
+            <div class="field"><label>Shop Address</label><input type="text" id="acc-shopaddress" required placeholder="Shop address likhein" autocomplete="street-address"></div>
             <div class="field"><label>City</label><input type="text" id="acc-shopcity" required placeholder="e.g. Rahim Yar Khan" autocomplete="address-level2"></div>
             <div class="field"><label>Aapki shop rented hai ya apni?</label><select id="acc-rent-type"><option value="rented" selected>Rent par</option><option value="owned">Apni shop</option></select></div>
             <div id="acc-rent-fields" style="display:block;"><div class="field"><label>Monthly rent (Rs.)</label><input id="acc-rent-amount" required type="number" min="1" placeholder="20000"></div><div class="field"><label>Har mahine rent ki date (1–31)</label><input id="acc-rent-day" required type="number" min="1" max="31" placeholder="5"></div><div class="settings-note">Rent ki amount aur date sahi likhein taake reminder aur expenses sahi rahen.</div></div>
@@ -2713,7 +2713,12 @@ body.menu-open .app>header{z-index:1!important;}
           <div id="editShopProfileBlock" style="display:none;margin-top:12px;">
             <div class="field"><label>Shop Name</label><input type="text" id="edit-shopname" placeholder="e.g. Z Mobile"></div>
             <div class="field"><label>Owner Name</label><input type="text" id="edit-ownername" placeholder="Owner ka naam"></div>
-            <div class="field"><label>Shop Phone (contact only)</label><input type="tel" id="edit-shopphone" placeholder="03xx xxxxxxx"></div>
+            <div class="field"><label>Shop Phone Number</label><input type="tel" id="edit-shopphone" placeholder="03xx xxxxxxx"></div>
+            <div class="field"><label>Shop Address</label><input type="text" id="edit-shopaddress" placeholder="Shop address likhein"></div>
+            <div class="field"><label>City</label><input type="text" id="edit-shopcity" placeholder="City ka naam"></div>
+            <div class="sec-label" style="margin-top:12px;">Rent Management</div>
+            <div class="field"><label>Shop type</label><select id="edit-rent-type"><option value="rented">Rent par</option><option value="owned">Apni shop</option></select></div>
+            <div id="edit-rent-fields"><div class="two-col"><div class="field"><label>Monthly rent (Rs.)</label><input id="edit-rent-amount" type="number" min="0" placeholder="20000"></div><div class="field"><label>Rent date</label><input id="edit-rent-day" type="number" min="1" max="31" placeholder="5"></div></div><div class="field"><label>Rent reminder</label><select id="edit-rent-reminder"><option value="on">ON</option><option value="off">OFF</option></select></div></div>
             <div class="sheet-actions" style="position:static;margin-top:8px;"><button class="btn-save" id="btnSaveShopProfile" style="flex:1;">Save</button><button class="btn-cancel" id="btnCancelShopProfile" style="flex:1;">Cancel</button></div>
           </div>
           <button class="btn-cancel" id="btnAccountLogout" style="width:100%;margin-top:14px;padding:12px;">Logout from this device</button>
@@ -2730,7 +2735,12 @@ body.menu-open .app>header{z-index:1!important;}
     <div class="settings-note" style="margin-top:6px;">Google se sign in ho gaya. Bas shop ki basic details save karein.</div>
     <div class="field" style="margin-top:14px;"><label>Shop Name</label><input type="text" id="setup-shopname" placeholder="e.g. Z Mobile"></div>
     <div class="field"><label>Owner Name</label><input type="text" id="setup-ownername" placeholder="Owner ka naam"></div>
-    <div class="field"><label>Shop Phone (optional)</label><input type="tel" id="setup-shopphone" placeholder="03xx xxxxxxx"></div>
+    <div class="field"><label>Shop Phone Number</label><input type="tel" id="setup-shopphone" placeholder="03xx xxxxxxx"></div>
+    <div class="field"><label>Shop Address</label><input type="text" id="setup-shopaddress" placeholder="Shop address likhein"></div>
+    <div class="field"><label>City</label><input type="text" id="setup-shopcity" placeholder="City ka naam"></div>
+    <div class="sec-label" style="margin-top:12px;">Rent Management</div>
+    <div class="field"><label>Shop type</label><select id="setup-rent-type"><option value="rented" selected>Rent par</option><option value="owned">Apni shop</option></select></div>
+    <div id="setup-rent-fields"><div class="two-col"><div class="field"><label>Monthly rent (Rs.)</label><input id="setup-rent-amount" type="number" min="0" placeholder="20000"></div><div class="field"><label>Rent date</label><input id="setup-rent-day" type="number" min="1" max="31" placeholder="5"></div></div></div>
     <button class="auth-primary" id="btnCompleteShopSetup" style="margin-top:8px;">Save & Continue</button>
     <div id="shopSetupError" style="color:var(--danger);font-size:12px;margin-top:8px;display:none;"></div>
   </div>
@@ -2827,7 +2837,9 @@ body.menu-open .app>header{z-index:1!important;}
         <div class="settings-section-card">
           <div class="field"><label>Shop Name</label><input type="text" id="settings-shopname" placeholder="e.g. Z Mobile"></div>
           <div class="field"><label>Owner Name</label><input type="text" id="settings-ownername" placeholder="Owner ka naam"></div>
-          <div class="field"><label>Shop Phone (contact only)</label><input type="tel" id="settings-shopphone" placeholder="03xx xxxxxxx"></div>
+          <div class="field"><label>Shop Phone Number</label><input type="tel" id="settings-shopphone" placeholder="03xx xxxxxxx"></div>
+          <div class="field"><label>Shop Address</label><input type="text" id="settings-shopaddress" placeholder="Shop address likhein"></div>
+          <div class="field"><label>City</label><input type="text" id="settings-shopcity" placeholder="City ka naam"></div>
           <div class="sec-label" style="margin-top:18px;">Rent Management</div>
           <div class="field"><label>Shop type</label><select id="settings-rent-type"><option value="rented" selected>Rent par</option><option value="owned">Apni shop</option></select></div>
           <div id="settings-rent-fields" style="display:none;"><div class="two-col"><div class="field"><label>Monthly rent (Rs.)</label><input id="settings-rent-amount" type="number" min="0" inputmode="decimal" placeholder="20000"></div><div class="field"><label>Rent date</label><input id="settings-rent-day" type="number" min="1" max="31" placeholder="5"></div></div><div class="field"><label>Rent reminder</label><select id="settings-rent-reminder"><option value="on">ON</option><option value="off">OFF</option></select></div><div class="settings-note">Rent ki amount aur rent date sahi likhein. Paid confirm karne par rent expense automatically add hoga.</div><button type="button" class="btn-cancel" id="settings-rent-paid" style="width:100%;margin-top:8px;">Confirm current month's rent paid</button></div>
@@ -10405,6 +10417,8 @@ function openSettingsPage(page){
     document.getElementById('settings-shopname').value=shopProfile.shopName||'';
     document.getElementById('settings-ownername').value=shopProfile.ownerName||'';
     document.getElementById('settings-shopphone').value=shopProfile.shopPhone||'';
+    document.getElementById('settings-shopaddress').value=shopProfile.shopAddress||'';
+    document.getElementById('settings-shopcity').value=shopProfile.shopCity||'';
     document.getElementById('settings-rent-type').value=shopProfile.rentType||'owned';
     document.getElementById('settings-rent-amount').value=Number(shopProfile.monthlyRent)||'';
     document.getElementById('settings-rent-day').value=Number(shopProfile.rentDueDay)||1;
@@ -10449,7 +10463,7 @@ document.getElementById('settingsSaveShopProfile').onclick=function(){
   const monthlyRent=Math.max(0,Number(document.getElementById('settings-rent-amount').value)||0);
   const rentDueDay=Math.min(31,Math.max(1,Number(document.getElementById('settings-rent-day').value)||1));
   const previous=JSON.stringify(shopProfile||{});
-  const nextProfile=Object.assign({},shopProfile,{shopName:shopName,ownerName:document.getElementById('settings-ownername').value.trim(),shopPhone:document.getElementById('settings-shopphone').value.trim(),rentType:rentType,monthlyRent:monthlyRent,rentDueDay:rentDueDay,rentReminderEnabled:document.getElementById('settings-rent-reminder').value!=='off',rentPaidMonths:Array.isArray(shopProfile.rentPaidMonths)?shopProfile.rentPaidMonths:[]});
+  const nextProfile=Object.assign({},shopProfile,{shopName:shopName,ownerName:document.getElementById('settings-ownername').value.trim(),shopPhone:document.getElementById('settings-shopphone').value.trim(),shopAddress:document.getElementById('settings-shopaddress').value.trim(),shopCity:document.getElementById('settings-shopcity').value.trim(),rentType:rentType,monthlyRent:rentType==='rented'?monthlyRent:0,rentDueDay:rentDueDay,rentReminderEnabled:document.getElementById('settings-rent-reminder').value!=='off',rentPaidMonths:Array.isArray(shopProfile.rentPaidMonths)?shopProfile.rentPaidMonths:[]});
   btn.dataset.saving='1';btn.disabled=true;btn.textContent='Saving…';btn.style.opacity='.78';btn.style.transform='scale(.985)';
   try{
     localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY),JSON.stringify(nextProfile));
@@ -12431,18 +12445,32 @@ document.getElementById('btnEditShopProfile').onclick = function(){
   document.getElementById('edit-shopname').value = shopProfile.shopName || '';
   document.getElementById('edit-ownername').value = shopProfile.ownerName || '';
   document.getElementById('edit-shopphone').value = shopProfile.shopPhone || '';
+  document.getElementById('edit-shopaddress').value = shopProfile.shopAddress || '';
+  document.getElementById('edit-shopcity').value = shopProfile.shopCity || '';
+  document.getElementById('edit-rent-type').value = shopProfile.rentType || 'owned';
+  document.getElementById('edit-rent-amount').value = Number(shopProfile.monthlyRent)||'';
+  document.getElementById('edit-rent-day').value = Number(shopProfile.rentDueDay)||'';
+  document.getElementById('edit-rent-reminder').value = shopProfile.rentReminderEnabled===false?'off':'on';
+  document.getElementById('edit-rent-fields').style.display = shopProfile.rentType==='rented'?'block':'none';
   document.getElementById('editShopProfileBlock').style.display = 'block';
 };
+document.getElementById('edit-rent-type').addEventListener('change',function(){document.getElementById('edit-rent-fields').style.display=this.value==='rented'?'block':'none';});
 document.getElementById('btnCancelShopProfile').onclick = function(){
   document.getElementById('editShopProfileBlock').style.display = 'none';
 };
 document.getElementById('btnSaveShopProfile').onclick = function(){
   if(isAdminShopView()){ alert('Admin Shop view read-only hai — shop profile change nahi ki ja sakti.'); return; }
-  shopProfile = {
+  shopProfile = Object.assign({},shopProfile,{
     shopName: document.getElementById('edit-shopname').value.trim(),
     ownerName: document.getElementById('edit-ownername').value.trim(),
-    shopPhone: document.getElementById('edit-shopphone').value.trim()
-  };
+    shopPhone: document.getElementById('edit-shopphone').value.trim(),
+    shopAddress: document.getElementById('edit-shopaddress').value.trim(),
+    shopCity: document.getElementById('edit-shopcity').value.trim(),
+    rentType: document.getElementById('edit-rent-type').value,
+    monthlyRent: document.getElementById('edit-rent-type').value==='rented'?(Number(document.getElementById('edit-rent-amount').value)||0):0,
+    rentDueDay: Math.min(31,Math.max(1,Number(document.getElementById('edit-rent-day').value)||1)),
+    rentReminderEnabled: document.getElementById('edit-rent-reminder').value!=='off'
+  });
   try{ localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY), JSON.stringify(shopProfile)); }catch(e){}
   schedulePush();
   updateAccountUI();
@@ -12471,6 +12499,12 @@ function maybeOpenShopSetup(force){
   document.getElementById('setup-shopname').value=shopProfile.shopName||'';
   document.getElementById('setup-ownername').value=shopProfile.ownerName||fbUser.displayName||'';
   document.getElementById('setup-shopphone').value=shopProfile.shopPhone||'';
+  document.getElementById('setup-shopaddress').value=shopProfile.shopAddress||'';
+  document.getElementById('setup-shopcity').value=shopProfile.shopCity||'';
+  document.getElementById('setup-rent-type').value=shopProfile.rentType||'rented';
+  document.getElementById('setup-rent-amount').value=Number(shopProfile.monthlyRent)||'';
+  document.getElementById('setup-rent-day').value=Number(shopProfile.rentDueDay)||'';
+  document.getElementById('setup-rent-fields').style.display=(shopProfile.rentType||'rented')==='rented'?'block':'none';
   document.getElementById('shopSetupError').style.display='none';
   ov.classList.remove('hidden');
 }
@@ -12499,17 +12533,23 @@ function googleSignIn(){
 }
 document.getElementById('btnGoogleAuth').onclick=googleSignIn;
 
+document.getElementById('setup-rent-type').addEventListener('change',function(){document.getElementById('setup-rent-fields').style.display=this.value==='rented'?'block':'none';});
 document.getElementById('btnCompleteShopSetup').onclick=function(){
   const shopName=document.getElementById('setup-shopname').value.trim();
   const ownerName=document.getElementById('setup-ownername').value.trim();
   const shopPhone=document.getElementById('setup-shopphone').value.trim();
+  const shopAddress=document.getElementById('setup-shopaddress').value.trim();
+  const shopCity=document.getElementById('setup-shopcity').value.trim();
+  const rentType=document.getElementById('setup-rent-type').value;
+  const monthlyRent=Number(document.getElementById('setup-rent-amount').value)||0;
+  const rentDueDay=Math.min(31,Math.max(1,Number(document.getElementById('setup-rent-day').value)||1));
   const err=document.getElementById('shopSetupError');
   if(!shopName){ err.textContent='Shop Name zaroor likhein.'; err.style.display='block'; return; }
-  shopProfile={shopName:shopName,ownerName:ownerName,shopPhone:shopPhone};
+  shopProfile=Object.assign({},shopProfile,{shopName:shopName,ownerName:ownerName,shopPhone:shopPhone,shopAddress:shopAddress,shopCity:shopCity,rentType:rentType,monthlyRent:rentType==='rented'?monthlyRent:0,rentDueDay:rentDueDay,rentReminderEnabled:shopProfile.rentReminderEnabled!==false,rentPaidMonths:Array.isArray(shopProfile.rentPaidMonths)?shopProfile.rentPaidMonths:[]});
   try{ localStorage.setItem(shopStorageKey(LS_SHOP_PROFILE_KEY), JSON.stringify(shopProfile)); }catch(e){}
   if(fbDb && fbUser && userRole!=='admin'){
     userAccessStatus='active'; userAccessReason='';
-    fbDb.collection('users').doc(fbUser.uid).set({shopName:shopName,ownerName:ownerName,shopPhone:shopPhone,accessStatus:'active',accessReason:'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(function(e){console.warn('Shop setup sync failed',e);});
+    fbDb.collection('users').doc(fbUser.uid).set({shopName:shopName,ownerName:ownerName,shopPhone:shopPhone,shopAddress:shopAddress,shopCity:shopCity,rentType:rentType,monthlyRent:rentType==='rented'?monthlyRent:0,rentDueDay:rentDueDay,accessStatus:'active',accessReason:'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(function(e){console.warn('Shop setup sync failed',e);});
   }
   if(accessStatusAllowsUse()) schedulePush(); updateAccountUI();
   document.getElementById('shopSetupOverlay').classList.add('hidden');
