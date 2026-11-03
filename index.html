@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v96
-Version name: Complete Sold Payment Editing & Flexible Analytics Comparison
+Current file version: Index v97
+Version name: Rent Defaults & Dashboard/Analytics Visibility
 Baseline: User-provided Index v93 file (preserved; all existing functionality retained)
-Last changed: 02 Nov 2026 • 09:31:37 PM PKT (Asia/Karachi)
-Change summary: Added editable received/remaining amounts to sold-entry editing with recalculated sale totals, dues and profit; added same-date monthly and rolling 28-day stock/purchase/sales comparisons and a sticky Analytics close button.
+Last changed: 03 Nov 2026 • 08:52:22 AM PKT (Asia/Karachi)
+Change summary: Set Rent par as the default shop-type choice in signup and Settings; added rent status, due date, reminder state and Before Rent/After Rent profit context to Dashboard and Analytics without changing actual profit/expense calculations.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 1. Read this block and the APP_INDEX_VERSION / APP_INDEX_UPDATED constants before editing.
@@ -18,6 +18,7 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
 VERSION HISTORY (newest first):
+- Index v97 — Rent Defaults & Dashboard/Analytics Visibility — 03 Nov 2026 • 08:52:22 AM PKT. Defaulted shop type to Rent par and surfaced rent status, due date, reminder state and Before Rent/After Rent context in Dashboard and Analytics.
 - Index v96 — Rent Management & Payment Recovery Details — 02 Nov 2026 • 10:40:00 PM PKT. Added rent settings/reminders, rent-paid expense creation, Before Rent/After Rent status labels, and payment recovery detail view.
 - Index v90 — Busiest Hour Analytics Graph Fix — 31 Oct 2026 • 01:26:48 PM PKT. Corrected Busiest Business Hours analytics: embedded interactive blue/orange hourly line graph and Day (9 AM–9 PM)/Night (9 PM–9 AM) selector directly in that section; Day default. Existing analytics retained.
 - Index v89 — Busiest Hour Analytics Graph Fix — 31 Oct 2026 • 01:17:06 PM PKT. Added graph in Customer Time Analytics modal; this was not the requested Analytics section.
@@ -35,10 +36,10 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v96">
-<meta name="app-index-version-name" content="Rent Management & Payment Recovery Details">
-<meta name="app-index-updated" content="2026-11-02T22:40:00+05:00">
-<meta name="app-index-change-summary" content="Added rent status/settings/reminders, rent-paid expense creation, Before Rent/After Rent labels and recovered payment details; preserves existing v95 features.">
+<meta name="app-index-version" content="v97">
+<meta name="app-index-version-name" content="Rent Defaults & Dashboard/Analytics Visibility">
+<meta name="app-index-updated" content="2026-11-03T08:52:22+05:00">
+<meta name="app-index-change-summary" content="Set Rent par as the default shop-type choice in signup and Settings; added rent status, due date, reminder state and Before Rent/After Rent profit context to Dashboard and Analytics without changing actual profit/expense calculations.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -2393,6 +2394,10 @@ body.menu-open .app>header{z-index:1!important;}
       <div class="analytics-snapshot-grid" id="analyticsSnapshotGrid"></div>
       <div id="analyticsDeadStockWrap"></div>
     </div>
+    <div class="analytics-card" id="analyticsRentCard">
+      <div class="analytics-card-head"><div><div class="analytics-card-title">🏠 SHOP RENT</div><div class="analytics-card-sub">Monthly rent, payment status aur profit adjustment</div></div></div>
+      <div id="analyticsRentInfo"></div>
+    </div>
     <div class="analytics-scoreboard" id="analyticsScoreboard"></div>
     <div class="analytics-card">
       <div class="analytics-card-head"><div><div class="analytics-card-title">SCORING COMPARISON</div><div class="analytics-card-sub" id="analyticsTrendSub">Current vs previous comparable period</div></div><select id="analyticsMetric"><option value="profit" selected>Profit</option><option value="soldUnits">Mobiles sold</option><option value="purchasedUnits">Mobiles purchased</option><option value="sales">Sales</option><option value="purchases">Purchase</option><option value="expenses">Expenses</option></select><select id="analyticsTrendGraphType" aria-label="Scoring comparison graph style"><option value="line" selected>Line Graph</option><option value="area">Smooth Area</option><option value="bar">Bar Chart</option></select></div>
@@ -2617,8 +2622,8 @@ body.menu-open .app>header{z-index:1!important;}
           <div id="accSignupOnlyFields" style="display:none;">
             <div class="field"><label>Shop Name</label><input type="text" id="acc-shopname" placeholder="e.g. Z Mobile" autocomplete="organization"></div>
             <div class="field"><label>Owner Name</label><input type="text" id="acc-ownername" placeholder="Owner ka naam" autocomplete="name"></div>
-            <div class="field"><label>Aapki shop rented hai ya apni?</label><select id="acc-rent-type"><option value="owned">Apni shop</option><option value="rented">Rent par</option></select></div>
-            <div id="acc-rent-fields" style="display:none;"><div class="field"><label>Monthly rent (Rs.)</label><input id="acc-rent-amount" type="number" min="1" placeholder="20000"></div><div class="field"><label>Har mahine rent ki date (1–31)</label><input id="acc-rent-day" type="number" min="1" max="31" placeholder="5"></div><div class="settings-note">Rent ki amount aur date sahi likhein taake reminder aur expenses sahi rahen.</div></div>
+            <div class="field"><label>Aapki shop rented hai ya apni?</label><select id="acc-rent-type"><option value="rented" selected>Rent par</option><option value="owned">Apni shop</option></select></div>
+            <div id="acc-rent-fields" style="display:block;"><div class="field"><label>Monthly rent (Rs.)</label><input id="acc-rent-amount" type="number" min="1" placeholder="20000"></div><div class="field"><label>Har mahine rent ki date (1–31)</label><input id="acc-rent-day" type="number" min="1" max="31" placeholder="5"></div><div class="settings-note">Rent ki amount aur date sahi likhein taake reminder aur expenses sahi rahen.</div></div>
           </div>
 
           <div class="field"><label>Email</label><input type="email" id="acc-email" placeholder="aap@example.com" autocomplete="username"></div>
@@ -2797,7 +2802,7 @@ body.menu-open .app>header{z-index:1!important;}
           <div class="field"><label>Owner Name</label><input type="text" id="settings-ownername" placeholder="Owner ka naam"></div>
           <div class="field"><label>Shop Phone (contact only)</label><input type="tel" id="settings-shopphone" placeholder="03xx xxxxxxx"></div>
           <div class="sec-label" style="margin-top:18px;">Rent Management</div>
-          <div class="field"><label>Shop type</label><select id="settings-rent-type"><option value="owned">Apni shop</option><option value="rented">Rent par</option></select></div>
+          <div class="field"><label>Shop type</label><select id="settings-rent-type"><option value="rented" selected>Rent par</option><option value="owned">Apni shop</option></select></div>
           <div id="settings-rent-fields" style="display:none;"><div class="two-col"><div class="field"><label>Monthly rent (Rs.)</label><input id="settings-rent-amount" type="number" min="0" inputmode="decimal" placeholder="20000"></div><div class="field"><label>Rent due day</label><input id="settings-rent-day" type="number" min="1" max="31" placeholder="5"></div></div><div class="field"><label>Rent reminder</label><select id="settings-rent-reminder"><option value="on">ON</option><option value="off">OFF</option></select></div><div class="settings-note">Rent ki amount aur due date sahi likhein. Paid confirm karne par rent expense automatically add hoga.</div><button type="button" class="btn-cancel" id="settings-rent-paid" style="width:100%;margin-top:8px;">Confirm current month's rent paid</button></div>
           <button class="btn-save" id="settingsSaveShopProfile" style="width:100%;padding:12px;border:0;border-radius:10px;margin-top:4px;">Save Shop Profile</button>
         </div>
@@ -2990,13 +2995,17 @@ body.menu-open .app>header{z-index:1!important;}
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v95</div>
-          <div class="settings-note" style="margin-top:4px;">Complete Sold Payment Editing & Flexible Analytics Comparison</div>
-          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 02 Nov 2026 • 09:31:37 PM PKT</div>
-          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Sold entry details and sale expenses can be edited; sale totals, pending balance and profit recalculate. Added current-vs-previous month stock-level and purchased-vs-sold line graphs.</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v97</div>
+          <div class="settings-note" style="margin-top:4px;">Rent Defaults & Dashboard/Analytics Visibility</div>
+          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 03 Nov 2026 • 08:52:22 AM PKT</div>
+          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Rent par is now the default shop-type selection; Dashboard and Analytics show rent amount, due date, reminder status and Before Rent/After Rent context. Actual profit and expenses are not double-adjusted.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
+          <div style="font-weight:700;margin-top:9px;">Index v97 — 03 Nov 2026 • 08:52:22 AM PKT</div>
+          <div class="settings-note">Defaulted shop type to Rent par and surfaced rent status, due date, reminder state and Before Rent/After Rent context in Dashboard and Analytics.</div>
+          <div style="font-weight:700;margin-top:9px;">Index v96 — 02 Nov 2026 • 10:40:00 PM PKT</div>
+          <div class="settings-note">Added rent settings/reminders, rent-paid expense creation, Before Rent/After Rent status labels and recovered payment details.</div>
           <div style="font-weight:700;margin-top:9px;">Index v95 — 02 Nov 2026 • 09:31:37 PM PKT</div>
           <div class="settings-note">Sold entry edits now recalculate sale totals, received/remaining balance and profit; added same-date monthly and rolling 28-day comparison graphs and sticky Analytics close button. Existing features retained.</div>
           <div style="font-weight:700;margin-top:9px;">Index v91 — 31 Oct 2026 • 01:45:54 PM PKT</div>
@@ -3067,9 +3076,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v96';
-const APP_INDEX_VERSION_NAME = 'Rent Management & Payment Recovery Details';
-const APP_INDEX_UPDATED = '02 Nov 2026 • 10:40:00 PM PKT';
+const APP_INDEX_VERSION = 'v97';
+const APP_INDEX_VERSION_NAME = 'Rent Defaults & Dashboard/Analytics Visibility';
+const APP_INDEX_UPDATED = '03 Nov 2026 • 08:52:22 AM PKT';
 
 let inventory = [];
 
@@ -5040,6 +5049,8 @@ function renderStats(){
     '<div class="stat"><div class="v num">'+availableUnits+'</div><div class="l">Stock mein</div></div>'+
     '<div class="stat"><div class="v num">'+soldUnits+'</div><div class="l">Sold</div></div>'+
     '<div class="stat"><div class="v num" style="color:'+netProfitColor+'">'+displayProfitHtml(netProfit)+'</div><div class="l">Net Profit</div></div>';
+  const profitLabel=document.querySelector('#stats .stat:nth-child(4) .l');
+  if(profitLabel&&shopProfile.rentType==='rented'){const paid=(Array.isArray(shopProfile.rentPaidMonths)?shopProfile.rentPaidMonths:[]).includes(rentMonthKey(new Date()));profitLabel.innerHTML+=' <small style=\"color:'+(paid?'#15803d':'#dc2626')+'\">'+(paid?'After Rent':'Before Rent')+'</small>'; }
   document.querySelectorAll('[data-stats-period]').forEach(function(btn){
     btn.onclick=function(){
       dashboardSettings.mode=this.dataset.statsPeriod;
@@ -8175,6 +8186,31 @@ function autoBackupIfDue(){
   autoCloudBackupIfDue();
 }
 
+// Rent visibility shared by Dashboard and Analytics. Unpaid rent is shown as a
+// separate estimate only; it is NOT inserted into actual expenses until confirmed.
+function renderRentInfoCardHtml(context, profitBeforeRent){
+  if(shopProfile.rentType!=='rented'||!(Number(shopProfile.monthlyRent)>0)){
+    return context==='dashboard'?'':'<div class="settings-note">Apni shop selected hai — monthly rent applicable nahi.</div>';
+  }
+  const now=new Date(),key=rentMonthKey(now),paid=(Array.isArray(shopProfile.rentPaidMonths)?shopProfile.rentPaidMonths:[]).includes(key);
+  const amount=Number(shopProfile.monthlyRent)||0,day=Math.min(31,Math.max(1,Number(shopProfile.rentDueDay)||1));
+  const status=paid?'Rent Paid':'Rent Unpaid',color=paid?'#15803d':'#dc2626';
+  const adjusted=Number(profitBeforeRent||0)-(paid?0:amount);
+  const dateLabel=String(day)+' '+now.toLocaleString('en-PK',{month:'short'});
+  const body='<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">'+
+    '<strong style="color:'+color+'">'+status+'</strong><strong>Rs. '+fmt(amount)+'/month</strong></div>'+
+    '<div class="settings-note" style="margin-top:6px">Rent due: '+escapeHtml(dateLabel)+' · Reminder: '+(shopProfile.rentReminderEnabled===false?'OFF':'ON')+'</div>'+
+    '<div class="settings-note" style="margin-top:5px;font-weight:800">'+(paid?'After Rent':'Before Rent')+'</div>'+
+    (!paid?'<div class="settings-note" style="margin-top:4px">Rent pay karne ke baad estimated profit: <b>Rs. '+fmt(adjusted)+'</b></div>':'');
+  if(context==='dashboard')return '<div class="stat-card" style="grid-column:1/-1;text-align:left"><div class="l" style="margin-bottom:8px">SHOP RENT</div>'+body+'</div>';
+  return '<div style="padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2)">'+body+'</div>';
+}
+function renderRentInfoSurfaces(){
+  const dashboardProfitEl=document.querySelector('#stats .stat:nth-child(4)');
+  if(dashboardProfitEl){const label=dashboardProfitEl.querySelector('.l');if(label&&shopProfile.rentType==='rented')label.innerHTML+=' <small data-rent-profit-status style="color:'+( (Array.isArray(shopProfile.rentPaidMonths)?shopProfile.rentPaidMonths:[]).includes(rentMonthKey(new Date()))?'#15803d':'#dc2626')+'">'+(((Array.isArray(shopProfile.rentPaidMonths)?shopProfile.rentPaidMonths:[]).includes(rentMonthKey(new Date())))?'After Rent':'Before Rent')+'</small>'; }
+  const info=document.getElementById('analyticsRentInfo');if(info){const m=analyticsMetrics(analyticsDateRange('calendar'));const p=(m&&Number.isFinite(Number(m.netProfit)))?Number(m.netProfit):0;info.innerHTML=renderRentInfoCardHtml('analytics',p);}
+}
+
 // ---------- Dashboard ----------
 function renderDashboard(){
   renderDashboardPeriodControls();
@@ -8227,7 +8263,7 @@ function renderDashboard(){
       '</div>'+
     '</div>';
   }
-  document.getElementById('dashboardGrid').innerHTML=cards.map(function(c){return '<div class="stat-card"><div class="v num">'+c.v+'</div><div class="l">'+escapeHtml(c.l)+'</div></div>';}).join('')+deadHtml;
+  document.getElementById('dashboardGrid').innerHTML=cards.map(function(c){return '<div class="stat-card"><div class="v num">'+c.v+'</div><div class="l">'+escapeHtml(c.l)+'</div></div>';}).join('')+renderRentInfoCardHtml('dashboard',netProfit)+deadHtml;
   const note=document.getElementById('dashboardPeriodNote'); if(note) note.textContent=range.mode==='lifetime'?'All records':(dashboardSettings.mode==='business'?'Har month isi selected start day se period calculate hota hai.':'Calendar month: 1st se month ke last day tak.');
 }
 
@@ -9000,6 +9036,7 @@ function renderAnalytics(){
   document.querySelectorAll('[data-analytics-period]').forEach(function(b){b.classList.toggle('active',b.dataset.analyticsPeriod===analyticsMode);});
   document.getElementById('analyticsPeriodNote').textContent=prev?'Current: '+range.label+'  •  Previous comparable: '+prev.label:range.label+'  •  No previous period';
   analyticsRenderSnapshot(range,curr);
+  renderRentInfoSurfaces();
   analyticsRenderScoreboard(curr,previous);
   analyticsRenderLine(range,prev,document.getElementById('analyticsMetric').value);
   analyticsRenderVolume(curr,previous);
