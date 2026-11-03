@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v104
-- Index v104 — Exact Purchase & Sale Entry Times — 03 Nov 2026 • 10:02:45 AM PKT. Purchase cards display only the saved Buy Time; sold/returned cards display the saved Sale Time. No time is guessed from IDs or save timestamps.
-Version name: Inline Rent Status Under Net Profit
+Current file version: Index v105
+- Index v105 — Sold Card Tags & Expandable Details — 03 Nov 2026 • 11:12:00 AM PKT. Sold cards now show the same useful specification tags as stock cards and an expandable More details section with purchase/sale timestamps, prices, profit, customer, payment, IMEI, seller, expenses and payment history. No calculations or stored data schema changed.
+Version name: Sold Card Tags & Expandable Details
 Baseline: User-provided Index v93 file (preserved; all existing functionality retained)
-Last changed: 03 Nov 2026 • 09:37:11 AM PKT (Asia/Karachi)
-Change summary: Moved the small red/green Rent Unpaid/Rent Paid status below the Net Profit label instead of the card corner; preserved all calculations and other features.
+Last changed: 03 Nov 2026 • 11:12:00 AM PKT (Asia/Karachi)
+Change summary: Added specification tags and an expandable More details section to sold/returned mobile cards; retained existing sale/purchase data, calculations and workflows.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 1. Read this block and the APP_INDEX_VERSION / APP_INDEX_UPDATED constants before editing.
@@ -40,7 +40,7 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v104">
+<meta name="app-index-version" content="v105">
 <meta name="app-index-version-name" content="Exact Purchase & Sale Entry Times">
 <meta name="app-index-updated" content="2026-11-03T10:02:45+05:00">
 <meta name="app-index-change-summary" content="Purchase cards show only the exact Buy Time entered in the form; sold/returned cards show the exact Sale Time entered in the sale form. No inferred or generated fallback times.">
@@ -135,6 +135,17 @@ VERSION HISTORY (newest first):
   .badge.spec{background:var(--surface-3);color:var(--text-dim);}
   .badge.spec-issue{background:var(--nonpta-bg);color:var(--nonpta);font-size:12px;font-weight:700;padding:4px 10px;border:1px solid var(--nonpta);}
   .badge.qty{background:var(--surface-3);color:var(--text);}
+  .sold-details{margin-top:9px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);overflow:hidden;}
+  .sold-details summary{list-style:none;cursor:pointer;padding:9px 11px;color:var(--accent);font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:space-between;}
+  .sold-details summary::-webkit-details-marker{display:none;}
+  .sold-details summary:after{content:'＋';font-size:15px;font-weight:800;}
+  .sold-details[open] summary:after{content:'−';}
+  .sold-details-content{padding:0 11px 10px;border-top:1px solid var(--border);}
+  .sold-detail-row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px dashed var(--border);font-size:12px;}
+  .sold-detail-row:last-child{border-bottom:0;}
+  .sold-detail-label{color:var(--text-muted);flex:0 0 42%;}
+  .sold-detail-value{color:var(--text);font-weight:650;text-align:right;overflow-wrap:anywhere;}
+  .sold-detail-heading{font-size:11px;font-weight:800;color:var(--text-muted);margin:9px 0 3px;text-transform:uppercase;letter-spacing:.04em;}
 
   .price-row{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:13px;}
   .price-col{text-align:center;flex:1;}
@@ -1962,7 +1973,7 @@ body.menu-open .app>header{z-index:1!important;}
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v104<span>Updated: 03 Nov 2026</span><span>10:02:45 AM PKT</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v105<span>Updated: 03 Nov 2026</span><span>11:12:00 AM PKT</span></div>
       </div>
     </div>
 
@@ -3008,15 +3019,17 @@ body.menu-open .app>header{z-index:1!important;}
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v104</div>
-          <div class="settings-note" style="margin-top:4px;">Inline Rent Status Under Net Profit</div>
-          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 03 Nov 2026 • 09:37:11 AM PKT</div>
-          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Rent Paid/Unpaid now appears as a tiny top-right badge on the Net Profit card. Shop save feedback, Purchased count and all calculations are unchanged.</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v105</div>
+          <div class="settings-note" style="margin-top:4px;">Sold Card Tags &amp; Expandable Details</div>
+          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 03 Nov 2026 • 11:12:00 AM PKT</div>
+          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Sold cards now show specification tags and an expandable More details section with purchase/sale timestamps, prices, profit, customer, payment, IMEI, seller, expenses and payment history. Existing calculations and stored data are unchanged.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
+          <div style="font-weight:700;margin-top:9px;">Index v105 — 03 Nov 2026 • 11:12:00 AM PKT</div>
+          <div class="settings-note">Added specification tags and expandable More details on sold/returned mobile cards, including purchase/sale timestamps, customer, payment, IMEI and payment history.</div>
           <div style="font-weight:700;margin-top:9px;">Index v104 — 03 Nov 2026 • 10:02:45 AM PKT</div>
-          <div class="settings-note">Moved Rent Paid/Unpaid into a tiny small badge below the Net Profit label on the Net Profit card; no profit calculation changes.</div>
+          <div class="settings-note">Purchase and sale cards show only the user-entered Buy Time/Sale Time; no inferred timestamps.</div>
           <div style="font-weight:700;margin-top:9px;">Index v99 — 03 Nov 2026 • 09:18:10 AM PKT</div>
           <div class="settings-note">Shop Profile now gives Saving/Saved feedback and returns to Settings home; Purchased count appears beside Sold.</div>
           <div style="font-weight:700;margin-top:9px;">Index v98 — 03 Nov 2026 • 09:05:36 AM PKT</div>
@@ -3095,9 +3108,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v104';
-const APP_INDEX_VERSION_NAME = 'Exact Purchase & Sale Entry Times';
-const APP_INDEX_UPDATED = '03 Nov 2026 • 09:37:11 AM PKT';
+const APP_INDEX_VERSION = 'v105';
+const APP_INDEX_VERSION_NAME = 'Sold Card Tags & Expandable Details';
+const APP_INDEX_UPDATED = '03 Nov 2026 • 11:12:00 AM PKT';
 
 let inventory = [];
 
@@ -5787,6 +5800,46 @@ function returnSoldItem(soldId){
   logActivity('return','Sale return: '+(sale.brand||'')+' '+(sale.model||''),'Quantity: '+qty);
 }
 
+function soldDetailRow(label,value){
+  if(value===undefined||value===null||String(value).trim()==='') return '';
+  return '<div class="sold-detail-row"><span class="sold-detail-label">'+escapeHtml(label)+'</span><span class="sold-detail-value">'+escapeHtml(String(value))+'</span></div>';
+}
+function soldDetailsHtml(e,returned){
+  const saleDate=formatDateDisplay(dateOnly(e.saleDate));
+  const saleTime=e.saleTime?formatClockTimeDisplay(e.saleTime):'';
+  const buyDate=formatDateDisplay(dateOnly(e.buyDate));
+  const buyTime=e.buyTime?formatClockTimeDisplay(e.buyTime):'';
+  const totalSale=(Number(e.sell)||0)*(Number(e.quantity)||1);
+  const totalBuy=entryTotalCost(e)*(Number(e.quantity)||1);
+  const received=typeof receivedOf==='function'?receivedOf(e):0;
+  const due=typeof dueOf==='function'?dueOf(e):Math.max(0,totalSale-received);
+  const rows=[
+    soldDetailRow('Purchase date & time',buyDate+(buyTime?' • '+buyTime:'')),
+    soldDetailRow('Sale date & time',saleDate+(saleTime?' • '+saleTime:'')),
+    soldDetailRow('Buy price / total cost','Rs '+fmt(totalBuy)),
+    soldDetailRow('Sale price','Rs '+fmt(totalSale)),
+    soldDetailRow('Profit','Rs '+fmt(returned?0:saleNetProfit(e))),
+    soldDetailRow('Customer',e.customer),
+    soldDetailRow('Customer phone',e.customerNumber),
+    soldDetailRow('Payment method',e.payment),
+    soldDetailRow('Received','Rs '+fmt(received)),
+    soldDetailRow('Remaining balance','Rs '+fmt(due)),
+    soldDetailRow('IMEI 1',e.imei1||e.imei),
+    soldDetailRow('IMEI 2',e.imei2),
+    soldDetailRow('Seller',e.sellerName),
+    soldDetailRow('Seller phone',e.sellerNumber),
+    soldDetailRow('Notes',e.notes)
+  ].join('');
+  const expenses=phoneExpensesTotal(e)>0?soldDetailRow('Phone expenses','Rs '+fmt(phoneExpensesTotal(e))):'';
+  const paymentRows=Array.isArray(e.payments)&&e.payments.length?'<div class="sold-detail-heading">Payment history</div>'+e.payments.map(function(p,i){return '<div class="sold-detail-row"><span class="sold-detail-label">Payment '+(i+1)+'</span><span class="sold-detail-value">Rs '+fmt(p.amount)+' · '+escapeHtml(formatDateDisplay(dateOnly(p.date)))+(p.time?' · '+escapeHtml(formatClockTimeDisplay(p.time)):'')+(p.method?' · '+escapeHtml(p.method):'')+'</span></div>';}).join(''):'';
+  const returnRow=returned?soldDetailRow('Returned at',formatDateTimeDisplay(e.returnedAt)):'';
+  return '<details class="sold-details"><summary>More details dekhein</summary><div class="sold-details-content">'+
+    '<div class="sold-detail-heading">Purchase & sale</div>'+rows+expenses+returnRow+
+    '<div class="sold-detail-heading">Phone specifications</div>'+mandatoryDetailsHtml(e)+
+    soldDetailRow('Box',e.box)+soldDetailRow('Charger',e.charger)+soldDetailRow('Battery health',e.battery)+
+    paymentRows+'</div></details>';
+}
+
 function renderSoldCard(e){
   const returned=isReturnedSale(e);
   const profit=returned ? 0 : saleNetProfit(e);
@@ -5800,6 +5853,7 @@ function renderSoldCard(e){
       '<span class="badge sold-badge">Sold'+(e.quantity>1?(' x'+e.quantity):'')+'</span>'+
       (returned?'<span class="badge returned-badge">↩ Returned</span>':'')+
     '</div>'+
+    (pieceSpecBadges(e)?'<div class="badges spec-badges">'+pieceSpecBadges(e)+'</div>':'')+
     cardPhotoHtml(e)+
     '<div class="price-row">'+
       '<div class="price-col"><div class="l">Buy</div><div class="v num">'+fmt(displayBuyPrice(e.buy))+'</div></div>'+
@@ -5809,6 +5863,7 @@ function renderSoldCard(e){
     (e.customer||e.payment?'<div class="sale-meta">'+(e.customer||'')+(e.customer&&e.customerNumber?' ('+e.customerNumber+')':'')+(e.customer&&e.payment?' - ':'')+(e.payment||'')+'</div>':'')+
     activityDateHtml(e)+
     (phoneExpensesTotal(e)>0?'<div class="sale-meta" style="color:var(--danger);">Phone expense: -'+displayProfitHtml(phoneExpensesTotal(e))+'</div>':'')+
+    soldDetailsHtml(e,returned)+
     '<div class="card-actions">'+
       '<button data-edit="'+e.id+'">Edit</button>'+
       '<button class="share-btn" data-share="'+e.id+'">Share</button>'+
