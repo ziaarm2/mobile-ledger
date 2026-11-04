@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v115
-- Index v115 — Storage Quota & History Safety Fix — 03 Nov 2026 • 09:36:00 PM PKT. Removed duplicate full-app Undo/Redo snapshots from localStorage; current-session Undo/Redo stays in memory, durable Activity History snapshots use IndexedDB, and the large localStorage fallback copy is no longer created. Added specific local-save failure diagnostics. Existing inventory format, Firebase/Firestore sync, calculations and UI are preserved.
+Current file version: Index v117
+- Index v117 — Undo/Redo Persistence & Failed-Save Safety — 04 Nov 2026 • 11:26:00 AM PKT. Fixed v116 so every Undo/Redo stack change is persisted to shop-scoped IndexedDB; protected initial history loading from overwriting changes made during loading; inventory Undo snapshots are added only after the inventory write is confirmed, preventing failed saves from creating phantom Undo actions. Existing inventory format, Firebase/Firestore sync, calculations and UI are preserved.
+- Index v116 — Persistent IndexedDB Undo/Redo — 03 Nov 2026 • 09:36:00 PM PKT. Added shop-scoped IndexedDB storage for header Undo/Redo stacks.
+- Index v115 — Storage Quota & History Safety Fix — 03 Nov 2026 • 06:03:06 PM PKT. Removed duplicate full-app Undo/Redo snapshots from localStorage; durable Activity History snapshots use IndexedDB and local-save diagnostics were improved.
 - Index v114 — Combined Brand Filter & Stock Shop Labels — 03 Nov 2026 • 04:18:00 PM PKT. Hardened iOS brand-chip taps and ensured source shop labels resolve on Available/stock cards.
 - Index v113 — Combined Shop Labels & Brand Filter Fix — 03 Nov 2026 • 02:05:00 PM PKT. Fixed Expenses overlay on mobile: expense form and filtered expense list scroll independently while the bottom Close action remains pinned above the iPhone home indicator; added safe-area spacing to prevent content and controls being clipped. Preserved expense calculations and existing actions.
 Version name: Mandatory Signup Details
@@ -42,10 +44,10 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v115">
-<meta name="app-index-version-name" content="Persistent IndexedDB Undo/Redo">
-<meta name="app-index-updated" content="2026-11-03T21:36:00+05:00">
-<meta name="app-index-change-summary" content="Reduced localStorage quota pressure by keeping Undo/Redo snapshots in memory instead of persisting duplicate full-app snapshots, relying on the existing IndexedDB Activity History for durable snapshots, and removing duplicate localStorage fallback copies. Added precise local-save diagnostics. Existing inventory format, Firebase/Firestore sync, calculations and UI are preserved.">
+<meta name="app-index-version" content="v117">
+<meta name="app-index-version-name" content="Undo/Redo Persistence & Failed-Save Safety">
+<meta name="app-index-updated" content="2026-11-04T11:26:00+05:00">
+<meta name="app-index-change-summary" content="Fixed persistent shop-scoped IndexedDB Undo/Redo writes, guarded async history loading against overwriting new changes, and prevented failed inventory writes from creating phantom Undo states. Existing inventory format, Firebase/Firestore sync, calculations and UI are preserved.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
@@ -3119,13 +3121,15 @@ button[id="mdpClose"]:active, button[id="mdiClose"]:active{
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v115</div>
-          <div class="settings-note" style="margin-top:4px;">Storage Quota &amp; History Safety Fix</div>
-          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 03 Nov 2026 • 09:36:00 PM PKT</div>
-          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Header Undo/Redo stacks are now stored in IndexedDB per shop and survive refresh/app restart. Existing Activity History snapshots, inventory format, Firebase/Firestore sync, calculations and UI are preserved; localStorage quota safeguards remain.</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v117</div>
+          <div class="settings-note" style="margin-top:4px;">Undo/Redo Persistence &amp; Failed-Save Safety</div>
+          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 04 Nov 2026 • 11:26:00 AM PKT</div>
+          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Fixed persistent IndexedDB Undo/Redo saving and loading; failed inventory writes no longer create phantom Undo actions. Existing Activity History, inventory format, Firebase/Firestore sync, calculations and UI are preserved.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
+          <div style="font-weight:700;margin-top:9px;">Index v117 — 04 Nov 2026 • 11:26:00 AM PKT</div>
+          <div class="settings-note">Fixed persistent IndexedDB Undo/Redo saving/loading and prevented failed inventory saves from creating phantom Undo actions.</div>
           <div style="font-weight:700;margin-top:9px;">Index v116 — 03 Nov 2026 • 09:36:00 PM PKT</div>
           <div class="settings-note">Header Undo/Redo stacks now persist in a separate shop-scoped IndexedDB store and survive refresh/app restart. Existing Activity History snapshots and all inventory/cloud-sync formats remain unchanged.</div>
           <div style="font-weight:700;margin-top:9px;">Index v114 — 03 Nov 2026 • 04:18:00 PM PKT</div>
@@ -3210,9 +3214,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v115';
-const APP_INDEX_VERSION_NAME = 'Storage Quota & History Safety Fix';
-const APP_INDEX_UPDATED = '03 Nov 2026 • 09:36:00 PM PKT';
+const APP_INDEX_VERSION = 'v117';
+const APP_INDEX_VERSION_NAME = 'Undo/Redo Persistence & Failed-Save Safety';
+const APP_INDEX_UPDATED = '04 Nov 2026 • 11:26:00 AM PKT';
 
 let inventory = [];
 
@@ -4338,13 +4342,12 @@ function tryCommitInventory(candidateInventory){
   if(isAdminShopView()) return false;
   lastInventoryStorageFailure = '';
   candidateInventory=prepareRecordsForCommit(candidateInventory,inventory,'e','inventory');
+  let undoStateAfterSuccessfulWrite=null;
   if(!historyApplying && JSON.stringify(candidateInventory)!==JSON.stringify(inventory)){
     activityBeforeFromCurrentMutation();
-    // Keep the last pre-change state in a small, synchronous in-memory fallback.
-    // This guarantees the permanent header Undo still works even if the full
-    // history snapshot cannot be persisted to localStorage because of size/quota.
-    lastUndoSnapshot=activityBeforeState;
-    pushUndoState('Inventory change',activityBeforeState);
+    // Hold the pre-change state, but do not create an Undo action until the
+    // inventory write is confirmed. Failed writes must not create phantom Undo.
+    undoStateAfterSuccessfulWrite=activityBeforeState;
   }
   const json = JSON.stringify(candidateInventory);
   try{
@@ -4362,6 +4365,10 @@ function tryCommitInventory(candidateInventory){
     return false;
   }
   if(pendingTombstonesAfterCommit){saveSyncTombstones(pendingTombstonesAfterCommit);pendingTombstonesAfterCommit=null;}
+  if(undoStateAfterSuccessfulWrite){
+    lastUndoSnapshot=undoStateAfterSuccessfulWrite;
+    pushUndoState('Inventory change',undoStateAfterSuccessfulWrite);
+  }
   inventory = candidateInventory;
   lastInventoryStorageFailure = '';
   schedulePush();
@@ -7966,6 +7973,7 @@ function appStateSnapshot(){
 }
 const HEADER_HISTORY_LIMIT=5;
 let headerHistoryLoadToken=0;
+let headerHistoryMutationVersion=0;
 let headerHistoryWriteChain=Promise.resolve();
 function headerHistoryStorageKey(){
   return activeShopStorageId ? ('shop::'+activeShopStorageId) : 'legacy::default';
@@ -7974,6 +7982,7 @@ function loadPersistentHistory(){
   // Header Undo/Redo snapshots live in IndexedDB, never localStorage.
   // Each shop has its own key so switching shops cannot mix their histories.
   const token=++headerHistoryLoadToken;
+  const mutationVersionAtLoad=headerHistoryMutationVersion;
   undoStack=[]; redoStack=[]; updateHistoryButtons();
   openActivityStateDB().then(function(db){return new Promise(function(resolve,reject){
     let tx;try{tx=db.transaction(HEADER_HISTORY_STORE,'readonly');}catch(e){reject(e);return;}
@@ -7982,7 +7991,14 @@ function loadPersistentHistory(){
     req.onerror=function(){reject(req.error||new Error('Undo/Redo history read failed'));};
   });}).then(function(record){
     if(token!==headerHistoryLoadToken)return;
-    if(record){
+    if(headerHistoryMutationVersion!==mutationVersionAtLoad){
+      // A user action happened while IndexedDB was loading. Keep that newer
+      // in-memory action and prepend the previously persisted Undo history.
+      const priorUndo=record&&Array.isArray(record.undo)?record.undo:[];
+      undoStack=priorUndo.concat(undoStack).slice(-HEADER_HISTORY_LIMIT);
+      redoStack=[];
+      persistHistory();
+    }else if(record){
       undoStack=Array.isArray(record.undo)?record.undo.slice(-HEADER_HISTORY_LIMIT):[];
       redoStack=Array.isArray(record.redo)?record.redo.slice(-HEADER_HISTORY_LIMIT):[];
     }
@@ -8013,7 +8029,9 @@ function pushUndoState(label,state){
   undoStack.push({label:label||'Change',state:state,time:Date.now()});
   if(undoStack.length>HEADER_HISTORY_LIMIT)undoStack.shift();
   redoStack=[];
+  headerHistoryMutationVersion++;
   updateHistoryButtons();
+  persistHistory();
 }
 function pushUndoHistory(label){
   if(historyApplying)return;
@@ -8055,7 +8073,7 @@ function globalUndo(){
     if(redoStack.length>HEADER_HISTORY_LIMIT)redoStack.shift();
     if(!applyAppState(item.state)){redoStack.pop();undoStack.push(item);return;}
     lastUndoSnapshot=null;
-    persistHistory(); showToast('↶ '+item.label+' undo ho gaya.');
+    headerHistoryMutationVersion++; persistHistory(); showToast('↶ '+item.label+' undo ho gaya.');
     return;
   }
   // Synchronous fallback: every real inventory/expense mutation also keeps
@@ -8070,7 +8088,7 @@ function globalUndo(){
       redoStack.push({label:'Last change',state:current,time:Date.now()});
       if(redoStack.length>HEADER_HISTORY_LIMIT)redoStack.shift();
       lastUndoSnapshot=null;
-      persistHistory();
+      headerHistoryMutationVersion++; persistHistory();
       showToast('↶ Last change undo ho gaya.');
     }else{
       showToast('Undo state apply nahi ho saki.');
@@ -8090,7 +8108,7 @@ function globalUndo(){
     const current=appStateSnapshot();
     if(applyAppState(st.before)){
       redoStack.push({label:latest.title,state:current,time:Date.now()});
-      persistHistory();
+      headerHistoryMutationVersion++; persistHistory();
       showToast('↶ '+latest.title+' undo ho gaya.');
     }
   }).catch(function(){showToast('Undo state load nahi ho saki.');}).finally(function(){globalHistoryBusy=false;updateHistoryButtons();});
@@ -8103,7 +8121,7 @@ function globalRedo(){
   undoStack.push({label:item.label,state:current,time:Date.now()});
   if(undoStack.length>HEADER_HISTORY_LIMIT)undoStack.shift();
   if(!applyAppState(item.state)){undoStack.pop();redoStack.push(item);return;}
-  persistHistory(); showToast('↷ '+item.label+' redo ho gaya.');
+  headerHistoryMutationVersion++; persistHistory(); showToast('↷ '+item.label+' redo ho gaya.');
 }
 function updateHistoryButtons(){
   const u=document.getElementById('globalUndoBtn'),r=document.getElementById('globalRedoBtn');
@@ -11302,6 +11320,8 @@ function activateShopStorage(shopId){
     undoStack=[];
     redoStack=[];
     activeShopStorageId=next;
+    headerHistoryLoadToken++;
+    headerHistoryMutationVersion=0;
     shopConfigReady=false;
     shopConfigFetchPromise=null;
 
