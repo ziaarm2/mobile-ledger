@@ -2,7 +2,7 @@
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
 Current file version: Index v115
-- Index v115 — Storage Quota & History Safety Fix — 03 Nov 2026 • 09:36:00 PM PKT. Removed duplicate full-app Undo/Redo snapshots from localStorage; current-session Undo/Redo stays in memory, durable Activity History snapshots use IndexedDB, and the large localStorage fallback copy is no longer created. Added specific local-save failure diagnostics. Existing inventory format, Firebase/Firestore sync, calculations and UI are preserved.
+- Index v115 — Storage Quota & History Safety Fix — 03 Nov 2026 • 06:03:06 PM PKT. Removed duplicate full-app Undo/Redo snapshots from localStorage; current-session Undo/Redo stays in memory, durable Activity History snapshots use IndexedDB, and the large localStorage fallback copy is no longer created. Added specific local-save failure diagnostics. Existing inventory format, Firebase/Firestore sync, calculations and UI are preserved.
 - Index v114 — Combined Brand Filter & Stock Shop Labels — 03 Nov 2026 • 04:18:00 PM PKT. Hardened iOS brand-chip taps and ensured source shop labels resolve on Available/stock cards.
 - Index v113 — Combined Shop Labels & Brand Filter Fix — 03 Nov 2026 • 02:05:00 PM PKT. Fixed Expenses overlay on mobile: expense form and filtered expense list scroll independently while the bottom Close action remains pinned above the iPhone home indicator; added safe-area spacing to prevent content and controls being clipped. Preserved expense calculations and existing actions.
 Version name: Mandatory Signup Details
@@ -43,8 +43,8 @@ VERSION HISTORY (newest first):
 <html lang="ur-Latn">
 <head>
 <meta name="app-index-version" content="v115">
-<meta name="app-index-version-name" content="Persistent IndexedDB Undo/Redo">
-<meta name="app-index-updated" content="2026-11-03T21:36:00+05:00">
+<meta name="app-index-version-name" content="Storage Quota & History Safety Fix">
+<meta name="app-index-updated" content="2026-11-03T18:03:06+05:00">
 <meta name="app-index-change-summary" content="Reduced localStorage quota pressure by keeping Undo/Redo snapshots in memory instead of persisting duplicate full-app snapshots, relying on the existing IndexedDB Activity History for durable snapshots, and removing duplicate localStorage fallback copies. Added precise local-save diagnostics. Existing inventory format, Firebase/Firestore sync, calculations and UI are preserved.">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
@@ -3121,13 +3121,13 @@ button[id="mdpClose"]:active, button[id="mdiClose"]:active{
           <div class="sec-label">App Version Details</div>
           <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v115</div>
           <div class="settings-note" style="margin-top:4px;">Storage Quota &amp; History Safety Fix</div>
-          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 03 Nov 2026 • 09:36:00 PM PKT</div>
-          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Header Undo/Redo stacks are now stored in IndexedDB per shop and survive refresh/app restart. Existing Activity History snapshots, inventory format, Firebase/Firestore sync, calculations and UI are preserved; localStorage quota safeguards remain.</div>
+          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 03 Nov 2026 • 06:03:06 PM PKT</div>
+          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Reduced localStorage quota pressure by moving duplicate Undo/Redo snapshot persistence out of localStorage. Current-session Undo/Redo remains available; durable Activity History snapshots continue using IndexedDB. Added clearer save-failure diagnostics. Inventory format, Firebase/Firestore sync, calculations and existing UI are unchanged.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
-          <div style="font-weight:700;margin-top:9px;">Index v116 — 03 Nov 2026 • 09:36:00 PM PKT</div>
-          <div class="settings-note">Header Undo/Redo stacks now persist in a separate shop-scoped IndexedDB store and survive refresh/app restart. Existing Activity History snapshots and all inventory/cloud-sync formats remain unchanged.</div>
+          <div style="font-weight:700;margin-top:9px;">Index v115 — 03 Nov 2026 • 06:03:06 PM PKT</div>
+          <div class="settings-note">Reduced localStorage quota pressure: Undo/Redo snapshots are no longer duplicated in localStorage; durable Activity History snapshots use IndexedDB. Added specific save-failure diagnostics. Inventory and cloud sync format unchanged.</div>
           <div style="font-weight:700;margin-top:9px;">Index v114 — 03 Nov 2026 • 04:18:00 PM PKT</div>
           <div class="settings-note">Hardened iOS brand-chip taps and ensured source shop labels resolve on Available/stock cards.</div>
           <div style="font-weight:700;margin-top:9px;">Index v104 — 03 Nov 2026 • 10:02:45 AM PKT</div>
@@ -3212,7 +3212,7 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
 
 const APP_INDEX_VERSION = 'v115';
 const APP_INDEX_VERSION_NAME = 'Storage Quota & History Safety Fix';
-const APP_INDEX_UPDATED = '03 Nov 2026 • 09:36:00 PM PKT';
+const APP_INDEX_UPDATED = '03 Nov 2026 • 06:03:06 PM PKT';
 
 let inventory = [];
 
@@ -7964,54 +7964,26 @@ const LS_WA_TEMPLATE_KEY='mobileLedger_waTemplate';
 function appStateSnapshot(){
   return {inventory:JSON.stringify(inventory),expenses:JSON.stringify(expenses),manualDues:JSON.stringify(manualDues||[]),manualDuePayments:JSON.stringify(manualDuePayments||[]),customOptionData:JSON.stringify(customOptionData),cardDisplaySettings:JSON.stringify(cardDisplaySettings),customModels:JSON.stringify(customModels||{}),dashboardSettings:JSON.stringify(dashboardSettings||{}),rateBook:JSON.stringify(rateBook||[]),waTemplate:localStorage.getItem(shopStorageKey(LS_WA_TEMPLATE_KEY))||'',shopProfile:JSON.stringify(shopProfile||{}),uiScaleMode:uiScaleMode||'normal',dashboardSettings:JSON.stringify(dashboardSettings||{})};
 }
-const HEADER_HISTORY_LIMIT=5;
-let headerHistoryLoadToken=0;
-let headerHistoryWriteChain=Promise.resolve();
-function headerHistoryStorageKey(){
-  return activeShopStorageId ? ('shop::'+activeShopStorageId) : 'legacy::default';
-}
 function loadPersistentHistory(){
-  // Header Undo/Redo snapshots live in IndexedDB, never localStorage.
-  // Each shop has its own key so switching shops cannot mix their histories.
-  const token=++headerHistoryLoadToken;
-  undoStack=[]; redoStack=[]; updateHistoryButtons();
-  openActivityStateDB().then(function(db){return new Promise(function(resolve,reject){
-    let tx;try{tx=db.transaction(HEADER_HISTORY_STORE,'readonly');}catch(e){reject(e);return;}
-    const req=tx.objectStore(HEADER_HISTORY_STORE).get(headerHistoryStorageKey());
-    req.onsuccess=function(){resolve(req.result||null);};
-    req.onerror=function(){reject(req.error||new Error('Undo/Redo history read failed'));};
-  });}).then(function(record){
-    if(token!==headerHistoryLoadToken)return;
-    if(record){
-      undoStack=Array.isArray(record.undo)?record.undo.slice(-HEADER_HISTORY_LIMIT):[];
-      redoStack=Array.isArray(record.redo)?record.redo.slice(-HEADER_HISTORY_LIMIT):[];
-    }
-    // Remove only obsolete v115 localStorage copies after IndexedDB read succeeds.
+  // v115: Full app snapshots are intentionally NOT reloaded from localStorage.
+  // Activity History keeps durable before/after snapshots in IndexedDB; the
+  // compact header Undo/Redo stack is session-local to avoid quota exhaustion.
+  undoStack=[]; redoStack=[];
+  // Once IndexedDB is available, discard only the two obsolete duplicate
+  // stack keys for this shop; durable Activity History remains untouched.
+  openActivityStateDB().then(function(){
     try{localStorage.removeItem(shopStorageKey(LS_UNDO_STACK));localStorage.removeItem(shopStorageKey(LS_REDO_STACK));}catch(e){}
-    updateHistoryButtons();
-  }).catch(function(err){
-    if(token!==headerHistoryLoadToken)return;
-    console.warn('IndexedDB Undo/Redo history unavailable; current-session history will still work',err);
-    updateHistoryButtons();
-  });
+  }).catch(function(err){console.warn('Undo history DB unavailable; legacy history keys retained',err);});
+  updateHistoryButtons();
 }
 function persistHistory(){
-  // Serialize writes so rapid consecutive actions cannot overwrite a newer stack.
-  const payload={id:headerHistoryStorageKey(),undo:undoStack.slice(-HEADER_HISTORY_LIMIT),redo:redoStack.slice(-HEADER_HISTORY_LIMIT),savedAt:Date.now()};
-  headerHistoryWriteChain=headerHistoryWriteChain.catch(function(){}).then(function(){
-    return openActivityStateDB().then(function(db){return new Promise(function(resolve,reject){
-      let tx;try{tx=db.transaction(HEADER_HISTORY_STORE,'readwrite');}catch(e){reject(e);return;}
-      tx.objectStore(HEADER_HISTORY_STORE).put(payload);
-      tx.oncomplete=function(){resolve(true);};
-      tx.onerror=function(){reject(tx.error||new Error('Undo/Redo history save failed'));};
-      tx.onabort=function(){reject(tx.error||new Error('Undo/Redo history save aborted'));};
-    });});
-  }).catch(function(err){console.warn('Undo/Redo history could not be persisted in IndexedDB',err);});
+  // Intentionally memory-only. Do not serialize full inventory/photo snapshots
+  // into localStorage; durable Activity History is already stored in IndexedDB.
 }
 function pushUndoState(label,state){
   if(historyApplying||!state)return;
   undoStack.push({label:label||'Change',state:state,time:Date.now()});
-  if(undoStack.length>HEADER_HISTORY_LIMIT)undoStack.shift();
+  if(undoStack.length>5)undoStack.shift();
   redoStack=[];
   updateHistoryButtons();
 }
@@ -8052,7 +8024,6 @@ function globalUndo(){
     const current=appStateSnapshot();
     const item=undoStack.pop();
     redoStack.push({label:item.label,state:current,time:Date.now()});
-    if(redoStack.length>HEADER_HISTORY_LIMIT)redoStack.shift();
     if(!applyAppState(item.state)){redoStack.pop();undoStack.push(item);return;}
     lastUndoSnapshot=null;
     persistHistory(); showToast('↶ '+item.label+' undo ho gaya.');
@@ -8068,7 +8039,6 @@ function globalUndo(){
     globalHistoryBusy=true;
     if(applyAppState(state)){
       redoStack.push({label:'Last change',state:current,time:Date.now()});
-      if(redoStack.length>HEADER_HISTORY_LIMIT)redoStack.shift();
       lastUndoSnapshot=null;
       persistHistory();
       showToast('↶ Last change undo ho gaya.');
@@ -8101,7 +8071,6 @@ function globalRedo(){
   const current=appStateSnapshot();
   const item=redoStack.pop();
   undoStack.push({label:item.label,state:current,time:Date.now()});
-  if(undoStack.length>HEADER_HISTORY_LIMIT)undoStack.shift();
   if(!applyAppState(item.state)){undoStack.pop();redoStack.push(item);return;}
   persistHistory(); showToast('↷ '+item.label+' redo ho gaya.');
 }
@@ -8115,9 +8084,8 @@ function restoreUndoSnapshot(){ globalUndo(); }
 function offerGlobalUndo(msg){ if(undoStack.length) showToast(msg||'Undo available — upar ↶ dabayein.'); }
 const LS_ACTIVITY_KEY='mobileLedger_activityHistory';
 const ACTIVITY_DB_NAME='MobileLedgerActivityDB';
-const ACTIVITY_DB_VERSION=2;
+const ACTIVITY_DB_VERSION=1;
 const ACTIVITY_STORE='states';
-const HEADER_HISTORY_STORE='headerHistory';
 let activityDbPromise=null;
 let activityBeforeState=null;
 let activityCurrentState=null;
@@ -8127,7 +8095,7 @@ function openActivityStateDB(){
   activityDbPromise=new Promise(function(resolve,reject){
     if(!window.indexedDB){reject(new Error('IndexedDB unavailable'));return;}
     const req=indexedDB.open(ACTIVITY_DB_NAME,ACTIVITY_DB_VERSION);
-    req.onupgradeneeded=function(){const db=req.result;if(!db.objectStoreNames.contains(ACTIVITY_STORE))db.createObjectStore(ACTIVITY_STORE,{keyPath:'id'});if(!db.objectStoreNames.contains(HEADER_HISTORY_STORE))db.createObjectStore(HEADER_HISTORY_STORE,{keyPath:'id'});};
+    req.onupgradeneeded=function(){const db=req.result;if(!db.objectStoreNames.contains(ACTIVITY_STORE))db.createObjectStore(ACTIVITY_STORE,{keyPath:'id'});};
     req.onsuccess=function(){resolve(req.result);}; req.onerror=function(){reject(req.error||new Error('Activity DB error'));};
   });
   return activityDbPromise;
