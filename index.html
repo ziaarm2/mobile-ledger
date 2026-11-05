@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v118
+Current file version: Index v119
+- Index v119 — Analytics 28-Day Comparison, Grouped Business Hours & Rent Emphasis — 05 Nov 2026 • 09:09 AM PKT. Default analytics period is last 28 days compared with the immediately preceding 28 days; busiest hours default to 3-hour grouped blocks with hourly detail selectable; unpaid rent estimate is visually emphasized.
 - Index v118 — Cloud-Synced Recycle Bin & Version Display Fix — 04 Nov 2026 • 11:26:00 AM PKT. Added shop-scoped cloud synchronization for deleted inventory records and restore state so Recycle Bin is shared across devices, including offline changes reconciled on reconnect. Corrected menu footer and About version metadata to v118. Existing inventory schema, Firebase/Firestore connection, calculations and UI are preserved.
 - Index v116 — Persistent IndexedDB Undo/Redo — 03 Nov 2026 • 09:36:00 PM PKT. Added shop-scoped IndexedDB storage for header Undo/Redo stacks.
 - Index v115 — Storage Quota & History Safety Fix — 03 Nov 2026 • 06:03:06 PM PKT. Removed duplicate full-app Undo/Redo snapshots from localStorage; durable Activity History snapshots use IndexedDB and local-save diagnostics were improved.
@@ -44,7 +45,7 @@ VERSION HISTORY (newest first):
 -->
 <html lang="ur-Latn">
 <head>
-<meta name="app-index-version" content="v118">
+<meta name="app-index-version" content="v119">
 <meta name="app-index-version-name" content="Cloud-Synced Recycle Bin & Version Display Fix">
 <meta name="app-index-updated" content="2026-11-04T11:26:00+05:00">
 <meta name="app-index-change-summary" content="Added cross-device cloud-synced Recycle Bin records and restore state, including offline reconciliation; corrected menu footer and About version display. Existing inventory schema and business logic are preserved.">
@@ -2060,7 +2061,7 @@ button[id="mdpClose"]:active, button[id="mdiClose"]:active{
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v118<span>Updated: 04 Nov 2026</span><span>11:26:00 AM PKT</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v119<span>Updated: 05 Nov 2026</span><span>09:09 AM PKT</span></div>
       </div>
     </div>
 
@@ -2484,7 +2485,8 @@ button[id="mdpClose"]:active, button[id="mdiClose"]:active{
     <div class="analytics-period-bar">
       <div class="analytics-period-title">Performance period</div>
       <div class="analytics-periods" id="analyticsPeriods">
-        <button type="button" class="analytics-period active" data-analytics-period="calendar">This month</button>
+        <button type="button" class="analytics-period active" data-analytics-period="28days">Last 28 days</button>
+        <button type="button" class="analytics-period" data-analytics-period="calendar">This month</button>
         <button type="button" class="analytics-period" data-analytics-period="business">Business month</button>
         <button type="button" class="analytics-period" data-analytics-period="lifetime">Lifetime</button>
         <button type="button" class="analytics-period" data-analytics-period="custom">Custom</button>
@@ -2531,6 +2533,7 @@ button[id="mdpClose"]:active, button[id="mdiClose"]:active{
       <div class="analytics-busiest-controls" style="display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;">
         <label style="font-size:13px;color:var(--text-muted)">Metric <select id="analyticsBusiestMetric" aria-label="Busiest hour metric"><option value="both" selected>Sales + Purchases</option><option value="sale">Mobiles Sold</option><option value="purchase">Mobiles Purchased</option><option value="profit">Sale Profit</option><option value="saleAmount">Sales Amount</option><option value="purchaseAmount">Purchase Amount</option></select></label>
         <label style="font-size:13px;color:var(--text-muted)">Graph <select id="analyticsBusiestGraphType" aria-label="Busiest hour graph type"><option value="line" selected>Line Graph</option><option value="area">Smooth Area</option><option value="bar">Bar Chart</option></select></label>
+        <label style="font-size:13px;color:var(--text-muted)">Time detail <select id="analyticsBusiestGrouping" aria-label="Business hour grouping"><option value="3" selected>3-hour groups</option><option value="2">2-hour groups</option><option value="1">Every hour</option></select></label>
       </div>
       <div class="analytics-time-legend" id="analyticsBusiestLegend"><span><i class="analytics-dot" style="background:#18a7d8"></i>Mobiles Sold</span><span><i class="analytics-dot" style="background:#f59e0b"></i>Mobiles Purchased</span></div>
       <div id="analyticsBusiestLineChart" style="width:100%;overflow:hidden;margin:8px 0 12px;"></div>
@@ -3121,14 +3124,14 @@ button[id="mdpClose"]:active, button[id="mdiClose"]:active{
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v118</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v119</div>
           <div class="settings-note" style="margin-top:4px;">Cloud-Synced Recycle Bin &amp; Version Display Fix</div>
           <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 04 Nov 2026 • 11:26:00 AM PKT</div>
           <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Recycle Bin records and restore status sync across devices, including offline changes on reconnect. Menu footer and About version details now show the same current version.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
-          <div style="font-weight:700;margin-top:9px;">Index v118 — 04 Nov 2026 • 11:26:00 AM PKT</div>
+          <div style="font-weight:700;margin-top:9px;">Index v119 — 05 Nov 2026 • 09:09 AM PKT</div>
           <div class="settings-note">Recycle Bin records and restore status sync across devices; offline changes reconcile on reconnect. Menu footer and About version details corrected.</div>
           <div style="font-weight:700;margin-top:9px;">Index v117 — 04 Nov 2026 • 11:26:00 AM PKT</div>
           <div class="settings-note">Fixed persistent IndexedDB Undo/Redo saving/loading and prevented failed inventory saves from creating phantom Undo actions.</div>
@@ -3216,9 +3219,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v118';
-const APP_INDEX_VERSION_NAME = 'Cloud-Synced Recycle Bin & Version Display Fix';
-const APP_INDEX_UPDATED = '04 Nov 2026 • 11:26:00 AM PKT';
+const APP_INDEX_VERSION = 'v119';
+const APP_INDEX_VERSION_NAME = 'Analytics 28-Day Comparison, Grouped Business Hours & Rent Emphasis';
+const APP_INDEX_UPDATED = '05 Nov 2026 • 09:09 AM PKT';
 
 let inventory = [];
 
@@ -8509,7 +8512,7 @@ function renderRentInfoCardHtml(context, profitBeforeRent){
     '<strong>Rs. '+fmt(amount)+'/month</strong></div>'+
     '<div class="settings-note" style="margin-top:6px">Rent date: '+escapeHtml(dateLabel)+' · Reminder: '+(shopProfile.rentReminderEnabled===false?'OFF':'ON')+'</div>'+
     '<div style="margin-top:7px"><span class="rent-status-badge '+(paid?'is-paid':'is-unpaid')+'">'+(paid?'Rent Paid':'Rent Unpaid')+'</span></div>'+
-    (!paid?'<div class="settings-note" style="margin-top:4px">Rent pay karne ke baad estimated profit: <b>Rs. '+fmt(adjusted)+'</b></div>':'');
+    (!paid?'<div style="margin-top:9px;padding:10px 11px;border-radius:10px;border:1px solid #f59e0b;background:rgba(245,158,11,.12);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:12px;font-weight:850;color:var(--text)">ESTIMATED PROFIT AFTER PAYING RENT</span><strong style="font-size:17px;font-weight:950;color:#b45309">Rs. '+fmt(adjusted)+'</strong></div>':'');
   if(context==='dashboard')return '<div class="stat-card" style="grid-column:1/-1;text-align:left"><div class="l" style="margin-bottom:8px">SHOP RENT</div>'+body+'</div>';
   return '<div style="padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2)">'+body+'</div>';
 }
@@ -8896,6 +8899,14 @@ function analyticsDateRange(mode){
   const now=new Date();
   const today=isoDateLocal(now);
   if(mode==='lifetime') return {from:'',to:'',label:'Lifetime',mode:'lifetime',previous:null};
+  if(mode==='28days'){
+    const end=new Date(now.getFullYear(),now.getMonth(),now.getDate(),12);
+    const start=new Date(end); start.setDate(start.getDate()-27);
+    const prevEnd=new Date(start); prevEnd.setDate(prevEnd.getDate()-1);
+    const prevStart=new Date(prevEnd); prevStart.setDate(prevStart.getDate()-27);
+    const from=isoDateLocal(start),to=isoDateLocal(end),pf=isoDateLocal(prevStart),pt=isoDateLocal(prevEnd);
+    return {from:from,to:to,label:'Last 28 days · '+analyticsLabelDate(from,true)+' – '+analyticsLabelDate(to,true),mode:'28days',previous:{from:pf,to:pt,label:'Previous 28 days · '+analyticsLabelDate(pf,true)+' – '+analyticsLabelDate(pt,true)}};
+  }
   if(mode==='custom'){
     const from=document.getElementById('analyticsFrom')?.value||'';
     const to=document.getElementById('analyticsTo')?.value||'';
@@ -9083,7 +9094,14 @@ function analyticsRenderTimeOfDay(range){
   m.sales.forEach(e=>{const d=e.exactTime?new Date(e.exactTime):null;if(d&&!isNaN(d.getTime())){const r=rows[d.getHours()];r.sale+=Number(e.qty)||0;r.saleAmount+=Number(e.amount)||0;r.profit+=(Number(e.profit)||0)-(Number(e.phoneExpenses)||0);}});
   m.purchases.forEach(e=>{const d=e.exactTime?new Date(e.exactTime):null;if(d&&!isNaN(d.getTime())){const r=rows[d.getHours()];r.purchase+=Number(e.qty)||0;r.purchaseAmount+=Number(e.amount)||0;}});
   const hours=analyticsBusiestPeriod==='day'?Array.from({length:12},(_,i)=>i+9):[21,22,23,0,1,2,3,4,5,6,7,8];
-  const shown=hours.map(h=>rows[h]);
+  const grouping=Math.max(1,Math.min(3,Number(document.getElementById('analyticsBusiestGrouping')?.value)||3));
+  const shown=[];
+  for(let i=0;i<hours.length;i+=grouping){
+    const block=hours.slice(i,i+grouping),first=block[0];
+    const agg={hour:first,endHour:(first+block.length)%24,sale:0,purchase:0,saleAmount:0,purchaseAmount:0,profit:0};
+    block.forEach(h=>{const r=rows[h];['sale','purchase','saleAmount','purchaseAmount','profit'].forEach(k=>agg[k]+=Number(r[k])||0);});
+    shown.push(agg);
+  }
   document.querySelectorAll('[data-busiest-period]').forEach(b=>{const active=b.dataset.busiestPeriod===analyticsBusiestPeriod;b.classList.toggle('btn-save',active);b.classList.toggle('btn-cancel',!active);b.setAttribute('aria-pressed',active?'true':'false');});
   const active=shown.filter(r=>r.sale||r.purchase);
   const chart=document.getElementById('analyticsBusiestLineChart');
@@ -9110,22 +9128,22 @@ function analyticsRenderTimeOfDay(range){
       vals.forEach((v,i)=>{svg+='<circle cx="'+x(i)+'" cy="'+y(v)+'" r="2.8" fill="'+color+'"><title>'+names[key]+': '+v+'</title></circle>';});
     }
   });
-  for(let i=0;i<=shown.length;i+=2){const bh=(shown[0].hour+i)%24,label=(bh%12||12)+(bh<12?' AM':' PM'),xx=L+i*pw/shown.length;svg+='<text x="'+xx+'" y="'+(H-12)+'" text-anchor="middle" font-size="10" fill="var(--text-muted)">'+label+'</text>';}
+  for(let i=0;i<shown.length;i++){const bh=shown[i].hour,label=(bh%12||12)+(bh<12?' AM':' PM'),xx=x(i);svg+='<text x="'+xx+'" y="'+(H-12)+'" text-anchor="middle" font-size="10" fill="var(--text-muted)">'+label+'</text>';}
   svg+='</svg>';chart.innerHTML=svg;
   const legend=document.getElementById('analyticsBusiestLegend');if(legend)legend.innerHTML=keys.map(k=>'<span><i class="analytics-dot" style="background:'+colors[k]+'"></i>'+names[k]+'</span>').join('');
   if(!active.length){grid.innerHTML='<div class="analytics-empty">Is Day/Night period mein exact time ke sath sale/purchase record nahi mila.</div>';document.getElementById('analyticsTimeSummary').textContent='';document.getElementById('analyticsTimeMissing').textContent='Sirf exact timestamp wale records hourly breakdown mein count hote hain.';return;}
   const sm=Math.max(1,...shown.map(r=>r.sale)),pm=Math.max(1,...shown.map(r=>r.purchase));
-  grid.innerHTML=shown.map(r=>{const label=(r.hour%12||12)+(r.hour<12?' AM':' PM'),next=((r.hour+1)%24%12||12)+((r.hour+1)%24<12?' AM':' PM'),has=!!(r.sale||r.purchase);return '<div class="analytics-time-row"><div class="analytics-time-label">'+label+'–'+next+'</div><div class="analytics-time-pair"><div class="analytics-time-track"><div class="analytics-time-fill sale" style="width:'+Math.round(r.sale/sm*100)+'%"></div><div class="analytics-time-value">Sold: '+r.sale+' units · Rs '+fmt(r.saleAmount)+'</div></div><div class="analytics-time-track"><div class="analytics-time-fill purchase" style="width:'+Math.round(r.purchase/pm*100)+'%"></div><div class="analytics-time-value">Purchased: '+r.purchase+' units · Rs '+fmt(r.purchaseAmount)+'</div></div>'+(has?'<div class="analytics-time-summary" style="text-align:left;margin:2px 0 4px">Sale profit after phone expenses: Rs '+fmt(r.profit)+'</div>':'')+'</div></div>';}).join('');
+  grid.innerHTML=shown.map(r=>{const label=(r.hour%12||12)+(r.hour<12?' AM':' PM'),next=((r.endHour)%12||12)+(r.endHour<12?' AM':' PM');return '<div class="analytics-time-row"><div class="analytics-time-label">'+label+'–'+next+'</div><div class="analytics-time-pair"><div class="analytics-time-track"><div class="analytics-time-fill sale" style="width:'+Math.round(r.sale/sm*100)+'%"></div><div class="analytics-time-value">Sold: '+r.sale+' units · Rs '+fmt(r.saleAmount)+'</div></div><div class="analytics-time-track"><div class="analytics-time-fill purchase" style="width:'+Math.round(r.purchase/pm*100)+'%"></div><div class="analytics-time-value">Purchased: '+r.purchase+' units · Rs '+fmt(r.purchaseAmount)+'</div></div>'+(has?'<div class="analytics-time-summary" style="text-align:left;margin:2px 0 4px">Sale profit after phone expenses: Rs '+fmt(r.profit)+'</div>':'')+'</div></div>';}).join('');
   const topS=shown.reduce((a,b)=>b.sale>a.sale?b:a,shown[0]),topP=shown.reduce((a,b)=>b.purchase>a.purchase?b:a,shown[0]),topProfit=shown.reduce((a,b)=>b.profit>a.profit?b:a,shown[0]);
   const label=h=>(h%12||12)+(h<12?' AM':' PM');
-  const ss=topS.sale?'Most sold: '+label(topS.hour)+'–'+label((topS.hour+1)%24)+' ('+topS.sale+' mobiles)':'';
-  const ps=topP.purchase?'Most purchased: '+label(topP.hour)+'–'+label((topP.hour+1)%24)+' ('+topP.purchase+' mobiles)':'';
+  const ss=topS.sale?'Most sold: '+label(topS.hour)+'–'+label(topS.endHour)+' ('+topS.sale+' mobiles)':'';
+  const ps=topP.purchase?'Most purchased: '+label(topP.hour)+'–'+label(topP.endHour)+' ('+topP.purchase+' mobiles)':'';
   const pr=topProfit.profit?'Highest sale profit: '+label(topProfit.hour)+' (Rs '+fmt(topProfit.profit)+')':'';
   document.getElementById('analyticsTimeSummary').textContent=[ss,ps,pr].filter(Boolean).join(' • ');
   document.getElementById('analyticsTimeMissing').textContent='Sirf exact timestamp wale records count hote hain. Hourly profit sale profit minus phone expenses hai; general business expenses ko hour-wise assign nahi kiya jata.';
 }
 document.querySelectorAll('[data-busiest-period]').forEach(function(btn){btn.addEventListener('click',function(){analyticsBusiestPeriod=btn.dataset.busiestPeriod;analyticsRenderTimeOfDay(analyticsDateRange(analyticsMode));});});
-['analyticsBusiestMetric','analyticsBusiestGraphType'].forEach(id=>document.getElementById(id)?.addEventListener('change',()=>analyticsRenderTimeOfDay(analyticsDateRange(analyticsMode))));
+['analyticsBusiestMetric','analyticsBusiestGraphType','analyticsBusiestGrouping'].forEach(id=>document.getElementById(id)?.addEventListener('change',()=>analyticsRenderTimeOfDay(analyticsDateRange(analyticsMode))));
 
 function analyticsRenderAverages(range,curr,prev){
   const actual=range.mode==='lifetime'?analyticsRangeForLifetime():range;
@@ -9265,7 +9283,7 @@ function analyticsRenderSnapshot(range,curr){
   }
   document.getElementById('analyticsDeadStockWrap').innerHTML=html;
 }
-let analyticsMode='calendar';
+let analyticsMode='28days';
 let analyticsCustomFrom='';
 let analyticsCustomTo='';
 function analyticsMonthEventRecords(monthDate){
@@ -9367,7 +9385,7 @@ function renderAnalytics(){
 }
 document.getElementById('btnAnalytics').onclick=function(){
   closeMainMenu();
-  analyticsMode=['calendar','business','lifetime'].indexOf(dashboardSettings.mode)!==-1?dashboardSettings.mode:'calendar';
+  analyticsMode='28days';
   analyticsCustomFrom=''; analyticsCustomTo='';
   renderAnalytics();
   document.getElementById('analyticsOverlay').classList.remove('hidden');
