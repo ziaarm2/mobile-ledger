@@ -25,7 +25,8 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 7. Preserve Firebase/Firestore connectivity and stored user data. Do not change database rules/schema/sync behavior unless explicitly requested.
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
-VERSION HISTORY (newest first):\n- Index v139 — Unknown Purchase/Sale Date & Time — 13 Nov 2026 • 05:30 PM PKT. Added independent Unknown choices for purchase and sale dates/times, retained current date/time defaults, and separated unknown records from date/hour analytics while preserving entry-created timestamps.\n- Index v139 — Unknown Purchase and Sale Date Time — 13 Nov 2026 • 03:48 PM PKT. Sell Range is reformatted at display time using the shared K ON/OFF preference, including after cloud data loads; privacy markup behavior is preserved.
+VERSION HISTORY (newest first):\n- Index v140 — Date/Time Field Layout Fix — 13 Nov 2026 • 05:45 PM PKT. Fixed mobile Purchase and Sale forms so Known/Unknown selectors and date/time inputs no longer overlap following fields or section headings; preserved date/time and analytics behavior.
+- Index v139 — Unknown Purchase/Sale Date & Time — 13 Nov 2026 • 05:30 PM PKT. Added independent Unknown choices for purchase and sale dates/times, retained current date/time defaults, and separated unknown records from date/hour analytics while preserving entry-created timestamps.\n- Index v139 — Unknown Purchase and Sale Date Time — 13 Nov 2026 • 03:48 PM PKT. Sell Range is reformatted at display time using the shared K ON/OFF preference, including after cloud data loads; privacy markup behavior is preserved.
 - Index v136 — Brand & Status Options Stay English — 13 Nov 2026 • 03:14 PM PKT. Brand names and mobile status option labels stay in English in Urdu mode; all other translations and app behavior are preserved.\n
 - Index v128 — Full English Copy Audit Fix — 13 Nov 2026 • 01:34 PM PKT. Added English-mode phrase translations for the remaining audited Roman Urdu labels, placeholders, inventory cards, validation messages, backup/restore/sync alerts, analytics notes, import/share prompts, and access notices. Urdu mode and app behavior are preserved.
 - Index v126 — English Mode Roman Urdu Cleanup — 13 Nov 2026 • 01:15 PM PKT. Replaced Roman Urdu wording with clear English in English mode. Urdu translations and all other app behavior are preserved.
@@ -1976,6 +1977,46 @@ button[id="mdpClose"]:active, button[id="mdiClose"]:active{
   touch-action:manipulation !important;
   -webkit-tap-highlight-color:transparent !important;
 }
+</style>
+
+
+<style id="date-time-unknown-layout-fix-v140">
+/* v140: make room for both the Known/Unknown selector and native date/time input. */
+.entry-date-time .field.date-time-field,
+#overlay > .sheet .entry-date-time .field.date-time-field,
+#sellOverlay .entry-date-time .field.date-time-field {
+  display:flex !important; flex-direction:column !important; align-items:stretch !important;
+  justify-content:flex-start !important; position:relative !important;
+  height:88px !important; min-height:88px !important; max-height:none !important;
+  box-sizing:border-box !important; padding:8px 9px 5px !important;
+  margin:8px 0 12px !important; overflow:visible !important;
+}
+.entry-date-time .field.date-time-field > label,
+#overlay > .sheet .entry-date-time .field.date-time-field > label,
+#sellOverlay .entry-date-time .field.date-time-field > label {
+  position:absolute !important; top:-8px !important; left:10px !important;
+  z-index:2 !important; margin:0 !important; padding:0 5px !important;
+  background:#fff !important; line-height:1.2 !important; white-space:nowrap !important;
+}
+.entry-date-time .field.date-time-field > .date-unknown-select {
+  display:block !important; flex:0 0 32px !important; width:100% !important;
+  height:32px !important; min-height:32px !important; box-sizing:border-box !important;
+  margin:0 0 2px !important; padding:3px 8px !important; font-size:13px !important;
+}
+.entry-date-time .field.date-time-field > input,
+#overlay > .sheet .entry-date-time .field.date-time-field > input,
+#sellOverlay .entry-date-time .field.date-time-field > input {
+  display:block !important; flex:0 0 34px !important; width:100% !important;
+  height:34px !important; min-height:34px !important; max-height:34px !important;
+  box-sizing:border-box !important; margin:0 !important; padding:2px 2px !important;
+  line-height:30px !important; font-size:14px !important;
+}
+.entry-date-time .field.date-time-field.is-unknown {
+  height:58px !important; min-height:58px !important; padding-bottom:6px !important;
+}
+.entry-date-time .field.date-time-field.is-unknown > input { display:none !important; }
+#sellOverlay .entry-date-time { margin:8px 0 14px !important; align-items:stretch !important; }
+#overlay > .sheet .entry-date-time { margin-bottom:14px !important; align-items:stretch !important; }
 </style>
 
 </head>
