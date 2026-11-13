@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v139
+Current file version: Index v141
 - Index v121 — Bilingual English / Urdu Language Selector — 06 Nov 2026 • 11:06 AM PKT. Added a persistent English/Urdu selector in the header and CSV-driven Urdu text translations. English remains the default. Existing app workflows, Firebase/Firestore integration, data schema, calculations and business logic are retained.
 - Index v120 — Analytics Open Fix — 05 Nov 2026 • 09:30 AM PKT. Fixed ReferenceError in grouped busiest-hours renderer that prevented Analytics overlay from opening when records with timestamps existed; open overlay before rendering and surface safe error fallback.
 - Index v119 — Analytics 28-Day Comparison, Grouped Business Hours & Rent Emphasis — 05 Nov 2026 • 09:09 AM PKT. Default analytics period is last 28 days compared with the immediately preceding 28 days; busiest hours default to 3-hour grouped blocks with hourly detail selectable; unpaid rent estimate is visually emphasized.
@@ -25,7 +25,7 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 7. Preserve Firebase/Firestore connectivity and stored user data. Do not change database rules/schema/sync behavior unless explicitly requested.
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
-VERSION HISTORY (newest first):\n- Index v140 — Date/Time Field Layout Fix — 13 Nov 2026 • 05:45 PM PKT. Fixed mobile Purchase and Sale forms so Known/Unknown selectors and date/time inputs no longer overlap following fields or section headings; preserved date/time and analytics behavior.
+VERSION HISTORY (newest first):\n- Index v141 — Inline Date/Time with Unknown Menu — 13 Nov 2026 • 05:57 PM PKT. Date/time values are visible directly in Purchase and Sale fields; the compact dropdown arrow opens the Unknown option. Current date/time defaults and analytics logic are preserved.\n- Index v140 — Date/Time Field Layout Fix — 13 Nov 2026 • 05:45 PM PKT. Fixed mobile Purchase and Sale forms so Known/Unknown selectors and date/time inputs no longer overlap following fields or section headings; preserved date/time and analytics behavior.
 - Index v139 — Unknown Purchase/Sale Date & Time — 13 Nov 2026 • 05:30 PM PKT. Added independent Unknown choices for purchase and sale dates/times, retained current date/time defaults, and separated unknown records from date/hour analytics while preserving entry-created timestamps.\n- Index v139 — Unknown Purchase and Sale Date Time — 13 Nov 2026 • 03:48 PM PKT. Sell Range is reformatted at display time using the shared K ON/OFF preference, including after cloud data loads; privacy markup behavior is preserved.
 - Index v136 — Brand & Status Options Stay English — 13 Nov 2026 • 03:14 PM PKT. Brand names and mobile status option labels stay in English in Urdu mode; all other translations and app behavior are preserved.\n
 - Index v128 — Full English Copy Audit Fix — 13 Nov 2026 • 01:34 PM PKT. Added English-mode phrase translations for the remaining audited Roman Urdu labels, placeholders, inventory cards, validation messages, backup/restore/sync alerts, analytics notes, import/share prompts, and access notices. Urdu mode and app behavior are preserved.
@@ -1980,43 +1980,49 @@ button[id="mdpClose"]:active, button[id="mdiClose"]:active{
 </style>
 
 
-<style id="date-time-unknown-layout-fix-v140">
-/* v140: make room for both the Known/Unknown selector and native date/time input. */
+<style id="date-time-inline-control-layout-v141">
+/* v141: show the actual date/time immediately; keep the Unknown menu as a compact arrow control. */
 .entry-date-time .field.date-time-field,
 #overlay > .sheet .entry-date-time .field.date-time-field,
 #sellOverlay .entry-date-time .field.date-time-field {
-  display:flex !important; flex-direction:column !important; align-items:stretch !important;
-  justify-content:flex-start !important; position:relative !important;
-  height:88px !important; min-height:88px !important; max-height:none !important;
-  box-sizing:border-box !important; padding:8px 9px 5px !important;
-  margin:8px 0 12px !important; overflow:visible !important;
+  display:block !important; position:relative !important; height:58px !important;
+  min-height:58px !important; max-height:58px !important; box-sizing:border-box !important;
+  padding:8px 9px 4px !important; margin:8px 0 12px !important; overflow:visible !important;
 }
 .entry-date-time .field.date-time-field > label,
 #overlay > .sheet .entry-date-time .field.date-time-field > label,
 #sellOverlay .entry-date-time .field.date-time-field > label {
-  position:absolute !important; top:-8px !important; left:10px !important;
-  z-index:2 !important; margin:0 !important; padding:0 5px !important;
-  background:#fff !important; line-height:1.2 !important; white-space:nowrap !important;
+  position:absolute !important; top:-8px !important; left:10px !important; z-index:2 !important;
+  margin:0 !important; padding:0 5px !important; background:#fff !important;
+  line-height:1.2 !important; white-space:nowrap !important;
 }
-.entry-date-time .field.date-time-field > .date-unknown-select {
-  display:block !important; flex:0 0 32px !important; width:100% !important;
-  height:32px !important; min-height:32px !important; box-sizing:border-box !important;
-  margin:0 0 2px !important; padding:3px 8px !important; font-size:13px !important;
+.date-time-control-row { display:flex !important; align-items:center !important; gap:5px !important; width:100% !important; height:40px !important; min-width:0 !important; }
+.date-time-control-row > input {
+  display:block !important; flex:1 1 auto !important; width:calc(100% - 42px) !important;
+  min-width:0 !important; height:40px !important; min-height:40px !important; max-height:40px !important;
+  box-sizing:border-box !important; margin:0 !important; padding:3px 2px !important;
+  border:0 !important; box-shadow:none !important; background:transparent !important;
+  border-radius:0 !important; line-height:34px !important; font-size:15px !important;
+  color:var(--text, #172033) !important; text-align:left !important;
 }
-.entry-date-time .field.date-time-field > input,
-#overlay > .sheet .entry-date-time .field.date-time-field > input,
-#sellOverlay .entry-date-time .field.date-time-field > input {
-  display:block !important; flex:0 0 34px !important; width:100% !important;
-  height:34px !important; min-height:34px !important; max-height:34px !important;
-  box-sizing:border-box !important; margin:0 !important; padding:2px 2px !important;
-  line-height:30px !important; font-size:14px !important;
+.date-time-control-row > input:focus { outline:none !important; box-shadow:none !important; }
+.date-time-control-row > select.date-unknown-select {
+  appearance:none !important; -webkit-appearance:none !important; flex:0 0 34px !important;
+  width:34px !important; height:34px !important; min-height:34px !important; margin:0 !important;
+  padding:0 !important; border:1px solid var(--border, #c9d2df) !important; border-radius:8px !important;
+  color:transparent !important; font-size:0 !important; background-color:var(--surface, #f8fafc) !important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2358667d' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat:no-repeat !important; background-position:center !important; background-size:18px !important;
 }
-.entry-date-time .field.date-time-field.is-unknown {
-  height:58px !important; min-height:58px !important; padding-bottom:6px !important;
-}
-.entry-date-time .field.date-time-field.is-unknown > input { display:none !important; }
+.date-time-control-row > select.date-unknown-select option { color:#172033 !important; font-size:14px !important; }
+.entry-date-time .field.date-time-field.is-unknown,
+#overlay > .sheet .entry-date-time .field.date-time-field.is-unknown,
+#sellOverlay .entry-date-time .field.date-time-field.is-unknown { height:58px !important; min-height:58px !important; }
+.entry-date-time .field.date-time-field.is-unknown .date-time-control-row > input { display:none !important; }
+.entry-date-time .field.date-time-field.is-unknown .date-time-control-row { justify-content:flex-end !important; }
 #sellOverlay .entry-date-time { margin:8px 0 14px !important; align-items:stretch !important; }
 #overlay > .sheet .entry-date-time { margin-bottom:14px !important; align-items:stretch !important; }
+@media(max-width:360px){.date-time-control-row{gap:3px!important}.date-time-control-row>select.date-unknown-select{flex-basis:30px!important;width:30px!important}}
 </style>
 
 </head>
@@ -2323,7 +2329,7 @@ button[id="mdpClose"]:active, button[id="mdiClose"]:active{
     <div class="field"><label>Sell Price Range</label><div class="two-col" style="display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr);gap:8px;align-items:end;"><div><label for="f-range-from" style="font-size:12px;color:var(--text-muted);">From (Rs.)</label><input id="f-range-from" type="text" inputmode="decimal" placeholder="e.g. 45k" style="width:100%;min-width:0;box-sizing:border-box;"></div><span aria-hidden="true" style="display:flex;align-items:center;justify-content:center;height:44px;font-size:24px;font-weight:600;color:var(--text-muted);">-</span><div><label for="f-range-to" style="font-size:12px;color:var(--text-muted);">To (Rs.)</label><input id="f-range-to" type="text" inputmode="decimal" placeholder="e.g. 47k" style="width:100%;min-width:0;box-sizing:border-box;"></div></div><input id="f-range" type="hidden"><div class="price-hint" id="f-range-hint"></div><button type="button" id="resetRangeAutoBtn" class="btn-cancel" style="display:none;margin-top:6px;padding:6px 10px;">Reset to Auto</button></div>
 
     <div class="settings-note entry-date-guidance">📊 <b>کاروبار کی صحیح صورتحال جاننے کے لیے:</b> موبائل کی خریداری اور فروخت کی درست تاریخ اور وقت درج کریں تاکہ روزانہ کی خرید و فروخت اور مصروف ترین اوقات کی رپورٹس درست بن سکیں۔ اگر آپ کو درست تاریخ یا وقت یاد نہیں تو اس کی جگہ <b>Unknown</b> منتخب کر لیں۔ تاریخ اور وقت معلوم ہونے کی صورت میں انہیں ضرور درج کریں، کیونکہ اس سے آپ کو اپنے کاروبار کی بہتر اور زیادہ درست رپورٹس ملیں گی۔</div>
-    <div class="two-col entry-date-time"><div class="field date-time-field"><label>Buy Date</label><select class="date-unknown-select" id="f-buydate-mode" aria-label="Date/time availability"><option value="known">Known</option><option value="unknown">Unknown</option></select><input id="f-buydate" type="date"></div><div class="field date-time-field"><label>Buy Time</label><select class="date-unknown-select" id="f-buytime-mode" aria-label="Date/time availability"><option value="known">Known</option><option value="unknown">Unknown</option></select><input id="f-buytime" type="time"></div></div>
+    <div class="two-col entry-date-time"><div class="field date-time-field"><label>Buy Date</label><div class="date-time-control-row"><input id="f-buydate" type="date" aria-label="Buy Date"><select class="date-unknown-select" id="f-buydate-mode" aria-label="Change Buy Date or select Unknown" title="Change date/time or select Unknown"><option value="known">Change</option><option value="unknown">Unknown</option></select></div></div><div class="field date-time-field"><label>Buy Time</label><div class="date-time-control-row"><input id="f-buytime" type="time" aria-label="Buy Time"><select class="date-unknown-select" id="f-buytime-mode" aria-label="Change Buy Time or select Unknown" title="Change date/time or select Unknown"><option value="known">Change</option><option value="unknown">Unknown</option></select></div></div></div>
 
     <div class="two-col"><div class="field"><label>Seller ka naam</label><input id="f-seller-name" list="appContactNames" placeholder="Kis se khareeda" autocomplete="off"></div><div class="field"><label>Seller ka number</label><input id="f-seller-number" list="appContactNumbers" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx" autocomplete="off"></div></div>
     <div class="entry-add-from-row"><div class="entry-add-from-label">Add from</div><div class="contact-pick-actions entry-add-from-actions"><button type="button" class="btn-cancel" onclick="openAppContactPicker('f-seller-name','f-seller-number')">👥 App contacts</button><button type="button" class="btn-cancel" onclick="pickPhoneContact('f-seller-name','f-seller-number')">📱 Phone contacts</button></div></div>
@@ -2338,8 +2344,8 @@ button[id="mdpClose"]:active, button[id="mdiClose"]:active{
         <div class="field"><label>Customer number</label><input id="f-customer-number" list="appContactNumbers" type="tel" inputmode="tel" placeholder="03xx-xxxxxxx" autocomplete="off"></div>
       </div>
       <div class="two-col entry-date-time">
-        <div class="field date-time-field"><label>Sale Date</label><select class="date-unknown-select" id="f-saledate-mode" aria-label="Date/time availability"><option value="known">Known</option><option value="unknown">Unknown</option></select><input id="f-saledate" type="date"></div>
-        <div class="field date-time-field"><label>Sale Time</label><select class="date-unknown-select" id="f-saletime-mode" aria-label="Date/time availability"><option value="known">Known</option><option value="unknown">Unknown</option></select><input id="f-saletime" type="time"></div>
+        <div class="field date-time-field"><label>Sale Date</label><div class="date-time-control-row"><input id="f-saledate" type="date" aria-label="Sale Date"><select class="date-unknown-select" id="f-saledate-mode" aria-label="Change Sale Date or select Unknown" title="Change date/time or select Unknown"><option value="known">Change</option><option value="unknown">Unknown</option></select></div></div>
+        <div class="field date-time-field"><label>Sale Time</label><div class="date-time-control-row"><input id="f-saletime" type="time" aria-label="Sale Time"><select class="date-unknown-select" id="f-saletime-mode" aria-label="Change Sale Time or select Unknown" title="Change date/time or select Unknown"><option value="known">Change</option><option value="unknown">Unknown</option></select></div></div>
       </div>
       <div class="field"><label>Payment method</label><input id="f-payment" placeholder="Cash / Easypaisa"></div>
       <div class="two-col sale-payment-fields" id="saleEditPaymentFields" style="margin-top:10px;">
@@ -2423,8 +2429,8 @@ button[id="mdpClose"]:active, button[id="mdiClose"]:active{
     <div class="entry-add-from-row"><div class="entry-add-from-label">Add from</div><div class="contact-pick-actions entry-add-from-actions"><button type="button" class="btn-cancel" onclick="openAppContactPicker('s-customer','s-customer-number')">👥 App contacts</button><button type="button" class="btn-cancel" onclick="pickPhoneContact('s-customer','s-customer-number')">📱 Phone contacts</button></div></div>
     <div class="settings-note entry-date-guidance sale-date-guidance">📊 <b>Accurate Analytics ke liye:</b> Mobile bechne ki sahi date aur time enter karein. Is se daily sales aur busiest hours ki reports zyada accurate hongi.</div>
     <div class="two-col entry-date-time">
-      <div class="field date-time-field"><label>Sale Date</label><select class="date-unknown-select" id="s-saledate-mode" aria-label="Date/time availability"><option value="known">Known</option><option value="unknown">Unknown</option></select><input id="s-saledate" type="date"></div>
-      <div class="field date-time-field"><label>Sale Time</label><select class="date-unknown-select" id="s-saletime-mode" aria-label="Date/time availability"><option value="known">Known</option><option value="unknown">Unknown</option></select><input id="s-saletime" type="time"></div>
+      <div class="field date-time-field"><label>Sale Date</label><div class="date-time-control-row"><input id="s-saledate" type="date" aria-label="Sale Date"><select class="date-unknown-select" id="s-saledate-mode" aria-label="Change Sale Date or select Unknown" title="Change date/time or select Unknown"><option value="known">Change</option><option value="unknown">Unknown</option></select></div></div>
+      <div class="field date-time-field"><label>Sale Time</label><div class="date-time-control-row"><input id="s-saletime" type="time" aria-label="Sale Time"><select class="date-unknown-select" id="s-saletime-mode" aria-label="Change Sale Time or select Unknown" title="Change date/time or select Unknown"><option value="known">Change</option><option value="unknown">Unknown</option></select></div></div>
     </div>
     <div class="sec-label" style="margin-top:14px;">🎁 Sale ke sath hua extra kharcha</div>
     <div class="settings-note" style="margin-top:0;">Customer ko jelly/protector/Cover ya kisi ko koi commission waghaira diya ya koi bhi aur kharcha jo aap ne entry ke waqt nahi dala, yahan add karein. Isay enter na karne par aap ka profit sahi calculate nahi hoga.</div>
@@ -3316,9 +3322,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v139';
-const APP_INDEX_VERSION_NAME = 'Unknown Purchase and Sale Date Time';
-const APP_INDEX_UPDATED = '13 Nov 2026 • 05:22 PM PKT';
+const APP_INDEX_VERSION = 'v141';
+const APP_INDEX_VERSION_NAME = 'Inline Date/Time with Unknown Menu';
+const APP_INDEX_UPDATED = '13 Nov 2026 • 05:57 PM PKT';
 
 let inventory = [];
 
