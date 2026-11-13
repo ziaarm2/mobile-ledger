@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v151
+Current file version: Index v152
 - Index v121 — Bilingual English / Urdu Language Selector — 06 Nov 2026 • 11:06 AM PKT. Added a persistent English/Urdu selector in the header and CSV-driven Urdu text translations. English remains the default. Existing app workflows, Firebase/Firestore integration, data schema, calculations and business logic are retained.
 - Index v120 — Analytics Open Fix — 05 Nov 2026 • 09:30 AM PKT. Fixed ReferenceError in grouped busiest-hours renderer that prevented Analytics overlay from opening when records with timestamps existed; open overlay before rendering and surface safe error fallback.
 - Index v119 — Analytics 28-Day Comparison, Grouped Business Hours & Rent Emphasis — 05 Nov 2026 • 09:09 AM PKT. Default analytics period is last 28 days compared with the immediately preceding 28 days; busiest hours default to 3-hour grouped blocks with hourly detail selectable; unpaid rent estimate is visually emphasized.
@@ -10,9 +10,9 @@ Current file version: Index v151
 - Index v115 — Storage Quota & History Safety Fix — 03 Nov 2026 • 06:03:06 PM PKT. Removed duplicate full-app Undo/Redo snapshots from localStorage; durable Activity History snapshots use IndexedDB and local-save diagnostics were improved.
 - Index v114 — Combined Brand Filter & Stock Shop Labels — 03 Nov 2026 • 04:18:00 PM PKT. Hardened iOS brand-chip taps and ensured source shop labels resolve on Available/stock cards.
 - Index v113 — Combined Shop Labels & Brand Filter Fix — 03 Nov 2026 • 02:05:00 PM PKT. Fixed Expenses overlay on mobile: expense form and filtered expense list scroll independently while the bottom Close action remains pinned above the iPhone home indicator; added safe-area spacing to prevent content and controls being clipped. Preserved expense calculations and existing actions.
-Version name: Urdu Mixed-Language Cleanup & Analytics Phrase Fix
+Version name: Urdu Analytics Headings & Remaining English Cleanup
 Baseline: User-provided Index v93 file (preserved; all existing functionality retained)
-Last changed: 13 Nov 2026 • 08:56 PM PKT (Asia/Karachi)
+Last changed: 13 Nov 2026 • 09:20 PM PKT (Asia/Karachi)
 Change summary: Fixed mixed English/Hinglish phrases in Analytics, corrected context-specific “Average” and “Lifetime” labels, localized dynamic duration suffixes, and preserved English mode, brand/model names, calculations, Firebase, and existing app behavior.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
@@ -25,7 +25,7 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 7. Preserve Firebase/Firestore connectivity and stored user data. Do not change database rules/schema/sync behavior unless explicitly requested.
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
-VERSION HISTORY (newest first):\n- Index v151 — Urdu Mixed-Language Cleanup & Analytics Phrase Fix — 13 Nov 2026 • 08:56 PM PKT. Fixed remaining mixed English/Hinglish phrases in Analytics headings, comparisons, rent details, stock snapshot, weekday and daily-average labels; corrected context-specific average/lifetime wording and localized day-count suffixes. English mode, brand/model names, calculations, Firebase, data schema, and unrelated UI are preserved.\n- Index v150 — Analytics Urdu Time Labels & Dynamic Translation Fix — 13 Nov 2026 • 08:50 PM PKT. Completed remaining Analytics Urdu labels for dynamic busiest-hour and weekday details, daily averages, payment-recovery text, quantity notes, and chart legends. Urdu time labels now follow the user's boundaries: 12:00 AM–11:59 AM صبح, 12:00 PM–3:59 PM دوپہر, 4:00 PM–5:59 PM شام, and 6:00 PM–11:59 PM رات. English mode, calculations, Firebase, data schema, and unrelated UI are preserved.\n- Index v149 — Analytics Urdu Gap Completion — 13 Nov 2026 • 07:00 PM PKT. Added Analytics-scoped translations for remaining dynamic English/Hinglish labels, date/month strings, chart legends, averages, pending-payment descriptions, and busiest-hour explanations. Existing Urdu wording, English mode, calculations, Firebase, and all non-Analytics UI are preserved.\n- Index v148 — Analytics Urdu Final Polish — 13 Nov 2026 • 08:15 PM PKT. Fixed remaining analytics month labels and placeholder translations; standardized “فروخت ہوئے”, “بامقابلہ”, and “عدد”; no non-Analytics translations or business logic changed.\n- Index v145 — Date/Time Arrow Always Visible — 13 Nov 2026 • 07:15 PM PKT. Fixed dropdown chevron visibility in both Known and Unknown states; native select remains tappable.\n- Index v144 — Unknown State Display Fix — 13 Nov 2026 • 06:59 PM PKT. Fixed blank/clipped date-time fields after selecting Unknown: localized “معلوم نہیں” / “Unknown” is now visibly centered and the dropdown arrow remains tappable. Purchase and Sale data/analytics logic is unchanged.\n- Index v143 — Bilingual Date/Time Guidance — 13 Nov 2026 • 06:50 PM PKT. Updated Purchase and Sale guidance notes with the approved bilingual wording and translated the Unknown dropdown option to “معلوم نہیں” in Urdu mode; English mode retains “Unknown”.\n- Index v141 — Inline Date/Time with Unknown Menu — 13 Nov 2026 • 05:57 PM PKT. Date/time values are visible directly in Purchase and Sale fields; the compact dropdown arrow opens the Unknown option. Current date/time defaults and analytics logic are preserved.\n- Index v140 — Date/Time Field Layout Fix — 13 Nov 2026 • 05:45 PM PKT. Fixed mobile Purchase and Sale forms so Known/Unknown selectors and date/time inputs no longer overlap following fields or section headings; preserved date/time and analytics behavior.
+VERSION HISTORY (newest first):\n- Index v152 — Urdu Analytics Headings & Remaining English Cleanup — 13 Nov 2026 • 09:20 PM PKT. Fixed remaining mixed English/Hinglish phrases in Analytics headings, comparisons, rent details, stock snapshot, weekday and daily-average labels; corrected context-specific average/lifetime wording and localized day-count suffixes. English mode, brand/model names, calculations, Firebase, data schema, and unrelated UI are preserved.\n- Index v150 — Analytics Urdu Time Labels & Dynamic Translation Fix — 13 Nov 2026 • 08:50 PM PKT. Completed remaining Analytics Urdu labels for dynamic busiest-hour and weekday details, daily averages, payment-recovery text, quantity notes, and chart legends. Urdu time labels now follow the user's boundaries: 12:00 AM–11:59 AM صبح, 12:00 PM–3:59 PM دوپہر, 4:00 PM–5:59 PM شام, and 6:00 PM–11:59 PM رات. English mode, calculations, Firebase, data schema, and unrelated UI are preserved.\n- Index v149 — Analytics Urdu Gap Completion — 13 Nov 2026 • 07:00 PM PKT. Added Analytics-scoped translations for remaining dynamic English/Hinglish labels, date/month strings, chart legends, averages, pending-payment descriptions, and busiest-hour explanations. Existing Urdu wording, English mode, calculations, Firebase, and all non-Analytics UI are preserved.\n- Index v148 — Analytics Urdu Final Polish — 13 Nov 2026 • 08:15 PM PKT. Fixed remaining analytics month labels and placeholder translations; standardized “فروخت ہوئے”, “بامقابلہ”, and “عدد”; no non-Analytics translations or business logic changed.\n- Index v145 — Date/Time Arrow Always Visible — 13 Nov 2026 • 07:15 PM PKT. Fixed dropdown chevron visibility in both Known and Unknown states; native select remains tappable.\n- Index v144 — Unknown State Display Fix — 13 Nov 2026 • 06:59 PM PKT. Fixed blank/clipped date-time fields after selecting Unknown: localized “معلوم نہیں” / “Unknown” is now visibly centered and the dropdown arrow remains tappable. Purchase and Sale data/analytics logic is unchanged.\n- Index v143 — Bilingual Date/Time Guidance — 13 Nov 2026 • 06:50 PM PKT. Updated Purchase and Sale guidance notes with the approved bilingual wording and translated the Unknown dropdown option to “معلوم نہیں” in Urdu mode; English mode retains “Unknown”.\n- Index v141 — Inline Date/Time with Unknown Menu — 13 Nov 2026 • 05:57 PM PKT. Date/time values are visible directly in Purchase and Sale fields; the compact dropdown arrow opens the Unknown option. Current date/time defaults and analytics logic are preserved.\n- Index v140 — Date/Time Field Layout Fix — 13 Nov 2026 • 05:45 PM PKT. Fixed mobile Purchase and Sale forms so Known/Unknown selectors and date/time inputs no longer overlap following fields or section headings; preserved date/time and analytics behavior.
 - Index v139 — Unknown Purchase/Sale Date & Time — 13 Nov 2026 • 05:30 PM PKT. Added independent Unknown choices for purchase and sale dates/times, retained current date/time defaults, and separated unknown records from date/hour analytics while preserving entry-created timestamps.\n- Index v139 — Unknown Purchase and Sale Date Time — 13 Nov 2026 • 03:48 PM PKT. Sell Range is reformatted at display time using the shared K ON/OFF preference, including after cloud data loads; privacy markup behavior is preserved.
 - Index v136 — Brand & Status Options Stay English — 13 Nov 2026 • 03:14 PM PKT. Brand names and mobile status option labels stay in English in Urdu mode; all other translations and app behavior are preserved.\n
 - Index v128 — Full English Copy Audit Fix — 13 Nov 2026 • 01:34 PM PKT. Added English-mode phrase translations for the remaining audited Roman Urdu labels, placeholders, inventory cards, validation messages, backup/restore/sync alerts, analytics notes, import/share prompts, and access notices. Urdu mode and app behavior are preserved.
@@ -68,7 +68,7 @@ window.__MHE.legacy({"u":{"Apne Mobile Hisab اکاؤنٹ mein login karein. Aap
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
-<meta name="app-version" content="Index v151">
+<meta name="app-version" content="Index v152">
 <meta name="app-version-date-pkt" content="13 Nov 2026 08:50 PM PKT">
 <meta name="app-index-change-summary" content="Fixed visible localized Unknown state labels and dropdown arrow presentation in Purchase and Sale date/time fields.">
 <meta name="application-name" content="Mobile Hisab">
@@ -2194,7 +2194,7 @@ body.mh-urdu-mode .date-time-field.is-unknown .date-time-control-row::before { c
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v151<span>Updated: 13 Nov 2026</span><span>Urdu Mixed-Language Cleanup &amp; Analytics Phrase Fix</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v152<span>Updated: 13 Nov 2026</span><span>Urdu Mixed-Language Cleanup &amp; Analytics Phrase Fix</span></div>
       </div>
     </div>
 
@@ -3269,14 +3269,14 @@ body.mh-urdu-mode .date-time-field.is-unknown .date-time-control-row::before { c
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v151</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v152</div>
           <div class="settings-note" style="margin-top:4px;">Urdu Mixed-Language Cleanup &amp; Analytics Phrase Fix</div>
-          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 13 Nov 2026 • 08:56 PM PKT</div>
+          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 13 Nov 2026 • 09:20 PM PKT</div>
           <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Fixed remaining mixed English/Hinglish phrases in Analytics while preserving English mode, calculations, Firebase, and existing features.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
-          <div style="font-weight:700;margin-top:9px;">Index v151 — 13 Nov 2026</div>
+          <div style="font-weight:700;margin-top:9px;">Index v152 — 13 Nov 2026</div>
           <div class="settings-note">Fixed mixed English/Hinglish phrases in Analytics and corrected Urdu labels for comparisons, averages, rent details, stock summaries, and durations. English mode and all app features remain unchanged.</div>
           <div style="font-weight:700;margin-top:9px;">Index v150 — 13 Nov 2026</div>
           <div class="settings-note">Completed Analytics Urdu labels and user-defined Urdu time-of-day labels.</div>
@@ -3372,9 +3372,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v151';
-const APP_INDEX_VERSION_NAME = 'Urdu Mixed-Language Cleanup & Analytics Phrase Fix';
-const APP_INDEX_UPDATED = '13 Nov 2026 • 08:56 PM PKT';
+const APP_INDEX_VERSION = 'v152';
+const APP_INDEX_VERSION_NAME = 'Urdu Analytics Headings & Remaining English Cleanup';
+const APP_INDEX_UPDATED = '13 Nov 2026 • 09:20 PM PKT';
 
 let inventory = [];
 
@@ -9723,7 +9723,30 @@ document.querySelectorAll('[data-timeline-mode]').forEach(function(btn){btn.addE
     'Weekday comparison ke liye date range available nahi.':'ہفتے کے دنوں کا موازنہ کرنے کے لیے تاریخوں کا دورانیہ موجود نہیں۔',
     'Busiest hour selectable metric graph':'مصروف ترین اوقات کا گراف','Line Graph':'لائن گراف','Smooth Area':'ہموار گراف','Bar Chart':'بار گراف','Every hour':'ہر گھنٹہ','3-hour groups':'تین گھنٹوں کے گروپ','2-hour groups':'دو گھنٹوں کے گروپ',
     'For accurate analytics':'درست تجزیے کے لیے','No date':'تاریخ موجود نہیں','Customer not recorded':'گاہک کا نام درج نہیں','Manual payment':'دستی ادائیگی','Mobile sale':'موبائل کی فروخت',
-    'Estimated stock at each day end':'ہر دن کے اختتام پر اسٹاک کا اندازہ','Same-date monthly stock level comparison':'گزشتہ ماہ کی اسی تاریخ کے اسٹاک کا موازنہ','Same-date monthly purchased versus sold comparison':'گزشتہ ماہ کی اسی تاریخ کی خریداری اور فروخت کا موازنہ'
+    'Estimated stock at each day end':'ہر دن کے اختتام پر اسٹاک کا اندازہ','Same-date monthly stock level comparison':'گزشتہ ماہ کی اسی تاریخ کے اسٹاک کا موازنہ','Same-date monthly purchased versus sold comparison':'گزشتہ ماہ کی اسی تاریخ کی خریداری اور فروخت کا موازنہ',
+    'ESTIMATED PROFIT AFTER PAYING RENT':'کرایہ ادا کرنے کے بعد متوقع منافع',
+    'Estimated profit after paying rent':'کرایہ ادا کرنے کے بعد متوقع منافع',
+    'BUSINESS TREND':'کاروبار کی روزانہ کارکردگی','Daily BUSINESS TREND':'روزانہ کاروباری کارکردگی',
+    'Purchase, sale and net profit over time':'وقت کے ساتھ خریداری، فروخت اور خالص منافع',
+    'Top models by sold quantity and realized profit':'فروخت کی تعداد اور حاصل شدہ منافع کے لحاظ سے نمایاں ماڈلز',
+    'Top models by sold quantity':'فروخت کی تعداد کے لحاظ سے نمایاں ماڈلز',
+    'Mobiles purchased vs sold · same days vs previous period':'خریدے گئے اور فروخت ہوئے موبائل · یکساں دنوں کا پچھلی مدت سے موازنہ',
+    'Purchased mobiles vs sold mobiles · same days vs previous period':'خریدے گئے اور فروخت ہوئے موبائل · یکساں دنوں کا پچھلی مدت سے موازنہ',
+    'PURCHASE vs SALE':'خریداری بمقابلہ فروخت','QUANTITY COMPARISON':'تعداد کا موازنہ',
+    'SCORING COMPARISON':'کارکردگی کا موازنہ','STOCK PERFORMANCE':'اسٹاک کی کارکردگی',
+    'BRAND PERFORMANCE':'برانڈز کی کارکردگی','MODEL PERFORMANCE':'ماڈلز کی کارکردگی',
+    'PENDING PAYMENTS SCORECARD':'بقایا ادائیگیوں کا جائزہ','BUSIEST BUSINESS HOURS':'کاروبار کے سب سے مصروف اوقات',
+    'Selected period mein sale aur purchase kis waqt zyada hui':'منتخب مدت میں فروخت اور خریداری کس وقت زیادہ ہوئی',
+    'Selected period mein sale aur purchase kis waqt zyada hui':'منتخب مدت میں فروخت اور خریداری کس وقت زیادہ ہوئی',
+    'Selected period ka per-day average vs previous comparable period':'منتخب مدت کی روزانہ اوسط بمقابلہ پچھلی مساوی مدت',
+    'Daily purchased aur sold mobiles — current month vs last month':'روزانہ خریدے اور فروخت کیے گئے موبائل — موجودہ ماہ بمقابلہ گزشتہ ماہ',
+    'Daily purchased/sold units':'روزانہ خریدے اور فروخت کیے گئے موبائلوں کی تعداد',
+    'Current month vs last month':'موجودہ ماہ بمقابلہ گزشتہ ماہ',
+    'Day (9 AM–9 PM)':'دن (صبح 9 بجے سے رات 9 بجے تک)',
+    'Night (9 PM–9 AM)':'رات (رات 9 بجے سے صبح 9 بجے تک)',
+    'DAILY BUSINESS TREND':'روزانہ کاروباری کارکردگی',
+    'Top models':'نمایاں ماڈلز','Top':'نمایاں','after paying rent':'کرایہ ادا کرنے کے بعد',
+    'period period':'مدت','same days vs previous period':'یکساں دنوں کا پچھلی مدت سے موازنہ'
   };
   const urdu=()=>document.body.classList.contains('mh-urdu-mode');
   function translateText(text){
@@ -13621,7 +13644,28 @@ window.__MHE.enExtra = Object.assign(window.__MHE.enExtra || {}, {"Model likhein
     "Lifetime net profit":"اب تک کا خالص منافع",
     "Lifetime expenses":"اب تک کے اخراجات",
     "Purchase, sale and realized profit in selected period":"منتخب مدت میں خریداری، فروخت اور حاصل شدہ منافع",
-    "📈 PURCHASED vs SOLD UNITS":"📈 خریدے اور فروخت کیے گئے موبائلوں کی تعداد"
+    "📈 PURCHASED vs SOLD UNITS":"📈 خریدے اور فروخت کیے گئے موبائلوں کی تعداد",
+    "ESTIMATED PROFIT AFTER PAYING RENT":"کرایہ ادا کرنے کے بعد متوقع منافع",
+    "Estimated profit after paying rent":"کرایہ ادا کرنے کے بعد متوقع منافع",
+    "BUSINESS TREND":"کاروبار کی روزانہ کارکردگی",
+    "Daily BUSINESS TREND":"روزانہ کاروباری کارکردگی",
+    "Purchase, sale and net profit over time":"وقت کے ساتھ خریداری، فروخت اور خالص منافع",
+    "Top models by sold quantity and realized profit":"فروخت کی تعداد اور حاصل شدہ منافع کے لحاظ سے نمایاں ماڈلز",
+    "Top models by sold quantity":"فروخت کی تعداد کے لحاظ سے نمایاں ماڈلز",
+    "PURCHASE vs SALE":"خریداری بمقابلہ فروخت",
+    "QUANTITY COMPARISON":"تعداد کا موازنہ",
+    "SCORING COMPARISON":"کارکردگی کا موازنہ",
+    "STOCK PERFORMANCE":"اسٹاک کی کارکردگی",
+    "BRAND PERFORMANCE":"برانڈز کی کارکردگی",
+    "MODEL PERFORMANCE":"ماڈلز کی کارکردگی",
+    "PENDING PAYMENTS SCORECARD":"بقایا ادائیگیوں کا جائزہ",
+    "BUSIEST BUSINESS HOURS":"کاروبار کے سب سے مصروف اوقات",
+    "Selected period mein sale aur purchase kis waqt zyada hui":"منتخب مدت میں فروخت اور خریداری کس وقت زیادہ ہوئی",
+    "Daily purchased aur sold mobiles — current month vs last month":"روزانہ خریدے اور فروخت کیے گئے موبائل — موجودہ ماہ بمقابلہ گزشتہ ماہ",
+    "Daily purchased/sold units":"روزانہ خریدے اور فروخت کیے گئے موبائلوں کی تعداد",
+    "Day (9 AM–9 PM)":"دن (صبح 9 بجے سے رات 9 بجے تک)",
+    "Night (9 PM–9 AM)":"رات (رات 9 بجے سے صبح 9 بجے تک)",
+    "Daily average vs previous":"روزانہ اوسط بمقابلہ پچھلی مدت"
   });
   /*mhve*/if(window.__MHE)window.__MHE.dict=translations;var keys=Object.keys(translations).sort(function(a,b){return b.length-a.length;});
   var textOriginals=new WeakMap();
