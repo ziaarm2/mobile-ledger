@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v144
+Current file version: Index v150
 - Index v121 — Bilingual English / Urdu Language Selector — 06 Nov 2026 • 11:06 AM PKT. Added a persistent English/Urdu selector in the header and CSV-driven Urdu text translations. English remains the default. Existing app workflows, Firebase/Firestore integration, data schema, calculations and business logic are retained.
 - Index v120 — Analytics Open Fix — 05 Nov 2026 • 09:30 AM PKT. Fixed ReferenceError in grouped busiest-hours renderer that prevented Analytics overlay from opening when records with timestamps existed; open overlay before rendering and surface safe error fallback.
 - Index v119 — Analytics 28-Day Comparison, Grouped Business Hours & Rent Emphasis — 05 Nov 2026 • 09:09 AM PKT. Default analytics period is last 28 days compared with the immediately preceding 28 days; busiest hours default to 3-hour grouped blocks with hourly detail selectable; unpaid rent estimate is visually emphasized.
@@ -10,9 +10,9 @@ Current file version: Index v144
 - Index v115 — Storage Quota & History Safety Fix — 03 Nov 2026 • 06:03:06 PM PKT. Removed duplicate full-app Undo/Redo snapshots from localStorage; durable Activity History snapshots use IndexedDB and local-save diagnostics were improved.
 - Index v114 — Combined Brand Filter & Stock Shop Labels — 03 Nov 2026 • 04:18:00 PM PKT. Hardened iOS brand-chip taps and ensured source shop labels resolve on Available/stock cards.
 - Index v113 — Combined Shop Labels & Brand Filter Fix — 03 Nov 2026 • 02:05:00 PM PKT. Fixed Expenses overlay on mobile: expense form and filtered expense list scroll independently while the bottom Close action remains pinned above the iPhone home indicator; added safe-area spacing to prevent content and controls being clipped. Preserved expense calculations and existing actions.
-Version name: Brand & Status Options Stay English
+Version name: Analytics Urdu Time Labels & Dynamic Translation Fix
 Baseline: User-provided Index v93 file (preserved; all existing functionality retained)
-Last changed: 13 Nov 2026 (Asia/Karachi)
+Last changed: 13 Nov 2026 • 08:50 PM PKT (Asia/Karachi)
 Change summary: Brand names and mobile status option labels remain in English even when Urdu mode is selected. Other Urdu translations and app behavior are unchanged.
 
 INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
@@ -25,7 +25,7 @@ INSTRUCTIONS FOR ANY AI/DEVELOPER RECEIVING THIS FILE:
 7. Preserve Firebase/Firestore connectivity and stored user data. Do not change database rules/schema/sync behavior unless explicitly requested.
 8. Validate that only the requested changes were made and that the HTML remains intact before returning the file.
 
-VERSION HISTORY (newest first):\n- Index v149 — Analytics Urdu Gap Completion — 13 Nov 2026 • 07:00 PM PKT. Added Analytics-scoped translations for remaining dynamic English/Hinglish labels, date/month strings, chart legends, averages, pending-payment descriptions, and busiest-hour explanations. Existing Urdu wording, English mode, calculations, Firebase, and all non-Analytics UI are preserved.\n- Index v148 — Analytics Urdu Final Polish — 13 Nov 2026 • 08:15 PM PKT. Fixed remaining analytics month labels and placeholder translations; standardized “فروخت ہوئے”, “بامقابلہ”, and “عدد”; no non-Analytics translations or business logic changed.\n- Index v145 — Date/Time Arrow Always Visible — 13 Nov 2026 • 07:15 PM PKT. Fixed dropdown chevron visibility in both Known and Unknown states; native select remains tappable.\n- Index v144 — Unknown State Display Fix — 13 Nov 2026 • 06:59 PM PKT. Fixed blank/clipped date-time fields after selecting Unknown: localized “معلوم نہیں” / “Unknown” is now visibly centered and the dropdown arrow remains tappable. Purchase and Sale data/analytics logic is unchanged.\n- Index v143 — Bilingual Date/Time Guidance — 13 Nov 2026 • 06:50 PM PKT. Updated Purchase and Sale guidance notes with the approved bilingual wording and translated the Unknown dropdown option to “معلوم نہیں” in Urdu mode; English mode retains “Unknown”.\n- Index v141 — Inline Date/Time with Unknown Menu — 13 Nov 2026 • 05:57 PM PKT. Date/time values are visible directly in Purchase and Sale fields; the compact dropdown arrow opens the Unknown option. Current date/time defaults and analytics logic are preserved.\n- Index v140 — Date/Time Field Layout Fix — 13 Nov 2026 • 05:45 PM PKT. Fixed mobile Purchase and Sale forms so Known/Unknown selectors and date/time inputs no longer overlap following fields or section headings; preserved date/time and analytics behavior.
+VERSION HISTORY (newest first):\n- Index v150 — Analytics Urdu Time Labels & Dynamic Translation Fix — 13 Nov 2026 • 08:50 PM PKT. Completed remaining Analytics Urdu labels for dynamic busiest-hour and weekday details, daily averages, payment-recovery text, quantity notes, and chart legends. Urdu time labels now follow the user's boundaries: 12:00 AM–11:59 AM صبح, 12:00 PM–3:59 PM دوپہر, 4:00 PM–5:59 PM شام, and 6:00 PM–11:59 PM رات. English mode, calculations, Firebase, data schema, and unrelated UI are preserved.\n- Index v149 — Analytics Urdu Gap Completion — 13 Nov 2026 • 07:00 PM PKT. Added Analytics-scoped translations for remaining dynamic English/Hinglish labels, date/month strings, chart legends, averages, pending-payment descriptions, and busiest-hour explanations. Existing Urdu wording, English mode, calculations, Firebase, and all non-Analytics UI are preserved.\n- Index v148 — Analytics Urdu Final Polish — 13 Nov 2026 • 08:15 PM PKT. Fixed remaining analytics month labels and placeholder translations; standardized “فروخت ہوئے”, “بامقابلہ”, and “عدد”; no non-Analytics translations or business logic changed.\n- Index v145 — Date/Time Arrow Always Visible — 13 Nov 2026 • 07:15 PM PKT. Fixed dropdown chevron visibility in both Known and Unknown states; native select remains tappable.\n- Index v144 — Unknown State Display Fix — 13 Nov 2026 • 06:59 PM PKT. Fixed blank/clipped date-time fields after selecting Unknown: localized “معلوم نہیں” / “Unknown” is now visibly centered and the dropdown arrow remains tappable. Purchase and Sale data/analytics logic is unchanged.\n- Index v143 — Bilingual Date/Time Guidance — 13 Nov 2026 • 06:50 PM PKT. Updated Purchase and Sale guidance notes with the approved bilingual wording and translated the Unknown dropdown option to “معلوم نہیں” in Urdu mode; English mode retains “Unknown”.\n- Index v141 — Inline Date/Time with Unknown Menu — 13 Nov 2026 • 05:57 PM PKT. Date/time values are visible directly in Purchase and Sale fields; the compact dropdown arrow opens the Unknown option. Current date/time defaults and analytics logic are preserved.\n- Index v140 — Date/Time Field Layout Fix — 13 Nov 2026 • 05:45 PM PKT. Fixed mobile Purchase and Sale forms so Known/Unknown selectors and date/time inputs no longer overlap following fields or section headings; preserved date/time and analytics behavior.
 - Index v139 — Unknown Purchase/Sale Date & Time — 13 Nov 2026 • 05:30 PM PKT. Added independent Unknown choices for purchase and sale dates/times, retained current date/time defaults, and separated unknown records from date/hour analytics while preserving entry-created timestamps.\n- Index v139 — Unknown Purchase and Sale Date Time — 13 Nov 2026 • 03:48 PM PKT. Sell Range is reformatted at display time using the shared K ON/OFF preference, including after cloud data loads; privacy markup behavior is preserved.
 - Index v136 — Brand & Status Options Stay English — 13 Nov 2026 • 03:14 PM PKT. Brand names and mobile status option labels stay in English in Urdu mode; all other translations and app behavior are preserved.\n
 - Index v128 — Full English Copy Audit Fix — 13 Nov 2026 • 01:34 PM PKT. Added English-mode phrase translations for the remaining audited Roman Urdu labels, placeholders, inventory cards, validation messages, backup/restore/sync alerts, analytics notes, import/share prompts, and access notices. Urdu mode and app behavior are preserved.
@@ -68,8 +68,8 @@ window.__MHE.legacy({"u":{"Apne Mobile Hisab اکاؤنٹ mein login karein. Aap
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
-<meta name="app-version" content="Index v144">
-<meta name="app-version-date-pkt" content="13 Nov 2026 07:00 PM PKT">
+<meta name="app-version" content="Index v150">
+<meta name="app-version-date-pkt" content="13 Nov 2026 08:50 PM PKT">
 <meta name="app-index-change-summary" content="Fixed visible localized Unknown state labels and dropdown arrow presentation in Purchase and Sale date/time fields.">
 <meta name="application-name" content="Mobile Hisab">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -2194,7 +2194,7 @@ body.mh-urdu-mode .date-time-field.is-unknown .date-time-control-row::before { c
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v149<span>Updated: 13 Nov 2026</span><span>Analytics Urdu Gap Completion</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v150<span>Updated: 13 Nov 2026</span><span>Analytics Urdu Time Labels &amp; Dynamic Translation Fix</span></div>
       </div>
     </div>
 
@@ -3276,7 +3276,7 @@ body.mh-urdu-mode .date-time-field.is-unknown .date-time-control-row::before { c
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
-          <div style="font-weight:700;margin-top:9px;">Index v149 — 13 Nov 2026</div>
+          <div style="font-weight:700;margin-top:9px;">Index v150 — 13 Nov 2026</div>
           <div class="settings-note">Roman Urdu wording has been replaced with clear English in English mode. Urdu mode and all other app features remain unchanged.</div>
           <div style="font-weight:700;margin-top:9px;">Index v124 — 13 Nov 2026</div>
           <div class="settings-note">Current month label and rent reminder follow the selected English/Urdu language; signup requires all applicable shop and login fields, with Rent selected by default.</div>
@@ -3370,9 +3370,9 @@ if(menuSafeClose) menuSafeClose.addEventListener('click',function(e){
   if(typeof syncMenuOpenState==='function') syncMenuOpenState();
 });
 
-const APP_INDEX_VERSION = 'v149';
-const APP_INDEX_VERSION_NAME = 'Analytics Urdu Gap Completion';
-const APP_INDEX_UPDATED = '13 Nov 2026 • 07:00 PM PKT';
+const APP_INDEX_VERSION = 'v150';
+const APP_INDEX_VERSION_NAME = 'Analytics Urdu Time Labels & Dynamic Translation Fix';
+const APP_INDEX_UPDATED = '13 Nov 2026 • 08:50 PM PKT';
 
 let inventory = [];
 
@@ -5180,7 +5180,13 @@ function formatClockTimeDisplay(value){
   if(!m) return String(value);
   let h=Number(m[1]); const mins=m[2];
   if(!Number.isFinite(h)||h<0||h>23) return String(value);
+  const isUrdu=document.body.classList.contains('mh-urdu-mode');
+  const originalHour=h;
   const suffix=h>=12?'PM':'AM'; h=h%12||12;
+  if(isUrdu){
+    const part=originalHour<12?'صبح':originalHour<16?'دوپہر':originalHour<18?'شام':'رات';
+    return part+' '+h+':'+mins;
+  }
   return h+':'+mins+' '+suffix;
 }
 function inventoryAvailableTime(e){
@@ -9394,6 +9400,13 @@ function analyticsRenderQuantity(curr,prev){
   document.getElementById('analyticsQuantityBars').innerHTML=group('PURCHASED',curr.purchasedUnits,prev&&prev.purchasedUnits,'purchasedUnits')+group('SOLD',curr.soldUnits,prev&&prev.soldUnits,'soldUnits')+'<div class="analytics-quantity-note" style="grid-column:1 / -1;">Numbers = total mobile units in the selected period.</div>';
 }
 let analyticsBusiestPeriod='day';
+function analyticsHourLabel(hour,withBaje){
+  const h=((Number(hour)%24)+24)%24;
+  const display=h%12||12;
+  if(!document.body.classList.contains('mh-urdu-mode')) return display+(h<12?' AM':' PM');
+  const part=h<12?'صبح':h<16?'دوپہر':h<18?'شام':'رات';
+  return part+' '+display+(withBaje?' بجے':'');
+}
 function analyticsRenderTimeOfDay(range){
   const grid=document.getElementById('analyticsTimeGrid');
   if(!grid) return;
@@ -9417,7 +9430,8 @@ function analyticsRenderTimeOfDay(range){
   const type=document.getElementById('analyticsBusiestGraphType')?.value||'line';
   const W=600,H=230,L=38,R=12,T=18,B=38,pw=W-L-R,ph=H-T-B;
   const keys=metric==='both'?['sale','purchase']:[metric];
-  const names={sale:'Mobiles Sold',purchase:'Mobiles Purchased',profit:'Sale Profit',saleAmount:'Sales Amount',purchaseAmount:'Purchase Amount'};
+  const isUrduAnalytics=document.body.classList.contains('mh-urdu-mode');
+  const names=isUrduAnalytics?{sale:'فروخت ہونے والے موبائل',purchase:'خریدے گئے موبائل',profit:'فروخت کا منافع',saleAmount:'فروخت کی رقم',purchaseAmount:'خریداری کی رقم'}:{sale:'Mobiles Sold',purchase:'Mobiles Purchased',profit:'Sale Profit',saleAmount:'Sales Amount',purchaseAmount:'Purchase Amount'};
   const colors={sale:'#18a7d8',purchase:'#f59e0b',profit:'#20b26b',saleAmount:'#4f7de0',purchaseAmount:'#a66be0'};
   const values=shown.flatMap(r=>keys.map(k=>Math.max(0,Number(r[k])||0)));
   const maxVal=Math.max(1,...values), yMax=maxVal<=4?4:Math.ceil(maxVal/4)*4;
@@ -9436,19 +9450,19 @@ function analyticsRenderTimeOfDay(range){
       vals.forEach((v,i)=>{svg+='<circle cx="'+x(i)+'" cy="'+y(v)+'" r="2.8" fill="'+color+'"><title>'+names[key]+': '+v+'</title></circle>';});
     }
   });
-  for(let i=0;i<shown.length;i++){const bh=shown[i].hour,label=(bh%12||12)+(bh<12?' AM':' PM'),xx=x(i);svg+='<text x="'+xx+'" y="'+(H-12)+'" text-anchor="middle" font-size="10" fill="var(--text-muted)">'+label+'</text>';}
+  for(let i=0;i<shown.length;i++){const bh=shown[i].hour,label=analyticsHourLabel(bh,false),xx=x(i);svg+='<text x="'+xx+'" y="'+(H-12)+'" text-anchor="middle" font-size="10" fill="var(--text-muted)">'+label+'</text>';}
   svg+='</svg>';chart.innerHTML=svg;
   const legend=document.getElementById('analyticsBusiestLegend');if(legend)legend.innerHTML=keys.map(k=>'<span><i class="analytics-dot" style="background:'+colors[k]+'"></i>'+names[k]+'</span>').join('');
-  if(!active.length){grid.innerHTML='<div class="analytics-empty">Is Day/Night period mein exact time ke sath sale/purchase record nahi mila.</div>';document.getElementById('analyticsTimeSummary').textContent='';document.getElementById('analyticsTimeMissing').textContent='Sirf exact timestamp wale records hourly breakdown mein count hote hain.';return;}
+  if(!active.length){grid.innerHTML='<div class="analytics-empty">'+(isUrduAnalytics?'اس دن یا رات کے دورانیے میں درست وقت کے ساتھ خرید و فروخت کا کوئی ریکارڈ نہیں ملا۔':'Is Day/Night period mein exact time ke sath sale/purchase record nahi mila.')+'</div>';document.getElementById('analyticsTimeSummary').textContent='';document.getElementById('analyticsTimeMissing').textContent=isUrduAnalytics?'گھنٹہ وار تفصیل میں صرف درست وقت والے ریکارڈ شامل ہوتے ہیں۔':'Sirf exact timestamp wale records hourly breakdown mein count hote hain.';return;}
   const sm=Math.max(1,...shown.map(r=>r.sale)),pm=Math.max(1,...shown.map(r=>r.purchase));
-  grid.innerHTML=shown.map(r=>{const has=!!(r.sale||r.purchase||r.profit),label=(r.hour%12||12)+(r.hour<12?' AM':' PM'),next=((r.endHour)%12||12)+(r.endHour<12?' AM':' PM');return '<div class="analytics-time-row"><div class="analytics-time-label">'+label+'–'+next+'</div><div class="analytics-time-pair"><div class="analytics-time-track"><div class="analytics-time-fill sale" style="width:'+Math.round(r.sale/sm*100)+'%"></div><div class="analytics-time-value">Sold: '+r.sale+' units · Rs '+fmt(r.saleAmount)+'</div></div><div class="analytics-time-track"><div class="analytics-time-fill purchase" style="width:'+Math.round(r.purchase/pm*100)+'%"></div><div class="analytics-time-value">Purchased: '+r.purchase+' units · Rs '+fmt(r.purchaseAmount)+'</div></div>'+(has?'<div class="analytics-time-summary" style="text-align:left;margin:2px 0 4px">Sale profit after phone expenses: Rs '+fmt(r.profit)+'</div>':'')+'</div></div>';}).join('');
+  grid.innerHTML=shown.map(r=>{const has=!!(r.sale||r.purchase||r.profit),label=analyticsHourLabel(r.hour,true),next=analyticsHourLabel(r.endHour,true);return '<div class="analytics-time-row"><div class="analytics-time-label">'+(isUrduAnalytics?label+' سے '+next:label+'–'+next)+'</div><div class="analytics-time-pair"><div class="analytics-time-track"><div class="analytics-time-fill sale" style="width:'+Math.round(r.sale/sm*100)+'%"></div><div class="analytics-time-value">'+(isUrduAnalytics?'فروخت: ':'Sold: ')+r.sale+(isUrduAnalytics?' عدد · روپے ':' units · Rs ')+fmt(r.saleAmount)+'</div></div><div class="analytics-time-track"><div class="analytics-time-fill purchase" style="width:'+Math.round(r.purchase/pm*100)+'%"></div><div class="analytics-time-value">'+(isUrduAnalytics?'خرید: ':'Purchased: ')+r.purchase+(isUrduAnalytics?' عدد · روپے ':' units · Rs ')+fmt(r.purchaseAmount)+'</div></div>'+(has?'<div class="analytics-time-summary" style="text-align:left;margin:2px 0 4px">'+(isUrduAnalytics?'فون کے اخراجات نکالنے کے بعد منافع: روپے ':'Sale profit after phone expenses: Rs ')+fmt(r.profit)+'</div>':'')+'</div></div>';}).join('');
   const topS=shown.reduce((a,b)=>b.sale>a.sale?b:a,shown[0]),topP=shown.reduce((a,b)=>b.purchase>a.purchase?b:a,shown[0]),topProfit=shown.reduce((a,b)=>b.profit>a.profit?b:a,shown[0]);
-  const label=h=>(h%12||12)+(h<12?' AM':' PM');
-  const ss=topS.sale?'Most sold: '+label(topS.hour)+'–'+label(topS.endHour)+' ('+topS.sale+' mobiles)':'';
-  const ps=topP.purchase?'Most purchased: '+label(topP.hour)+'–'+label(topP.endHour)+' ('+topP.purchase+' mobiles)':'';
-  const pr=topProfit.profit?'Highest sale profit: '+label(topProfit.hour)+' (Rs '+fmt(topProfit.profit)+')':'';
+  const label=h=>analyticsHourLabel(h,true);
+  const ss=topS.sale?(isUrduAnalytics?'سب سے زیادہ فروخت: ':'Most sold: ')+label(topS.hour)+'–'+label(topS.endHour)+' ('+topS.sale+(isUrduAnalytics?' موبائل':' mobiles')+')':'';
+  const ps=topP.purchase?(isUrduAnalytics?'سب سے زیادہ خریداری: ':'Most purchased: ')+label(topP.hour)+'–'+label(topP.endHour)+' ('+topP.purchase+(isUrduAnalytics?' موبائل':' mobiles')+')':'';
+  const pr=topProfit.profit?(isUrduAnalytics?'سب سے زیادہ منافع: ':'Highest sale profit: ')+label(topProfit.hour)+' ('+(isUrduAnalytics?'روپے ':'Rs ')+fmt(topProfit.profit)+')':'';
   document.getElementById('analyticsTimeSummary').textContent=[ss,ps,pr].filter(Boolean).join(' • ');
-  document.getElementById('analyticsTimeMissing').textContent='Sirf exact timestamp wale records count hote hain. Hourly profit sale profit minus phone expenses hai; general business expenses ko hour-wise assign nahi kiya jata.';
+  document.getElementById('analyticsTimeMissing').textContent=isUrduAnalytics?'گھنٹہ وار تفصیل میں صرف درست وقت والے ریکارڈ شامل ہوتے ہیں۔ فی گھنٹہ منافع، فون کے اخراجات نکالنے کے بعد حاصل ہونے والا فروخت کا منافع ہے؛ کاروبار کے عمومی اخراجات فی گھنٹہ مختص نہیں کیے جاتے۔':'Sirf exact timestamp wale records count hote hain. Hourly profit sale profit minus phone expenses hai; general business expenses ko hour-wise assign nahi kiya jata.';
 }
 document.querySelectorAll('[data-busiest-period]').forEach(function(btn){btn.addEventListener('click',function(){analyticsBusiestPeriod=btn.dataset.busiestPeriod;analyticsRenderTimeOfDay(analyticsDateRange(analyticsMode));});});
 ['analyticsBusiestMetric','analyticsBusiestGraphType','analyticsBusiestGrouping'].forEach(id=>document.getElementById(id)?.addEventListener('change',()=>analyticsRenderTimeOfDay(analyticsDateRange(analyticsMode))));
@@ -9487,7 +9501,8 @@ function analyticsRenderWeekdays(range){
   allPhoneExpenseEntries().forEach(function(e){if(!analyticsInRange(e.date,actual))return;const d=dateOnly(e.date);if(d)rows[new Date(d+'T00:00:00').getDay()].profit-=Math.abs(Number(e.amount)||0);});
   const maxSold=Math.max(1,...rows.map(r=>r.sold)),maxBought=Math.max(1,...rows.map(r=>r.bought)),maxProfit=Math.max(1,...rows.map(r=>Math.abs(r.profit)));
   const ordered=[1,2,3,4,5,6,0].map(i=>rows[i]);
-  grid.innerHTML=ordered.map(function(r){return '<div class="analytics-weekday-row"><div class="analytics-weekday-name">'+r.name+'</div><div class="analytics-weekday-metrics"><div class="analytics-mini-track"><div class="analytics-mini-fill sold" style="width:'+Math.min(100,r.sold/maxSold*100)+'%"></div><div class="analytics-mini-label">Sold '+r.sold+' · '+(r.days?(r.sold/r.days).toFixed(1):'0')+'/day</div></div><div class="analytics-mini-track"><div class="analytics-mini-fill bought" style="width:'+Math.min(100,r.bought/maxBought*100)+'%"></div><div class="analytics-mini-label">Purchased '+r.bought+' · '+(r.days?(r.bought/r.days).toFixed(1):'0')+'/day</div></div><div class="analytics-mini-track"><div class="analytics-mini-fill profit" style="width:'+Math.min(100,Math.abs(r.profit)/maxProfit*100)+'%"></div><div class="analytics-mini-label">Profit Rs '+fmt(r.profit)+' · '+(r.days?'avg Rs '+fmt(r.profit/r.days)+'/day':'no days')+'</div></div></div></div>';}).join('');
+  const isUrduWeekdays=document.body.classList.contains('mh-urdu-mode');
+  grid.innerHTML=ordered.map(function(r){return '<div class="analytics-weekday-row"><div class="analytics-weekday-name">'+r.name+'</div><div class="analytics-weekday-metrics"><div class="analytics-mini-track"><div class="analytics-mini-fill sold" style="width:'+Math.min(100,r.sold/maxSold*100)+'%"></div><div class="analytics-mini-label">'+(isUrduWeekdays?'فروخت ہوئے ':'Sold ')+r.sold+' · '+(r.days?(r.sold/r.days).toFixed(1):'0')+(isUrduWeekdays?' فی دن':'/day')+'</div></div><div class="analytics-mini-track"><div class="analytics-mini-fill bought" style="width:'+Math.min(100,r.bought/maxBought*100)+'%"></div><div class="analytics-mini-label">'+(isUrduWeekdays?'خریدے گئے ':'Purchased ')+r.bought+' · '+(r.days?(r.bought/r.days).toFixed(1):'0')+(isUrduWeekdays?' فی دن':'/day')+'</div></div><div class="analytics-mini-track"><div class="analytics-mini-fill profit" style="width:'+Math.min(100,Math.abs(r.profit)/maxProfit*100)+'%"></div><div class="analytics-mini-label">'+(isUrduWeekdays?'منافع روپے ':'Profit Rs ')+fmt(r.profit)+' · '+(r.days?(isUrduWeekdays?'اوسط رقم ':'avg Rs ')+fmt(r.profit/r.days)+(isUrduWeekdays?' فی دن':'/day'):(isUrduWeekdays?'کوئی دن موجود نہیں':'no days'))+'</div></div></div></div>';}).join('');
   const active=rows.filter(r=>r.days>0),base=active[0]||rows[0];
   const bestSale=active.reduce((a,b)=>b.sold>a.sold?b:a,base),bestPurchase=active.reduce((a,b)=>b.bought>a.bought?b:a,base),bestProfit=active.reduce((a,b)=>b.profit>a.profit?b:a,base);
   document.getElementById('analyticsWeekdaySummary').textContent=document.body.classList.contains('mh-urdu-mode')?('سب سے زیادہ فروخت: '+bestSale.name+' ('+bestSale.sold+') · سب سے زیادہ خریداری: '+bestPurchase.name+' ('+bestPurchase.bought+') · سب سے زیادہ منافع: '+fmt(bestProfit.profit)+' روپے'):('Most sold: '+bestSale.name+' ('+bestSale.sold+') · Most purchased: '+bestPurchase.name+' ('+bestPurchase.bought+') · Highest profit: '+bestProfit.name+' (Rs '+fmt(bestProfit.profit)+')');
@@ -9665,7 +9680,7 @@ function analyticsRenderStockTimeline(){
 document.querySelectorAll('[data-timeline-mode]').forEach(function(btn){btn.addEventListener('click',function(){analyticsTimelineMode=btn.dataset.timelineMode==='28days'?'28days':'month';analyticsRenderStockTimeline();});});
 
 
-/* v149: Analytics-only Urdu gap completion. Existing Urdu phrases are deliberately left intact. */
+/* v150: Analytics Urdu completion + user-defined Urdu time-of-day labels. Existing app behavior and data logic are preserved. */
 (function installAnalyticsUrduGapFixes(){
   const root=document.getElementById('analyticsOverlay');
   if(!root) return;
@@ -9674,7 +9689,7 @@ document.querySelectorAll('[data-timeline-mode]').forEach(function(btn){btn.addE
     'No change':'کوئی تبدیلی نہیں','— no change':'— کوئی تبدیلی نہیں','No previous period':'پچھلا دورانیہ موجود نہیں',
     'No previous comparable period':'پچھلے دورانیے سے موازنہ ممکن نہیں','Current':'موجودہ دورانیہ','Previous':'پچھلا دورانیہ','Previous comparable':'پچھلا تقابلی دورانیہ',
     'PURCHASE':'خریداری','SALE':'فروخت','PURCHASED':'خریدے گئے موبائل','SOLD':'فروخت ہوئے موبائل',
-    'Profit':'منافع','Mobiles sold':'فروخت ہوئے موبائل','Mobiles purchased':'خریدے گئے موبائل','Sale':'فروخت','Purchase':'خریداری','Expenses':'اخراجات',
+    'Profit':'منافع','Mobiles sold':'فروخت ہونے والے موبائل','Mobiles purchased':'خریدے گئے موبائل','Mobiles Sold':'فروخت ہونے والے موبائل','Mobiles Purchased':'خریدے گئے موبائل','Mobiles sold / day':'فی دن فروخت ہونے والے موبائل','Mobiles purchased / day':'فی دن خریدے گئے موبائل','Most sold':'سب سے زیادہ فروخت','Most purchased':'سب سے زیادہ خریداری','Highest sale profit':'سب سے زیادہ منافع','Sold:':'فروخت:','Purchased:':'خرید:','units':'عدد','mobiles':'موبائل','Sale':'فروخت','Purchase':'خریداری','Expenses':'اخراجات',
     'Net profit':'خالص منافع','Units sold':'فروخت ہوئے موبائلوں کی تعداد','Units purchased':'خریدے گئے موبائلوں کی تعداد','Sales volume':'فروخت کی مقدار','Investment in phones':'موبائل فونز میں لگائی گئی رقم','Total business expenses':'کاروبار کے کل اخراجات',
     'Avg profit / mobile':'فی موبائل اوسط منافع','Previous avg/mobile':'پچھلے دورانیے میں فی موبائل اوسط منافع','avg/mobile':'فی موبائل اوسط','avg Rs':'اوسط رقم','volume':'تعداد',
     'Current average':'موجودہ اوسط','Previous avg':'پچھلی اوسط','day(s)':'دن','No purchases recorded':'کوئی خریداری درج نہیں','No sales recorded':'کوئی فروخت درج نہیں',
@@ -9685,7 +9700,7 @@ document.querySelectorAll('[data-timeline-mode]').forEach(function(btn){btn.addE
     'Sale Profit':'فروخت پر منافع','Sales Amount':'فروخت کی رقم','Purchase Amount':'خریداری کی رقم','Sales + Purchases':'خریداری اور فروخت',
     'Sold':'فروخت ہوئے','Purchased':'خریدے گئے','sale(s) with balance':'فروخت جن کی رقم باقی ہے','active bill(s)':'فعال بل','Due date passed; still outstanding':'ادائیگی کی تاریخ گزر چکی ہے، رقم ابھی باقی ہے',
     'Selected period':'منتخب کردہ دورانیہ','Tap for details':'تفصیلات دیکھنے کے لیے دبائیں','Payments recovered':'وصول شدہ ادائیگیاں','Manual receivable':'دستی طور پر وصول کی جانے والی رقم','Manual payable':'دستی طور پر ادا کی جانے والی رقم','Overdue manual bills':'مدت گزرے ہوئے دستی بل','Mobile sale pending':'موبائل فروخت کی بقایا رقم',
-    'Dead Stock':'رکا ہوا اسٹاک','30+ din se unsold':'۳۰ دن سے فروخت نہیں ہوئے','Is period mein purchase ya sale data nahi hai.':'اس دورانیے میں خریداری یا فروخت کا کوئی ریکارڈ نہیں۔',
+    'Dead Stock':'پھنسا ہوا اسٹاک','30+ din se unsold':'۳۰ دن سے فروخت نہیں ہوئے','Numbers = total mobile units in the selected period.':'منتخب مدت میں فروخت اور خریدے گئے موبائلوں کی کل تعداد','cumulative scoring':'مجموعی کارکردگی','PAYMENTS RECOVERED DETAILS':'وصول شدہ ادائیگیوں کی تفصیلات','Selected period mein recovery details nahi milin.':'منتخب مدت میں وصول شدہ ادائیگیوں کا کوئی ریکارڈ نہیں ملا۔','Hourly profit':'فی گھنٹہ منافع','minus phone expenses':'فون کے اخراجات نکالنے کے بعد','hour-wise assign nahi kiya jata':'فی گھنٹہ مختص نہیں کیے جاتے','no days':'کوئی دن موجود نہیں','/day':'فی دن','Is period mein purchase ya sale data nahi hai.':'اس دورانیے میں خریداری یا فروخت کا کوئی ریکارڈ نہیں۔',
     'Weekday comparison ke liye date range available nahi.':'ہفتے کے دنوں کا موازنہ کرنے کے لیے تاریخوں کا دورانیہ موجود نہیں۔',
     'Busiest hour selectable metric graph':'مصروف ترین اوقات کا گراف','Line Graph':'لائن گراف','Smooth Area':'ہموار گراف','Bar Chart':'بار گراف','Every hour':'ہر گھنٹہ','3-hour groups':'تین گھنٹوں کے گروپ','2-hour groups':'دو گھنٹوں کے گروپ',
     'For accurate analytics':'درست تجزیے کے لیے','No date':'تاریخ موجود نہیں','Customer not recorded':'گاہک کا نام درج نہیں','Manual payment':'دستی ادائیگی','Mobile sale':'موبائل کی فروخت',
@@ -9711,6 +9726,7 @@ document.querySelectorAll('[data-timeline-mode]').forEach(function(btn){btn.addE
     v=v.replace(/\bSale profit after phone expenses\b/g,'فون کے اخراجات نکالنے کے بعد فروخت کا منافع')
        .replace(/\bOnly records with exact timestamp are counted in hourly breakdown\b/g,'گھنٹہ وار تفصیل میں صرف درست تاریخ اور وقت والے ریکارڈ شامل ہوتے ہیں')
        .replace(/\bgeneral business expenses\b/g,'کاروبار کے عمومی اخراجات')
+       .replace(/\bHourly profit\b/g,'فی گھنٹہ منافع').replace(/\bsale profit minus phone expenses hai\b/g,'فون کے اخراجات نکالنے کے بعد حاصل ہونے والا فروخت کا منافع ہے').replace(/\bhour-wise\b/g,'فی گھنٹہ')
        .replace(/\bcount hote hain\b/g,'شامل ہوتے ہیں').replace(/\bassign nahi kiya jata\b/g,'مختص نہیں کیا جاتا')
        .replace(/\bIs Day\/Night period mein exact time ke sath sale\/purchase record nahi mila\./g,'دن یا رات کے اس دورانیے میں درست وقت کے ساتھ خرید و فروخت کا کوئی ریکارڈ نہیں ملا۔')
        .replace(/\bSirf exact timestamp wale records hourly breakdown mein count hote hain\./g,'گھنٹہ وار تفصیل میں صرف درست تاریخ اور وقت والے ریکارڈ شامل ہوتے ہیں۔')
