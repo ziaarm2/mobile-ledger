@@ -13847,8 +13847,9 @@ window.__MHE.enExtra = Object.assign(window.__MHE.enExtra || {}, {"Model likhein
     }
     function tradeTime(seed, isSale){
       var h=hash(seed), bucket=h%100;
-      // Main rush 11 AM–1 PM; strong lull 2–4 PM; activity rises again in the evening.
-      var hour=bucket<48?(11+(h%3)):bucket<60?(14+(h%3)):bucket<82?(17+(h%3)):(20+(h%3));
+      // 11 AM–1 PM is busy; 2–4 PM is very quiet; 5–8 PM is the strongest rush.
+      // Later evening remains active, but below the 5–8 PM peak.
+      var hour=bucket<32?(11+(h%3)):bucket<40?(14+(h%3)):bucket<85?(17+(h%4)):(20+(h%3));
       var minute=[5,15,25,35,45,55][Math.floor(h/7)%6];
       return {hour:hour,minute:minute};
     }
@@ -13902,10 +13903,10 @@ window.__MHE.enExtra = Object.assign(window.__MHE.enExtra || {}, {"Model likhein
         rec.id='demo_forward_sale_'+date.replace(/-/g,'')+'_'+String(j+1);
         rec.stockId='demo_forward_stock_'+date.replace(/-/g,'')+'_'+String(j+1);
         rec.buyDate=date; rec.availableDate=date; rec.saleDate=date;
-        var hourBuckets=[11,12,13,14,15,16,17,18,19,20,21];
         var slot=(day*7+j*5)%100;
-        var purchaseHour=slot<48?(11+(day+j)%3):slot<60?(14+(day+j)%3):slot<82?(17+(day+j)%3):(20+(day+j)%2);
-        var saleHour=Math.max(purchaseHour,slot<48?(11+(day+j+1)%3):slot<60?(14+(day+j+1)%3):slot<82?(17+(day+j+1)%3):(20+(day+j)%2));
+        // Match the same hourly rhythm as historical demo records: evening peak, midday lull.
+        var purchaseHour=slot<32?(11+(day+j)%3):slot<40?(14+(day+j)%3):slot<85?(17+(day+j)%4):(20+(day+j)%3);
+        var saleHour=Math.max(purchaseHour,slot<32?(11+(day+j+1)%3):slot<40?(14+(day+j+1)%3):slot<85?(17+(day+j+1)%4):(20+(day+j)%3));
         if(saleHour===purchaseHour) saleHour=Math.min(22,purchaseHour+1);
         rec.purchaseAt=new Date(2026,10,day,purchaseHour,([5,15,25,35,45,55][(day+j)%6]),0).toISOString();
         rec.saleAt=new Date(2026,10,day,saleHour,([5,15,25,35,45,55][(day+j*2)%6]),0).toISOString();
