@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v170
+Current file version: Index v174 - Manual Splash Ads Manager - 14 Nov 2026 • 07:57 AM PKT
+- Index v174 — Manual Splash Ads Manager — 14 Nov 2026 • 07:57 AM PKT. Added a Settings manager for multiple manual image ads with optional heading, description, contact, advertiser, fee/payment status and expiry. The selected enabled ad appears as a clearly marked Sponsored card on the session loading screen. Ads are device-local; no Firestore schema/rules or cloud publishing changed.
+
 - Index v121 — Bilingual English / Urdu Language Selector — 06 Nov 2026 • 11:06 AM PKT. Added a persistent English/Urdu selector in the header and CSV-driven Urdu text translations. English remains the default. Existing app workflows, Firebase/Firestore integration, data schema, calculations and business logic are retained.
 - Index v120 — Analytics Open Fix — 05 Nov 2026 • 09:30 AM PKT. Fixed ReferenceError in grouped busiest-hours renderer that prevented Analytics overlay from opening when records with timestamps existed; open overlay before rendering and surface safe error fallback.
 - Index v119 — Analytics 28-Day Comparison, Grouped Business Hours & Rent Emphasis — 05 Nov 2026 • 09:09 AM PKT. Default analytics period is last 28 days compared with the immediately preceding 28 days; busiest hours default to 3-hour grouped blocks with hourly detail selectable; unpaid rent estimate is visually emphasized.
@@ -70,9 +72,9 @@ window.__MHE.legacy({"u":{"Apne Mobile Hisab اکاؤنٹ mein login karein. Aap
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Mobile Hisab by Z Mobile</title>
-<meta name="app-version" content="Index v170">
-<meta name="app-version-date-pkt" content="13 Nov 2026 11:07 PM PKT">
-<meta name="app-index-change-summary" content="Fixed Demo Analytics purchase-unit counting so every completed sale contributes its corresponding purchase on the original buy date, alongside remaining stock. October and elapsed November purchase/sale units now closely match; November includes only activity through 13 Nov and future daily transactions are added as dates pass. Existing sales, original buy prices, profit bands, stock cap, rent and production analytics behavior are preserved.">
+<meta name="app-version" content="Index v174">
+<meta name="app-version-date-pkt" content="14 Nov 2026 07:57 AM PKT">
+<meta name="app-index-change-summary" content="Added Manual Splash Ads Manager: save multiple image advertisements with optional heading, description, contact, advertiser, fee/payment status and expiry; manually select and enable an ad for the loading screen. Ad data is stored locally on this device/browser only; no cloud publishing or app loading delay is added.">
 <meta name="application-name" content="Mobile Hisab">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
@@ -2075,6 +2077,19 @@ body.mh-urdu-mode .date-time-field.is-unknown .date-time-control-row::before { c
   opacity:0 !important;
 }
 </style>
+
+<style id="manual-splash-ads-style">
+.session-splash-card{width:min(390px,94vw);}
+.session-splash-ad{width:min(360px,92vw);box-sizing:border-box;margin:22px 0 0;padding:12px;background:#fff;color:#172033;border:1px solid rgba(255,255,255,.55);border-radius:18px;box-shadow:0 12px 32px rgba(0,0,0,.24);text-align:center;overflow:hidden;}
+.session-splash-ad .splash-ad-tag{display:inline-block;padding:4px 10px;border-radius:99px;background:#fff0e6;color:#c65b00;font-size:10px;font-weight:900;letter-spacing:.5px;margin-bottom:9px;}
+.session-splash-ad img{display:block;width:100%;max-height:190px;object-fit:contain;border-radius:10px;background:#f5f6f8;}
+.session-splash-ad h3{margin:10px 0 5px;font-size:19px;line-height:1.25;font-weight:900;color:#111827;overflow-wrap:anywhere;}
+.session-splash-ad p{margin:0;color:#4b5563;font-size:13px;line-height:1.45;overflow-wrap:anywhere;}
+.session-splash-ad .splash-ad-contact{display:block;margin-top:10px;padding:10px 12px;border-radius:10px;background:#f97316;color:#fff;text-decoration:none;font-size:14px;font-weight:900;overflow-wrap:anywhere;}
+.session-splash-ad .splash-ad-business{margin-top:7px;color:#7b8491;font-size:10px;font-weight:700;}
+#settingsOverlay #splashAdImagePreview{max-width:100%;}
+</style>
+
 </head>
 <body class="mh-urdu-mode">
 <style id="mh-demo-styles">#mhDemoRibbon{display:none;position:sticky;top:0;z-index:9999;background:#7c3aed;color:#fff;padding:8px 12px;text-align:center;font:700 12px/1.35 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}#mhDemoRibbon button{margin-left:10px;border:1px solid rgba(255,255,255,.65);border-radius:8px;background:transparent;color:#fff;padding:5px 9px;font-weight:800}body.mh-demo-active #mhDemoRibbon{display:block}body.mh-demo-active .app{padding-top:0}</style>
@@ -2199,7 +2214,7 @@ body.mh-urdu-mode .date-time-field.is-unknown .date-time-control-row::before { c
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v166<span>Updated: 13 Nov 2026 • 11:23 PM PKT</span><span>Demo Analytics Data Alignment</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v174<span>Updated: 14 Nov 2026 • 07:57 AM PKT</span><span>Manual Splash Ads Manager</span></div>
       </div>
     </div>
 
@@ -2794,6 +2809,7 @@ body.mh-urdu-mode .date-time-field.is-unknown .date-time-control-row::before { c
     <div class="session-splash-logo"><img src="icon-192.png" alt="Mobile Hisab"></div>
     <div class="session-splash-title">Mobile Hisab</div>
     <div class="session-splash-by">by Z Mobile</div>
+    <div id="sessionSplashAd" class="session-splash-ad" style="display:none;" aria-label="Sponsored advertisement"></div>
     <div class="session-splash-status">Secure session check ho raha hai…</div>
     <div class="session-splash-loader"><i></i></div>
   </div>
@@ -3057,6 +3073,7 @@ body.mh-urdu-mode .date-time-field.is-unknown .date-time-control-row::before { c
           <button class="settings-category" data-settings-page="applock"><span class="settings-category-icon">🔒</span><span class="settings-category-main"><span class="settings-category-title">App Lock</span><span class="settings-category-sub" id="settingsSummaryAppLock">PIN, Pattern & Fingerprint</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="backupdata"><span class="settings-category-icon">☁️</span><span class="settings-category-main"><span class="settings-category-title">Backup, Sync & Data</span><span class="settings-category-sub" id="settingsSummarySync">Backup, sync & data management</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="data" style="display:none;"><span class="settings-category-icon">🗂️</span><span class="settings-category-main"><span class="settings-category-title">Data Management</span><span class="settings-category-sub">Import, restore & clear data</span></span><span class="settings-category-arrow">›</span></button>
+          <button class="settings-category admin-only-setting" data-settings-page="adsmanager" style="display:none;"><span class="settings-category-icon">📢</span><span class="settings-category-main"><span class="settings-category-title">Ads Manager</span><span class="settings-category-sub">Loading screen advertisements</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" data-settings-page="about"><span class="settings-category-icon">ℹ️</span><span class="settings-category-main"><span class="settings-category-title">About</span><span class="settings-category-sub">Mobile Hisab app info</span></span><span class="settings-category-arrow">›</span></button>
           <button class="settings-category" id="settingsShopAccessCategory" data-settings-page="shopaccess" style="display:none;"><span class="settings-category-icon">🔑</span><span class="settings-category-main"><span class="settings-category-title">Shop Access</span><span class="settings-category-sub" id="settingsSummaryShopAccess">Approvals & message templates</span></span><span class="settings-category-arrow">›</span></button>
         </div>
@@ -3268,6 +3285,28 @@ body.mh-urdu-mode .date-time-field.is-unknown .date-time-control-row::before { c
         </div>
       </div>
 
+      <div class="settings-view" data-settings-view="adsmanager">
+        <div class="settings-page-title">📢 Manual Splash Ads</div>
+        <div class="settings-section-card">
+          <div class="settings-note" style="margin-top:0;">Loading screen par paid business advertisements manage karein. Ad image ke saath heading, description aur contact number optional hain.</div>
+          <div class="field"><label>Saved advertisements</label><select id="splashAdSelect"><option value="">New advertisement</option></select></div>
+          <div class="field"><label>Advertiser / Business name</label><input id="splashAdAdvertiser" type="text" maxlength="80" placeholder="Business ka naam"></div>
+          <div class="field"><label>Advertisement image / poster (required)</label><input id="splashAdImageFile" type="file" accept="image/*"><div class="settings-note">Image automatically resize/compress hogi taake app storage kam use ho.</div><img id="splashAdImagePreview" alt="Ad preview" style="display:none;width:100%;max-height:190px;object-fit:contain;border:1px solid var(--border);border-radius:12px;margin-top:8px;background:#f4f6f8;"></div>
+          <div class="field"><label>Heading (optional)</label><input id="splashAdHeading" type="text" maxlength="90" placeholder="Advertisement heading"></div>
+          <div class="field"><label>Description (optional)</label><textarea id="splashAdDescription" rows="3" maxlength="240" placeholder="Short details about product or service"></textarea></div>
+          <div class="field"><label>Contact number (optional)</label><input id="splashAdContact" type="tel" maxlength="30" placeholder="03xx xxxxxxx"></div>
+          <div class="two-col"><div class="field"><label>Ad fee (Rs.)</label><input id="splashAdFee" type="number" min="0" inputmode="numeric" placeholder="e.g. 5000"></div><div class="field"><label>Payment status</label><select id="splashAdPayment"><option value="unpaid">Unpaid</option><option value="paid">Paid</option></select></div></div>
+          <div class="field"><label>Valid until (optional)</label><input id="splashAdExpiry" type="date"></div>
+          <label style="display:flex;align-items:center;gap:10px;font-weight:700;margin:12px 0;"><input id="splashAdEnabled" type="checkbox" style="width:19px;height:19px;"> Is advertisement ko loading screen par chalayein</label>
+          <div class="settings-note" id="splashAdStatus" aria-live="polite">Ad abhi save nahi hua.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;"><button class="btn-save" id="splashAdSave" style="flex:1;min-width:130px;">Save Advertisement</button><button class="btn-secondary" id="splashAdNew" type="button">New</button><button class="btn-cancel" id="splashAdDelete" type="button">Delete</button></div>
+        </div>
+        <div class="settings-section-card" style="margin-top:12px;"><div class="sec-label">Display information</div><div class="settings-note">• Selected active ad loading screen par show hoga.
+• App ki loading ko ad ki wajah se delay nahi kiya jayega.
+• Expiry date guzarne par ad automatically hide ho jayega.
+• Ad data filhal isi device/browser mein save hota hai; doosre users/devices tak publish karne ke liye central cloud publishing connection alag se configure karna hoga.</div></div>
+      </div>
+
       <div class="settings-view" data-settings-view="about">
         <div class="settings-page-title">About Mobile Hisab</div>
         <div class="settings-section-card">
@@ -3277,13 +3316,15 @@ body.mh-urdu-mode .date-time-field.is-unknown .date-time-control-row::before { c
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v170</div>
-          <div class="settings-note" style="margin-top:4px;">Demo Analytics Data Alignment</div>
-          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 13 Nov 2026 • 11:23 PM PKT</div>
-          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Demo Analytics now counts the purchase for every sold mobile on its original purchase date, alongside remaining stock. Monthly purchase and sale units stay close; current-month activity stops at today and future activity is added as days pass. Production analytics and all existing demo rules remain unchanged.</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v174</div>
+          <div class="settings-note" style="margin-top:4px;">Manual Splash Ads Manager</div>
+          <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 14 Nov 2026 • 07:57 AM PKT</div>
+          <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Added a Manual Splash Ads Manager to save multiple image ads, optional advertiser details, fee/payment status and expiry, then manually select and enable an ad for the loading screen. Ads are currently stored on this device/browser only; central cloud publishing is not included.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
+          <div style="font-weight:700;margin-top:9px;">Index v174 — 14 Nov 2026 • 07:57 AM PKT</div>
+          <div class="settings-note">Added Manual Splash Ads Manager with multiple saved image ads, optional business details, fee/payment status, expiry and manual activation on the loading screen. Ads are currently device-local.</div>
           <div style="font-weight:700;margin-top:9px;">Index v165 — 13 Nov 2026</div>
           <div class="settings-note">Demo dates are limited to elapsed days; future daily activity is added on later launches. Purchases precede sales; all existing demo price, profit, stock and unpaid-rent rules remain.</div>
           <div style="font-weight:700;margin-top:9px;">Index v163 — 13 Nov 2026</div>
@@ -13957,6 +13998,34 @@ window.__MHE.enExtra = Object.assign(window.__MHE.enExtra || {}, {"Model likhein
     if(e.target&&e.target.closest&&e.target.closest('#mhExitDemo')){e.preventDefault();location.reload();}
   });
   window.__MH_DEMO_MODE=false;
+})();
+</script>
+<script id="manual-splash-ads-runtime">
+(function(){
+  'use strict';
+  const KEY='mobileHisab_manualSplashAds_v1';
+  let ads=[], selectedId='', pendingImage='';
+  const $=id=>document.getElementById(id);
+  const read=()=>{try{const x=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(x)?x:[];}catch(e){return [];}};
+  const write=()=>localStorage.setItem(KEY,JSON.stringify(ads));
+  const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+  function byId(id){return ads.find(a=>a.id===id);}
+  function status(msg){const el=$('splashAdStatus');if(el)el.textContent=msg;}
+  function setPreview(src){const im=$('splashAdImagePreview');if(!im)return;if(src){im.src=src;im.style.display='block';}else{im.removeAttribute('src');im.style.display='none';}}
+  function clearForm(){selectedId='';pendingImage='';['splashAdAdvertiser','splashAdHeading','splashAdDescription','splashAdContact','splashAdFee','splashAdExpiry'].forEach(id=>{if($(id))$(id).value='';});if($('splashAdPayment'))$('splashAdPayment').value='unpaid';if($('splashAdEnabled'))$('splashAdEnabled').checked=false;if($('splashAdImageFile'))$('splashAdImageFile').value='';setPreview('');if($('splashAdSelect'))$('splashAdSelect').value='';status('Naya advertisement banayein.');}
+  function fillForm(id){const a=byId(id);if(!a){clearForm();return;}selectedId=a.id;pendingImage=a.image||'';$('splashAdAdvertiser').value=a.advertiser||'';$('splashAdHeading').value=a.heading||'';$('splashAdDescription').value=a.description||'';$('splashAdContact').value=a.contact||'';$('splashAdFee').value=a.fee||'';$('splashAdPayment').value=a.payment||'unpaid';$('splashAdExpiry').value=a.expiry||'';$('splashAdEnabled').checked=!!a.enabled;$('splashAdSelect').value=a.id;setPreview(a.image||'');if($('splashAdImageFile'))$('splashAdImageFile').value='';status('Selected: '+(a.advertiser||a.heading||'Advertisement'));}
+  function renderList(){const sel=$('splashAdSelect');if(!sel)return;const keep=selectedId;sel.innerHTML='<option value="">New advertisement</option>';ads.forEach(a=>{const o=document.createElement('option');o.value=a.id;o.textContent=(a.advertiser||a.heading||'Advertisement')+(a.enabled?' • ON':' • OFF');sel.appendChild(o);});sel.value=byId(keep)?keep:'';}
+  function splashRender(){const host=$('sessionSplashAd');if(!host)return;const a=ads.find(x=>x.enabled&&x.image&&(!x.expiry||x.expiry>=today()));if(!a){host.style.display='none';host.innerHTML='';return;}host.innerHTML='';host.style.display='block';const tag=document.createElement('div');tag.className='splash-ad-tag';tag.textContent='SPONSORED';host.appendChild(tag);const im=document.createElement('img');im.src=a.image;im.alt=(a.advertiser||'Sponsored advertisement');host.appendChild(im);if(a.heading){const h=document.createElement('h3');h.textContent=a.heading;host.appendChild(h);}if(a.description){const p=document.createElement('p');p.textContent=a.description;host.appendChild(p);}if(a.contact){const c=document.createElement(a.contact?'a':'div');c.className='splash-ad-contact';if(c.tagName==='A'){c.href='tel:'+a.contact.replace(/[^+\d]/g,'');}c.textContent='Contact: '+a.contact;host.appendChild(c);}if(a.advertiser){const b=document.createElement('div');b.className='splash-ad-business';b.textContent=a.advertiser;host.appendChild(b);}}
+  function compressImage(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=()=>reject(Error('Image read nahi ho saki.'));reader.onload=()=>{const img=new Image();img.onerror=()=>reject(Error('Valid image select karein.'));img.onload=()=>{const scale=Math.min(1,1200/img.width,1000/img.height),w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);resolve(c.toDataURL('image/jpeg',.78));};img.src=reader.result;};reader.readAsDataURL(file);});}
+  function init(){ads=read();renderList();splashRender();
+    if($('splashAdSelect'))$('splashAdSelect').onchange=e=>fillForm(e.target.value);
+    if($('splashAdNew'))$('splashAdNew').onclick=clearForm;
+    if($('splashAdImageFile'))$('splashAdImageFile').onchange=async e=>{const f=e.target.files&&e.target.files[0];if(!f)return;if(!f.type.startsWith('image/')){status('Image file select karein.');return;}try{pendingImage=await compressImage(f);setPreview(pendingImage);status('Image ready. Save Advertisement dabayein.');}catch(err){status(err.message||'Image process nahi hui.');}};
+    if($('splashAdSave'))$('splashAdSave').onclick=()=>{const image=pendingImage||(byId(selectedId)||{}).image||'';if(!image){status('Advertisement image upload karna zaroori hai.');return;}const a={id:selectedId||('ad_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)),advertiser:$('splashAdAdvertiser').value.trim(),image,heading:$('splashAdHeading').value.trim(),description:$('splashAdDescription').value.trim(),contact:$('splashAdContact').value.trim(),fee:Math.max(0,Number($('splashAdFee').value)||0),payment:$('splashAdPayment').value,expiry:$('splashAdExpiry').value,enabled:$('splashAdEnabled').checked,updatedAt:new Date().toISOString()};const ix=ads.findIndex(x=>x.id===a.id);if(ix>=0)ads[ix]=a;else ads.push(a);if(a.enabled)ads.forEach(x=>{if(x.id!==a.id)x.enabled=false;});try{write();selectedId=a.id;renderList();fillForm(a.id);splashRender();status('Advertisement save ho gaya.');}catch(e){status('Storage full ho sakti hai. Chhoti image upload karein.');}};
+    if($('splashAdDelete'))$('splashAdDelete').onclick=()=>{if(!selectedId){status('Delete karne ke liye saved ad select karein.');return;}if(!confirm('Is advertisement ko delete kar dein?'))return;ads=ads.filter(x=>x.id!==selectedId);try{write();clearForm();renderList();splashRender();status('Advertisement delete ho gaya.');}catch(e){status('Delete save nahi ho saka.');}};
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+  const splash=$('sessionSplash');if(splash&&typeof MutationObserver!=='undefined'){new MutationObserver(()=>{if(splash.classList.contains('show'))splashRender();}).observe(splash,{attributes:true,attributeFilter:['class']});}
 })();
 </script>
 </body>
