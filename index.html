@@ -14147,7 +14147,13 @@ window.__MHE.enExtra = Object.assign(window.__MHE.enExtra || {}, {"Model likhein
   const getCloudUser=()=>typeof fbUser!=='undefined'?fbUser:null;
   const getCloudDb=()=>typeof fbDb!=='undefined'?fbDb:null;
   const isCloudAdmin=()=>{const u=getCloudUser();return !!(u&&String(u.email||'').toLowerCase()===ADMIN_EMAIL);};
-  function cloudStatus(message){const el=$('splashAdCloudStatus');if(el)el.textContent=message;}
+  function cloudStatus(message){
+    const cloudEl=$('splashAdCloudStatus');
+    if(cloudEl)cloudEl.textContent=message;
+    // Keep the visible ad editor status in sync with the actual cloud result.
+    const editorEl=$('splashAdStatus');
+    if(editorEl)editorEl.textContent=message;
+  }
   function currentCloudPayload(){
     let extra=0, schedule={gap:30,duration:5,daily:5}, templates=['','',''];
     try{extra=Math.max(0,Math.min(120,Math.floor(Number(localStorage.getItem(EXTRA_KEY)||0))));}catch(e){}
