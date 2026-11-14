@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v181 - Scheduled Ads Controls and Editable Default Message - 14 Nov 2026 • 10:30 AM PKT
+Current file version: Index v183 - Firebase Ads Cloud Sync Binding Fix - 14 Nov 2026 • 09:25 AM PKT
 - Index v174 — Manual Splash Ads Manager — 14 Nov 2026 • 07:57 AM PKT. Added a Settings manager for multiple manual image ads with optional heading, description, contact, advertiser, fee/payment status and expiry. The selected enabled ad appears as a clearly marked Sponsored card on the session loading screen. Ads are device-local; no Firestore schema/rules or cloud publishing changed.
 
 - Index v121 — Bilingual English / Urdu Language Selector — 06 Nov 2026 • 11:06 AM PKT. Added a persistent English/Urdu selector in the header and CSV-driven Urdu text translations. English remains the default. Existing app workflows, Firebase/Firestore integration, data schema, calculations and business logic are retained.
@@ -2309,7 +2309,7 @@ body.mh-urdu-mode .date-time-field.is-unknown .date-time-control-row::before { c
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v181<span>Updated: 14 Nov 2026 • 10:30 AM PKT</span><span>Scheduled Ads and Editable WhatsApp Default</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v183<span>Updated: 14 Nov 2026 • 09:25 AM PKT</span><span>Firebase Ads Cloud Sync Binding Fix</span></div>
       </div>
     </div>
 
@@ -3384,6 +3384,7 @@ body.mh-urdu-mode .date-time-field.is-unknown .date-time-control-row::before { c
         <div class="settings-page-title">📢 Manual Splash Ads</div>
         <div class="settings-section-card">
           <div class="settings-note" style="margin-top:0;">Loading screen par paid business advertisements manage karein. Ad image ke saath heading, description aur contact number optional hain.</div>
+          <div class="settings-note" id="splashAdCloudStatus">Advertisements cloud se sync hone ka intezar kar rahi hain…</div>
           <div class="field"><label>Normal loading ke baad extra ad time (seconds)</label><input id="splashAdExtraSeconds" type="number" min="0" max="120" step="1" inputmode="numeric" value="0" placeholder="0"><div class="settings-note">0 = extra time nahi. Tum 1 se 120 seconds tak apni marzi se set kar sakte ho. Ye extra time sirf tab lagega jab active ad ho aur latest data loading complete ho chuki ho.</div></div>
           <div class="splash-template-tools" style="margin-top:12px;">
             <strong>App use karte waqt scheduled advertisements</strong>
@@ -3429,14 +3430,14 @@ body.mh-urdu-mode .date-time-field.is-unknown .date-time-control-row::before { c
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v181</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v183</div>
           <div class="settings-note" style="margin-top:4px;">Manual Splash Ads Manager</div>
           <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 14 Nov 2026 • 07:57 AM PKT</div>
           <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Added a Manual Splash Ads Manager to save multiple image ads, optional advertiser details, fee/payment status and expiry, then manually select and enable an ad for the loading screen. Ads are currently stored on this device/browser only; central cloud publishing is not included.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
-          <div style="font-weight:700;margin-top:9px;">Index v181 — 14 Nov 2026 • 10:30 AM PKT</div><div class="settings-note">Added configurable in-app scheduled ads: minimum 30-minute gap, custom display duration, daily maximum count, countdown and close control. Fixed default Urdu WhatsApp message so it is editable in the advertiser form.</div><div style="font-weight:700;margin-top:9px;">Index v180 — 14 Nov 2026 • 10:00 AM PKT</div><div class="settings-note">Expanded the WhatsApp message editor, added three reusable saved message templates, and redesigned the replay-ad button to be smaller and more consistent with the app theme.</div><div style="font-weight:700;margin-top:9px;">Index v179 — 14 Nov 2026 • 09:30 AM PKT</div><div class="settings-note">Added configurable extra ad display time after successful startup data verification, plus an app-wide replay-ad button and full-screen ad viewer.</div><div style="font-weight:700;margin-top:9px;">Index v178 — 14 Nov 2026 • 09:00 AM PKT</div><div class="settings-note">Added an editable per-ad WhatsApp message template in the advertiser section. The saved template opens prefilled in WhatsApp; blank templates use the default Urdu enquiry message.</div><div style="font-weight:700;margin-top:9px;">Index v177 — 14 Nov 2026 • 08:45 AM PKT</div><div class="settings-note">Added separate optional contact and WhatsApp numbers to manual ads. Splash displays Call and WhatsApp actions; WhatsApp opens a direct chat with a prefilled enquiry message.</div><div style="font-weight:700;margin-top:9px;">Index v176 — 14 Nov 2026 • 08:30 AM PKT</div><div class="settings-note">When an active sponsored ad is displayed, the app logo and title are hidden and the ad card expands to use the available splash space.</div><div style="font-weight:700;margin-top:9px;">Index v175 — 14 Nov 2026 • 08:15 AM PKT</div><div class="settings-note">Fixed sponsored ads rendering on the actual mobile cloud startup verification screen, not only the secondary session splash.</div><div style="font-weight:700;margin-top:9px;">Index v174 — 14 Nov 2026 • 07:57 AM PKT</div>
+          <div style="font-weight:700;margin-top:9px;">Index v183 — 14 Nov 2026 • 09:25 AM PKT</div><div class="settings-note">Corrected Firebase global lexical bindings so signed-in admin publishing and shop-device live reads use the app initialized Firestore instance.</div><div style="font-weight:700;margin-top:9px;">Index v182 — 14 Nov 2026 • 09:21 AM PKT</div><div class="settings-note">Added central Firestore publishing for advertisements, extra loading duration, scheduled-ad settings and reusable WhatsApp message templates. Admin publishes; active shop accounts receive live updates.</div><div style="font-weight:700;margin-top:9px;">Index v181 — 14 Nov 2026 • 10:30 AM PKT</div><div class="settings-note">Added configurable in-app scheduled ads: minimum 30-minute gap, custom display duration, daily maximum count, countdown and close control. Fixed default Urdu WhatsApp message so it is editable in the advertiser form.</div><div style="font-weight:700;margin-top:9px;">Index v180 — 14 Nov 2026 • 10:00 AM PKT</div><div class="settings-note">Expanded the WhatsApp message editor, added three reusable saved message templates, and redesigned the replay-ad button to be smaller and more consistent with the app theme.</div><div style="font-weight:700;margin-top:9px;">Index v179 — 14 Nov 2026 • 09:30 AM PKT</div><div class="settings-note">Added configurable extra ad display time after successful startup data verification, plus an app-wide replay-ad button and full-screen ad viewer.</div><div style="font-weight:700;margin-top:9px;">Index v178 — 14 Nov 2026 • 09:00 AM PKT</div><div class="settings-note">Added an editable per-ad WhatsApp message template in the advertiser section. The saved template opens prefilled in WhatsApp; blank templates use the default Urdu enquiry message.</div><div style="font-weight:700;margin-top:9px;">Index v177 — 14 Nov 2026 • 08:45 AM PKT</div><div class="settings-note">Added separate optional contact and WhatsApp numbers to manual ads. Splash displays Call and WhatsApp actions; WhatsApp opens a direct chat with a prefilled enquiry message.</div><div style="font-weight:700;margin-top:9px;">Index v176 — 14 Nov 2026 • 08:30 AM PKT</div><div class="settings-note">When an active sponsored ad is displayed, the app logo and title are hidden and the ad card expands to use the available splash space.</div><div style="font-weight:700;margin-top:9px;">Index v175 — 14 Nov 2026 • 08:15 AM PKT</div><div class="settings-note">Fixed sponsored ads rendering on the actual mobile cloud startup verification screen, not only the secondary session splash.</div><div style="font-weight:700;margin-top:9px;">Index v174 — 14 Nov 2026 • 07:57 AM PKT</div>
           <div class="settings-note">Added Manual Splash Ads Manager with multiple saved image ads, optional business details, fee/payment status, expiry and manual activation on the loading screen. Ads are currently device-local.</div>
           <div style="font-weight:700;margin-top:9px;">Index v165 — 13 Nov 2026</div>
           <div class="settings-note">Demo dates are limited to elapsed days; future daily activity is added on later launches. Purchases precede sales; all existing demo price, profit, stock and unpaid-rent rules remain.</div>
@@ -14140,6 +14141,63 @@ window.__MHE.enExtra = Object.assign(window.__MHE.enExtra || {}, {"Model likhein
   const SCHEDULE_KEY='mobileHisab_scheduledSplashAdSettings_v1';
   const SCHEDULE_STATE_KEY='mobileHisab_scheduledSplashAdState_v1';
   let scheduledAdTimer=null, scheduledCountdownTimer=null;
+  const CLOUD_DOC='advertisements';
+  const ADMIN_EMAIL='ziarealme.5604@gmail.com';
+  let cloudUnsubscribe=null, cloudReady=false, applyingCloud=false, cloudWriteTimer=null;
+  const getCloudUser=()=>typeof fbUser!=='undefined'?fbUser:null;
+  const getCloudDb=()=>typeof fbDb!=='undefined'?fbDb:null;
+  const isCloudAdmin=()=>{const u=getCloudUser();return !!(u&&String(u.email||'').toLowerCase()===ADMIN_EMAIL);};
+  function cloudStatus(message){const el=$('splashAdCloudStatus');if(el)el.textContent=message;}
+  function currentCloudPayload(){
+    let extra=0, schedule={gap:30,duration:5,daily:5}, templates=['','',''];
+    try{extra=Math.max(0,Math.min(120,Math.floor(Number(localStorage.getItem(EXTRA_KEY)||0))));}catch(e){}
+    try{const x=JSON.parse(localStorage.getItem(SCHEDULE_KEY)||'{}');schedule={gap:Math.max(30,Math.min(1440,Math.floor(Number(x.gap)||30))),duration:Math.max(5,Math.min(120,Math.floor(Number(x.duration)||5))),daily:Math.max(1,Math.min(50,Math.floor(Number(x.daily)||5)))}}catch(e){}
+    templates=readMessageTemplates();
+    return {ads:ads,extraSeconds:extra,schedule:schedule,messageTemplates:templates,updatedAt:new Date().toISOString(),updatedBy:(getCloudUser()&&getCloudUser().email)||''};
+  }
+  function applyCloudPayload(data){
+    applyingCloud=true;
+    try{
+      ads=Array.isArray(data.ads)?data.ads:[];
+      localStorage.setItem(KEY,JSON.stringify(ads));
+      if(Number.isFinite(Number(data.extraSeconds)))localStorage.setItem(EXTRA_KEY,String(Math.max(0,Math.min(120,Math.floor(Number(data.extraSeconds))))));
+      if(data.schedule&&typeof data.schedule==='object')localStorage.setItem(SCHEDULE_KEY,JSON.stringify(data.schedule));
+      if(Array.isArray(data.messageTemplates))localStorage.setItem(MSG_TEMPLATES_KEY,JSON.stringify([0,1,2].map(i=>String(data.messageTemplates[i]||''))));
+      renderList();splashRender();
+      const ex=$('splashAdExtraSeconds');if(ex)ex.value=localStorage.getItem(EXTRA_KEY)||'0';
+      const cfg=readSchedule();[['splashAdRepeatGapMinutes',cfg.gap],['splashAdRepeatDurationSeconds',cfg.duration],['splashAdDailyLimit',cfg.daily]].forEach(([id,v])=>{if($(id))$(id).value=String(v);});
+      const state=$('splashAdScheduleStatus');if(state)state.textContent='Cloud settings: har '+cfg.gap+' minutes, '+cfg.duration+' seconds, rozana maximum '+cfg.daily+' ads.';
+      const sel=$('splashAdMessageTemplateSelect');if(sel&&$('splashAdWhatsAppMessage')){const idx=Number(sel.value)||0,tm=readMessageTemplates();if(tm[idx])$('splashAdWhatsAppMessage').value=tm[idx];}
+    }catch(e){console.warn('Apply cloud ads failed',e);}
+    applyingCloud=false;
+  }
+  function pushCloudPayload(){
+    if(applyingCloud||!isCloudAdmin()||!window.fbDb||!navigator.onLine)return;
+    clearTimeout(cloudWriteTimer);
+    cloudWriteTimer=setTimeout(()=>{
+      const payload=currentCloudPayload();
+      const size=JSON.stringify(payload).length;
+      if(size>850000){cloudStatus('Cloud save nahi hua: ad image bohat bari hai. Image ko compress karke dobara upload karein.');return;}
+      getCloudDb().collection('appConfig').doc(CLOUD_DOC).set(payload,{merge:false})
+        .then(()=>cloudStatus('Published ✓ Ab advertisements sab active devices par sync hongi.'))
+        .catch(err=>{console.error('Cloud ads publish failed',err);cloudStatus('Cloud publish failed: '+(err.code||err.message||'permission/network error'));});
+    },350);
+  }
+  function startCloudAdsSync(){
+    if(!getCloudDb()||!getCloudUser())return;
+    if(cloudUnsubscribe){cloudUnsubscribe();cloudUnsubscribe=null;}
+    const ref=getCloudDb().collection('appConfig').doc(CLOUD_DOC);
+    cloudUnsubscribe=ref.onSnapshot(snap=>{
+      if(snap.exists){applyCloudPayload(snap.data()||{});cloudReady=true;cloudStatus('Cloud ads synced ✓');}
+      else if(isCloudAdmin()){
+        cloudReady=true;
+        const payload=currentCloudPayload();
+        if(payload.ads.length)pushCloudPayload();
+        else cloudStatus('Cloud ads ready. Pehla ad save karke Publish karein.');
+      }else{cloudReady=true;applyCloudPayload({ads:[],extraSeconds:0,schedule:{gap:30,duration:5,daily:5},messageTemplates:['','','']});cloudStatus('Abhi koi advertisement publish nahi hai.');}
+    },err=>{console.error('Cloud ads read failed',err);cloudStatus('Cloud ads load nahi huay: '+(err.code||err.message||'permission/network error'));});
+  }
+
   let ads=[], selectedId='', pendingImage='';
   const $=id=>document.getElementById(id);
   const read=()=>{try{const x=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(x)?x:[];}catch(e){return [];}};
@@ -14151,9 +14209,9 @@ window.__MHE.enExtra = Object.assign(window.__MHE.enExtra || {}, {"Model likhein
   function readMessageTemplates(){try{const v=JSON.parse(localStorage.getItem(MSG_TEMPLATES_KEY)||'[]');return Array.isArray(v)?[0,1,2].map(i=>String(v[i]||'')):['','',''];}catch(e){return ['','',''];}}
   function templateStatus(msg){const el=$('splashAdTemplateStatus');if(el)el.textContent=msg;}
   function loadMessageTemplate(){const sel=$('splashAdMessageTemplateSelect'),box=$('splashAdWhatsAppMessage');if(!sel||!box)return;const list=readMessageTemplates(),value=list[Number(sel.value)]||'';if(value){box.value=value;templateStatus('Template '+(Number(sel.value)+1)+' message editor mein load ho gaya.');}else{templateStatus('Ye template abhi khali hai. Message likh kar Save karein.');}}
-  function saveMessageTemplate(){const sel=$('splashAdMessageTemplateSelect'),box=$('splashAdWhatsAppMessage');if(!sel||!box)return;const list=readMessageTemplates(),index=Math.max(0,Math.min(2,Number(sel.value)||0)),value=box.value.trim();if(!value){templateStatus('Pehle message likhein, phir save karein.');return;}list[index]=value;try{localStorage.setItem(MSG_TEMPLATES_KEY,JSON.stringify(list));templateStatus('Template '+(index+1)+' successfully save ho gaya.');}catch(e){templateStatus('Template save nahi ho saka.');}}
+  function saveMessageTemplate(){const sel=$('splashAdMessageTemplateSelect'),box=$('splashAdWhatsAppMessage');if(!sel||!box)return;const list=readMessageTemplates(),index=Math.max(0,Math.min(2,Number(sel.value)||0)),value=box.value.trim();if(!value){templateStatus('Pehle message likhein, phir save karein.');return;}list[index]=value;try{localStorage.setItem(MSG_TEMPLATES_KEY,JSON.stringify(list));templateStatus('Template '+(index+1)+' successfully save ho gaya.');pushCloudPayload();}catch(e){templateStatus('Template save nahi ho saka.');}}
   function readSchedule(){try{const x=JSON.parse(localStorage.getItem(SCHEDULE_KEY)||'{}');return {gap:Math.max(30,Math.min(1440,Math.floor(Number(x.gap)||30))),duration:Math.max(5,Math.min(120,Math.floor(Number(x.duration)||5))),daily:Math.max(1,Math.min(50,Math.floor(Number(x.daily)||5)))}}catch(e){return {gap:30,duration:5,daily:5}}}
-  function saveSchedule(){const gap=Math.max(30,Math.min(1440,Math.floor(Number($('splashAdRepeatGapMinutes').value)||30))),duration=Math.max(5,Math.min(120,Math.floor(Number($('splashAdRepeatDurationSeconds').value)||5))),daily=Math.max(1,Math.min(50,Math.floor(Number($('splashAdDailyLimit').value)||5)));$('splashAdRepeatGapMinutes').value=gap;$('splashAdRepeatDurationSeconds').value=duration;$('splashAdDailyLimit').value=daily;const cfg={gap,duration,daily};try{localStorage.setItem(SCHEDULE_KEY,JSON.stringify(cfg));}catch(e){}const st=$('splashAdScheduleStatus');if(st)st.textContent='Settings save ho gayi: har '+gap+' minutes baad, '+duration+' seconds ke liye, rozana maximum '+daily+' ads.';startScheduledAdScheduler();}
+  function saveSchedule(){const gap=Math.max(30,Math.min(1440,Math.floor(Number($('splashAdRepeatGapMinutes').value)||30))),duration=Math.max(5,Math.min(120,Math.floor(Number($('splashAdRepeatDurationSeconds').value)||5))),daily=Math.max(1,Math.min(50,Math.floor(Number($('splashAdDailyLimit').value)||5)));$('splashAdRepeatGapMinutes').value=gap;$('splashAdRepeatDurationSeconds').value=duration;$('splashAdDailyLimit').value=daily;const cfg={gap,duration,daily};try{localStorage.setItem(SCHEDULE_KEY,JSON.stringify(cfg));}catch(e){}pushCloudPayload();const st=$('splashAdScheduleStatus');if(st)st.textContent='Settings save ho gayi: har '+gap+' minutes baad, '+duration+' seconds ke liye, rozana maximum '+daily+' ads.';startScheduledAdScheduler();}
   function getScheduleState(){try{const s=JSON.parse(localStorage.getItem(SCHEDULE_STATE_KEY)||'{}'),day=today();return s.day===day?s:{day,count:0,last:0};}catch(e){return {day:today(),count:0,last:0};}}
   function setScheduleState(s){try{localStorage.setItem(SCHEDULE_STATE_KEY,JSON.stringify(s));}catch(e){}}
   function closeScheduledAd(){const ov=$('mhScheduledAdOverlay');if(ov)ov.classList.remove('open');clearInterval(scheduledCountdownTimer);scheduledCountdownTimer=null;}
@@ -14169,10 +14227,13 @@ window.__MHE.enExtra = Object.assign(window.__MHE.enExtra || {}, {"Model likhein
   function splashRender(){const hosts=[$('sessionSplashAd'),$('mobileCloudStartupGateAd'),$('mhReplayAdCard'),$('mhScheduledAdCard')].filter(Boolean);if(!hosts.length)return;const a=ads.find(x=>x.enabled&&x.image&&(!x.expiry||x.expiry>=today()));const startupGate=$('mobileCloudStartupGate');if(startupGate)startupGate.classList.toggle('ad-first-mode',!!a);hosts.forEach(host=>{if(!a){host.style.display='none';host.innerHTML='';return;}host.innerHTML='';host.style.display='block';const tag=document.createElement('div');tag.className='splash-ad-tag';tag.textContent='SPONSORED';host.appendChild(tag);const im=document.createElement('img');im.src=a.image;im.alt=(a.advertiser||'Sponsored advertisement');host.appendChild(im);if(a.heading){const h=document.createElement('h3');h.textContent=a.heading;host.appendChild(h);}if(a.description){const p=document.createElement('p');p.textContent=a.description;host.appendChild(p);}if(a.contact){const c=document.createElement('a');c.className='splash-ad-contact';c.href='tel:'+a.contact.replace(/[^+\\d]/g,'');c.textContent='Call: '+a.contact;host.appendChild(c);}if(a.whatsapp){const w=document.createElement('a');w.className='splash-ad-whatsapp';let digits=a.whatsapp.replace(/\\D/g,'');if(digits.startsWith('00'))digits=digits.slice(2);if(digits.startsWith('0'))digits='92'+digits.slice(1);else if(!digits.startsWith('92'))digits='92'+digits;w.href='https://wa.me/'+digits+'?text='+encodeURIComponent((a.whatsappMessage||'السلام علیکم! میں نے آپ کا اشتہار موبائل حساب ایپ پر دیکھا ہے۔ مجھے آپ کی سروس/پروڈکٹ کے بارے میں مزید معلومات چاہیے۔ براہِ کرم تفصیلات بتا دیں۔ شکریہ۔').trim());w.target='_blank';w.rel='noopener noreferrer';w.textContent='WhatsApp: '+a.whatsapp;host.appendChild(w);}if(a.advertiser){const b=document.createElement('div');b.className='splash-ad-business';b.textContent=a.advertiser;host.appendChild(b);}});const replayBtn=$('mhReplayAdButton');if(replayBtn)replayBtn.style.display=a?'block':'none';}
   function compressImage(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=()=>reject(Error('Image read nahi ho saki.'));reader.onload=()=>{const img=new Image();img.onerror=()=>reject(Error('Valid image select karein.'));img.onload=()=>{const scale=Math.min(1,1200/img.width,1000/img.height),w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);resolve(c.toDataURL('image/jpeg',.78));};img.src=reader.result;};reader.readAsDataURL(file);});}
   function init(){ads=read();initScheduledAds();
+    if(typeof firebase!=='undefined'&&typeof firebase.auth==='function'){
+      try{firebase.auth().onAuthStateChanged(user=>{if(user){startCloudAdsSync();}else{if(cloudUnsubscribe){cloudUnsubscribe();cloudUnsubscribe=null;}cloudReady=false;}});}catch(e){console.warn('Cloud ads auth listener unavailable',e);}
+    }
     const templateSelect=$('splashAdMessageTemplateSelect'),templateSave=$('splashAdSaveMessageTemplate');
     if(templateSelect)templateSelect.onchange=loadMessageTemplate;
     if(templateSave)templateSave.onclick=saveMessageTemplate;
-    const extraInput=$('splashAdExtraSeconds');if(extraInput){let n=0;try{n=Number(localStorage.getItem(EXTRA_KEY)||0);}catch(e){}extraInput.value=String(Math.max(0,Math.min(120,Math.floor(n)||0)));extraInput.onchange=()=>{const value=Math.max(0,Math.min(120,Math.floor(Number(extraInput.value)||0)));extraInput.value=String(value);try{localStorage.setItem(EXTRA_KEY,String(value));status('Extra ad time '+value+' seconds save ho gaya.');}catch(e){status('Extra time save nahi ho saka.');}};}renderList();splashRender();
+    const extraInput=$('splashAdExtraSeconds');if(extraInput){let n=0;try{n=Number(localStorage.getItem(EXTRA_KEY)||0);}catch(e){}extraInput.value=String(Math.max(0,Math.min(120,Math.floor(n)||0)));extraInput.onchange=()=>{const value=Math.max(0,Math.min(120,Math.floor(Number(extraInput.value)||0)));extraInput.value=String(value);try{localStorage.setItem(EXTRA_KEY,String(value));pushCloudPayload();status('Extra ad time '+value+' seconds save ho gaya. Cloud par publish ho raha hai…');}catch(e){status('Extra time save nahi ho saka.');}};}renderList();splashRender();
     const replayButton=$('mhReplayAdButton'), replayOverlay=$('mhReplayAdOverlay'), replayClose=$('mhReplayAdClose');
     if(replayButton)replayButton.onclick=()=>{splashRender();if(replayOverlay)replayOverlay.classList.add('open');};
     if(replayClose)replayClose.onclick=()=>{if(replayOverlay)replayOverlay.classList.remove('open');};
@@ -14181,8 +14242,8 @@ window.__MHE.enExtra = Object.assign(window.__MHE.enExtra || {}, {"Model likhein
     if($('splashAdSelect'))$('splashAdSelect').onchange=e=>fillForm(e.target.value);
     if($('splashAdNew'))$('splashAdNew').onclick=clearForm;
     if($('splashAdImageFile'))$('splashAdImageFile').onchange=async e=>{const f=e.target.files&&e.target.files[0];if(!f)return;if(!f.type.startsWith('image/')){status('Image file select karein.');return;}try{pendingImage=await compressImage(f);setPreview(pendingImage);status('Image ready. Save Advertisement dabayein.');}catch(err){status(err.message||'Image process nahi hui.');}};
-    if($('splashAdSave'))$('splashAdSave').onclick=()=>{const image=pendingImage||(byId(selectedId)||{}).image||'';if(!image){status('Advertisement image upload karna zaroori hai.');return;}const a={id:selectedId||('ad_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)),advertiser:$('splashAdAdvertiser').value.trim(),image,heading:$('splashAdHeading').value.trim(),description:$('splashAdDescription').value.trim(),contact:$('splashAdContact').value.trim(),whatsapp:$('splashAdWhatsApp').value.trim(),whatsappMessage:$('splashAdWhatsAppMessage').value.trim(),fee:Math.max(0,Number($('splashAdFee').value)||0),payment:$('splashAdPayment').value,expiry:$('splashAdExpiry').value,enabled:$('splashAdEnabled').checked,updatedAt:new Date().toISOString()};const ix=ads.findIndex(x=>x.id===a.id);if(ix>=0)ads[ix]=a;else ads.push(a);if(a.enabled)ads.forEach(x=>{if(x.id!==a.id)x.enabled=false;});try{write();selectedId=a.id;renderList();fillForm(a.id);splashRender();status('Advertisement save ho gaya.');}catch(e){status('Storage full ho sakti hai. Chhoti image upload karein.');}};
-    if($('splashAdDelete'))$('splashAdDelete').onclick=()=>{if(!selectedId){status('Delete karne ke liye saved ad select karein.');return;}if(!confirm('Is advertisement ko delete kar dein?'))return;ads=ads.filter(x=>x.id!==selectedId);try{write();clearForm();renderList();splashRender();status('Advertisement delete ho gaya.');}catch(e){status('Delete save nahi ho saka.');}};
+    if($('splashAdSave'))$('splashAdSave').onclick=()=>{const image=pendingImage||(byId(selectedId)||{}).image||'';if(!image){status('Advertisement image upload karna zaroori hai.');return;}const a={id:selectedId||('ad_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)),advertiser:$('splashAdAdvertiser').value.trim(),image,heading:$('splashAdHeading').value.trim(),description:$('splashAdDescription').value.trim(),contact:$('splashAdContact').value.trim(),whatsapp:$('splashAdWhatsApp').value.trim(),whatsappMessage:$('splashAdWhatsAppMessage').value.trim(),fee:Math.max(0,Number($('splashAdFee').value)||0),payment:$('splashAdPayment').value,expiry:$('splashAdExpiry').value,enabled:$('splashAdEnabled').checked,updatedAt:new Date().toISOString()};const ix=ads.findIndex(x=>x.id===a.id);if(ix>=0)ads[ix]=a;else ads.push(a);if(a.enabled)ads.forEach(x=>{if(x.id!==a.id)x.enabled=false;});try{write();selectedId=a.id;renderList();fillForm(a.id);splashRender();pushCloudPayload();status('Advertisement save ho gaya. Cloud par publish ho raha hai…');}catch(e){status('Storage full ho sakti hai. Chhoti image upload karein.');}};
+    if($('splashAdDelete'))$('splashAdDelete').onclick=()=>{if(!selectedId){status('Delete karne ke liye saved ad select karein.');return;}if(!confirm('Is advertisement ko delete kar dein?'))return;ads=ads.filter(x=>x.id!==selectedId);try{write();clearForm();renderList();splashRender();pushCloudPayload();status('Advertisement delete ho gaya. Cloud par update ho raha hai…');}catch(e){status('Delete save nahi ho saka.');}};
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
   const splash=$('sessionSplash');if(splash&&typeof MutationObserver!=='undefined'){new MutationObserver(()=>{if(splash.classList.contains('show'))splashRender();}).observe(splash,{attributes:true,attributeFilter:['class']});}
