@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 MOBILE HISAB — SELF-DESCRIBING INDEX / AI DEVELOPER INSTRUCTIONS
-Current file version: Index v174 - Manual Splash Ads Manager - 14 Nov 2026 • 07:57 AM PKT
+Current file version: Index v175 - Splash Ads Startup Gate Fix - 14 Nov 2026 • 08:15 AM PKT
 - Index v174 — Manual Splash Ads Manager — 14 Nov 2026 • 07:57 AM PKT. Added a Settings manager for multiple manual image ads with optional heading, description, contact, advertiser, fee/payment status and expiry. The selected enabled ad appears as a clearly marked Sponsored card on the session loading screen. Ads are device-local; no Firestore schema/rules or cloud publishing changed.
 
 - Index v121 — Bilingual English / Urdu Language Selector — 06 Nov 2026 • 11:06 AM PKT. Added a persistent English/Urdu selector in the header and CSV-driven Urdu text translations. English remains the default. Existing app workflows, Firebase/Firestore integration, data schema, calculations and business logic are retained.
@@ -2090,6 +2090,15 @@ body.mh-urdu-mode .date-time-field.is-unknown .date-time-control-row::before { c
 #settingsOverlay #splashAdImagePreview{max-width:100%;}
 </style>
 
+<style id="v175-startup-gate-ad-style">
+#mobileCloudStartupGate .startup-gate-ad{width:min(360px,92vw);max-width:360px;margin:16px 0 0;padding:10px;background:#fff;color:#172033;border:1px solid rgba(255,255,255,.55);border-radius:16px;box-shadow:0 10px 28px rgba(0,0,0,.28);box-sizing:border-box;text-align:center;overflow:hidden}
+#mobileCloudStartupGate .startup-gate-ad img{display:block;width:100%;max-height:170px;object-fit:contain;border-radius:9px;background:#f5f6f8}
+#mobileCloudStartupGate .startup-gate-ad h3{margin:8px 0 4px;font-size:17px;line-height:1.2;font-weight:900;color:#111827;overflow-wrap:anywhere}
+#mobileCloudStartupGate .startup-gate-ad p{margin:0;color:#4b5563;font-size:12px;line-height:1.35;overflow-wrap:anywhere}
+#mobileCloudStartupGate .startup-gate-ad .splash-ad-contact{margin-top:8px;padding:8px 10px;font-size:13px}
+#mobileCloudStartupGate .startup-gate-ad .splash-ad-business{margin-top:5px}
+@media(max-height:700px){#mobileCloudStartupGate .startup-gate-ad{margin-top:10px;padding:8px}#mobileCloudStartupGate .startup-gate-ad img{max-height:110px}#mobileCloudStartupGate .gate-status{margin-top:12px}}
+</style>
 </head>
 <body class="mh-urdu-mode">
 <style id="mh-demo-styles">#mhDemoRibbon{display:none;position:sticky;top:0;z-index:9999;background:#7c3aed;color:#fff;padding:8px 12px;text-align:center;font:700 12px/1.35 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}#mhDemoRibbon button{margin-left:10px;border:1px solid rgba(255,255,255,.65);border-radius:8px;background:transparent;color:#fff;padding:5px 9px;font-weight:800}body.mh-demo-active #mhDemoRibbon{display:block}body.mh-demo-active .app{padding-top:0}</style>
@@ -2107,7 +2116,7 @@ body.mh-urdu-mode .date-time-field.is-unknown .date-time-control-row::before { c
   else document.body.classList.add('mh-urdu-mode');
 })();
 </script>
-<div id="mobileCloudStartupGate" role="status" aria-live="polite"><div class="gate-card"><img class="gate-logo" src="icon-192.png" alt="Mobile Hisab" onerror="this.style.display='none'"><div class="gate-title">Mobile Hisab</div><div class="gate-by">by Z Mobile</div><div class="gate-status">Latest data verify kiya ja raha hai…</div><div class="gate-loader" aria-hidden="true"><i></i></div></div></div>
+<div id="mobileCloudStartupGate" role="status" aria-live="polite"><div class="gate-card"><img class="gate-logo" src="icon-192.png" alt="Mobile Hisab" onerror="this.style.display='none'"><div class="gate-title">Mobile Hisab</div><div class="gate-by">by Z Mobile</div><div id="mobileCloudStartupGateAd" class="session-splash-ad startup-gate-ad" style="display:none;" aria-label="Sponsored advertisement"></div><div class="gate-status">Latest data verify kiya ja raha hai…</div><div class="gate-loader" aria-hidden="true"><i></i></div></div></div>
 <script>
 /* Prevent the cached/local dashboard from flashing before the cloud listener starts on a mobile refresh. */
 (function(){
@@ -2214,7 +2223,7 @@ body.mh-urdu-mode .date-time-field.is-unknown .date-time-control-row::before { c
           <div class="menu-footer-logo"><img src="icon-192.png" alt="Z Mobile"></div>
           <div><div class="menu-footer-name">Z Mobile</div><div class="menu-footer-sub">Mobile Hisab</div></div>
         </div>
-        <div class="menu-footer-version" id="menuFooterVersion">Index v174<span>Updated: 14 Nov 2026 • 07:57 AM PKT</span><span>Manual Splash Ads Manager</span></div>
+        <div class="menu-footer-version" id="menuFooterVersion">Index v175<span>Updated: 14 Nov 2026 • 08:15 AM PKT</span><span>Splash Ads Startup Gate Fix</span></div>
       </div>
     </div>
 
@@ -3316,14 +3325,14 @@ body.mh-urdu-mode .date-time-field.is-unknown .date-time-control-row::before { c
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">App Version Details</div>
-          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v174</div>
+          <div style="font-weight:800;font-size:16px;margin-top:8px;">Index v175</div>
           <div class="settings-note" style="margin-top:4px;">Manual Splash Ads Manager</div>
           <div class="settings-note" style="margin-top:10px;"><b>Last updated:</b> 14 Nov 2026 • 07:57 AM PKT</div>
           <div class="settings-note" style="margin-top:8px;"><b>Latest changes:</b> Added a Manual Splash Ads Manager to save multiple image ads, optional advertiser details, fee/payment status and expiry, then manually select and enable an ad for the loading screen. Ads are currently stored on this device/browser only; central cloud publishing is not included.</div>
         </div>
         <div class="settings-section-card" style="margin-top:12px;">
           <div class="sec-label">Version History</div>
-          <div style="font-weight:700;margin-top:9px;">Index v174 — 14 Nov 2026 • 07:57 AM PKT</div>
+          <div style="font-weight:700;margin-top:9px;">Index v175 — 14 Nov 2026 • 08:15 AM PKT</div><div class="settings-note">Fixed sponsored ads rendering on the actual mobile cloud startup verification screen, not only the secondary session splash.</div><div style="font-weight:700;margin-top:9px;">Index v174 — 14 Nov 2026 • 07:57 AM PKT</div>
           <div class="settings-note">Added Manual Splash Ads Manager with multiple saved image ads, optional business details, fee/payment status, expiry and manual activation on the loading screen. Ads are currently device-local.</div>
           <div style="font-weight:700;margin-top:9px;">Index v165 — 13 Nov 2026</div>
           <div class="settings-note">Demo dates are limited to elapsed days; future daily activity is added on later launches. Purchases precede sales; all existing demo price, profit, stock and unpaid-rent rules remain.</div>
@@ -14015,7 +14024,7 @@ window.__MHE.enExtra = Object.assign(window.__MHE.enExtra || {}, {"Model likhein
   function clearForm(){selectedId='';pendingImage='';['splashAdAdvertiser','splashAdHeading','splashAdDescription','splashAdContact','splashAdFee','splashAdExpiry'].forEach(id=>{if($(id))$(id).value='';});if($('splashAdPayment'))$('splashAdPayment').value='unpaid';if($('splashAdEnabled'))$('splashAdEnabled').checked=false;if($('splashAdImageFile'))$('splashAdImageFile').value='';setPreview('');if($('splashAdSelect'))$('splashAdSelect').value='';status('Naya advertisement banayein.');}
   function fillForm(id){const a=byId(id);if(!a){clearForm();return;}selectedId=a.id;pendingImage=a.image||'';$('splashAdAdvertiser').value=a.advertiser||'';$('splashAdHeading').value=a.heading||'';$('splashAdDescription').value=a.description||'';$('splashAdContact').value=a.contact||'';$('splashAdFee').value=a.fee||'';$('splashAdPayment').value=a.payment||'unpaid';$('splashAdExpiry').value=a.expiry||'';$('splashAdEnabled').checked=!!a.enabled;$('splashAdSelect').value=a.id;setPreview(a.image||'');if($('splashAdImageFile'))$('splashAdImageFile').value='';status('Selected: '+(a.advertiser||a.heading||'Advertisement'));}
   function renderList(){const sel=$('splashAdSelect');if(!sel)return;const keep=selectedId;sel.innerHTML='<option value="">New advertisement</option>';ads.forEach(a=>{const o=document.createElement('option');o.value=a.id;o.textContent=(a.advertiser||a.heading||'Advertisement')+(a.enabled?' • ON':' • OFF');sel.appendChild(o);});sel.value=byId(keep)?keep:'';}
-  function splashRender(){const host=$('sessionSplashAd');if(!host)return;const a=ads.find(x=>x.enabled&&x.image&&(!x.expiry||x.expiry>=today()));if(!a){host.style.display='none';host.innerHTML='';return;}host.innerHTML='';host.style.display='block';const tag=document.createElement('div');tag.className='splash-ad-tag';tag.textContent='SPONSORED';host.appendChild(tag);const im=document.createElement('img');im.src=a.image;im.alt=(a.advertiser||'Sponsored advertisement');host.appendChild(im);if(a.heading){const h=document.createElement('h3');h.textContent=a.heading;host.appendChild(h);}if(a.description){const p=document.createElement('p');p.textContent=a.description;host.appendChild(p);}if(a.contact){const c=document.createElement(a.contact?'a':'div');c.className='splash-ad-contact';if(c.tagName==='A'){c.href='tel:'+a.contact.replace(/[^+\d]/g,'');}c.textContent='Contact: '+a.contact;host.appendChild(c);}if(a.advertiser){const b=document.createElement('div');b.className='splash-ad-business';b.textContent=a.advertiser;host.appendChild(b);}}
+  function splashRender(){const hosts=[$('sessionSplashAd'),$('mobileCloudStartupGateAd')].filter(Boolean);if(!hosts.length)return;const a=ads.find(x=>x.enabled&&x.image&&(!x.expiry||x.expiry>=today()));hosts.forEach(host=>{if(!a){host.style.display='none';host.innerHTML='';return;}host.innerHTML='';host.style.display='block';const tag=document.createElement('div');tag.className='splash-ad-tag';tag.textContent='SPONSORED';host.appendChild(tag);const im=document.createElement('img');im.src=a.image;im.alt=(a.advertiser||'Sponsored advertisement');host.appendChild(im);if(a.heading){const h=document.createElement('h3');h.textContent=a.heading;host.appendChild(h);}if(a.description){const p=document.createElement('p');p.textContent=a.description;host.appendChild(p);}if(a.contact){const c=document.createElement('a');c.className='splash-ad-contact';c.href='tel:'+a.contact.replace(/[^+\\d]/g,'');c.textContent='Contact: '+a.contact;host.appendChild(c);}if(a.advertiser){const b=document.createElement('div');b.className='splash-ad-business';b.textContent=a.advertiser;host.appendChild(b);}});}
   function compressImage(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=()=>reject(Error('Image read nahi ho saki.'));reader.onload=()=>{const img=new Image();img.onerror=()=>reject(Error('Valid image select karein.'));img.onload=()=>{const scale=Math.min(1,1200/img.width,1000/img.height),w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);resolve(c.toDataURL('image/jpeg',.78));};img.src=reader.result;};reader.readAsDataURL(file);});}
   function init(){ads=read();renderList();splashRender();
     if($('splashAdSelect'))$('splashAdSelect').onchange=e=>fillForm(e.target.value);
@@ -14026,6 +14035,7 @@ window.__MHE.enExtra = Object.assign(window.__MHE.enExtra || {}, {"Model likhein
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
   const splash=$('sessionSplash');if(splash&&typeof MutationObserver!=='undefined'){new MutationObserver(()=>{if(splash.classList.contains('show'))splashRender();}).observe(splash,{attributes:true,attributeFilter:['class']});}
+  const startupGate=$('mobileCloudStartupGate');if(startupGate&&typeof MutationObserver!=='undefined'){new MutationObserver(()=>{if(startupGate.classList.contains('active'))splashRender();}).observe(startupGate,{attributes:true,attributeFilter:['class']});}
 })();
 </script>
 </body>
