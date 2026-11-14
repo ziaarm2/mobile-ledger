@@ -9472,8 +9472,8 @@ function analyticsRenderTimeOfDay(range){
       vals.forEach((v,i)=>{const xx=L+i*groupW+groupW/2+(si-(keys.length-1)/2)*barW;svg+='<rect x="'+(xx-barW/2)+'" y="'+y(v)+'" width="'+Math.max(2,barW-2)+'" height="'+Math.max(0,T+ph-y(v))+'" rx="2" fill="'+color+'" opacity=".9"><title>'+names[key]+': '+v+'</title></rect>';});
     } else {
       const points=vals.map((v,i)=>x(i)+','+y(v)).join(' ');
-      if(type==='area'){const area='M'+x(0)+' '+(T+ph)+' L'+points.replace(/ /g,' L')+' L'+x(vals.length-1)+' '+(T+ph)+' Z';svg+='<path d="'+area+'" fill="'+color+'" opacity=".16"/>';}
-      svg+='<polyline points="'+points+'" fill="none" stroke="'+color+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';
+      if(type==='area'){const area='M'+x(0)+' '+(T+ph)+' L'+points.replace(/ /g,' L')+' L'+(W-R)+' '+y(vals[vals.length-1])+' L'+(W-R)+' '+(T+ph)+' Z';svg+='<path d="'+area+'" fill="'+color+'" opacity=".16"/>';}
+      svg+='<polyline points="'+points+' '+(W-R)+','+y(vals[vals.length-1])+'" fill="none" stroke="'+color+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';
       vals.forEach((v,i)=>{svg+='<circle cx="'+x(i)+'" cy="'+y(v)+'" r="2.8" fill="'+color+'"><title>'+names[key]+': '+v+'</title></circle>';});
     }
   });
